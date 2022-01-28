@@ -1,0 +1,9 @@
+.idea
+.env
+
+# aws config
+buildspec.yml
+
+# air build
+tmp
+
