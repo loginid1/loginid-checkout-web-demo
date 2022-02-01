@@ -21,12 +21,12 @@ type Fido2Service struct {
 func NewFido2Service(clientID string, baseURL string) *Fido2Service {
 	var netTransport = &http.Transport{
 		Dial: (&net.Dialer{
-			Timeout: 5 * time.Second,
+			Timeout: 10 * time.Second,
 		}).Dial,
-		TLSHandshakeTimeout: 5 * time.Second,
+		TLSHandshakeTimeout: 10 * time.Second,
 	}
 	var fido2Client = &http.Client{
-		Timeout:   time.Second * 10,
+		Timeout:   time.Second * 30,
 		Transport: netTransport,
 	}
 	return &Fido2Service{client: fido2Client, baseURL: baseURL, clientID: clientID}

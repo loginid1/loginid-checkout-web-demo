@@ -11,6 +11,7 @@ import (
 	logger "gitlab.com/loginid/software/libraries/goutil.git/logger"
 	"gitlab.com/loginid/software/services/loginid-vault/db"
 	"gitlab.com/loginid/software/services/loginid-vault/handlers"
+	"gitlab.com/loginid/software/services/loginid-vault/middlewares"
 	"gitlab.com/loginid/software/services/loginid-vault/services/fido2"
 	"gitlab.com/loginid/software/services/loginid-vault/services/user"
 )
@@ -34,7 +35,12 @@ func main() {
 
 	clientID := "3Tn8S4chICTf2cy6TdciBJXJFZgpcVJcFiRAIb0zuo21jaA_4W2BCnVrqBIoY04dr12W47bYGrZRlPlzyVD30Q"
 	baseURL := "https://directweb.qa.loginid.io"
+	jwtURL := "https://directweb.qa.loginid.io"
 	fidoService := fido2.NewFido2Service(clientID, baseURL)
+	authService, err := middlewares.NewAuthService(clientID, jwtURL)
+	if err != nil {
+		logger.Global.Fatal(err.Error())
+	}
 
 	// init http handlers & server
 	r := mux.NewRouter()
@@ -55,11 +61,14 @@ func main() {
 	api.HandleFunc("/authenticate/complete", authHandler.AuthenticateCompleteHandler)
 
 	// protected usesr handler
+
 	userHandler := handlers.UserHandler{UserService: userService, Fido2Service: fidoService}
 	protected := api.PathPrefix("/protected").Subrouter()
-	protected.Use(handlers.TokenAuthenticationMiddleware)
+	protected.Use(authService.Middleware)
 	protected.HandleFunc("/user/profile", userHandler.GetUserProfileHandler)
 	protected.HandleFunc("/user/getCredentialList", userHandler.GetCredentialListHandler)
+	protected.HandleFunc("/user/createRecovery", userHandler.CreateRecoveryHandler)
+	protected.HandleFunc("/user/getRecoveryList", userHandler.GetRecoveryListHandler)
 
 	//TODO: change CORS handling to middleware
 	c := cors.New(cors.Options{

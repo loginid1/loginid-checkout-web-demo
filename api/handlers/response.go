@@ -13,7 +13,7 @@ type ErrorResponse struct {
 	Message string `json:"message"`
 }
 
-func errorResponse(w http.ResponseWriter, error services.ServiceError) {
+func SendErrorResponse(w http.ResponseWriter, error services.ServiceError) {
 
 	jsonResponse, jsonError := json.Marshal(ErrorResponse{Code: "bad_request", Message: error.Message})
 
@@ -25,7 +25,7 @@ func errorResponse(w http.ResponseWriter, error services.ServiceError) {
 	w.Write(jsonResponse)
 }
 
-func errorResponseWithCode(w http.ResponseWriter, code string, message string) {
+func SendErrorResponseWithCode(w http.ResponseWriter, code string, message string) {
 
 	jsonResponse, jsonError := json.Marshal(ErrorResponse{Code: code, Message: message})
 
@@ -37,7 +37,7 @@ func errorResponseWithCode(w http.ResponseWriter, code string, message string) {
 	w.Write(jsonResponse)
 }
 
-func successResponse(w http.ResponseWriter, response interface{}) {
+func SendSuccessResponse(w http.ResponseWriter, response interface{}) {
 
 	jsonResponse, jsonError := json.Marshal(response)
 
@@ -49,7 +49,7 @@ func successResponse(w http.ResponseWriter, response interface{}) {
 	w.Write(jsonResponse)
 }
 
-func successResponseRaw(w http.ResponseWriter, response []byte) {
+func SendSuccessResponseRaw(w http.ResponseWriter, response []byte) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(response)
 }

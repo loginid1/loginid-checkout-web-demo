@@ -17,8 +17,27 @@ export interface Credential {
 
 }
 
+
 export interface Credentials {
     credentials : Credential []
+}
+
+export interface RecoveryList {
+    recovery : Recovery []
+}
+
+export interface Recovery {
+    id: string;
+    public_key: string;
+    iat: string;
+
+}
+
+export interface RecoveryPhrase {
+    id: string;
+    public_key: string;
+    // this is in mnemonic phrases
+    private_key: string;
 }
 
 export class VaultUser extends Base{
@@ -39,6 +58,26 @@ export class VaultUser extends Base{
             this._baseURL,
             "/api/protected/user/getCredentialList",
             undefined,
+            header
+        );
+    }
+
+    async getRecoveryList(token: string) : Promise<RecoveryList> {
+        const header = { "x-session-token": token };
+        return await utils.http.get(
+            this._baseURL,
+            "/api/protected/user/getRecoveryList",
+            undefined,
+            header
+        );
+    }
+
+    async createRecovery(token: string) : Promise<RecoveryPhrase> {
+        const header = { "x-session-token": token };
+        return await utils.http.post(
+            this._baseURL,
+            "/api/protected/user/createRecovery",
+            {},
             header
         );
     }

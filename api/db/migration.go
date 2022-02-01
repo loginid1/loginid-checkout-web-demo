@@ -47,13 +47,14 @@ func MigrateUp() {
 		dbName, driver)
 
 	if err != nil {
-		logger.Global.Error(fmt.Sprintf("failed to setup migration: %s", err.Error()))
+		logger.Global.Panic(fmt.Sprintf("failed to setup migration: %s", err.Error()))
 		os.Exit(1)
 	}
 	// migrate to latest
 	err = m.Up()
-	if err != nil {
-		logger.Global.Error(fmt.Sprintf("failed to migrate: %s", err.Error()))
+	if err != nil && err != migrate.ErrNoChange {
+		logger.Global.Panic(fmt.Sprintf("failed to migrate: %s", err.Error()))
+		os.Exit(1)
 		//_ = m.Force(202104270001)
 	}
 	//reverse last change

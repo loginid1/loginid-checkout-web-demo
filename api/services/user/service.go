@@ -6,6 +6,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/algorand/go-algorand-sdk/crypto"
+	"github.com/algorand/go-algorand-sdk/mnemonic"
 	"github.com/go-redis/redis"
 	logger "gitlab.com/loginid/software/libraries/goutil.git/logger"
 	"gitlab.com/loginid/software/services/loginid-vault/services"
@@ -100,4 +102,36 @@ func (u *UserService) GetCredentialList(username string) ([]UserCredential, *ser
 	}
 
 	return credentialList, nil
+}
+
+// create a backup recovery in ed25519 format (same as algorand account)
+// return mnemonic phrases
+func (u *UserService) CreateRecovery(username string) (string, *UserRecovery, *services.ServiceError) {
+	account := crypto.GenerateAccount()
+	fmt.Printf("account address: %s\n", account.Address)
+
+	m, err := mnemonic.FromPrivateKey(account.PrivateKey)
+	if err != nil {
+		return "", nil, services.CreateError("failed to generate recovery")
+	}
+
+	// store address (public key ) to user database
+	recovery := UserRecovery{PublicKey: account.Address.String()}
+
+	err = u.UserRepository.SaveRecovery(username, recovery)
+	if err != nil {
+		return "", nil, services.CreateError("failed to create recovery")
+	}
+
+	fmt.Printf("backup phrase = %s\n", m)
+	return m, &recovery, nil
+}
+
+func (u *UserService) GetRecoveryList(username string) ([]UserRecovery, *services.ServiceError) {
+	recoveryList, err := u.UserRepository.GetRecoveryByUsername(username)
+	if err != nil {
+		return recoveryList, services.CreateError("failed to retrieve recovery list - try again")
+	}
+
+	return recoveryList, nil
 }

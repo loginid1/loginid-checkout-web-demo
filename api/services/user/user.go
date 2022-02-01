@@ -38,6 +38,10 @@ type UserRecovery struct {
 	Iat       time.Time `json:"iat" gorm:"DEFAULT:current_timestamp"`
 }
 
+func (UserRecovery) TableName() string {
+	return "user_recovery"
+}
+
 type UserProfile struct {
 	NumCredential  int32  `json:"num_credential"`
 	NumRecovery    int32  `json:"num_recovery"`
