@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 CREATE INDEX IF NOT EXISTS users_username_idx on users (username);
-CREATE INDEX IF NOT EXISTS users_username_lower_idx on users (username_lower);
+CREATE UNIQUE INDEX IF NOT EXISTS users_username_lower_idx on users (username_lower);
 
 CREATE TABLE IF NOT EXISTS user_credentials (
     id uuid,
@@ -38,5 +38,6 @@ CREATE TABLE IF NOT EXISTS user_recovery (
 );
 
 CREATE INDEX IF NOT EXISTS user_recovery_user_id_idx on user_recovery (user_id);
+CREATE UNIQUE INDEX IF NOT EXISTS user_recovery_public_key_idx on user_recovery (public_key);
 
 COMMIT;

@@ -22,8 +22,8 @@ type CredentialListResponse struct {
 
 func (u *UserHandler) GetCredentialListHandler(w http.ResponseWriter, r *http.Request) {
 
-	username := r.Context().Value("username").(string)
-	credentials, err := u.UserService.GetCredentialList(username)
+	session := r.Context().Value("session").(UserSession)
+	credentials, err := u.UserService.GetCredentialList(session.Username)
 	if err != nil {
 		SendErrorResponse(w, services.NewError("no credential found"))
 		return
@@ -33,18 +33,14 @@ func (u *UserHandler) GetCredentialListHandler(w http.ResponseWriter, r *http.Re
 }
 
 func (u *UserHandler) GetUserProfileHandler(w http.ResponseWriter, r *http.Request) {
-	username := r.Context().Value("username").(string)
-	profile, err := u.UserService.GetProfile(username)
+	session := r.Context().Value("session").(UserSession)
+	profile, err := u.UserService.GetProfile(session.Username)
 	if err != nil {
 		SendErrorResponse(w, services.NewError("no profile found"))
 		return
 	}
 
 	SendSuccessResponse(w, profile)
-}
-
-func (u *UserHandler) AddDeviceHandler(w http.ResponseWriter, r *http.Request) {
-
 }
 
 type RecoveryPhrase struct {
@@ -54,8 +50,8 @@ type RecoveryPhrase struct {
 }
 
 func (u *UserHandler) CreateRecoveryHandler(w http.ResponseWriter, r *http.Request) {
-	username := r.Context().Value("username").(string)
-	mnemonic, recovery, err := u.UserService.CreateRecovery(username)
+	session := r.Context().Value("session").(UserSession)
+	mnemonic, recovery, err := u.UserService.CreateRecovery(session.Username)
 	if err != nil {
 		SendErrorResponse(w, services.NewError("fail to create mnemonic recovery code"))
 		return
@@ -72,12 +68,23 @@ type RecoveryListResponse struct {
 }
 
 func (u *UserHandler) GetRecoveryListHandler(w http.ResponseWriter, r *http.Request) {
-	username := r.Context().Value("username").(string)
-	recovery, err := u.UserService.GetRecoveryList(username)
+	session := r.Context().Value("session").(UserSession)
+	recovery, err := u.UserService.GetRecoveryList(session.Username)
 	if err != nil {
 		SendErrorResponse(w, services.NewError("no recovery found"))
 		return
 	}
 
 	SendSuccessResponse(w, RecoveryListResponse{Recovery: recovery})
+}
+
+func (u *UserHandler) GenerateCredentialCodeHandler(w http.ResponseWriter, r *http.Request) {
+	session := r.Context().Value("session").(UserSession)
+
+	response, err := u.Fido2Service.GenerateCode(session.UserID)
+	if err != nil {
+		SendErrorResponse(w, *err)
+		return
+	}
+	SendSuccessResponseRaw(w, response)
 }

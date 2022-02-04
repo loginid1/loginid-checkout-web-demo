@@ -76,14 +76,6 @@ func (u *AuthHandler) RegisterCompleteHandler(w http.ResponseWriter, r *http.Req
 		SendErrorResponse(w, services.NewError("failed to parse request"))
 		return
 	}
-	// check user pending in cache
-	/*
-		pUser, err := u.UserService.GetPendingUser(request.Username)
-		if err != nil {
-			errorResponse(w, *err)
-			return
-		}
-	*/
 
 	// extract public_key and algorithm from attestation_data
 	public_key, key_alg, err := fido2.ExtractPublicKey(request.AttestationData)
@@ -106,7 +98,6 @@ func (u *AuthHandler) RegisterCompleteHandler(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	//logger.Global.Info(string(response))
 	// save user to database
 	err = u.UserService.CreateUserAccount(request.Username, request.DeviceName, public_key, key_alg)
 	if err != nil {
@@ -154,13 +145,97 @@ func (u *AuthHandler) AuthenticateCompleteHandler(w http.ResponseWriter, r *http
 		SendErrorResponse(w, services.NewError("failed to parse request"))
 		return
 	}
-	//logger.Global.Debug(fmt.Sprintf("%#v", request))
-	// proxy authenticate request to fido2 service
 	response, err := u.Fido2Service.AuthenticateComplete(request.Username, request.CredentialID, request.Challenge, request.AuthenticatorData, request.ClientData, request.Signature)
 	if err != nil {
 		SendErrorResponse(w, *err)
 		return
 	}
-	//logger.Global.Info(string(response))
+	SendSuccessResponseRaw(w, response)
+}
+
+/// ADD CREDENTIAL
+
+type CredentialAddInitRequest struct {
+	Username string
+	Code     string
+}
+
+/**
+CredentialAddInitHandler
+- parse username & attestationObject for certificate
+- store username & public key to cache user object (ecdsa)
+return: success or errorMessage
+*/
+
+func (u *AuthHandler) AddCredentialInitHandler(w http.ResponseWriter, r *http.Request) {
+
+	var request CredentialAddInitRequest
+	defer r.Body.Close()
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		SendErrorResponse(w, services.NewError("failed to parse request"))
+		return
+	}
+
+	// proxy credential add request to fido2 service
+	response, err := u.Fido2Service.AddCredentialInit(request.Username, request.Code)
+	if err != nil {
+		SendErrorResponse(w, *err)
+		return
+	}
+	SendSuccessResponseRaw(w, response)
+}
+
+type CredentialAddCompleteRequest struct {
+	Username        string `json:"username"`
+	DeviceName      string `json:"device_name"`
+	Challenge       string `json:"challenge"`
+	CredentialUuid  string `json:"credential_uuid"`
+	CredentialID    string `json:"credential_id"`
+	ClientData      string `json:"client_data"`
+	AttestationData string `json:"attestation_data"`
+}
+
+/**
+CredentialAddCompleteHandler
+	- parse public key
+	- save credential to user DB
+	return: success or errorMessage
+*/
+func (u *AuthHandler) AddCredentialCompleteHandler(w http.ResponseWriter, r *http.Request) {
+	var request RegisterCompleteRequest
+	defer r.Body.Close()
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		SendErrorResponse(w, services.NewError("failed to parse request"))
+		return
+	}
+
+	// extract public_key and algorithm from attestation_data
+	public_key, key_alg, err := fido2.ExtractPublicKey(request.AttestationData)
+
+	if err != nil {
+		SendErrorResponse(w, services.NewError("device key not supported"))
+		return
+	}
+	pUser := user.PendingUser{}
+	pUser.DeviceName = request.DeviceName
+	pUser.Username = request.Username
+	pUser.PublicKey = public_key
+	pUser.KeyAlg = key_alg
+
+	// send to fido2 server
+	// proxy register request to fido2 service
+	response, err := u.Fido2Service.AddCredentialComplete(request.Username, request.CredentialUuid, request.CredentialID, request.Challenge, request.AttestationData, request.ClientData)
+	if err != nil {
+		SendErrorResponse(w, *err)
+		return
+	}
+
+	// save user to database
+	err = u.UserService.AddUserCredential(request.Username, request.DeviceName, public_key, key_alg)
+	if err != nil {
+		SendErrorResponse(w, *err)
+		return
+	}
+
 	SendSuccessResponseRaw(w, response)
 }

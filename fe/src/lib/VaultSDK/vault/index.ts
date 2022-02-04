@@ -162,48 +162,30 @@ export class VaultAuth extends Base {
         );
     }
 
-
     /**
-     * Add a FIDO2 credential to an existing user.
+     * Sign up a user for FIDO2 authentication.
      * @returns {Promise<Result>}
      * */
-    /*
-    async addFido2CredentialWithCode(username: string, code: string, options?: AddCredentialOptions): Promise<Result> {
-        let headers;
-        if (options && options.authorization_token) {
-            headers = { Authorization: `Bearer ${options.authorization_token}` };
-            delete options.authorization_token;
-        }
+    async addCredential(username: string, code: string): Promise<Result> {
 
-        // Init the add credential flow
+        // Init the registration flow
         const initPayload = <{
-            client_id: string;
             username: string;
-            authentication_code: { code: string; type: string; };
-            options?: { roaming_authenticator?: boolean; };
+            code: string;
         }> {
-            client_id: this._clientID,
             username,
-            authentication_code: {
-                code,
-                type: options?.code_type ? options?.code_type : "short"
-            }
+            code
         };
-
-        // Check for payload options before sending the request.
-        if (options && options.roaming_authenticator) {
-            initPayload.options = { roaming_authenticator: options.roaming_authenticator };
-        }
 
         let initResponse = await utils.http.post(
             this._baseURL,
-            "/credentials/fido2/init/code",
+            "/api/addCredential/init",
             initPayload,
-            headers
         );
 
-        // Process the add credential init response and request the credential creation from the browser
-        const {
+        console.log(initResponse)
+        // Process the register init response and request the credential creation from the browser
+        const {  
             attestation_payload: attestationPayload
         } = initResponse;
 
@@ -216,47 +198,46 @@ export class VaultAuth extends Base {
             publicKey.excludeCredentials = publicKey.excludeCredentials.map(utils.navigator.convertCredentialDescriptor);
         }
 
+        console.log("before payload")
         const credential = await utils.navigator.createCredential({ publicKey });
+        console.log("after payload")
         const response = <AuthenticatorAttestationResponse>credential.response
 
-        // Complete the add credential flow
+        const deviceName = this.getDeviceNameFromAgent()
+        // Complete the registration flow
         const completePayload = <{
             client_id: string;
+            device_name: string,
             username: string;
-            attestation_payload: {
-                challenge: string;
-                credential_uuid: string;
-                credential_id: string;
-                client_data: string;
-                attestation_data: string;
+            challenge: string;
+            credential_uuid: string;
+            credential_id: string;
+            client_data: string;
+            attestation_data: string;
+            options?: { 
+                credential_name?: string; 
             };
-            options?: {
-                credential_name?: string;
-            }
         }> {
             client_id: this._clientID,
-            username,
-            attestation_payload: {
-                challenge,
+            username: username,
+            device_name: deviceName,
+                challenge: challenge,
                 credential_uuid: credentialUUID,
                 credential_id: utils.encoding.bufferToBase64(credential.rawId),
                 client_data: utils.encoding.bufferToBase64(response.clientDataJSON),
                 attestation_data: utils.encoding.bufferToBase64(response.attestationObject),
-            }
         };
 
-        // Check for payload options before sending the request.
-        if (options && options.credential_name) {
-            completePayload.options = { credential_name: options.credential_name };
-        }
 
+        console.log("payload")
+        // TODO: Check for backward compatibility
         return await utils.http.post(
             this._baseURL,
-            "/credentials/fido2/complete",
+            "/api/addCredential/complete",
             completePayload,
         );
     }
-    */
+
     getDeviceNameFromAgent(): string{
         // device name
         var parser = new UAParser();

@@ -55,6 +55,7 @@ function ManageCredential() {
 	const [recovery, setRecovery] = useState<RecoveryPhrase | null>(null);
 	const [username, setUsername] = useState(AuthService.getUsername());
 	const [errorMessage, setErrorMessage] = useState("");
+	const [credentialCode, setCredentialCode] = useState<string | null>(null);
 	useEffect(() => {
 		retrieveProfile();
 		retrieveCredentials();
@@ -99,11 +100,24 @@ function ManageCredential() {
 		}
 	}
 
+	async function generateCredentialCode() : Promise<string | null> {
+		const token = AuthService.getToken();
+		if (token) {
+			const response = await vaultSDK.generateCredentialCode(token);
+			return response.code
+		}
+		return null 
+	}
+
 	const [openCredential, setOpenCredential] = React.useState(false);
 	const [openRecovery, setOpenRecovery] = React.useState(false);
 
-	const handleClickOpenCredential = () => {
-		setOpenCredential(true);
+	const handleClickOpenCredential = async () => {
+		const code = await generateCredentialCode();
+		if (code != null) {
+			setCredentialCode(code);
+			setOpenCredential(true);
+		}
 	};
 
 	const handleCloseCredential = () => {
@@ -198,7 +212,7 @@ function ManageCredential() {
 					aria-describedby="alert-dialog-description"
 				>
 					<DialogTitle id="alert-dialog-title">
-						{"Registration Code: XXXYYY"}
+						Registration Code: {credentialCode}
 					</DialogTitle>
 					<DialogContent>
 						<DialogContentText id="alert-dialog-description">

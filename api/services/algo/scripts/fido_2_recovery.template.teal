@@ -1,0 +1,42 @@
+#pragma version 3
+txn Receiver
+addr ZZAF5ARA4MEC5PVDOP64JM5O5MQST63Q2KOY2FLYFLXXD3PFSNJJBYAFZM
+==
+txn TypeEnum
+int pay
+==
+&&
+global GroupSize
+int 1
+==
+&&
+bnz main_l6
+txn Receiver
+addr ZZAF5ARA4MEC5PVDOP64JM5O5MQST63Q2KOY2FLYFLXXD3PFSNJJBYAFZM
+==
+txn TypeEnum
+int pay
+==
+&&
+global GroupSize
+int 1
+==
+&&
+bnz main_l5
+txn TxID
+arg 0
+addr ZZAF5ARA4MEC5PVDOP64JM5O5MQST63Q2KOY2FLYFLXXD3PFSNJJBYAFZM
+ed25519verify
+bnz main_l4
+int 0
+b main_l7
+main_l4:
+int 1
+b main_l7
+main_l5:
+int 1
+b main_l7
+main_l6:
+int 1
+main_l7:
+return

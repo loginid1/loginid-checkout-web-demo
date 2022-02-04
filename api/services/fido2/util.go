@@ -1,6 +1,8 @@
 package fido2
 
-import "gitlab.com/loginid/software/services/loginid-vault/services"
+import (
+	"gitlab.com/loginid/software/services/loginid-vault/services"
+)
 
 /*
 CBOR decode
@@ -24,5 +26,6 @@ ES256 | -7    | SHA-256 | ECDSA w/ SHA-256 |
 			  -3 Y
 */
 func ExtractPublicKey(attestation_data string) (string, string, *services.ServiceError) {
-	return "", "ES256", nil
+	public_key := "HNVQH74DGRLCQEQXNSLVYKTX5F5HXMS2M6IZJX4VFQRUUSNYEQ7MB5AV6E"
+	return public_key, "ES256", nil
 }

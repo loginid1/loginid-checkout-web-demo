@@ -52,13 +52,13 @@ func (auth *AuthService) Middleware(next http.Handler) http.Handler {
 		if authHeader != "" {
 			authToken := strings.TrimSpace(authHeader)
 			// need to validate authToken and inject username to context
-			username, err := auth.validateToken(authToken)
+			session, err := auth.validateToken(authToken)
 			if err != nil {
 				logger.ForRequest(r).Error(err.Error())
 				handlers.SendErrorResponse(w, services.NewError("Not authorized"))
 				return
 			}
-			ctx := context.WithValue(r.Context(), "username", username)
+			ctx := context.WithValue(r.Context(), "session", *session)
 			next.ServeHTTP(w, r.WithContext(ctx))
 			return
 		}
@@ -78,30 +78,30 @@ type LoginIDClaims struct {
 	ID       string `json:"jti,omitempty"`
 }
 
-func (auth *AuthService) validateToken(token string) (string, error) {
+func (auth *AuthService) validateToken(token string) (*handlers.UserSession, error) {
 
 	keyID, err := utils.GetKIDFromToken(token)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	key, err := auth.retrievePublicKey(keyID)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	var myClaims LoginIDClaims
 	err = utils.VerifyClaims(token, key, &myClaims)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	//logger.Global.Info(fmt.Sprintf("Claims: %s %#v ", token, myClaims))
 	// validate audience here
 	if myClaims.Audience != auth.clientID {
-		return "", errors.New("invalid JWT aud")
+		return nil, errors.New("invalid JWT aud")
 	}
 	// validate expiration
 
-	return myClaims.Username, nil
+	return &handlers.UserSession{Username: myClaims.Username, UserID: myClaims.Subject}, nil
 }
 
 func (auth *AuthService) retrievePublicKey(kid string) (*ecdsa.PublicKey, error) {

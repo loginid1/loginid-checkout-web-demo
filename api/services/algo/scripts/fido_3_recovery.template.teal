@@ -1,0 +1,49 @@
+#pragma version 3
+arg 2
+arg 1
+sha256
+concat
+arg 0
+addr AAAAA55555AAAAA55555AAAAA55555AAAAA55555AAAAA5555522224444
+ed25519verify
+bnz main_l8
+arg 2
+arg 1
+sha256
+concat
+arg 0
+addr BBBBB55555BBBBB55555BBBBB55555BBBBB55555BBBBB5555522224444
+ed25519verify
+bnz main_l7
+arg 2
+arg 1
+sha256
+concat
+arg 0
+addr CCCCC55555CCCCC55555CCCCC55555CCCCC55555CCCCC5555522224444
+ed25519verify
+bnz main_l6
+txn TypeEnum
+int keyreg
+==
+txn TxID
+arg 0
+addr RRRRR55555RRRRR55555RRRRR55555RRRRR55555RRRRR5555522224444
+ed25519verify
+&&
+bnz main_l5
+int 0
+b main_l9
+main_l5:
+int 1
+b main_l9
+main_l6:
+int 1
+b main_l9
+main_l7:
+int 1
+b main_l9
+main_l8:
+int 1
+main_l9:
+return

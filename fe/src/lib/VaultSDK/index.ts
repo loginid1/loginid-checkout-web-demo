@@ -3,6 +3,7 @@ import VaultAuth from "./vault";
 import Base from "./base";
 import { applyMixins } from "./utils/encoding";
 import { VaultUser } from "./vault/user";
+import { VaultAlgo } from "./vault/algo";
 
 /**
  * Define the base class
@@ -18,12 +19,12 @@ export class VaultSDK {
 /**
  * Define the interface which merges the expected mixins with the same name as your base
  * */
-export interface VaultSDK extends Base, Browser,  VaultAuth, VaultUser {}
+export interface VaultSDK extends Base, Browser,  VaultAuth, VaultUser, VaultAlgo {}
 
 /**
  * Apply the mixins into the base class via the JS at runtime
  * */
-applyMixins(VaultSDK, [Base, Browser,  VaultAuth, VaultUser]);
+applyMixins(VaultSDK, [Base, Browser,  VaultAuth, VaultUser, VaultAlgo]);
 
 
 const BASE_URL = process.env.VAULT_URL || "http://localhost:3001";

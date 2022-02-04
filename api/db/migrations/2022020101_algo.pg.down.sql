@@ -1,0 +1,3 @@
+BEGIN;
+DROP TABLE IF EXISTS algo_accounts CASCADE; 
+COMMIT;

@@ -9,6 +9,8 @@ import Home from './routes/protected/Home';
 import ProtectedRoute from './routes/util/ProtectedRoute';
 import { AuthService } from './services/auth';
 import ManageCredential from './routes/protected/ManageCredential';
+import ManageAlgorand from './routes/protected/ManageAlgorand';
+import CreateAlgorand from './routes/protected/CreateAlgorand';
 
 
 
@@ -23,6 +25,8 @@ function App() {
         <Route path="/" element={<ProtectedRoute />} >
           <Route path="/home" element={<Home />} />
           <Route path="/manage_credential" element={<ManageCredential />} />
+          <Route path="/manage_algorand" element={<ManageAlgorand />} />
+          <Route path="/create_algorand" element={<CreateAlgorand />} />
         </Route>
         <Route path="*" element={<Navigate replace to="/login" />} />
       </Routes>

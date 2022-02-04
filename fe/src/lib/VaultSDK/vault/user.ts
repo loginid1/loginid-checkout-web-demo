@@ -40,6 +40,12 @@ export interface RecoveryPhrase {
     private_key: string;
 }
 
+export interface CredentialCode {
+    code: string;
+    expires_at: string;
+    is_authorized: boolean;
+}
+
 export class VaultUser extends Base{
 
     async getProfile(token: string) : Promise<Profile>  {
@@ -77,6 +83,16 @@ export class VaultUser extends Base{
         return await utils.http.post(
             this._baseURL,
             "/api/protected/user/createRecovery",
+            {},
+            header
+        );
+    }
+
+    async generateCredentialCode(token: string) : Promise<CredentialCode> {
+        const header = { "x-session-token": token };
+        return await utils.http.post(
+            this._baseURL,
+            "/api/protected/user/generateCredentialCode",
             {},
             header
         );

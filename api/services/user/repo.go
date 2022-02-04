@@ -1,6 +1,8 @@
 package user
 
 import (
+	"errors"
+
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -36,6 +38,42 @@ func (repo *UserRepository) CreateAccount(user User, credential UserCredential) 
 		credential.ID = uuid.New().String()
 	}
 	credential.User = user
+	if err := tx.Create(&credential).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	return tx.Commit().Error
+}
+
+func (repo *UserRepository) AddUserCredential(username string, credential UserCredential) error {
+
+	tx := repo.DB.Begin()
+
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	if err := tx.Error; err != nil {
+		return err
+	}
+
+	var user User
+	if err := tx.Where("username = ?", username).Take(&user).Error; err != nil {
+		return err
+	}
+
+	if user.ID == "" {
+		return errors.New("no user found")
+	}
+
+	credential.User = user
+
+	if credential.ID == "" {
+		credential.ID = uuid.New().String()
+	}
 	if err := tx.Create(&credential).Error; err != nil {
 		tx.Rollback()
 		return err

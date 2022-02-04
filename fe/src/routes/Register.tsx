@@ -34,7 +34,10 @@ function Signup() {
     e.preventDefault();
     try {
       if (showCode) {
-        setErrorMessage("feature not supported yet!")
+        const response = await vaultSDK.addCredential(username, regCode);
+        AuthService.storeSession({username:username,token:response.jwt});
+        navigate("/home");
+        //setErrorMessage("feature not supported yet!")
       } else {
         const response = await vaultSDK.register(username);
         AuthService.storeSession({username:username,token:response.jwt});
