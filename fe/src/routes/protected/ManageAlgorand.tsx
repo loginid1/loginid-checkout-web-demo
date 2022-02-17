@@ -14,6 +14,7 @@ import {
 	CardContent,
 	CardHeader,
 	Checkbox,
+	Chip,
 	Container,
 	CssBaseline,
 	Dialog,
@@ -47,7 +48,7 @@ import {
 	RecoveryList,
 	RecoveryPhrase,
 } from "../../lib/VaultSDK/vault/user";
-import { AccountList } from "../../lib/VaultSDK/vault/algo";
+import { Account, AccountList } from "../../lib/VaultSDK/vault/algo";
 import { profile } from "console";
 
 const theme = createTheme();
@@ -66,6 +67,7 @@ function ManageAlgorand() {
 		const token = AuthService.getToken();
 		if (token) {
 			const accountList = await vaultSDK.getAccountList(token);
+			console.log(accountList);
 			setAccountList(accountList);
 		} else {
 		}
@@ -95,49 +97,85 @@ function ManageAlgorand() {
 							color="inherit"
 							component="div"
 						>
-							Manage Algorand Account 
+							Manage Algorand Account
 						</Typography>
 					</Toolbar>
 				</AppBar>
-				{accountList == null &&
-					<p>You have no account setup yet!</p>
-				}
+				{accountList == null && <p>You have no account setup yet!</p>}
 
-				{accountList?.accounts.map((account) => (
-					<Card sx={{ mt: 2 , overflow: 'auto'}}>
+				{accountList?.accounts?.map((account) => (
+					<Card sx={{ mt: 2, overflow: "auto" }}>
 						<CardHeader
-						title="Contract Account Address: "
-						subheader={account.address}
-						titleTypographyProps={{
-							align: "left",
-							variant: "body1",
-						}}
-						subheaderTypographyProps={{
-							variant: "caption",
-							fontSize: 9,
-						}}
-					></CardHeader>
+							title="Contract Account Address: "
+							subheader={account.address}
+							titleTypographyProps={{
+								align: "left",
+								variant: "body1",
+							}}
+							subheaderTypographyProps={{
+								variant: "caption",
+								fontSize: 9,
+							}}
+						></CardHeader>
 						<CardContent>
 							<Typography
-								sx={{ mt: 2 }}
 								variant="body2"
-								color="text.secondary"
+								color="text.primary"
 								align="left"
 							>
+								Credentials:
+
 							</Typography>
+							{
+								account?.credentials_name?.map((cred_name) =>
+									<Chip label={cred_name} />
+								)
+
+							}
+							<Typography
+								variant="body2"
+								color="text.primary"
+								align="left"
+							>
+								Recovery:
+
+							</Typography>
+							<Chip label={account?.recovery_address} />
 						</CardContent>
-						<CardActions>
-							<Button size="small">Activate</Button>
-							<Button size="small">Rekey</Button>
-						</CardActions>
+						{account?.status == "new" && (
+							<CardActions>
+								<Button size="small">Activate</Button>
+								<Button size="small">Info</Button>
+							</CardActions>
+						)}
+						{account?.status == "active" && (
+							<CardActions>
+								<Button size="small">Rekey</Button>
+								<Button size="small">Info</Button>
+							</CardActions>
+						)}
+						{account?.status == "rekey" && (
+							<CardActions>
+								<Button size="small">Info</Button>
+							</CardActions>
+						)}
 					</Card>
 				))}
 				<Button onClick={() => navigate("/create_algorand")}>
 					Create New Account
 				</Button>
+
+
+
 			</Container>
+
+
 		</ThemeProvider>
 	);
 }
 
+
 export default ManageAlgorand;
+
+
+

@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import {
 	Alert,
+	AlertColor,
 	AppBar,
 	Avatar,
 	Box,
@@ -52,6 +53,7 @@ import {
 	RecoveryPhrase,
 } from "../../lib/VaultSDK/vault/user";
 import { AlgoAccountCreationRequest,  ContractAccount } from "../../lib/VaultSDK/vault/algo";
+import { DisplayMessage } from "../../lib/common/message";
 
 const theme = createTheme();
 
@@ -63,8 +65,8 @@ function CreateAlgorand() {
 	const [recoveryList, setRecoveryList] = useState<RecoveryList | null>(null);
 	const [formRecovery, setFormRecovery] = useState<string>("");
 	const [formCredentialList, setFormCredentialList] = useState<string[]>([]);
-	const [username, setUsername] = useState(AuthService.getUsername());
-	const [errorMessage, setErrorMessage] = useState("");
+	const [formCredIDList, setFormCredIDList] = useState<string[]>([]);
+	const [displayMessage, setDisplayMessage] = useState<DisplayMessage | null>(null);
 	const [aliasName, setAliasName] = useState("");
 	useEffect(() => {
 		retrieveCredentials();
@@ -92,26 +94,28 @@ function CreateAlgorand() {
 
 	async function handleAccountCreation() {
 		if(aliasName.length <=0 ){
-			setErrorMessage("Alias is empty");
+			setDisplayMessage({text:"Alias is empty",type:"error"});
 			return;
 		}
 		if(formCredentialList.length <=0 ){
-			setErrorMessage("Must have atleast one credential");
+			setDisplayMessage({text:"Must have atleast one credential", type:"error"});
 			return;
 		}
 		if(formRecovery.length <=0) {
-			setErrorMessage("Recovery is required");
+			setDisplayMessage({text:"Recovery is required", type:"error"});
 			return;
 		}
 
 		if(script?.address == null) {
-			setErrorMessage("Missing address for preview script");
+			setDisplayMessage({text:"Missing address for preview script", type:"error"});
 			return;
 		}
 
+		console.log("credID: ", formCredIDList);
+
 		let request : AlgoAccountCreationRequest = {
 			verify_address: script?.address ,
-			credential_list: formCredentialList,
+			cred_id_list: formCredIDList,
 			recovery: formRecovery,
 		}
 
@@ -119,11 +123,14 @@ function CreateAlgorand() {
 		if (token) {
 			try {
 				const response = await vaultSDK.createAccount(token, request);
+
+				// clear old error message
+				setDisplayMessage({text:"Account creation successful!!",type:"info"})
 			} catch (error){
-				setErrorMessage((error as Error).message);
+				setDisplayMessage({text:(error as Error).message,type:"error"});
 			}
 		} else {
-			setErrorMessage("missing auth token - retry login");
+			setDisplayMessage({text:"missing auth token - retry login", type:"error"});
 			return;
 		}
 
@@ -138,17 +145,28 @@ function CreateAlgorand() {
 		event: React.ChangeEvent<HTMLSelectElement>
 	) => {
 		const { options } = event.target;
-		const value: string[] = [];
+		const pk: string[] = [];
+		const ids: string[] = [];
 		for (let i = 0, l = options.length; i < l; i += 1) {
 			if (options[i].selected) {
-				value.push(options[i].value);
+				pk.push(options[i].value);
+				ids.push(options[i].id);
 			}
 		}
-		setFormCredentialList(value);
-		generateScript(value, formRecovery);
+		setFormCredentialList(pk);
+		setFormCredIDList(ids);
+		generateScript(pk, formRecovery);
 	};
 
 	async function generateScript(credentialList: string[], recovery: string) {
+		if(credentialList.length <=0 ){
+			setDisplayMessage({text:"To preview account - must have atleast one credential", type:"error"});
+			return;
+		}
+		if(recovery.length <=0) {
+			setDisplayMessage({text:"To preview account - choose a recovery", type:"error"});
+			return;
+		}
 		const token = AuthService.getToken();
 		if (token) {
 			try {
@@ -158,8 +176,9 @@ function CreateAlgorand() {
 					recovery
 				);
 				setScript(script);
+				setDisplayMessage(null);
 			} catch (error){
-				setErrorMessage((error as Error).message);
+				setDisplayMessage({text:(error as Error).message,type:"error"});
 			}
 		} else {
 		}
@@ -193,8 +212,8 @@ function CreateAlgorand() {
 						</Typography>
 					</Toolbar>
 				</AppBar>
-				{errorMessage.length > 0 &&
-				<Alert severity="error" sx={{mt: 4}}>{errorMessage}</Alert>
+				{displayMessage &&
+				<Alert severity={displayMessage?.type as AlertColor || 'info'} sx={{mt: 4}}>{displayMessage.text}</Alert>
 				}
 				<TextField
 					id="outlined-name"
@@ -211,6 +230,7 @@ function CreateAlgorand() {
 					<Select
 						multiple
 						native
+
 						value={formCredentialList}
 						// @ts-ignore Typings are not considering `native`
 						onChange={handleCredentialChangleMultiple}
@@ -221,7 +241,8 @@ function CreateAlgorand() {
 					>
 						{credentials?.credentials.map((credential) => (
 							<option
-								key={credential.public_key}
+								key={credential.id}
+								id={credential.id}
 								value={credential.public_key}
 							>
 								{credential.name}

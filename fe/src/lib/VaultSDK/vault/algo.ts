@@ -9,7 +9,10 @@ export interface Account {
     id: string;
     address: string;
     iat: string;
-
+    status: string;
+    credentials_name: string[];
+    recovery_address: string;
+    teal_script: string;
 }
 
 export interface ContractAccount {
@@ -20,7 +23,7 @@ export interface ContractAccount {
 
 export interface AlgoAccountCreationRequest {
     verify_address: string;
-    credential_list: string [];
+    cred_id_list: string [];
     recovery: string;
 }
 

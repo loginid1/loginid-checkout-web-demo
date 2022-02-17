@@ -92,6 +92,15 @@ func (repo *UserRepository) GetCredentialsByUsername(username string) ([]UserCre
 	return credentials, nil
 }
 
+func (repo *UserRepository) LookupCredentials(username string, credential_ids []string) ([]UserCredential, error) {
+	var credentials []UserCredential
+	err := repo.DB.Joins("JOIN users ON users.id = user_credentials.user_id").Where("users.username = ? ", username).Where("user_credentials.id in ?", credential_ids).Find(&credentials).Error
+	if err != nil {
+		return credentials, err
+	}
+	return credentials, nil
+}
+
 func (repo *UserRepository) SaveRecovery(username string, recovery UserRecovery) error {
 
 	tx := repo.DB.Begin()

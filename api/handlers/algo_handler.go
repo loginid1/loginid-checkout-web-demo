@@ -6,6 +6,7 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"time"
 
 	"gitlab.com/loginid/software/services/loginid-vault/services"
 	"gitlab.com/loginid/software/services/loginid-vault/services/algo"
@@ -17,8 +18,18 @@ type AlgoHandler struct {
 	AlgoService *algo.AlgoService
 }
 
+type FilterAlgoAccount struct {
+	ID              string   `json:"id"`
+	Address         string   `json:"address"`
+	CredentialsName []string `json:"credentials_name"`
+	RecoveryAddress string   `json:"recovery_address"`
+	Status          string   `json:"status"`
+	Iat             string   `json:"iat"`
+	TealScript      string   `json:"teal_script"`
+}
+
 type AccountListResponse struct {
-	Accounts []algo.AlgoAccount `json:"accounts"`
+	Accounts []FilterAlgoAccount `json:"accounts"`
 }
 
 func (h *AlgoHandler) GetAccountListHandler(w http.ResponseWriter, r *http.Request) {
@@ -29,14 +40,27 @@ func (h *AlgoHandler) GetAccountListHandler(w http.ResponseWriter, r *http.Reque
 		SendErrorResponse(w, services.NewError("no account found"))
 		return
 	}
+	var fAccounts []FilterAlgoAccount
+	for _, account := range accounts {
+		fAccount := FilterAlgoAccount{
+			ID:              account.ID,
+			Address:         account.Address,
+			CredentialsName: extractCredentialsName(account.Credentials),
+			RecoveryAddress: account.RecoveryAddress,
+			Status:          account.AccountStatus,
+			Iat:             account.Iat.Format(time.RFC822),
+			TealScript:      account.TealScript,
+		}
+		fAccounts = append(fAccounts, fAccount)
+	}
 
-	SendSuccessResponse(w, AccountListResponse{Accounts: accounts})
+	SendSuccessResponse(w, AccountListResponse{Accounts: fAccounts})
 }
 
 type CreateAccountRequest struct {
-	VerifyAddress  string   `json:"verify_address"`
-	CredentialList []string `json:"credential_list"`
-	Recovery       string   `json:"recovery"`
+	VerifyAddress    string   `json:"verify_address"`
+	CredentialIDList []string `json:"cred_id_list"`
+	Recovery         string   `json:"recovery"`
 }
 
 func (h *AlgoHandler) CreateAccountHandler(w http.ResponseWriter, r *http.Request) {
@@ -49,7 +73,7 @@ func (h *AlgoHandler) CreateAccountHandler(w http.ResponseWriter, r *http.Reques
 	}
 	session := r.Context().Value("session").(UserSession)
 
-	err := h.AlgoService.CreateAccount(session.Username, request.VerifyAddress, request.CredentialList, request.Recovery)
+	err := h.AlgoService.CreateAccount(session.Username, request.VerifyAddress, request.CredentialIDList, request.Recovery)
 
 	if err != nil {
 		SendErrorResponse(w, *err)
@@ -79,4 +103,12 @@ func (h *AlgoHandler) GenerateScriptHandler(w http.ResponseWriter, r *http.Reque
 		return
 	}
 	SendSuccessResponse(w, script)
+}
+
+func extractCredentialsName(credentials []user.UserCredential) []string {
+	var name []string
+	for _, cred := range credentials {
+		name = append(name, cred.Name)
+	}
+	return name
 }

@@ -9,7 +9,8 @@ CREATE TABLE IF NOT EXISTS algo_accounts (
     teal_script text NOT NULL,
     compile_script text NOT NULL,
     account_status varchar(64) NOT NULL DEFAULT 'new',
-    credentials text NOT NULL,
+    credentials_id text NOT NULL,
+    credentials_pk text NOT NULL,
     recovery_address text,
     CONSTRAINT algo_accounts_pkey PRIMARY KEY(id),
     CONSTRAINT algo_accounts_user_id_fk
