@@ -337,7 +337,7 @@ path: /api/transaction/request
 |app-account | application account address  |
 |app-fasset | application foreign asset  |
 |app-fapp | application foreign app  |
-|request-id| unique id associate with this request (lease) |
+|request-id| unique ID associate with this request |
 |note| optional note to add to the transaction |
 |callback| url to callback after transaction result |
 
@@ -388,3 +388,87 @@ path: /api/transaction/request
     }
 }
 ```
+
+#### Design Overview
+
+The Vault design is broken into two architectural components.  
+
+* The front-end component is built using React framework
+* The back-end component is built using Golang with PostgreSQL as its data store.
+
+Here we are going to look at some key design considerations for the use cases described in this documentation.
+
+###### Registration and Authentication 
+
+The Vault will use LoginID SDK to handle the FIDO2 attestation and authentication aspect between the user devices and Vault web app.  
+
+Here is the sequence diagram flow of user registration page:
+
+![image](registration_sequence.svg "=100%x100%")
+
+For most part the Vault acts a proxy between the user and the LoginID service.  At the createUserAccount(), the app will need to extract the FIDO public key from the attestation payload and create user account with the associated FIDO credential.
+
+The Authentication and Add Device page interactions are similar to registration flow.
+
+
+###### Algorand Management
+
+To create an Algorand account the user choose any combination of FIDO credentials and one recovery code.  These selections will be then substituted into the variables of the following PyTEAL script.
+
+
+```python
+from pyteal import *
+
+def verify_fido(pk,signature,clientData,authData,server_challenge):
+    challenge = Concat(Txn.tx_id(),Txn.lease(),server_challenge)
+    compute_challenge = base64url(challenge)
+    extract_challenge = json_extract(clientData,"challenge"
+    message = Concat(authData, Sha256(clientData))
+    return And(compute_challenge == extract_challenge, Ecc_Verify(message,signature,Addr(pk)))
+
+def verify_recovery(public_key, signature):
+    return And(Txn.type_enum() == TxnType.KeyRegistration , Ed25519Verify(Txn.tx_id(), signature, Addr(public_key)))
+
+def fido_signature(fido2_pk1,fido2_pk2,recovery_pk):
+
+    signature = Arg(0)
+    clientData = Arg(1)
+    authData = Arg(2)
+    server_challenge = Arg(3)
+    
+
+    return (
+        If(verify_fido(fido2_pk1,signature, clientData, authData, server_challenge))
+        .Then(Int(1)) # exit success if fido2_pk1 successful
+        .ElseIf(verify_fido(fido2_pk2,signature,clientData, authData, server_challenge))
+        .Then(Int(1)) # exit success if fido2_pk2 successful
+        .ElseIf(verify_recovery(recovery_pk,signature))
+        .Then(Int(1)) # exit success if recovery successful
+        .Else(Int(0)) # exit fail
+    )
+
+
+
+if __name__ == "__main__":
+    fido_1_template   = "AAAAA55555AAAAA55555AAAAA55555AAAAA55555AAAAA55555222244AO"
+    fido_2_template   = "BBBBB55555BBBBB55555BBBBB55555BBBBB55555BBBBB5555522224444"
+    recovery_template = "RRRRR55555RRRRR55555RRRRR55555RRRRR55555RRRRR5555522224444"
+
+    program = fido_signature(
+        fido_1_template, fido_2_template, recovery_template
+    )
+    print(compileTeal(program, mode=Mode.Signature, version=3))
+
+```
+
+The script is compiled and then presented to user for preview. 
+
+!!!note: Some opcodes are still in development.  Hence, these arguments may change.
+
+###### Transaction Confirmation
+
+Here are the sequence flow of a transaction confirmation.  The dApp required to redirect user to vault using the SDK provided under the use cases section 4. 
+
+![image](transaction_sequence.svg "=100%x100%")
+
+The dApp send the user to the Vault with the request payload according to the SDK.  At the transaction confirmation page, certain key fields will be highlighted to make sure user agree to the transaction.  For example in a payment request, the vault will highlight the amount and the receiver's address whereas it will highlight the appID and callback origin for the opt-in transaction.
