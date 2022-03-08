@@ -93,6 +93,8 @@ func main() {
 	protected.HandleFunc("/algo/createAccount", algoHandler.CreateAccountHandler)
 	protected.HandleFunc("/algo/generateScript", algoHandler.GenerateScriptHandler)
 
+	// open transaction api handlers
+
 	//TODO: change CORS handling to middleware
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost", "http://localhost:3000"},

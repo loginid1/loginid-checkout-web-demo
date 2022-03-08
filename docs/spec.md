@@ -408,12 +408,12 @@ Here is the sequence diagram flow of user registration page:
 
 For most part the Vault acts a proxy between the user and the LoginID service.  At the createUserAccount(), the app will need to extract the FIDO public key from the attestation payload and create user account with the associated FIDO credential.
 
-The Authentication and Add Device page interactions are similar to registration flow.
+The Authentication and Add Device page interactions will be similar to registration flow.
 
 
 ###### Algorand Management
 
-To create an Algorand account the user choose any combination of FIDO credentials and one recovery code.  These selections will be then substituted into the variables of the following PyTEAL script.
+To create an Algorand account the user choose any combination of the FIDO credentials and one recovery code.  These selections will be then substituted into the variables of the following PyTEAL script.
 
 
 ```python

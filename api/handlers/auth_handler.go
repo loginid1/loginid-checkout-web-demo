@@ -216,6 +216,7 @@ func (u *AuthHandler) AddCredentialCompleteHandler(w http.ResponseWriter, r *htt
 		SendErrorResponse(w, services.NewError("device key not supported"))
 		return
 	}
+
 	pUser := user.PendingUser{}
 	pUser.DeviceName = request.DeviceName
 	pUser.Username = request.Username
