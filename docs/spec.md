@@ -2,12 +2,12 @@
 
 #### Overview
 
-FIDO2 Vault is an online data store of user credentials that can be used as an authorizing keys to their blockchain account (Algorand).  
+FIDO2 Vault is an online data store of user credentials that can be used for authorizing keys to their blockchain account (Algorand).  
 
  * Users can register and add multiple credentials from any FIDO2 supported devices
- * Users can create recovery code based of ed25519 cryptography
- * Users then create Algorand account as a contract account (Logsig) based on the credentials and recovery code they had
- * Users can interact with dApp over WebAuthn client (standard browsers) to authorize any transactions
+ * Users can create recovery code based on ed25519 cryptography
+ * Users then create an Algorand account as a contract account (Logsig) based on the credentials and recovery code they have
+ * Users can interact with a dApp through a WebAuthn client (standard browsers) to authorize any transactions
 
 #### Use-Cases
 
@@ -25,30 +25,30 @@ The vault is an online web-app with the following main components:
 
 ![image](1_1_registration.svg "=100%x100%")
  
- There are three feature-set 
+ There are three feature-sets 
 
 ###### 1.1 - User registration
 
 
-1.1.1 - User is prompt to enter a username in order to register
-1.1.2 - User is then prompt by their device to register with FIDO2 using their biometric (or pin/password) 
+1.1.1 - User is prompted to enter a username in order to register
+1.1.2 - User is then prompted by their device to register with FIDO2 using their biometric (or pin/password) 
 
 ###### 1.2 - User authentication
 
-Once registration is completed, user can sign back to the vault at any time using their FIDO2 device
+Once registration is completed, a user can sign back to the vault at any time using their FIDO2 device
 
- 1.2.1 - User is prompt to enter a username 
- 1.2.2 - User is prompt by their device to authenticate with FIDO2
+ 1.2.1 - User is prompted to enter a username 
+ 1.2.2 - User is prompted by their device to authenticate with FIDO2
 
  ###### 1.3 - Add device
 
- Add device feature allows user to add multiple FIDO2 devices to their credential set.  This will allow the user to authenticate with any of the devices to their account.  This process requires user to obtain the registration code from the device they had already successfully register (describes later in 2.3.3).  
+ Add device feature allows user to add multiple FIDO2 devices to their credential set.  This will allow the user to authenticate with any of the devices to their account.  This process requires a user to obtain the registration code from the device they have already successfully registered (described later in 2.3.3).  
  
- From a new device user will get to the registration page (1.1.1).  User requires to enter their username and select the Add device checkbox (1.3.1).  This will show an input box where they can enter the registration code they had obtained in 2.3.3.  User is then required to perform FIDO2 attestation to complete the process.
+ From a new device, a user will get to the registration page (1.1.1).  A user is required to enter their username and select the Add device checkbox (1.3.1).  This will show an input box where they can enter the registration code they had obtained in 2.3.3. The user is then required to perform FIDO2 attestation to complete the process.
 
  ##### 2.0 User account management component 
 
-This component has many feature-sets and only accessible after the user performed authentication with their FIDO2 device.
+This component has many feature-sets and is only accessible after the user performed authentication with their FIDO2 device.
 
 Here are the main feature-sets:
 
@@ -56,7 +56,7 @@ Here are the main feature-sets:
 
 ![image](2_2_user_statistics.svg "=100%x100%")
 
-After user login they will land at the home section 2.1.  There will be a quick summary of their recent activities and transactions.  They can view the detail statistics by selecting from the menu to view their activities or transactions.
+After a user login they will land at the home section 2.1.  There will be a quick summary of their recent activities and transactions.  They can view the detail statistics by selecting from the menu to view their activities or transactions.
 
 2.2.1 Activity view
 
@@ -80,27 +80,27 @@ this page shows a data set of user Algorand's transaction and account holding
 
 ![image](2_3_manage_devices.svg "=100%x100%")
 
-In this section (2.3.1) user can view their current credentials and list of recovery codes (public-key).  There are options for user to create recovery code and registration code.
+In this section (2.3.1) a user can view their current credentials and list of recovery codes (public-key).  There are options for a user to create recovery codes and registration codes.
 
 2.3.2 Recovery code
 
-Recovery code is an ED25519 cryptographic key that use as a backup of the user Algorand account in case their devices are damage/lost.  This code will allow the user to issue a rekeying action to the chain to update their FIDO2 signature script with a new device
+Recovery code is an ED25519 cryptographic key that is used as a backup of the user Algorand account in case their devices are damage/lost.  This code will allow the user to issue a rekeying action to the chain to update their FIDO2 signature script with a new device
 
-When the user selected recovery code, a modal window appears showing them the recovery Address and Mnemonic phrases.  User is required to make a cold copy backup of the mnemonic phrases (private-key). 
+When the user selected recovery code, a modal window appears showing them the recovery Address and Mnemonic phrases.  A user is required to make a cold copy backup of the mnemonic phrases (private-key). 
 
 2.3.3 Registration code
 
-Registration code is a short six digits code that expired within five minutes of the issuing time.  This code will allow user to register a new device with the account.
+A registration code is a short six-digit code that will expire within five minutes of the issuing time.  This code will allow a user to register a new device with the account.
 
-When the user selected create registration code button, a modal window appears showing the code which user then can go to add device flow shown in 1.3.1 and 1.3.2.
+When the user selects the "create registration code" button, a modal window appears showing the code which a user can then use as part of the add device flow shown in 1.3.1 and 1.3.2.
 
 ###### 2.4 Manage Algorand
 
-In this section 2.4.1, the user can view the list of current Algorand accounts they had.  The user can create multiple accounts for signing transactions or for rekeying purposes.
+In this section 2.4.1, the user can view the list of current Algorand accounts they have.  The user can create multiple accounts for signing transactions or for rekeying purposes.
 
 ![image](2_4_manage_algorand.svg "=100%x100%")
 
-**Algorand account** creates under this section is considered to be a contract account.  This is a TEAL script that contains the verifiable logic for user FIDO2 devices assertion and recovery code.  The detail of TEAL script will be described in the technical section.
+**Algorand account** creates what is considered to be a contract account.  This is a TEAL script that contains the verifiable logic for a user's FIDO2 device assertion and recovery code.  The detail of TEAL script will be described in the technical section.
 
 2.4.2 - Create New Account
 
@@ -128,10 +128,10 @@ Once the user had an active Algorand account setup they can start authorizing tr
 
 Here are the type of transactions that is supported by the vault:
 
-* Payment - send algo to other
-* Asset transfer - send any user owned asset to other
-* dApp opt-in - allows user to consent to dApp opt-in transaction
-* dApp call - allows user to invoke method on the dApp
+* Payment - send algo to another account
+* Asset transfer - send any user owned asset to another account
+* dApp opt-in - allows users to consent to dApp opt-in transactions
+* dApp call - allows users to invoke method on the dApp
 
 Here is a typical flow for a user transaction interaction with the vault:
 
@@ -139,12 +139,12 @@ Here is a typical flow for a user transaction interaction with the vault:
 ![image](3_0_transaction_confirmation.svg "=100%x100%")
 
 1) User interacts with dApp site ready to make a transaction with the dApp with their vault account
-2) dApp build payload defined in the SDK (section 4.0) to redirect user to the Vault transaction confirmation page (3.0)
-3) User validates the transaction info (3.1.1) and select an active account to authorize the transaction (3.1.2).  Once user selected an account a detail transaction payload (3.1.3) is shown that will be submitted to the Algorand network.
+2) dApp build payload is defined in the SDK (section 4.0) to redirect user to the Vault transaction confirmation page (3.0)
+3) User validates the transaction info (3.1.1) and selects an active account to authorize the transaction (3.1.2).  Once a user has selected an account a detail transaction payload (3.1.3) is shown that will be submitted to the Algorand network.
     * By default, the Vault detected the user account based on their saved token stored on browser storage
-    * If there is no token stored, the vault will prompt user to enter username and FIDO2 authentication to retrieve the active Algorand account 
+    * If there is no token stored, the vault will prompt the user to enter username and FIDO2 authentication to retrieve the active Algorand account 
 4) User performs FIDO2 authentication to sign the transaction.  
-5) Vault will submit the transaction to the block with the FIDO2 signature data obtained from user device and confirm the success or failure of the transaction.  Vault redirects the user back to the dApp site with the result of the transaction.
+5) Vault will submit the transaction to the block with the FIDO2 signature data obtained from the user device and confirm the success or failure of the transaction.  Vault redirects the user back to the dApp site with the result of the transaction.
 
 !!!note 3.1.3 - The transaction detail may include rating/warning for dApp transaction in future based risk assessment.
 
@@ -400,20 +400,20 @@ Here we are going to look at some key design considerations for the use cases de
 
 ###### Registration and Authentication 
 
-The Vault will use LoginID SDK to handle the FIDO2 attestation and authentication aspect between the user devices and Vault web app.  
+The Vault will use the LoginID SDK to handle the FIDO2 attestation and authentication aspect between the user devices and Vault web app.  
 
 Here is the sequence diagram flow of user registration page:
 
 ![image](registration_sequence.svg "=100%x100%")
 
-For most part the Vault acts a proxy between the user and the LoginID service.  At the createUserAccount(), the app will need to extract the FIDO public key from the attestation payload and create user account with the associated FIDO credential.
+For the most part the Vault acts a proxy between the user and the LoginID service.  At the createUserAccount(), the app will need to extract the FIDO public key from the attestation payload and create a user account with the associated FIDO credential.
 
-The Authentication and Add Device page interactions will be similar to registration flow.
+The Authentication and Add Device page interactions will be similar to the registration flow.
 
 
 ###### Algorand Management
 
-To create an Algorand account the user choose any combination of the FIDO credentials and one recovery code.  These selections will be then substituted into the variables of the following PyTEAL script.
+To create an Algorand account the user chooses any combination of the FIDO credentials and one recovery code.  These selections will be then substituted into the variables of the following PyTEAL script.
 
 
 ```python
@@ -471,4 +471,4 @@ Here are the sequence flow of a transaction confirmation.  The dApp required to 
 
 ![image](transaction_sequence.svg "=100%x100%")
 
-The dApp send the user to the Vault with the request payload according to the SDK.  At the transaction confirmation page, certain key fields will be highlighted to make sure user agree to the transaction.  For example in a payment request, the vault will highlight the amount and the receiver's address whereas it will highlight the appID and callback origin for the opt-in transaction.
+The dApp sends the user to the Vault with the request payload according to the SDK.  At the transaction confirmation page, certain key fields will be highlighted to make sure users agree to the transaction.  For example in a payment request, the vault will highlight the amount and the receiver's address where it will highlight the appID and callback origin for the opt-in transaction.
