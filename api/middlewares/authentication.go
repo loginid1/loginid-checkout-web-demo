@@ -69,6 +69,45 @@ func (auth *AuthService) Middleware(next http.Handler) http.Handler {
 	})
 }
 
+func (auth *AuthService) MiddlewareWithRedirect(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		authHeader := r.Header.Get("x-session-token")
+		// get authorization header if present
+		if authHeader != "" {
+			authToken := strings.TrimSpace(authHeader)
+			// need to validate authToken and inject username to context
+			session, err := auth.validateToken(authToken)
+			if err != nil {
+				logger.ForRequest(r).Error(err.Error())
+				handlers.SendErrorResponse(w, services.NewError("Not authorized"))
+				return
+			}
+			ctx := context.WithValue(r.Context(), "session", *session)
+			next.ServeHTTP(w, r.WithContext(ctx))
+			return
+		}
+		// fail not authorize here
+
+		redirectURL := fmt.Sprintf("%s?redirect_url=%s", "/fe/login", r.RequestURI)
+		http.Redirect(w, r, redirectURL, http.StatusMovedPermanently)
+
+	})
+}
+func (auth *AuthService) ValidateSessionToken(r *http.Request) (*services.UserSession, error) {
+	authHeader := r.Header.Get("x-session-token")
+	// get authorization header if present
+	if authHeader != "" {
+		authToken := strings.TrimSpace(authHeader)
+		// need to validate authToken and inject username to context
+		session, err := auth.validateToken(authToken)
+		if err != nil {
+			return nil, err
+		}
+		return session, nil
+	}
+	return nil, errors.New("No session token found")
+}
+
 type LoginIDClaims struct {
 	Issuer   string `json:"iss,omitempty"`
 	Subject  string `json:"sub,omitempty"`
@@ -78,7 +117,7 @@ type LoginIDClaims struct {
 	ID       string `json:"jti,omitempty"`
 }
 
-func (auth *AuthService) validateToken(token string) (*handlers.UserSession, error) {
+func (auth *AuthService) validateToken(token string) (*services.UserSession, error) {
 
 	keyID, err := utils.GetKIDFromToken(token)
 	if err != nil {
@@ -101,7 +140,7 @@ func (auth *AuthService) validateToken(token string) (*handlers.UserSession, err
 	}
 	// validate expiration
 
-	return &handlers.UserSession{Username: myClaims.Username, UserID: myClaims.Subject}, nil
+	return &services.UserSession{Username: myClaims.Username, UserID: myClaims.Subject}, nil
 }
 
 func (auth *AuthService) retrievePublicKey(kid string) (*ecdsa.PublicKey, error) {

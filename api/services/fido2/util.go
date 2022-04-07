@@ -69,6 +69,8 @@ func ExtractPublicKey(attestation_data string) (string, string, *services.Servic
 	//logger.Global.Info(fmt.Sprintf("%#v ", coseBytes))
 	//logger.Global.Info(fmt.Sprintf("%#v %d", cose, attestObject.AttStmt.Alg))
 	//public_key := "HNVQH74DGRLCQEQXNSLVYKTX5F5HXMS2M6IZJX4VFQRUUSNYEQ7MB5AV6E"
+	logger.Global.Info(fmt.Sprintf("X: %s", base64.StdEncoding.EncodeToString(cose.X)))
+	logger.Global.Info(fmt.Sprintf("Y: %s", base64.StdEncoding.EncodeToString(cose.Y)))
 	jwk := convertToJWK(cose)
 	public_key, err := json.Marshal(jwk)
 	if err != nil {
@@ -115,6 +117,7 @@ func convertToJWK(cose CoseData) services.EccJWK {
 	} else if cose.Crv == 3 {
 		crv = "P-521"
 	}
+
 	key := services.EccJWK{
 		Crv: crv,
 		X:   base64.RawURLEncoding.EncodeToString(cose.X),

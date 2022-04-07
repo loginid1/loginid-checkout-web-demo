@@ -5,12 +5,7 @@ json_ref JSONString
 byte "="
 concat
 base64_decode URLEncoding
-txn TxID
-txn Lease
-concat
 arg 4
-concat
-sha256
 ==
 arg 3
 arg 2
@@ -19,15 +14,19 @@ concat
 sha256
 arg 0
 arg 1
-byte base64(FIDO1111XXXX)
-byte base64(FIDO1111YYYY)
+byte base64(LC6oXWgQnlg9b1eBFPQ54TG+e3g6q5j/thLOA6OWfRY=)
+byte base64(S3I3dWk1WCJrHoYFilN4Jy1TsdSgVPSHMLZ7tyrQIbk=)
 ecdsa_verify Secp256r1
 &&
 bnz main_l4
+txn TypeEnum
+int keyreg
+==
 txn TxID
 arg 0
-addr RRRRR55555RRRRR55555RRRRR55555RRRRR55555RRRRR5555522224444
+addr XQWXNV7XXLCOWY5TKIKKSDAEEIN7J4FRF3SQJ4GES4KL43TGDT2FXY7UVI
 ed25519verify
+&&
 bnz main_l3
 int 0
 b main_l5

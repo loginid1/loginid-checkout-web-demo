@@ -85,13 +85,17 @@ func main() {
 	protected.Use(authService.Middleware)
 	protected.HandleFunc("/user/profile", userHandler.GetUserProfileHandler)
 	protected.HandleFunc("/user/getCredentialList", userHandler.GetCredentialListHandler)
+	// deprecated in favour of generateRecoveryInit && generateRecoveryComplete flow
 	protected.HandleFunc("/user/createRecovery", userHandler.CreateRecoveryHandler)
+	protected.HandleFunc("/user/generateRecoveryInit", userHandler.GenerateRecoveryInitHandler)
+	protected.HandleFunc("/user/generateRecoveryComplete", userHandler.GenerateRecoveryCompleteHandler)
 	protected.HandleFunc("/user/getRecoveryList", userHandler.GetRecoveryListHandler)
 	protected.HandleFunc("/user/generateCredentialCode", userHandler.GenerateCredentialCodeHandler)
 
 	protected.HandleFunc("/algo/getAccountList", algoHandler.GetAccountListHandler)
 	protected.HandleFunc("/algo/createAccount", algoHandler.CreateAccountHandler)
 	protected.HandleFunc("/algo/generateScript", algoHandler.GenerateScriptHandler)
+	protected.HandleFunc("/algo/quickAccountCreation", algoHandler.QuickAccountCreationHandler)
 
 	// open transaction api handlers
 

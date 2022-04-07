@@ -1,0 +1,8 @@
+#pragma version 7
+txn TypeEnum
+int keyreg
+==
+txn TxID
+arg 0
+addr XQWXNV7XXLCOWY5TKIKKSDAEEIN7J4FRF3SQJ4GES4KL43TGDT2FXY7UVI
+ed25519verify

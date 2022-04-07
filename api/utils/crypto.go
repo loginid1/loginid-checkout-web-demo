@@ -3,8 +3,11 @@ package utils
 import (
 	"crypto/ecdsa"
 	"crypto/x509"
+	"encoding/asn1"
+	"encoding/base64"
 	"encoding/pem"
 	"errors"
+	"math/big"
 	"time"
 
 	"github.com/google/uuid"
@@ -125,4 +128,26 @@ func GenerateLoginApiTokenByUserID(key *ecdsa.PrivateKey, tokenType string, user
 	}
 	return raw, nil
 
+}
+
+type ECDSASig struct {
+	R, S *big.Int
+}
+
+/**
+* signature base64Url encode
+ */
+func ConvertSignatureBase64RS(signature string) (string, string, error) {
+
+	decode, err := base64.RawURLEncoding.DecodeString(signature)
+	if err != nil {
+		return "", "", err
+	}
+	var sig ECDSASig
+	_, err = asn1.Unmarshal(decode, &sig)
+	if err != nil {
+		return "", "", err
+	}
+
+	return base64.StdEncoding.EncodeToString(sig.R.Bytes()), base64.StdEncoding.EncodeToString(sig.S.Bytes()), nil
 }

@@ -27,6 +27,8 @@ function App() {
           <Route path="/manage_credential" element={<ManageCredential />} />
           <Route path="/manage_algorand" element={<ManageAlgorand />} />
           <Route path="/create_algorand" element={<CreateAlgorand />} />
+          <Route path="/tx/connect" element={<AlgoTransaction />} />
+          <Route path="/tx/confirm" element={<AlgoTransaction />} />
         </Route>
         <Route path="*" element={<Navigate replace to="/login" />} />
       </Routes>

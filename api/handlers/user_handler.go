@@ -4,6 +4,7 @@ package handlers
  */
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"gitlab.com/loginid/software/services/loginid-vault/services"
@@ -60,6 +61,43 @@ func (u *UserHandler) CreateRecoveryHandler(w http.ResponseWriter, r *http.Reque
 	response := RecoveryPhrase{ID: recovery.ID, PublicKey: recovery.PublicKey, PrivateKey: mnemonic}
 
 	SendSuccessResponse(w, response)
+
+}
+
+func (u *UserHandler) GenerateRecoveryInitHandler(w http.ResponseWriter, r *http.Request) {
+	session := r.Context().Value("session").(UserSession)
+	mnemonic, recovery, err := u.UserService.GenerateRecoveryInit(session.Username)
+	if err != nil {
+		SendErrorResponse(w, services.NewError("fail to create mnemonic recovery code"))
+		return
+	}
+
+	response := RecoveryPhrase{ID: recovery.ID, PublicKey: recovery.PublicKey, PrivateKey: mnemonic}
+
+	SendSuccessResponse(w, response)
+
+}
+
+type GenerateRecoveryCompleteRequest struct {
+	PublicKey string `json:"public_key"`
+}
+
+func (u *UserHandler) GenerateRecoveryCompleteHandler(w http.ResponseWriter, r *http.Request) {
+	session := r.Context().Value("session").(UserSession)
+	var request GenerateRecoveryCompleteRequest
+	defer r.Body.Close()
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		SendErrorResponse(w, services.NewError("failed to parse request"))
+		return
+	}
+
+	err := u.UserService.GenerateRecoveryComplete(session.Username, request.PublicKey)
+	if err != nil {
+		SendErrorResponse(w, services.NewError("fail to create mnemonic recovery code"))
+		return
+	}
+
+	SendSuccessResponse(w, map[string]interface{}{"success": true})
 
 }
 

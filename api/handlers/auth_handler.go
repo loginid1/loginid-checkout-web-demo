@@ -11,12 +11,17 @@ Public handles for user authentication processes
 */
 
 import (
+	"bytes"
+	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"net/http"
 
+	"gitlab.com/loginid/software/libraries/goutil.git/logger"
 	"gitlab.com/loginid/software/services/loginid-vault/services"
 	"gitlab.com/loginid/software/services/loginid-vault/services/fido2"
 	"gitlab.com/loginid/software/services/loginid-vault/services/user"
+	"gitlab.com/loginid/software/services/loginid-vault/utils"
 )
 
 type AuthHandler struct {
@@ -145,11 +150,14 @@ func (u *AuthHandler) AuthenticateCompleteHandler(w http.ResponseWriter, r *http
 		SendErrorResponse(w, services.NewError("failed to parse request"))
 		return
 	}
+
 	response, err := u.Fido2Service.AuthenticateComplete(request.Username, request.CredentialID, request.Challenge, request.AuthenticatorData, request.ClientData, request.Signature)
 	if err != nil {
 		SendErrorResponse(w, *err)
 		return
 	}
+
+	debugRequest(request)
 	SendSuccessResponseRaw(w, response)
 }
 
@@ -239,4 +247,32 @@ func (u *AuthHandler) AddCredentialCompleteHandler(w http.ResponseWriter, r *htt
 	}
 
 	SendSuccessResponseRaw(w, response)
+}
+
+func debugRequest(request AuthenticateCompleteRequest) {
+
+	client_data, _ := utils.ConvertBase64UrlToBase64(request.ClientData)
+	logger.Global.Info(fmt.Sprintf("client_data: %s", client_data))
+	auth_data, _ := utils.ConvertBase64UrlToBase64(request.AuthenticatorData)
+	logger.Global.Info(fmt.Sprintf("auth_data: %s", auth_data))
+	sig_r, sig_s, err := utils.ConvertSignatureBase64RS(request.Signature)
+	if err != nil {
+		logger.Global.Error(err.Error())
+	}
+	logger.Global.Info(fmt.Sprintf("R: %s S: %s", sig_r, sig_s))
+	// convert challenge to byte
+	byte_challenge := []byte(request.Challenge)
+	challenge := base64.StdEncoding.EncodeToString(byte_challenge)
+	challengeb64, _ := utils.ConvertBase64UrlToBase64(request.Challenge)
+	challenge_decode, err := base64.URLEncoding.DecodeString(request.Challenge + "=")
+	if err != nil {
+		logger.Global.Error(err.Error())
+	}
+	challenge_decode_raw, _ := base64.RawURLEncoding.DecodeString(request.Challenge)
+	logger.Global.Info(fmt.Sprintf("challenge: %s", request.Challenge))
+	logger.Global.Info(fmt.Sprintf("challenge_raw: %s", challenge))
+	logger.Global.Info(fmt.Sprintf("challenge_b64: %s", challengeb64))
+	logger.Global.Info(fmt.Sprintf("challenge_decode: %#s", challenge_decode))
+	logger.Global.Info(fmt.Sprintf("challenge_decode_raw: %#s", challenge_decode_raw))
+	logger.Global.Info(fmt.Sprintf("%d %d %d %d", len(request.Challenge), len(challenge_decode), len(challenge_decode_raw), bytes.Compare(challenge_decode, challenge_decode_raw)))
 }

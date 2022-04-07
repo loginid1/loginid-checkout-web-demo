@@ -202,6 +202,91 @@ func (f *Fido2Service) AuthenticateComplete(username string, credential_id strin
 	return respBody, nil
 }
 
+func (f *Fido2Service) TransactionInit(username string, tx_payload string, tx_nonce string) ([]byte, *services.ServiceError) {
+
+	request := map[string]string{
+		"client_id":  f.clientID,
+		"username":   username,
+		"tx_type":    "text",
+		"tx_payload": tx_payload,
+		"tx_nonce":   tx_nonce,
+	}
+
+	data, err := json.Marshal(request)
+	if err != nil {
+		return nil, &services.ServiceError{Message: "transaction request binding error"}
+	}
+
+	token, err := utils.GenerateLoginApiTokenByUsername(f.apiKey, "tx.create", username, tx_payload)
+	if err != nil {
+		return nil, &services.ServiceError{Message: "transaction request permission error"}
+	}
+	response, err := f.post("api/tx/init", data, token)
+	if err != nil {
+		return nil, &services.ServiceError{Message: "transaction error"}
+	}
+
+	// handle response
+	defer response.Body.Close()
+	respBody, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return nil, &services.ServiceError{Message: "transaction error"}
+	}
+
+	if response.StatusCode != http.StatusOK {
+		msg := decodeError(respBody)
+		return nil, &services.ServiceError{Message: msg.Message}
+	}
+	return respBody, nil
+}
+
+func (f *Fido2Service) TransactionComplete(username string, tx_id string, credential_id string, challenge string, authenticator_data string, client_data string, signature string) ([]byte, *services.ServiceError) {
+
+	/*
+		assertion_payload := map[string]string{
+			"credential_id":      credential_id,
+			"challenge":          challenge,
+			"authenticator_data": authenticator_data,
+			"signature":          signature,
+			"client_data":        client_data,
+		}
+	*/
+	request := map[string]interface{}{
+		"client_id":   f.clientID,
+		"tx_id":       tx_id,
+		"username":    username,
+		"key_handle":  credential_id,
+		"challenge":   challenge,
+		"auth_data":   authenticator_data,
+		"client_data": client_data,
+		"sign_data":   signature,
+	}
+
+	//logger.Global.Debug(fmt.Sprintf("fido2: %#v", request))
+	data, err := json.Marshal(request)
+	if err != nil {
+		return nil, &services.ServiceError{Message: "transaction request error"}
+	}
+
+	response, err := f.post("api/tx/complete", data, "")
+	if err != nil {
+		return nil, &services.ServiceError{Message: "transaction error"}
+	}
+
+	// handle response
+	defer response.Body.Close()
+	respBody, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return nil, &services.ServiceError{Message: "transaction response error"}
+	}
+
+	if response.StatusCode != http.StatusOK {
+		msg := decodeError(respBody)
+		return nil, &services.ServiceError{Message: msg.Message}
+	}
+	return respBody, nil
+}
+
 func (f *Fido2Service) GenerateCode(userID string) ([]byte, *services.ServiceError) {
 
 	request := map[string]interface{}{

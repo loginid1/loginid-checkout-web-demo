@@ -71,6 +71,32 @@ func (u *UserService) GetCredentialList(username string) ([]UserCredential, *ser
 	return credentialList, nil
 }
 
+func (u *UserService) GenerateRecoveryInit(username string) (string, *UserRecovery, *services.ServiceError) {
+	account := crypto.GenerateAccount()
+	fmt.Printf("account address: %s\n", account.Address)
+
+	m, err := mnemonic.FromPrivateKey(account.PrivateKey)
+	if err != nil {
+		return "", nil, services.CreateError("failed to generate recovery")
+	}
+
+	recovery := UserRecovery{PublicKey: account.Address.String()}
+	return m, &recovery, nil
+}
+
+func (u *UserService) GenerateRecoveryComplete(username string, public_key string) *services.ServiceError {
+
+	// store address (public key ) to user database
+	recovery := UserRecovery{PublicKey: public_key}
+
+	err := u.UserRepository.SaveRecovery(username, recovery)
+	if err != nil {
+		return services.CreateError("failed to create recovery")
+	}
+
+	return nil
+}
+
 // create a backup recovery in ed25519 format (same as algorand account)
 // return mnemonic phrases
 func (u *UserService) CreateRecovery(username string) (string, *UserRecovery, *services.ServiceError) {
@@ -90,7 +116,6 @@ func (u *UserService) CreateRecovery(username string) (string, *UserRecovery, *s
 		return "", nil, services.CreateError("failed to create recovery")
 	}
 
-	fmt.Printf("backup phrase = %s\n", m)
 	return m, &recovery, nil
 }
 

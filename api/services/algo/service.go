@@ -3,6 +3,8 @@ package algo
 import (
 	"strings"
 
+	algo_crypto "github.com/algorand/go-algorand-sdk/crypto"
+	"github.com/algorand/go-algorand-sdk/types"
 	"gitlab.com/loginid/software/libraries/goutil.git/logger"
 	"gitlab.com/loginid/software/services/loginid-vault/services"
 	"gitlab.com/loginid/software/services/loginid-vault/services/user"
@@ -108,10 +110,72 @@ func (algo *AlgoService) GenerateFido2Signature(credentialList []string, recover
 
 }
 
+func (algo *AlgoService) QuickAccountCreation(username string, recovery_pk string) (*AlgoAccount, *services.ServiceError) {
+	// get script from credential_list and recovery
+
+	credentials, err := algo.UserRepository.GetCredentialsByUsername(username)
+	if err != nil {
+		logger.Global.Error(err.Error())
+		return nil, services.CreateError("failed to retrieve credential")
+	}
+
+	credential_id_list := extractCredentialIDs(credentials)
+	credential_list := extractCredentialPKs(credentials)
+
+	recovery := user.UserRecovery{PublicKey: recovery_pk}
+	// save recovery public key
+	err = algo.UserRepository.SaveRecovery(username, recovery)
+	if err != nil {
+		logger.Global.Error(err.Error())
+		return nil, services.CreateError("failed to setup recovery")
+	}
+
+	contractAccount, err := algo.AlgoNet.GenerateContractAccount(credential_list, recovery_pk)
+	if err != nil {
+		logger.Global.Error(err.Error())
+		return nil, services.CreateError("failed to generate Algorand account")
+	}
+
+	// create AlgoAccount
+	account := AlgoAccount{
+		Alias:           contractAccount.Address,
+		Address:         contractAccount.Address,
+		TealScript:      contractAccount.TealScript,
+		CompileScript:   contractAccount.CompileScript,
+		CredentialsID:   convertStringArrayToText(credential_id_list),
+		CredentialsPK:   convertStringArrayToText(credential_list),
+		RecoveryAddress: recovery_pk,
+		AccountStatus:   "new",
+	}
+
+	err = algo.AlgoRepository.AddAlgoAccount(username, &account)
+	if err != nil {
+		logger.Global.Error(err.Error())
+		return nil, services.CreateError("create Algorand account error")
+	}
+	return &account, nil
+}
+
+func (algo *AlgoService) CheckUserDappConsent(username string, origin string, sender string) bool {
+	return true
+}
+
+func (algo *AlgoService) GetTransactionID(txn types.Transaction) string {
+	return algo_crypto.GetTxID(txn)
+}
+
 func extractCredentialPKs(credentials []user.UserCredential) []string {
 	var credList []string
 	for _, cred := range credentials {
 		credList = append(credList, cred.PublicKey)
+	}
+	return credList
+}
+
+func extractCredentialIDs(credentials []user.UserCredential) []string {
+	var credList []string
+	for _, cred := range credentials {
+		credList = append(credList, cred.ID)
 	}
 	return credList
 }

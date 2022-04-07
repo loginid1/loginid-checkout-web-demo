@@ -112,3 +112,26 @@ func extractCredentialsName(credentials []user.UserCredential) []string {
 	}
 	return name
 }
+
+type QuickAccountCreationRequest struct {
+	PublicKey string `json:"public_key"`
+}
+
+func (h *AlgoHandler) QuickAccountCreationHandler(w http.ResponseWriter, r *http.Request) {
+
+	var request QuickAccountCreationRequest
+	defer r.Body.Close()
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		SendErrorResponse(w, services.NewError("failed to parse request"))
+		return
+	}
+	session := r.Context().Value("session").(UserSession)
+
+	account, err := h.AlgoService.QuickAccountCreation(session.Username, request.PublicKey)
+
+	if err != nil {
+		SendErrorResponse(w, *err)
+		return
+	}
+	SendSuccessResponse(w, account)
+}
