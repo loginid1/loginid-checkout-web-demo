@@ -15,13 +15,11 @@ The vault is an online web-app with the following main components:
 
 1.0 - user registration and authorization 
 2.0 - user account management
-3.0 - user transaction confirmation
-4.0 - dApp transaction SDK REST api 
+3.0 - user transaction confirmation 
 
-
+<div style="page-break-after: always;"></div>
 
  ##### 1.0 User registration and authorization component
-
 
 ![image](1_1_registration.svg "=100%x100%")
  
@@ -50,7 +48,14 @@ Once registration is completed, a user can sign back to the vault at any time us
 
 This component has many feature-sets and is only accessible after the user performed authentication with their FIDO2 device.
 
-Here are the main feature-sets:
+For the first time user, the vault will present "Quick Algorand" account setup widget.
+
+![image](2_0_quick_creation.svg "=100%x100%")
+
+2.0.1) prompt user to create Algorand account based on their FIDO credential.
+2.0.2) show user the recovery address and key (mnemonic phrases) as a backup to their FIDO credential 
+2.0.3) show the Algorand Address and its teal script based on user FIDO key and recovery key 
+
 
 ###### 2.1 - Home and statistics (2.2)
 
@@ -116,19 +121,34 @@ Once all the fields are selected, a preview display of the TEAL scripts generate
 
 User can sign transactions with the account once they had funded a minimum amount of 1 Algo.  Once the user had deposit (TBD method) the minimum requirement to use the account, they can choose to "Activate" the account within the vault to be used as a default transaction account.  
 
-In addition, there will be option for user to participate in the [Algorand Consensus Protocol](https://developer.algorand.org/docs/run-a-node/participate/).  This action requires FIDO2 transaction confirmation in order to authorize a **keyreg** transaction on the blockchain.
-
 2.4.4 - Rekey Account 
 
 This page allows user to rekey an active account to a different non-active account while maintaining activate account address and balance.  Usually it is performed in event of adding or deprecating devices relating to the current active account.  This action requires FIDO2 transaction confirmation in order to authorize a **rekey** transaction on the blockchain.
 
 ##### 3.0 User transaction confirmation
 
-Once the user had an active Algorand account setup they can start authorizing transactions with dApp that integrated with the Vault transaction SDK defined in section 4.0.
+Once the user had an active Algorand account they can start authorizing transactions with dApp that integrated with the Vault defined in the transaction SDK of the Design Overview section.
 
-Here are the type of transactions that is supported by the vault:
+3.1 User's consent/discovery call (Enable)
 
-* Payment - send algo to another account
+In order for the dApp to make any network transaction call with the user's vault.  The dApp is required to establish user's consent.  This call allows the dApp to request permission to access user's Algorand accounts based on a specific network type such as mainnet, testnet, etc).  This transaction is called `enable` which follows the guideline defined by [ARC-0006](https://github.com/algorandfoundation/ARCs/blob/main/ARCs/arc-0006.md).
+
+![image](3_1_user_consent.svg "=100%x100%")
+
+1) The `enable` call opened a popup window to the Vault site.  If the user doesn't have an active login session then it will redirect to the login screen in 3.1.1.  Upon a successful logon, the vault presents the consent screen to user (3.1.2).
+
+2) User selects a list of active Algorand accounts from the Vault that they wanted to interact with the dApp.
+
+3.2 User's transaction confirmation 
+
+Once the dApp discovered user's Algorand account, the dApp can construct any set of transaction requests to the Vault for signing (`signTxns`) and posting (`signAndPostTxns`).
+
+* The signing transaction will follow [ARC-0001](https://github.com/algorandfoundation/ARCs/blob/main/ARCs/arc-0001.md) guidelines. 
+* The posting transaction will follow [ARC-0008](https://github.com/algorandfoundation/ARCs/blob/main/ARCs/arc-0008.md) guidelines.
+
+For the initial release phase, the vault will support a single transaction request and filtered the transaction based on the following types.  
+
+* Payment - send Algo to another account
 * Asset transfer - send any user owned asset to another account
 * dApp opt-in - allows users to consent to dApp opt-in transactions
 * dApp call - allows users to invoke method on the dApp
@@ -136,258 +156,15 @@ Here are the type of transactions that is supported by the vault:
 Here is a typical flow for a user transaction interaction with the vault:
 
 
-![image](3_0_transaction_confirmation.svg "=100%x100%")
+![image](3_2_transaction_confirmation.svg "=100%x100%")
 
 1) User interacts with dApp site ready to make a transaction with the dApp with their vault account
-2) dApp build payload is defined in the SDK (section 4.0) to redirect user to the Vault transaction confirmation page (3.0)
-3) User validates the transaction info (3.1.1) and selects an active account to authorize the transaction (3.1.2).  Once a user has selected an account a detail transaction payload (3.1.3) is shown that will be submitted to the Algorand network.
-    * By default, the Vault detected the user account based on their saved token stored on browser storage
-    * If there is no token stored, the vault will prompt the user to enter username and FIDO2 authentication to retrieve the active Algorand account 
+2) dApp build payload is defined in the SDK and redirect user to the Vault transaction confirmation page (3.2)
+3) User validates the transaction info (3.2.3) and signing detail (3.2.2).  
 4) User performs FIDO2 authentication to sign the transaction.  
-5) Vault will submit the transaction to the block with the FIDO2 signature data obtained from the user device and confirm the success or failure of the transaction.  Vault redirects the user back to the dApp site with the result of the transaction.
+5) For a posting transaction `signAndPostTxns`, the vault will submit the transaction to the blockchain with the FIDO2 signature data obtained from the user device and confirm the success or failure of the transaction by returning the txnID.  The vault returns the user back to the dApp site with the result of the transaction.
 
-!!!note 3.1.3 - The transaction detail may include rating/warning for dApp transaction in future based risk assessment.
-
-##### 4.0 dApp transaction SDK
-
-The vault will support the following transaction SDK request by any dApp (describe in section 3.0). 
-
-###### 4.1 - Payment request
-
-4.1.1 request fields:
-
-path: /api/transaction/request
-
-|*Field Name*|*Description*|
-|----|----|
-|type|payment|
-|receiver| receiver address (rcv) |
-|amount| amount in micro Algo(amt) |
-|request-id| unique id associate with this request (lease) |
-|note| optional note to add to the transaction |
-|callback| url to callback after transaction result |
-
-``` json
-    {
-        "type": "payment",
-        "reciever": "GD64YIY3TWGDMCNPP553DZPPR6LDUSFQOIJVFDPPXWEG3FVOJCCDBBHU5A",
-        "amount": 5000000,
-        "note": "SGVsbG8gV29ybGQ=",
-        "request-id": "72635909-294e-4b0a-8776-6ee1ef26fbc0",
-        "callback":"https://example.com/my-store/"
-
-    }
-```
-
-4.1.2 response fields:
-
-|*Field Name*|*Description*|
-|----|----|
-|txid| transaction ID of the request |
-|request-id| return request id associate with this transaction |
-|status| success or error status of the request |
-|error| error message if system or chain error occured|
-|payload| detail of transaction payload submitted to the chain |
-
-
-```json
-{
-    "status":"success",
-    "txid":"X84ReKTmp+yfgmMCbbokVqeFFF..............",
-    "request-id": "72635909-294e-4b0a-8776-6ee1ef26fbc0",
-    "payload": {"txn": {
-        "amt": 5000000,
-        "fee": 1000,
-        "fv": 6000000,
-        "gen": "mainnet-v1.0",
-        "gh": "wGHE2Pwdvd7S12BL5FaOP20EGYesN73ktiC1qzkkit8=",
-        "lv": 6001000,
-        "note": "SGVsbG8gV29ybGQ=",
-        "rcv": "GD64YIY3TWGDMCNPP553DZPPR6LDUSFQOIJVFDPPXWEG3FVOJCCDBBHU5A",
-        "snd": "EW64GC6F24M7NDSC5R3ES4YUVE3ZXXNMARJHDCCCLIHZU6TBEOC7XRSBG4",
-        "type": "pay"
-    }}
-}
-```
-
-###### 4.2 - Asset transfer request
-
-4.2.1 request fields:
-
-path: /api/transaction/request
-
-|*Field Name*|*Description*|
-|----|----|
-|type|asset-transfer type|
-|receiver| receiver address (rcv) |
-|asset-id | asset ID from user account to transfer |
-|amount| unit amount of asset to transfer |
-|request-id| unique id associate with this request |
-|note| optional note to add to the transaction |
-|callback| url to callback after transaction result |
-
-``` json
-    {
-        "type": "asset-transfer"
-        "reciever": "GD64YIY3TWGDMCNPP553DZPPR6LDUSFQOIJVFDPPXWEG3FVOJCCDBBHU5A"
-        "asset-id": 168103
-        "amount": 1000
-        "request-id": "72635909-294e-4b0a-8776-6ee1ef26fbc0"
-        "callback":"https://example.com/my-store/"
-    }
-```
-
-4.2.2 response fields:
-
-|*Field Name*|*Description*|
-|----|----|
-|txid| transaction ID of the request |
-|request-id| return request id associate with this transaction |
-|status| success or error status of the request |
-|error| error message if system or chain error occured|
-|payload| detail of transaction payload submitted to the chain |
-
-
-```json
-{
-    "status":"success"
-    "txid":"X84ReKTmp+yfgmMCbbokVqeFFF.............."
-    "request-id": "72635909-294e-4b0a-8776-6ee1ef26fbc0"
-    "payload": {"txn": 
-        {
-            "aamt": 1000,
-            "arcv": "QC7XT7QU7X6IHNRJZBR67RBMKCAPH67PCSX4LYH4QKVSQ7DQZ32PG5HSVQ",
-            "fee": 3000,
-            "fv": 7631196,
-            "gh": "SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI=",
-            "lv": 7632196,
-            "snd": "EW64GC6F24M7NDSC5R3ES4YUVE3ZXXNMARJHDCCCLIHZU6TBEOC7XRSBG4",
-            "type": "axfer",
-            "xaid": 168103
-        }
-    }
-}
-```
-
-###### 4.3 - dApp opt-in request
-
-4.3.1 request fields:
-
-path: /api/transaction/request
-
-|*Field Name*|*Description*|
-|----|----|
-|type|dapp-register|
-|app-id | app ID for user to opt-in |
-|request-id| unique id associate with this request |
-|note| optional note to add to the transaction |
-|callback| url to callback after transaction result |
-
-``` json
-    {
-        "type": "dapp-register"
-        "app-id": 1337
-        "request-id": "72635909-294e-4b0a-8776-6ee1ef26fbc0"
-        "callback":"https://example.com/my-store/"
-    }
-```
-
-4.3.2 response fields:
-
-|*Field Name*|*Description*|
-|----|----|
-|txid| transaction ID of the request |
-|request-id| return request id associate with this transaction |
-|status| success or error status of the request |
-|error| error message if system or chain error occured|
-|payload| detail of transaction payload submitted to the chain |
-
-
-```json
-{
-    "status":"success"
-    "txid":"X84ReKTmp+yfgmMCbbokVqeFFF.............."
-    "request-id": "72635909-294e-4b0a-8776-6ee1ef26fbc0"
-    "payload": {"txn": 
-        {
-            "apan": 1,
-            "apid": 1337,
-            "fee": 1000,
-            "fv": 13010,
-            "gh": "ALXYc8IX90hlq7olIdloOUZjWfbnA3Ix1N5vLn81zI8=",
-            "lv": 14010,
-            "note": "SEQpWAYkzoU=",
-            "snd": "LNTMAFSF43V7RQ7FBBRAWPXYZPVEBGKPNUELHHRFMCAWSARPFUYD2A623I",
-            "type": "appl"
-        }
-    }
-}
-```
-###### 4.4 - dApp call
-
-4.4.1 request fields:
-
-path: /api/transaction/request
-
-|*Field Name*|*Description*|
-|----|----|
-|type|dapp-call|
-|app-id | application ID |
-|app-args | application arguments  |
-|app-account | application account address  |
-|app-fasset | application foreign asset  |
-|app-fapp | application foreign app  |
-|request-id| unique ID associate with this request |
-|note| optional note to add to the transaction |
-|callback| url to callback after transaction result |
-
-``` json
-    {
-        "type": "app-call"
-        "app-id": 1337
-        "app-args": [
-            "ZG9jcw==",
-            "AAAAAAAAAAE="
-            ]
-        "request-id": "72635909-294e-4b0a-8776-6ee1ef26fbc0"
-        "callback":"https://example.com/my-store/"
-    }
-```
-
-4.4.2 response fields:
-
-|*Field Name*|*Description*|
-|----|----|
-|txid| transaction ID of the request |
-|request-id| return request id associate with this transaction |
-|status| success or error status of the request |
-|error| error message if system or chain error occured|
-|payload| detail of transaction payload submitted to the chain |
-
-
-```json
-{
-    "status":"success"
-    "txid":"X84ReKTmp+yfgmMCbbokVqeFFF.............."
-    "request-id": "72635909-294e-4b0a-8776-6ee1ef26fbc0"
-    "payload": {"txn": 
-        {
-            "apaa": [
-            "ZG9jcw==",
-            "AAAAAAAAAAE="
-            ],
-            "apid": 1337,
-            "fee": 1000,
-            "fv": 13376,
-            "gh": "ALXYc8IX90hlq7olIdloOUZjWfbnA3Ix1N5vLn81zI8=",
-            "lv": 14376,
-            "note": "vQXvgqySYPY=",
-            "snd": "LNTMAFSF43V7RQ7FBBRAWPXYZPVEBGKPNUELHHRFMCAWSARPFUYD2A623I",
-            "type": "appl"
-        }
-    }
-}
-```
+<div style="page-break-after: always;"></div>
 
 #### Design Overview
 
@@ -418,57 +195,141 @@ To create an Algorand account the user chooses any combination of the FIDO crede
 
 ```python
 from pyteal import *
+from inlineasm import *
 
-def verify_fido(pk,signature,clientData,authData,server_challenge):
-    challenge = Concat(Txn.tx_id(),Txn.lease(),server_challenge)
-    compute_challenge = base64url(challenge)
-    extract_challenge = json_extract(clientData,"challenge"
-    message = Concat(authData, Sha256(clientData))
-    return And(compute_challenge == extract_challenge, Ecc_Verify(message,signature,Addr(pk)))
+def verify_fido(pk_x,pk_y,sig_r,sig_s,clientData,authData,server_challenge):
+    compute_challenge = Sha256(Concat(Txn.tx_id(),Txn.lease(),server_challenge))
+    extract_challenge = InlineAssembly("json_ref JSONString", clientData, Bytes("challenge"), type = TealType.bytes)
+    padded_extract_challenge = Concat(extract_challenge,Bytes("="))
+    decode_challenge = InlineAssembly("base64_decode URLEncoding", padded_extract_challenge, type = TealType.bytes)
+    message = Sha256(Concat(authData, Sha256(clientData)))
+    # verify ecdsa
+    verify = InlineAssembly("ecdsa_verify Secp256r1", message,  sig_r, sig_s, Bytes("base64", pk_x),Bytes("base64",pk_y),   type=TealType.uint64)
+    return And( decode_challenge == compute_challenge, verify)
 
 def verify_recovery(public_key, signature):
-    return And(Txn.type_enum() == TxnType.KeyRegistration , Ed25519Verify(Txn.tx_id(), signature, Addr(public_key)))
+    return Ed25519Verify(Txn.tx_id(), signature, Addr(public_key))
 
-def fido_signature(fido2_pk1,fido2_pk2,recovery_pk):
-
-    signature = Arg(0)
-    clientData = Arg(1)
-    authData = Arg(2)
-    server_challenge = Arg(3)
+def fido_signature(fido_pk1x,fido_pk1y,fido_pk2x, fido_pk2y, recovery_pk):
     
-
+    sig1 = Arg(0)
+    sig2 = Arg(1)
+    clientData = Arg(2)
+    authData = Arg(3)
+    server_challenge = Arg(4)
     return (
-        If(verify_fido(fido2_pk1,signature, clientData, authData, server_challenge))
-        .Then(Int(1)) # exit success if fido2_pk1 successful
-        .ElseIf(verify_fido(fido2_pk2,signature,clientData, authData, server_challenge))
+        If(verify_fido(fido_pk1x,fido_pk1y,sig1, sig2, clientData, authData, server_challenge))
+        .Then(Int(1)) # exit success if fido_pk1 successful
+        .ElseIf(verify_fido(fido_pk2x,fido_pk2y,sig1, sig2, clientData, authData, server_challenge))
         .Then(Int(1)) # exit success if fido2_pk2 successful
-        .ElseIf(verify_recovery(recovery_pk,signature))
+        .ElseIf(verify_recovery(recovery_pk,sig1))
         .Then(Int(1)) # exit success if recovery successful
         .Else(Int(0)) # exit fail
     )
 
-
-
 if __name__ == "__main__":
-    fido_1_template   = "AAAAA55555AAAAA55555AAAAA55555AAAAA55555AAAAA55555222244AO"
-    fido_2_template   = "BBBBB55555BBBBB55555BBBBB55555BBBBB55555BBBBB5555522224444"
-    recovery_template = "RRRRR55555RRRRR55555RRRRR55555RRRRR55555RRRRR5555522224444"
-
+    fido_1_x   = "FIDO1111XXXX"
+    fido_1_y   = "FIDO1111YYYY"
+    fido_2_x   = "FIDO2222XXXX"
+    fido_2_y   = "FIDO2222YYYY"
+    recovery_template = "RECOVERY_PK_PLACEHOLDER"
     program = fido_signature(
-        fido_1_template, fido_2_template, recovery_template
+        fido_1_x,fido_1_y, fido_2_x, fido_2_y, recovery_template
     )
-    print(compileTeal(program, mode=Mode.Signature, version=3))
+    print(compileTeal(program, mode=Mode.Signature, version=7))
+```
+
+The pyTEAL script is compiled and then presented to user for preview. 
+
+
+###### Transaction Confirmation SDK
+
+The vault will provide a public Typescript SDK for making dApp transactions.  Here are the APIs supported by the SDK described in use cases section 3.0: 
+
+*  `enable` - an account discovery function which returns the list of account address authorized by user's vault 
+*  `signTxns` - a transaction signing request function which returns the signed transaction in msgpack encoding
+*  `signAndPostTxns` - a transaction posting request function which returns the successful transaction ID 
+
+``` javascript
+class VaultSDK {
+
+    async enable(network: EnableOpts): Promise<EnableResult | null>  {
+        /*....*/
+    }
+
+    async signTxns(txns: WalletTransaction[], opts?: SignTxnsOpts): Promise<(PostTxnsResult | null)[]> {
+        /*....*/
+    }
+
+    async signAndPostTxns(txns: WalletTransaction[], opts?: SignTxnsOpts): Promise<(PostTxnsResult | null)[]> {
+        /*....*/
+    }
+}   
+```
+
+```javascript
+export interface EnableOpts  {
+    network?: string;
+    genesisID?: string;
+    genesisHash?: string;
+}
+export interface EnableResult {
+    genesisID: string;
+    genesisHash: string;
+    accounts: AlgorandAddress[];
+}
+export type SignTxnsOpts = {
+    message?: string;
+}
+export interface PostTxnsResult {
+    txnIds: TxnId[];
+    signTxn: string[];
+}
+export interface WalletTransaction {
+    /**
+     * Base64 encoding of the canonical msgpack encoding of a Transaction.
+     */
+   txn: string;
+   message?: string;
+ }
 
 ```
 
-The script is compiled and then presented to user for preview. 
+###### Sample Usage from dApp
 
-!!!note: Some opcodes are still in development.  Hence, these arguments may change.
+```javascript
+// reference from ARC-0010 (https://github.com/algorandfoundation/ARCs/blob/main/ARCs/arc-0010.md)
 
-###### Transaction Confirmation
+async function main(wallet) {
 
-Here are the sequence flow of a transaction confirmation.  The dApp required to redirect user to vault using the SDK provided under the use cases section 4. 
+  // let wallet = new VaultSDK();
+  // Account discovery
+  const enabled = await wallet.enable({network: 'testnet-v1.0'});
+  const from = enabled.accounts[0];
+
+  // Querying
+  const algodv2 = new algosdk.Algodv2(await wallet.getAlgodv2());
+  const suggestedParams = await algodv2.getTransactionParams().do();
+  const txns = makeTxns(from, suggestedParams);
+
+  // Sign and post
+  const res = await wallet.signAndPostTxns(txns);
+  console.log(res);
+
+}
+```
+
+In the sign and post `signAndPostTxns` api call, the following sequence diagram demonstrates the interaction between the user and the dApp.  
 
 ![image](transaction_sequence.svg "=100%x100%")
 
-The dApp sends the user to the Vault with the request payload according to the SDK.  At the transaction confirmation page, certain key fields will be highlighted to make sure users agree to the transaction.  For example in a payment request, the vault will highlight the amount and the receiver's address where it will highlight the appID and callback origin for the opt-in transaction.
+1) The user agrees to partake in smart contract created by dDapp.
+2) The dApp creates the opt-in transaction payload and submit using the `signAndPostTxns` api.  This result in a popup window to the vault's transaction confirmation.
+3) The vault decodes and validates the transaction payload to make sure the transaction is safe and presents the breakdown view of the expected transaction.  In this case, it will highlight the appID, creator address and type (opt-in) of this transaction payload.
+4) Upon confirmation, the user will receive a FIDO biometric prompt.
+5) Vault relay the FIDO signing data to backend FIDO server for validation
+6) The vault extracts signing data and build the transaction logic signature and submits to the blockchain.
+7) The result of the transaction is return to the dApp. 
+
+
+

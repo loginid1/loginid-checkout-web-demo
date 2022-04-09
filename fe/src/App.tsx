@@ -11,6 +11,7 @@ import { AuthService } from './services/auth';
 import ManageCredential from './routes/protected/ManageCredential';
 import ManageAlgorand from './routes/protected/ManageAlgorand';
 import CreateAlgorand from './routes/protected/CreateAlgorand';
+import AlgoTransaction from './routes/protected/AlgoTransaction';
 
 
 
