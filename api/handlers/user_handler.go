@@ -23,7 +23,7 @@ type CredentialListResponse struct {
 
 func (u *UserHandler) GetCredentialListHandler(w http.ResponseWriter, r *http.Request) {
 
-	session := r.Context().Value("session").(UserSession)
+	session := r.Context().Value("session").(services.UserSession)
 	credentials, err := u.UserService.GetCredentialList(session.Username)
 	if err != nil {
 		SendErrorResponse(w, services.NewError("no credential found"))
@@ -34,7 +34,7 @@ func (u *UserHandler) GetCredentialListHandler(w http.ResponseWriter, r *http.Re
 }
 
 func (u *UserHandler) GetUserProfileHandler(w http.ResponseWriter, r *http.Request) {
-	session := r.Context().Value("session").(UserSession)
+	session := r.Context().Value("session").(services.UserSession)
 	profile, err := u.UserService.GetProfile(session.Username)
 	if err != nil {
 		SendErrorResponse(w, services.NewError("no profile found"))
@@ -51,7 +51,7 @@ type RecoveryPhrase struct {
 }
 
 func (u *UserHandler) CreateRecoveryHandler(w http.ResponseWriter, r *http.Request) {
-	session := r.Context().Value("session").(UserSession)
+	session := r.Context().Value("session").(services.UserSession)
 	mnemonic, recovery, err := u.UserService.CreateRecovery(session.Username)
 	if err != nil {
 		SendErrorResponse(w, services.NewError("fail to create mnemonic recovery code"))
@@ -65,7 +65,7 @@ func (u *UserHandler) CreateRecoveryHandler(w http.ResponseWriter, r *http.Reque
 }
 
 func (u *UserHandler) GenerateRecoveryInitHandler(w http.ResponseWriter, r *http.Request) {
-	session := r.Context().Value("session").(UserSession)
+	session := r.Context().Value("session").(services.UserSession)
 	mnemonic, recovery, err := u.UserService.GenerateRecoveryInit(session.Username)
 	if err != nil {
 		SendErrorResponse(w, services.NewError("fail to create mnemonic recovery code"))
@@ -83,7 +83,7 @@ type GenerateRecoveryCompleteRequest struct {
 }
 
 func (u *UserHandler) GenerateRecoveryCompleteHandler(w http.ResponseWriter, r *http.Request) {
-	session := r.Context().Value("session").(UserSession)
+	session := r.Context().Value("session").(services.UserSession)
 	var request GenerateRecoveryCompleteRequest
 	defer r.Body.Close()
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
@@ -106,7 +106,7 @@ type RecoveryListResponse struct {
 }
 
 func (u *UserHandler) GetRecoveryListHandler(w http.ResponseWriter, r *http.Request) {
-	session := r.Context().Value("session").(UserSession)
+	session := r.Context().Value("session").(services.UserSession)
 	recovery, err := u.UserService.GetRecoveryList(session.Username)
 	if err != nil {
 		SendErrorResponse(w, services.NewError("no recovery found"))
@@ -117,7 +117,7 @@ func (u *UserHandler) GetRecoveryListHandler(w http.ResponseWriter, r *http.Requ
 }
 
 func (u *UserHandler) GenerateCredentialCodeHandler(w http.ResponseWriter, r *http.Request) {
-	session := r.Context().Value("session").(UserSession)
+	session := r.Context().Value("session").(services.UserSession)
 
 	response, err := u.Fido2Service.GenerateCode(session.UserID)
 	if err != nil {

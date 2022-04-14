@@ -34,7 +34,7 @@ type AccountListResponse struct {
 
 func (h *AlgoHandler) GetAccountListHandler(w http.ResponseWriter, r *http.Request) {
 
-	session := r.Context().Value("session").(UserSession)
+	session := r.Context().Value("session").(services.UserSession)
 	accounts, err := h.AlgoService.GetAccountList(session.Username)
 	if err != nil {
 		SendErrorResponse(w, services.NewError("no account found"))
@@ -71,7 +71,7 @@ func (h *AlgoHandler) CreateAccountHandler(w http.ResponseWriter, r *http.Reques
 		SendErrorResponse(w, services.NewError("failed to parse request"))
 		return
 	}
-	session := r.Context().Value("session").(UserSession)
+	session := r.Context().Value("session").(services.UserSession)
 
 	err := h.AlgoService.CreateAccount(session.Username, request.VerifyAddress, request.CredentialIDList, request.Recovery)
 
@@ -125,7 +125,7 @@ func (h *AlgoHandler) QuickAccountCreationHandler(w http.ResponseWriter, r *http
 		SendErrorResponse(w, services.NewError("failed to parse request"))
 		return
 	}
-	session := r.Context().Value("session").(UserSession)
+	session := r.Context().Value("session").(services.UserSession)
 
 	account, err := h.AlgoService.QuickAccountCreation(session.Username, request.PublicKey)
 

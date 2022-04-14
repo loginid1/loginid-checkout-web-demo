@@ -5,12 +5,12 @@ import (
 	"net/http"
 
 	"github.com/algorand/go-algorand-sdk/encoding/msgpack"
-	"github.com/loginid1/authn-service/util"
 	"gitlab.com/loginid/software/libraries/goutil.git/logger"
 	"gitlab.com/loginid/software/services/loginid-vault/services"
 	"gitlab.com/loginid/software/services/loginid-vault/services/algo"
 	"gitlab.com/loginid/software/services/loginid-vault/services/fido2"
 	"gitlab.com/loginid/software/services/loginid-vault/services/user"
+	"gitlab.com/loginid/software/services/loginid-vault/utils"
 )
 
 type DappHandler struct {
@@ -59,8 +59,9 @@ func (h *DappHandler) TxConnectHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// check Lease if not inject Lease value
-	nonce := util.GenerateRandomString(32)
-	txn.AddLease(nonce)
+	nonce, _ := utils.GenerateRandomString(32)
+	//txn.AddLeaseWithFlatFee()
+	//txn.AddLease([]byte(nonce))
 
 	id := h.AlgoService.GetTransactionID(*txn)
 	response := TxConnectResponse{
