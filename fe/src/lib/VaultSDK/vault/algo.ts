@@ -27,6 +27,12 @@ export interface AlgoAccountCreationRequest {
     recovery: string;
 }
 
+export interface EnableRequest {
+    address_list: string [];
+    origin: string;
+    network: string;
+}
+
 export class VaultAlgo extends Base{
 
     async getAccountList(token: string) : Promise<AccountList> {
@@ -51,11 +57,20 @@ export class VaultAlgo extends Base{
 
     async generateScript(token: string, credentials: string[], recovery: string) : Promise<ContractAccount> {
         const header = { "x-session-token": token };
-        console.log(credentials, " ", recovery);
         return await utils.http.post(
             this._baseURL,
             "/api/protected/algo/generateScript",
             {credential_list: credentials, recovery: recovery},
+            header
+        );
+    }
+
+    async enable(token: string, address_list: string[], origin: string, network: string) : Promise<boolean> {
+        const header = { "x-session-token": token };
+        return await utils.http.post(
+            this._baseURL,
+            "/api/wallet/enable",
+            {address_list: address_list, origin: origin, network: network},
             header
         );
     }

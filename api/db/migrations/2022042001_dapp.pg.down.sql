@@ -1,0 +1,3 @@
+BEGIN;
+DROP TABLE IF EXISTS enable_accounts CASCADE; 
+COMMIT;

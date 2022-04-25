@@ -142,3 +142,13 @@ func (repo *UserRepository) GetRecoveryByUsername(username string) ([]UserRecove
 	}
 	return recovery, nil
 }
+
+func (repo *UserRepository) GetUserByUsername(username string) (*User, error) {
+
+	var user User
+	err := repo.DB.Where("users.username = ? ", username).Find(&user).Error
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
+}

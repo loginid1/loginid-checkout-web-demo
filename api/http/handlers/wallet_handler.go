@@ -6,6 +6,8 @@ import (
 
 	"github.com/algorand/go-algorand-sdk/encoding/msgpack"
 	"gitlab.com/loginid/software/libraries/goutil.git/logger"
+	http_common "gitlab.com/loginid/software/services/loginid-vault/http/common"
+	"gitlab.com/loginid/software/services/loginid-vault/http/middlewares"
 	"gitlab.com/loginid/software/services/loginid-vault/services"
 	"gitlab.com/loginid/software/services/loginid-vault/services/algo"
 	"gitlab.com/loginid/software/services/loginid-vault/services/fido2"
@@ -13,10 +15,11 @@ import (
 	"gitlab.com/loginid/software/services/loginid-vault/utils"
 )
 
-type DappHandler struct {
+type WalletHandler struct {
 	UserService  *user.UserService
 	Fido2Service *fido2.Fido2Service
 	AlgoService  *algo.AlgoService
+	AuthService  *middlewares.AuthService
 }
 
 type TxConnectRequest struct {
@@ -34,27 +37,27 @@ type TxConnectResponse struct {
 * TxConnectHandler parse and validate raw transaction payload for signing
 *
  */
-func (h *DappHandler) TxConnectHandler(w http.ResponseWriter, r *http.Request) {
+func (h *WalletHandler) TxConnectHandler(w http.ResponseWriter, r *http.Request) {
 	session := r.Context().Value("session").(services.UserSession)
 
 	// check if session available
 	var request TxConnectRequest
 	defer r.Body.Close()
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		SendErrorResponse(w, services.NewError("failed to parse request"))
+		http_common.SendErrorResponse(w, services.NewError("failed to parse request"))
 		return
 	}
 
 	txn, err := algo.ParseTransaction(request.TxRawPayload)
 	if err != nil {
 		logger.ForRequest(r).Error(err.Error())
-		SendErrorResponse(w, services.NewError("invalid transaction format request"))
+		http_common.SendErrorResponse(w, services.NewError("invalid transaction format request"))
 		return
 	}
 	// check if sender origin has permission to user consent
 	allow := h.AlgoService.CheckUserDappConsent(session.Username, request.origin, txn.Sender.String())
 	if !allow {
-		SendErrorResponse(w, services.NewError("dapp transaction is not allowed"))
+		http_common.SendErrorResponse(w, services.NewError("dapp transaction is not allowed"))
 		return
 	}
 
@@ -69,7 +72,7 @@ func (h *DappHandler) TxConnectHandler(w http.ResponseWriter, r *http.Request) {
 		TxNonce:      nonce,
 		AlgoTxID:     id,
 	}
-	SendSuccessResponse(w, response)
+	http_common.SendSuccessResponse(w, response)
 
 }
 
@@ -82,24 +85,24 @@ type TxInitRequest struct {
 /**
  */
 
-func (h *DappHandler) TxInitHandler(w http.ResponseWriter, r *http.Request) {
+func (h *WalletHandler) TxInitHandler(w http.ResponseWriter, r *http.Request) {
 
 	session := r.Context().Value("session").(services.UserSession)
 	var request TxInitRequest
 	defer r.Body.Close()
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 		logger.ForRequest(r).Error(err.Error())
-		SendErrorResponse(w, services.NewError("failed to parse request"))
+		http_common.SendErrorResponse(w, services.NewError("failed to parse request"))
 		return
 	}
 
 	// proxy transaction/init request to fido2 service
 	response, err := h.Fido2Service.TransactionInit(session.Username, request.TxPayload, request.TxNonce)
 	if err != nil {
-		SendErrorResponse(w, *err)
+		http_common.SendErrorResponse(w, *err)
 		return
 	}
-	SendSuccessResponseRaw(w, response)
+	http_common.SendSuccessResponseRaw(w, response)
 }
 
 type TxCompleteRequest struct {
@@ -121,11 +124,11 @@ type TxCompleteResponse struct {
 /**
 TxCompleteHandler
 */
-func (h *DappHandler) TxCompleteHandler(w http.ResponseWriter, r *http.Request) {
+func (h *WalletHandler) TxCompleteHandler(w http.ResponseWriter, r *http.Request) {
 	var request TxCompleteRequest
 	defer r.Body.Close()
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		SendErrorResponse(w, services.NewError("failed to parse request"))
+		http_common.SendErrorResponse(w, services.NewError("failed to parse request"))
 		return
 	}
 
@@ -134,11 +137,44 @@ func (h *DappHandler) TxCompleteHandler(w http.ResponseWriter, r *http.Request) 
 	response, err := h.Fido2Service.TransactionComplete(request.Username, request.TxID, request.CredentialUuid, request.CredentialID, request.Challenge, request.AttestationData, request.ClientData)
 	if err != nil {
 		logger.ForRequest(r).Error(err.Message)
-		SendErrorResponse(w, services.NewError("transaction error"))
+		http_common.SendErrorResponse(w, services.NewError("transaction error"))
 		return
 	}
 
 	// need to conpute sign transaction package here
 
-	SendSuccessResponseRaw(w, response)
+	http_common.SendSuccessResponseRaw(w, response)
+}
+
+type EnableRequest struct {
+	AddressList []string `json:"address_list"`
+	Network     string   `json:"network"`
+	Origin      string   `json:"origin"`
+}
+
+/**
+EnableHandler - enable dapp & wallet integration
+*/
+func (h *WalletHandler) EnableHandler(w http.ResponseWriter, r *http.Request) {
+	session, err := h.AuthService.ValidateSessionToken(r)
+	if err != nil {
+		http_common.SendErrorResponse(w, services.NewError("not authorized"))
+		return
+	}
+	var request EnableRequest
+	defer r.Body.Close()
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		http_common.SendErrorResponse(w, services.NewError("failed to parse request"))
+		return
+	}
+
+	// create enable accounts
+
+	sErr := h.AlgoService.AddEnableAccounts(session.Username, request.AddressList, request.Origin, request.Network)
+	if sErr != nil {
+		http_common.SendErrorResponse(w, *sErr)
+	}
+
+	http_common.SendSuccessResponse(w, map[string]interface{}{"success": true})
+
 }

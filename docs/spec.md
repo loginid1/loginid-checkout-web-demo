@@ -33,6 +33,8 @@ There are three feature-sets:
 
 1.1.2 - User is then prompted by their device to register with FIDO2 using their biometric (or pin/password) 
 
+<div style="page-break-after: always;"></div>
+
 ###### 1.2 - User authentication
 
 Once registration is complete, a user can sign back in to the vault at any time using their FIDO2 device
