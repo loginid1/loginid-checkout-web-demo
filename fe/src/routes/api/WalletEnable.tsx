@@ -6,12 +6,10 @@ import { EnableOpts } from "../../lib/common/api";
 import vaultSDK from "../../lib/VaultSDK";
 import { AccountList } from "../../lib/VaultSDK/vault/algo";
 import { ThemeProvider } from "@emotion/react";
-import { Home } from "@mui/icons-material";
 import {
 	Container,
 	AppBar,
 	Toolbar,
-	IconButton,
 	Typography,
 	createTheme,
 	Alert,
@@ -30,15 +28,16 @@ interface WalletEnableSession {
 const theme = createTheme();
 export default function WalletEnable() {
 	const navigate = useNavigate();
-	const [session, setSession] = useState<string | null>(null);
 	const [enable, setEnable] = useState<WalletEnableSession | null>(null);
 	const [accountList, setAccountList] = useState<AccountList | null>(null);
 	const [displayMessage, setDisplayMessage] = useState<DisplayMessage | null>(null);
 
 	useEffect(() => {
 		let target = window.opener;
+		console.log("target " + MessagingService.origin );
 		if (target != null) {
 			MessagingService.onMessage(target, (msg) => onMessageHandle(msg));
+			/*
 			window.addEventListener("unload", (ev) => {
 				ev.preventDefault();
 				MessagingService.sendMessage(target, {
@@ -46,11 +45,13 @@ export default function WalletEnable() {
 					message: "window-closed",
 				});
 			});
+			*/
 			//MessagingService.windowLoadConfirmation(target);
 			checkSession();
 		} else {
 			getAccountList();
 			setDisplayMessage({text:"Missing dApp origin",type:"error"});
+			navigate("/login");
 		}
 	}, []);
 	// check if user logged in
@@ -66,29 +67,35 @@ export default function WalletEnable() {
 
 		// check if enableSession
 		if(sessionStorage.getItem("enableSession") != null) {
+			console.log
 			getAccountList();
 		} else {
 			setDisplayMessage({text:"Missing request parameter",type:"error"});
 		}
 	}
 	function onMessageHandle(msg: Message) {
-		console.log("handle message");
+		console.log("handle message " + JSON.stringify(msg));
 		try {
 			let enable: EnableOpts = JSON.parse(msg.message);
+			console.log("enable" + JSON.stringify(enable));
 			// validate enable
 			if(enable.network == null && enable.genesisHash == null){
 				setDisplayMessage({text:"Require network type",type:"error"});
 			} else {
-				let enableSession : WalletEnableSession = {network: enable.network || "", origin: window.opener.loaction}
+				let enableSession : WalletEnableSession = {network: enable.network || "", origin: msg.origin}
 				sessionStorage.setItem("enableSession",JSON.stringify(enableSession))
 				setEnable(enableSession);
 			}
-		} catch (error) {}
+		} catch (error) {
+			console.log(error);
+		}
 	}
+
+	const retries = 10;
 	async function waitForEnableInput() {
-		for (let i = 0; i < 5; i++) {
+		for (let i = 0; i < retries; i++) {
 			if (enable == null) {
-				await new Promise((resolve) => setTimeout(resolve, 1000));
+				await new Promise((resolve) => setTimeout(resolve, 100));
 			} else {
 				return;
 			}
