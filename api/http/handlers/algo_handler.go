@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"time"
 
+	http_common "gitlab.com/loginid/software/services/loginid-vault/http/common"
 	"gitlab.com/loginid/software/services/loginid-vault/services"
 	"gitlab.com/loginid/software/services/loginid-vault/services/algo"
 	"gitlab.com/loginid/software/services/loginid-vault/services/user"
@@ -37,7 +38,7 @@ func (h *AlgoHandler) GetAccountListHandler(w http.ResponseWriter, r *http.Reque
 	session := r.Context().Value("session").(services.UserSession)
 	accounts, err := h.AlgoService.GetAccountList(session.Username)
 	if err != nil {
-		SendErrorResponse(w, services.NewError("no account found"))
+		http_common.SendErrorResponse(w, services.NewError("no account found"))
 		return
 	}
 	var fAccounts []FilterAlgoAccount
@@ -54,7 +55,7 @@ func (h *AlgoHandler) GetAccountListHandler(w http.ResponseWriter, r *http.Reque
 		fAccounts = append(fAccounts, fAccount)
 	}
 
-	SendSuccessResponse(w, AccountListResponse{Accounts: fAccounts})
+	http_common.SendSuccessResponse(w, AccountListResponse{Accounts: fAccounts})
 }
 
 type CreateAccountRequest struct {
@@ -68,7 +69,7 @@ func (h *AlgoHandler) CreateAccountHandler(w http.ResponseWriter, r *http.Reques
 	var request CreateAccountRequest
 	defer r.Body.Close()
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		SendErrorResponse(w, services.NewError("failed to parse request"))
+		http_common.SendErrorResponse(w, services.NewError("failed to parse request"))
 		return
 	}
 	session := r.Context().Value("session").(services.UserSession)
@@ -76,10 +77,10 @@ func (h *AlgoHandler) CreateAccountHandler(w http.ResponseWriter, r *http.Reques
 	err := h.AlgoService.CreateAccount(session.Username, request.VerifyAddress, request.CredentialIDList, request.Recovery)
 
 	if err != nil {
-		SendErrorResponse(w, *err)
+		http_common.SendErrorResponse(w, *err)
 		return
 	}
-	SendSuccessResponse(w, map[string]interface{}{"success": true})
+	http_common.SendSuccessResponse(w, map[string]interface{}{"success": true})
 }
 
 type GenerateScriptRequest struct {
@@ -92,17 +93,17 @@ func (h *AlgoHandler) GenerateScriptHandler(w http.ResponseWriter, r *http.Reque
 	var request GenerateScriptRequest
 	defer r.Body.Close()
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		SendErrorResponse(w, services.NewError("failed to parse request"))
+		http_common.SendErrorResponse(w, services.NewError("failed to parse request"))
 		return
 	}
 	//session := r.Context().Value("session").(UserSession)
 
 	script, err := h.AlgoService.GenerateFido2Signature(request.CredentialList, request.Recovery)
 	if err != nil {
-		SendErrorResponse(w, *err)
+		http_common.SendErrorResponse(w, *err)
 		return
 	}
-	SendSuccessResponse(w, script)
+	http_common.SendSuccessResponse(w, script)
 }
 
 func extractCredentialsName(credentials []user.UserCredential) []string {
@@ -122,7 +123,7 @@ func (h *AlgoHandler) QuickAccountCreationHandler(w http.ResponseWriter, r *http
 	var request QuickAccountCreationRequest
 	defer r.Body.Close()
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		SendErrorResponse(w, services.NewError("failed to parse request"))
+		http_common.SendErrorResponse(w, services.NewError("failed to parse request"))
 		return
 	}
 	session := r.Context().Value("session").(services.UserSession)
@@ -130,8 +131,8 @@ func (h *AlgoHandler) QuickAccountCreationHandler(w http.ResponseWriter, r *http
 	account, err := h.AlgoService.QuickAccountCreation(session.Username, request.PublicKey)
 
 	if err != nil {
-		SendErrorResponse(w, *err)
+		http_common.SendErrorResponse(w, *err)
 		return
 	}
-	SendSuccessResponse(w, account)
+	http_common.SendSuccessResponse(w, account)
 }

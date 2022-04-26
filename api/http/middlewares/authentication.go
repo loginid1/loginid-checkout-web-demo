@@ -14,7 +14,7 @@ import (
 
 	"github.com/allegro/bigcache"
 	"gitlab.com/loginid/software/libraries/goutil.git/logger"
-	"gitlab.com/loginid/software/services/loginid-vault/handlers"
+	http_common "gitlab.com/loginid/software/services/loginid-vault/http/common"
 	"gitlab.com/loginid/software/services/loginid-vault/services"
 	"gitlab.com/loginid/software/services/loginid-vault/utils"
 )
@@ -55,7 +55,7 @@ func (auth *AuthService) Middleware(next http.Handler) http.Handler {
 			session, err := auth.validateToken(authToken)
 			if err != nil {
 				logger.ForRequest(r).Error(err.Error())
-				handlers.SendErrorResponse(w, services.NewError("Not authorized"))
+				http_common.SendErrorResponse(w, services.NewError("Not authorized"))
 				return
 			}
 			ctx := context.WithValue(r.Context(), "session", *session)
@@ -64,7 +64,7 @@ func (auth *AuthService) Middleware(next http.Handler) http.Handler {
 		}
 		// fail not authorize here
 
-		handlers.SendErrorResponse(w, services.NewError("Not authorized"))
+		http_common.SendErrorResponse(w, services.NewError("Not authorized"))
 
 	})
 }
@@ -79,7 +79,7 @@ func (auth *AuthService) MiddlewareWithRedirect(next http.Handler) http.Handler 
 			session, err := auth.validateToken(authToken)
 			if err != nil {
 				logger.ForRequest(r).Error(err.Error())
-				handlers.SendErrorResponse(w, services.NewError("Not authorized"))
+				http_common.SendErrorResponse(w, services.NewError("Not authorized"))
 				return
 			}
 			ctx := context.WithValue(r.Context(), "session", *session)

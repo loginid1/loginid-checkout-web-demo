@@ -31,7 +31,7 @@ export interface PopupOptions  {
 /**
  * @type {PopupOptions}
  */
-const defaultOptions = <PopupOptions> {
+export const defaultOptions = <PopupOptions> {
 	width: 400,
 	height: 600,
     left: 0,
@@ -54,7 +54,7 @@ const defaultOptions = <PopupOptions> {
  * Go to https://github.com/krakenjs/belter for full license details.
  */
 
-function openPopup(url : string, options : PopupOptions = defaultOptions ) {
+export function openPopup(url : string, options : PopupOptions = defaultOptions ) : Window {
 
 	//let options = { name : ""; width: 0; height:0; top : 0; left : 0 } ;
     let name = "";
@@ -98,6 +98,8 @@ function openPopup(url : string, options : PopupOptions = defaultOptions ) {
 
 	try {
 		win = window.open(url, name, params);
+		console.log("my origin " + win?.origin);
+		win?.postMessage("hello", "*");
 	}
 	catch (err) {
 		throw new Error(`${WINDOW_NOT_OPENED} - ${err}`);
@@ -109,7 +111,3 @@ function openPopup(url : string, options : PopupOptions = defaultOptions ) {
 
 	return win;
 }
-
-module.exports = {
-	openPopup,
-};

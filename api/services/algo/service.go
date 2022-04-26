@@ -56,7 +56,8 @@ func (algo *AlgoService) CreateAccount(username string, verify_address string, c
 		return services.CreateError("account creation fail - address mismatch")
 	}
 
-	if algo.AlgoRepository.LookupAddress(verify_address) {
+	_, err = algo.AlgoRepository.LookupAddress(verify_address)
+	if err != nil {
 		return services.CreateError("address already existed! ")
 	}
 
@@ -158,6 +159,33 @@ func (algo *AlgoService) QuickAccountCreation(username string, recovery_pk strin
 
 func (algo *AlgoService) CheckUserDappConsent(username string, origin string, sender string) bool {
 	return true
+}
+
+func (algo *AlgoService) AddEnableAccounts(username string, address_list []string, origin string, network string) *services.ServiceError {
+	user, err := algo.UserRepository.GetUserByUsername(username)
+	if err != nil {
+		logger.Global.Error(err.Error())
+		return services.CreateError("no user found")
+	}
+
+	db_network := ALGO_NETWORK[network]
+	if db_network == "" {
+		return services.CreateError("unsupported network")
+	}
+	for _, address := range address_list {
+		enable := EnableAccount{
+			UserID:        user.ID,
+			WalletAddress: address,
+			DappOrigin:    origin,
+			Network:       db_network,
+		}
+		err := algo.AlgoRepository.AddEnableAccount(enable)
+		if err != nil {
+			return services.CreateError("failed to update - try again later")
+		}
+	}
+
+	return nil
 }
 
 func (algo *AlgoService) GetTransactionID(txn types.Transaction) string {

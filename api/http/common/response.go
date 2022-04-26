@@ -1,4 +1,4 @@
-package handlers
+package http_common
 
 import (
 	"encoding/json"

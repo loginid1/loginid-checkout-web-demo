@@ -11,8 +11,8 @@ import (
 	goutil "gitlab.com/loginid/software/libraries/goutil.git"
 	logger "gitlab.com/loginid/software/libraries/goutil.git/logger"
 	"gitlab.com/loginid/software/services/loginid-vault/db"
-	"gitlab.com/loginid/software/services/loginid-vault/handlers"
-	"gitlab.com/loginid/software/services/loginid-vault/middlewares"
+	"gitlab.com/loginid/software/services/loginid-vault/http/handlers"
+	"gitlab.com/loginid/software/services/loginid-vault/http/middlewares"
 	"gitlab.com/loginid/software/services/loginid-vault/services/algo"
 	"gitlab.com/loginid/software/services/loginid-vault/services/fido2"
 	"gitlab.com/loginid/software/services/loginid-vault/services/user"
@@ -98,6 +98,10 @@ func main() {
 	protected.HandleFunc("/algo/quickAccountCreation", algoHandler.QuickAccountCreationHandler)
 
 	// open transaction api handlers
+
+	walletHandler := handlers.WalletHandler{UserService: userService, Fido2Service: fidoService, AlgoService: algoService, AuthService: authService}
+	wallet := api.PathPrefix("/wallet").Subrouter()
+	wallet.HandleFunc("/enable", walletHandler.EnableHandler)
 
 	//TODO: change CORS handling to middleware
 	c := cors.New(cors.Options{

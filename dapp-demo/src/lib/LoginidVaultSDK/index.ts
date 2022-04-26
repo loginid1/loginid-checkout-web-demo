@@ -1,3 +1,4 @@
+import {  defaultOptions, openPopup } from "./popup";
 
 interface SignTxnsError extends Error {
     code: number;
@@ -74,12 +75,23 @@ export interface WalletTransaction {
  }
 
 export class FidoVaultSDK {
+
+    static baseURL="http://localhost:3000";
     /**
     *  
     *   https://github.com/algorandfoundation/ARCs/blob/main/ARCs/arc-0006.md
     */
 
     static async enable( network: EnableOpts): Promise<EnableResult | null> {
+        let w = openPopup(FidoVaultSDK.baseURL+"/fe/enable", defaultOptions);
+        //w.postMessage(JSON.stringify(network),FidoVaultSDK.baseURL);
+        await new Promise((resolve) => setTimeout(resolve, 400));
+        console.log("postmessage " + window.origin);
+        let message : Message = {
+            channel : "wallet-communication-channel",
+            message : JSON.stringify(network)
+        }; 
+        w.postMessage(JSON.stringify(message),"*");
         return Promise.resolve(null);
     }
 
@@ -90,7 +102,7 @@ export class FidoVaultSDK {
      * @returns {Promise<string|null> []}
      * 
     **/
-    static async signTxns(txns: WalletTransaction[], opts: SignTxnsOpts): Promise<(PostTxnsResult | null)[]> {
+    async signTxns(txns: WalletTransaction[], opts: SignTxnsOpts): Promise<(PostTxnsResult | null)[]> {
         return Promise.resolve([]);
     }
 
@@ -101,7 +113,33 @@ export class FidoVaultSDK {
      * @returns {Promise<string|null> []}
      * 
     **/
-    static async signAndPostTxns(txns: WalletTransaction[], opts: SignTxnsOpts): Promise<(PostTxnsResult | null)[]> {
+    async signAndPostTxns(txns: WalletTransaction[], opts: SignTxnsOpts): Promise<(PostTxnsResult | null)[]> {
         return Promise.resolve([]);
     }
+}
+
+
+/**
+	 * @async
+	 * @access private
+	 * @description Wait until the window opened loads.
+	 * @param {Window} targetWindow Window opened context.
+	 * @param {number} retries Times to retry before throw an error.
+	 * @returns {Promise<void>} Throw error if the window does not load.
+	 */
+ async function waitForWindowToLoad(targetWindow : Window, retries = 30) {
+    for (let i = 0; i < retries; i++) {
+        await sleep(300);
+    }
+}
+
+async function sleep(ms: number) {
+    await new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+export interface Message{
+    channel: string;
+    message: string;
+    method?: string;
+    id?: string;
 }

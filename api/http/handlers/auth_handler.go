@@ -18,6 +18,7 @@ import (
 	"net/http"
 
 	"gitlab.com/loginid/software/libraries/goutil.git/logger"
+	http_common "gitlab.com/loginid/software/services/loginid-vault/http/common"
 	"gitlab.com/loginid/software/services/loginid-vault/services"
 	"gitlab.com/loginid/software/services/loginid-vault/services/fido2"
 	"gitlab.com/loginid/software/services/loginid-vault/services/user"
@@ -45,17 +46,17 @@ func (u *AuthHandler) RegisterInitHandler(w http.ResponseWriter, r *http.Request
 	var request RegisterInitRequest
 	defer r.Body.Close()
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		SendErrorResponse(w, services.NewError("failed to parse request"))
+		http_common.SendErrorResponse(w, services.NewError("failed to parse request"))
 		return
 	}
 
 	// proxy register request to fido2 service
 	response, err := u.Fido2Service.RegisterInit(request.Username)
 	if err != nil {
-		SendErrorResponse(w, *err)
+		http_common.SendErrorResponse(w, *err)
 		return
 	}
-	SendSuccessResponseRaw(w, response)
+	http_common.SendSuccessResponseRaw(w, response)
 }
 
 type RegisterCompleteRequest struct {
@@ -78,7 +79,7 @@ func (u *AuthHandler) RegisterCompleteHandler(w http.ResponseWriter, r *http.Req
 	var request RegisterCompleteRequest
 	defer r.Body.Close()
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		SendErrorResponse(w, services.NewError("failed to parse request"))
+		http_common.SendErrorResponse(w, services.NewError("failed to parse request"))
 		return
 	}
 
@@ -86,7 +87,7 @@ func (u *AuthHandler) RegisterCompleteHandler(w http.ResponseWriter, r *http.Req
 	public_key, key_alg, err := fido2.ExtractPublicKey(request.AttestationData)
 
 	if err != nil {
-		SendErrorResponse(w, services.NewError("device key not supported"))
+		http_common.SendErrorResponse(w, services.NewError("device key not supported"))
 		return
 	}
 	pUser := user.PendingUser{}
@@ -99,18 +100,18 @@ func (u *AuthHandler) RegisterCompleteHandler(w http.ResponseWriter, r *http.Req
 	// proxy register request to fido2 service
 	response, err := u.Fido2Service.RegisterComplete(request.Username, request.CredentialUuid, request.CredentialID, request.Challenge, request.AttestationData, request.ClientData)
 	if err != nil {
-		SendErrorResponse(w, *err)
+		http_common.SendErrorResponse(w, *err)
 		return
 	}
 
 	// save user to database
 	err = u.UserService.CreateUserAccount(request.Username, request.DeviceName, public_key, key_alg)
 	if err != nil {
-		SendErrorResponse(w, *err)
+		http_common.SendErrorResponse(w, *err)
 		return
 	}
 
-	SendSuccessResponseRaw(w, response)
+	http_common.SendSuccessResponseRaw(w, response)
 }
 
 type AuthenticateInitRequest struct {
@@ -121,17 +122,17 @@ func (u *AuthHandler) AuthenticateInitHandler(w http.ResponseWriter, r *http.Req
 	var request AuthenticateInitRequest
 	defer r.Body.Close()
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		SendErrorResponse(w, services.NewError("failed to parse request"))
+		http_common.SendErrorResponse(w, services.NewError("failed to parse request"))
 		return
 	}
 	// proxy authenticate request to fido2 service
 	response, err := u.Fido2Service.AuthenticateInit(request.Username)
 	if err != nil {
-		SendErrorResponse(w, *err)
+		http_common.SendErrorResponse(w, *err)
 		return
 	}
 	//logger.Global.Info(string(response))
-	SendSuccessResponseRaw(w, response)
+	http_common.SendSuccessResponseRaw(w, response)
 }
 
 type AuthenticateCompleteRequest struct {
@@ -147,18 +148,18 @@ func (u *AuthHandler) AuthenticateCompleteHandler(w http.ResponseWriter, r *http
 	var request AuthenticateCompleteRequest
 	defer r.Body.Close()
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		SendErrorResponse(w, services.NewError("failed to parse request"))
+		http_common.SendErrorResponse(w, services.NewError("failed to parse request"))
 		return
 	}
 
 	response, err := u.Fido2Service.AuthenticateComplete(request.Username, request.CredentialID, request.Challenge, request.AuthenticatorData, request.ClientData, request.Signature)
 	if err != nil {
-		SendErrorResponse(w, *err)
+		http_common.SendErrorResponse(w, *err)
 		return
 	}
 
 	debugRequest(request)
-	SendSuccessResponseRaw(w, response)
+	http_common.SendSuccessResponseRaw(w, response)
 }
 
 /// ADD CREDENTIAL
@@ -180,17 +181,17 @@ func (u *AuthHandler) AddCredentialInitHandler(w http.ResponseWriter, r *http.Re
 	var request CredentialAddInitRequest
 	defer r.Body.Close()
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		SendErrorResponse(w, services.NewError("failed to parse request"))
+		http_common.SendErrorResponse(w, services.NewError("failed to parse request"))
 		return
 	}
 
 	// proxy credential add request to fido2 service
 	response, err := u.Fido2Service.AddCredentialInit(request.Username, request.Code)
 	if err != nil {
-		SendErrorResponse(w, *err)
+		http_common.SendErrorResponse(w, *err)
 		return
 	}
-	SendSuccessResponseRaw(w, response)
+	http_common.SendSuccessResponseRaw(w, response)
 }
 
 type CredentialAddCompleteRequest struct {
@@ -213,7 +214,7 @@ func (u *AuthHandler) AddCredentialCompleteHandler(w http.ResponseWriter, r *htt
 	var request RegisterCompleteRequest
 	defer r.Body.Close()
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		SendErrorResponse(w, services.NewError("failed to parse request"))
+		http_common.SendErrorResponse(w, services.NewError("failed to parse request"))
 		return
 	}
 
@@ -221,7 +222,7 @@ func (u *AuthHandler) AddCredentialCompleteHandler(w http.ResponseWriter, r *htt
 	public_key, key_alg, err := fido2.ExtractPublicKey(request.AttestationData)
 
 	if err != nil {
-		SendErrorResponse(w, services.NewError("device key not supported"))
+		http_common.SendErrorResponse(w, services.NewError("device key not supported"))
 		return
 	}
 
@@ -235,18 +236,18 @@ func (u *AuthHandler) AddCredentialCompleteHandler(w http.ResponseWriter, r *htt
 	// proxy register request to fido2 service
 	response, err := u.Fido2Service.AddCredentialComplete(request.Username, request.CredentialUuid, request.CredentialID, request.Challenge, request.AttestationData, request.ClientData)
 	if err != nil {
-		SendErrorResponse(w, *err)
+		http_common.SendErrorResponse(w, *err)
 		return
 	}
 
 	// save user to database
 	err = u.UserService.AddUserCredential(request.Username, request.DeviceName, public_key, key_alg)
 	if err != nil {
-		SendErrorResponse(w, *err)
+		http_common.SendErrorResponse(w, *err)
 		return
 	}
 
-	SendSuccessResponseRaw(w, response)
+	http_common.SendSuccessResponseRaw(w, response)
 }
 
 func debugRequest(request AuthenticateCompleteRequest) {
