@@ -30,13 +30,13 @@ export default function WalletEnable() {
 	const navigate = useNavigate();
 	const [enable, setEnable] = useState<WalletEnableSession | null>(null);
 	const [accountList, setAccountList] = useState<AccountList | null>(null);
+	const [selectedAccountList, setSelectedAccountList] = useState<string[] >([]);
 	const [displayMessage, setDisplayMessage] = useState<DisplayMessage | null>(null);
-
+	const mService = new MessagingService(window.opener);
 	useEffect(() => {
 		let target = window.opener;
-		console.log("target " + MessagingService.origin );
 		if (target != null) {
-			MessagingService.onMessage(target, (msg) => onMessageHandle(msg));
+			mService.onMessage( (msg) => onMessageHandle(msg));
 			/*
 			window.addEventListener("unload", (ev) => {
 				ev.preventDefault();
@@ -67,17 +67,14 @@ export default function WalletEnable() {
 
 		// check if enableSession
 		if(sessionStorage.getItem("enableSession") != null) {
-			console.log
 			getAccountList();
 		} else {
 			setDisplayMessage({text:"Missing request parameter",type:"error"});
 		}
 	}
 	function onMessageHandle(msg: Message) {
-		console.log("handle message " + JSON.stringify(msg));
 		try {
 			let enable: EnableOpts = JSON.parse(msg.message);
-			console.log("enable" + JSON.stringify(enable));
 			// validate enable
 			if(enable.network == null && enable.genesisHash == null){
 				setDisplayMessage({text:"Require network type",type:"error"});
@@ -111,6 +108,57 @@ export default function WalletEnable() {
 		} else {
 		}
 	}
+
+	function accountSelection(event: React.ChangeEvent<HTMLInputElement>){
+		updateStringArray(selectedAccountList, event.target.value);
+	}
+
+	function updateStringArray(array: string[], id : string) : string[] {
+
+		let modifiedArray = []
+		let found = false;
+		for(let value in array) {
+			if(value != id) {
+				modifiedArray.push(value);
+			} else {
+				found = true;
+			}
+		}	
+		if(found == true) {
+			modifiedArray.push(id);
+		}	
+		return modifiedArray;
+	}
+
+	async function handleEnable(){
+
+		const token = AuthService.getToken();
+		if (token) {
+			try {
+				let result : boolean = await vaultSDK.enable(token, selectedAccountList, enable?.origin || "",enable?.network || "" );
+
+				// clear old error message
+				if(result) {
+					setDisplayMessage({text:"Account enable successful!!",type:"info"})
+				} else {
+					setDisplayMessage({text:"Account enable failed!!",type:"error"})
+				}
+			} catch (error){
+				setDisplayMessage({text:(error as Error).message,type:"error"});
+			}
+		} else {
+			setDisplayMessage({text:"missing auth token - retry login", type:"error"});
+			return;
+		}
+	}
+
+	async function handleCancel(){
+	//	MessagingService.sendMessage(window.opener,{})
+	//	setDisplayMessage({})
+		mService.sendErrorMessage("user cancel");
+		window.close();
+	}
+
 	return (
 		<ThemeProvider theme={theme}>
 			<Container component="main" maxWidth="xs">
@@ -148,10 +196,10 @@ export default function WalletEnable() {
 					/>
 				))}
 
-				<Button fullWidth variant="contained" sx={{ mt: 1, mb: 1 }}>
+				<Button fullWidth variant="contained" onClick={handleEnable} sx={{ mt: 1, mb: 1 }}>
 					Allow
 				</Button>
-				<Button fullWidth variant="outlined" sx={{ mt: 1, mb: 1 }}>
+				<Button fullWidth variant="outlined" onClick={handleCancel} sx={{ mt: 1, mb: 1 }}>
 					Cancel
 				</Button>
 			</Container>

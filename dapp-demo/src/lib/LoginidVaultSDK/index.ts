@@ -85,7 +85,7 @@ export class FidoVaultSDK {
     static async enable( network: EnableOpts): Promise<EnableResult | null> {
         let w = openPopup(FidoVaultSDK.baseURL+"/fe/enable", defaultOptions);
         //w.postMessage(JSON.stringify(network),FidoVaultSDK.baseURL);
-        await new Promise((resolve) => setTimeout(resolve, 200));
+        await new Promise((resolve) => setTimeout(resolve, 400));
         console.log("postmessage " + window.origin);
         let message : Message = {
             channel : "wallet-communication-channel",

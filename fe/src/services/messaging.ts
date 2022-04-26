@@ -7,20 +7,29 @@ export interface Message{
 }
 
 export class MessagingService {
-    static origin = window.location.origin;
-    static channel = "wallet-communication-channel";
-    
+    origin : string = window.location.origin;
+    channel : string = "wallet-communication-channel";
+
+    target : Window;
+    constructor(targetWindow: Window) {
+        this.target = targetWindow;
+    }
 
     /*
     static sendMessage(target: Window , message:Message, origin: string) {
         target.postMessage(JSON.stringify(message), origin)
     }*/
 
-    static sendMessage(target: Window , message:Message ) {
-        target.postMessage(JSON.stringify(message), MessagingService.origin);
+    sendErrorMessage( error: string ) {
+        let message : Message = {channel:this.channel, message: error, method: "error",origin: this.origin};
+        this.target.postMessage(JSON.stringify(message), this.origin);
     }
 
-    static onMessage(target: Window, handler: (ev:Message)=>any) {
+    sendMessage( message:Message ) {
+        this.target.postMessage(JSON.stringify(message), this.origin);
+    }
+
+    onMessage(handler: (ev:Message)=>any) {
         window.addEventListener(
             "message",
             (event: MessageEvent) => {
@@ -32,7 +41,7 @@ export class MessagingService {
 
                         let message : Message = JSON.parse(event.data)
                         if(message.method === "status") {
-                            target.postMessage(JSON.stringify(message), MessagingService.origin);
+                            this.target.postMessage(JSON.stringify(message), this.origin);
                         } else {
                             message.origin = event.origin;
                             handler(message);
