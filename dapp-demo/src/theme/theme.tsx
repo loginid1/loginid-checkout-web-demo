@@ -26,11 +26,13 @@ export const LoginID = createTheme({
     },
     h3: {
       fontStyle: "regular",
-      fontSize: "20px",
+      fontSize: "14px",
       lineHeight: "20px"
     },
     body1: {
-      fontStyle: "regular"
+      fontStyle: "regular",
+      fontSize: "14px",
+      lineHeight: "20px"
     },
     // medium: {
       // fontstyle: "Medium"

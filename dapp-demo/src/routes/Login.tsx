@@ -79,12 +79,12 @@ const Login: React.FC = () => {
             }}
           >
             <img src={prodLogo} alt="logo"></img>
-            <Typography component="h1" variant="h3" marginTop={2}>
+            <Typography variant="h3" marginTop={2}>
               Login securely to your FIDO Vault Account.
             </Typography>
           </Box>
 
-          <Box component="form" onSubmit={handleSubmit} sx={{ mt: 4 }}>
+          <Box component="form" onSubmit={handleSubmit} sx={{ mt: 4, maxWidth: "250px" }}>
             {errorMessage.length > 0 && (
               <Alert severity="error">{errorMessage}</Alert>
             )}
@@ -95,6 +95,7 @@ const Login: React.FC = () => {
               label="Username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
+              focused
             />
             <Button
               type="submit"
