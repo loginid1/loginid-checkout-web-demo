@@ -157,20 +157,46 @@ func (algo *AlgoService) QuickAccountCreation(username string, recovery_pk strin
 	return &account, nil
 }
 
-func (algo *AlgoService) CheckUserDappConsent(username string, origin string, sender string) bool {
-	return true
+func (algo *AlgoService) CheckUserDappConsent(genesisHash string, origin string, sender string) string {
+	var key string
+	for k, v := range ALGO_NETWORK_GENESIS {
+		if v.Hash == genesisHash {
+			key = k
+			break
+		}
+	}
+	if network, hasKey := ALGO_NETWORK[key]; hasKey {
+		user, err := algo.AlgoRepository.CheckOriginPermission(sender, origin, network)
+		if err != nil {
+			return ""
+		}
+		return user.Username
+	}
+	return ""
 }
 
-func (algo *AlgoService) AddEnableAccounts(username string, address_list []string, origin string, network string) *services.ServiceError {
+func (algo *AlgoService) AddEnableAccounts(username string, address_list []string, origin string, network string) (*Genesis, *services.ServiceError) {
 	user, err := algo.UserRepository.GetUserByUsername(username)
 	if err != nil {
 		logger.Global.Error(err.Error())
-		return services.CreateError("no user found")
+		return nil, services.CreateError("no user found")
 	}
 
 	db_network := ALGO_NETWORK[network]
 	if db_network == "" {
-		return services.CreateError("unsupported network")
+		return nil, services.CreateError("unsupported network")
+	}
+	genesis, found := ALGO_NETWORK_GENESIS[network]
+	if !found {
+		return nil, services.CreateError("unsupported network")
+	}
+
+	if len(address_list) == 0 {
+		return nil, services.CreateError("no account selected")
+	}
+
+	if origin == "" {
+		return nil, services.CreateError("missing origin")
 	}
 	for _, address := range address_list {
 		enable := EnableAccount{
@@ -181,11 +207,11 @@ func (algo *AlgoService) AddEnableAccounts(username string, address_list []strin
 		}
 		err := algo.AlgoRepository.AddEnableAccount(enable)
 		if err != nil {
-			return services.CreateError("failed to update - try again later")
+			return nil, services.CreateError("failed to update - try again later")
 		}
 	}
 
-	return nil
+	return &genesis, nil
 }
 
 func (algo *AlgoService) GetTransactionID(txn types.Transaction) string {

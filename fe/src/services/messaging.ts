@@ -1,17 +1,20 @@
 export interface Message{
     channel: string;
-    message: string;
-    method?: string;
-    id?: string;
-    origin: string;
+    data: string;
+    type: string;
+    id: number;
+}
+
+enum MessageType {
+    data="data", ping="ping", error="error"
 }
 
 export class MessagingService {
-    origin : string = window.location.origin;
+    origin : string = "*";
     channel : string = "wallet-communication-channel";
-
+    id : number = 0;
     target : Window;
-    constructor(targetWindow: Window) {
+    constructor(targetWindow: Window ) {
         this.target = targetWindow;
     }
 
@@ -21,7 +24,7 @@ export class MessagingService {
     }*/
 
     sendErrorMessage( error: string ) {
-        let message : Message = {channel:this.channel, message: error, method: "error",origin: this.origin};
+        let message : Message = {channel:this.channel, data: error, id:this.id, type: "error"};
         this.target.postMessage(JSON.stringify(message), this.origin);
     }
 
@@ -29,7 +32,13 @@ export class MessagingService {
         this.target.postMessage(JSON.stringify(message), this.origin);
     }
 
-    onMessage(handler: (ev:Message)=>any) {
+
+    sendMessageText(txt: string ) {
+        let message : Message = {channel:this.channel, id:this.id , data: txt, type:"data" };
+        this.target.postMessage(JSON.stringify(message), this.origin);
+    }
+
+    onMessage(handler: (ev:Message, origin: string)=>any) {
         window.addEventListener(
             "message",
             (event: MessageEvent) => {
@@ -38,13 +47,13 @@ export class MessagingService {
                 } else {
 
                     try{
-
                         let message : Message = JSON.parse(event.data)
-                        if(message.method === "status") {
-                            this.target.postMessage(JSON.stringify(message), this.origin);
+                        //console.log("message: " + event.data);
+                        if(message.type === MessageType.ping.toString()) {
+                            console.log(message.id);
+                            this.target.postMessage(JSON.stringify(message), event.origin);
                         } else {
-                            message.origin = event.origin;
-                            handler(message);
+                            handler(message, event.origin);
                         }
                     } catch(error) {
                         // log error?
@@ -55,4 +64,5 @@ export class MessagingService {
             false
         );
     }
+
 }

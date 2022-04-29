@@ -2,9 +2,9 @@ import React, { useEffect, useState } from "react";
 import { AuthService } from "../../services/auth";
 import { useNavigate } from "react-router-dom";
 import { Message, MessagingService } from "../../services/messaging";
-import { EnableOpts } from "../../lib/common/api";
+import { EnableOpts, EnableResult } from "../../lib/common/api";
 import vaultSDK from "../../lib/VaultSDK";
-import { AccountList } from "../../lib/VaultSDK/vault/algo";
+import { AccountList, Genesis } from "../../lib/VaultSDK/vault/algo";
 import { ThemeProvider } from "@emotion/react";
 import {
 	Container,
@@ -26,17 +26,19 @@ interface WalletEnableSession {
 }
 
 const theme = createTheme();
+const mService = new MessagingService(window.opener);
+
 export default function WalletEnable() {
 	const navigate = useNavigate();
 	const [enable, setEnable] = useState<WalletEnableSession | null>(null);
 	const [accountList, setAccountList] = useState<AccountList | null>(null);
 	const [selectedAccountList, setSelectedAccountList] = useState<string[] >([]);
 	const [displayMessage, setDisplayMessage] = useState<DisplayMessage | null>(null);
-	const mService = new MessagingService(window.opener);
 	useEffect(() => {
+		console.log("here");
 		let target = window.opener;
 		if (target != null) {
-			mService.onMessage( (msg) => onMessageHandle(msg));
+			mService.onMessage( (msg, origin) => onMessageHandle(msg,origin));
 			/*
 			window.addEventListener("unload", (ev) => {
 				ev.preventDefault();
@@ -49,9 +51,8 @@ export default function WalletEnable() {
 			//MessagingService.windowLoadConfirmation(target);
 			checkSession();
 		} else {
-			getAccountList();
 			setDisplayMessage({text:"Missing dApp origin",type:"error"});
-			navigate("/login");
+			//navigate("/login");
 		}
 	}, []);
 	// check if user logged in
@@ -61,7 +62,7 @@ export default function WalletEnable() {
 		const auth = AuthService.isLoggedIn();
 		if (!auth) {
 			const redirect_url =
-				"/login?redirect_url=" + encodeURIComponent("/enable");
+				"/login?redirect_url=" + encodeURIComponent("/api/enable");
 			navigate(redirect_url);
 		}
 
@@ -72,14 +73,16 @@ export default function WalletEnable() {
 			setDisplayMessage({text:"Missing request parameter",type:"error"});
 		}
 	}
-	function onMessageHandle(msg: Message) {
+	function onMessageHandle(msg: Message, origin: string) {
 		try {
-			let enable: EnableOpts = JSON.parse(msg.message);
+			mService.origin = origin;
+			mService.id = msg.id;
+			let enable: EnableOpts = JSON.parse(msg.data);
 			// validate enable
 			if(enable.network == null && enable.genesisHash == null){
 				setDisplayMessage({text:"Require network type",type:"error"});
 			} else {
-				let enableSession : WalletEnableSession = {network: enable.network || "", origin: msg.origin}
+				let enableSession : WalletEnableSession = {network: enable.network || "", origin: origin}
 				sessionStorage.setItem("enableSession",JSON.stringify(enableSession))
 				setEnable(enableSession);
 			}
@@ -110,23 +113,23 @@ export default function WalletEnable() {
 	}
 
 	function accountSelection(event: React.ChangeEvent<HTMLInputElement>){
-		updateStringArray(selectedAccountList, event.target.value);
+		setSelectedAccountList(updateStringArray(selectedAccountList, event.target.value));
 	}
 
 	function updateStringArray(array: string[], id : string) : string[] {
 
-		let modifiedArray = []
+		let modifiedArray :string[] = [];
 		let found = false;
-		for(let value in array) {
+		for(let value of array) {
 			if(value != id) {
 				modifiedArray.push(value);
 			} else {
 				found = true;
 			}
 		}	
-		if(found == true) {
+		if(found == false) {
 			modifiedArray.push(id);
-		}	
+		}
 		return modifiedArray;
 	}
 
@@ -135,19 +138,24 @@ export default function WalletEnable() {
 		const token = AuthService.getToken();
 		if (token) {
 			try {
-				let result : boolean = await vaultSDK.enable(token, selectedAccountList, enable?.origin || "",enable?.network || "" );
-
+				console.log("id " + mService.id);
+				let result : Genesis = await vaultSDK.enable(token, selectedAccountList, enable?.origin || "",enable?.network || "" );
 				// clear old error message
 				if(result) {
+					let enableResult : EnableResult = {accounts:selectedAccountList, genesisID: result.id , genesisHash:result.hash};
+					mService.sendMessageText(JSON.stringify(enableResult));
 					setDisplayMessage({text:"Account enable successful!!",type:"info"})
 				} else {
+					mService.sendErrorMessage("account enable failed");
 					setDisplayMessage({text:"Account enable failed!!",type:"error"})
 				}
 			} catch (error){
+				mService.sendErrorMessage((error as Error).message);
 				setDisplayMessage({text:(error as Error).message,type:"error"});
 			}
 		} else {
 			setDisplayMessage({text:"missing auth token - retry login", type:"error"});
+			mService.sendErrorMessage("account enable failed");
 			return;
 		}
 	}
@@ -192,7 +200,7 @@ export default function WalletEnable() {
 				{accountList?.accounts?.map((account) => (
 					<FormControlLabel
 						label={account.address}
-						control={<Checkbox value={account.address} />}
+						control={<Checkbox id={account.address} value={account.address} onChange={accountSelection}/>}
 					/>
 				))}
 

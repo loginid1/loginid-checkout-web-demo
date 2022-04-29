@@ -11,8 +11,8 @@ import { AuthService } from './services/auth';
 import ManageCredential from './routes/protected/ManageCredential';
 import ManageAlgorand from './routes/protected/ManageAlgorand';
 import CreateAlgorand from './routes/protected/CreateAlgorand';
-import AlgoTransaction from './routes/api/WalletTransaction';
 import WalletEnable from './routes/api/WalletEnable';
+import WalletTxnConfirmation from './routes/api/WalletTransaction';
 
 
 
@@ -24,14 +24,13 @@ function App() {
         <Route path="/" element={<Navigate replace to="/login" />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/enable" element={<WalletEnable />} />
+        <Route path="/api/enable" element={<WalletEnable />} />
+        <Route path="/api/transaction" element={<WalletTxnConfirmation />} />
         <Route path="/" element={<ProtectedRoute />} >
           <Route path="/home" element={<Home />} />
           <Route path="/manage_credential" element={<ManageCredential />} />
           <Route path="/manage_algorand" element={<ManageAlgorand />} />
           <Route path="/create_algorand" element={<CreateAlgorand />} />
-          <Route path="/tx/connect" element={<AlgoTransaction />} />
-          <Route path="/tx/confirm" element={<AlgoTransaction />} />
         </Route>
         <Route path="*" element={<Navigate replace to="/login" />} />
       </Routes>

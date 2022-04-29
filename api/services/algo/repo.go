@@ -65,14 +65,18 @@ func (repo *AlgoRepository) GetAccountList(username string) ([]AlgoAccount, erro
 	return accounts, nil
 }
 
-func (repo *AlgoRepository) CheckOriginPermission(address string, origin string) (*EnableAccount, error) {
+func (repo *AlgoRepository) CheckOriginPermission(address string, origin string, network string) (*user.User, error) {
 
-	var account EnableAccount
-	err := repo.DB.Where("wallet_address = ? ", address).Where("dapp_origin = ? ", origin).Take(&account).Error
+	var user user.User
+	err := repo.DB.Where("enable_accounts.wallet_address = ? ", address).
+		Where("enable_accounts.dapp_origin = ? ", origin).
+		Where("enable_accounts.network=?", network).
+		Joins("JOIN enable_accounts ON users.id = enable_accounts.user_id").
+		Take(&user).Error
 	if err != nil {
 		return nil, err
 	}
-	return &account, nil
+	return &user, nil
 }
 
 func (repo *AlgoRepository) AddEnableAccount(enable EnableAccount) error {
@@ -95,6 +99,9 @@ func (repo *AlgoRepository) AddEnableAccount(enable EnableAccount) error {
 		return nil
 	}
 
+	if enable.ID == "" {
+		enable.ID = uuid.New().String()
+	}
 	if err := tx.Create(&enable).Error; err != nil {
 		tx.Rollback()
 		return err

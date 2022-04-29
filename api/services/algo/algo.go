@@ -14,8 +14,8 @@ var ALGO_NETWORK = map[string]string{
 	"sandnet": "ALGO_sandnet",
 }
 
-var ALGO_NETWORK_INFO = map[string]Genesis{
-	"sandnet": Genesis{ID: "sandnet-v1", Hash: "kRzYkNRKXtnl6TyFvtrkAYO5wm17eMd0aXtDBRytVnQ="},
+var ALGO_NETWORK_GENESIS = map[string]Genesis{
+	"sandnet": {ID: "sandnet-v1", Hash: "kRzYkNRKXtnl6TyFvtrkAYO5wm17eMd0aXtDBRytVnQ="},
 }
 
 type Genesis struct {

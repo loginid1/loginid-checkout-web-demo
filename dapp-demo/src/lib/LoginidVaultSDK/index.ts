@@ -1,3 +1,4 @@
+import { MessagingService } from "./messaging";
 import {  defaultOptions, openPopup } from "./popup";
 
 interface SignTxnsError extends Error {
@@ -60,7 +61,7 @@ export interface WalletTransaction {
     * Optional base64 encoding of the canonical msgpack encoding of a 
     * SignedTxn corresponding to txn, when signers=[]
     */
-   stxn: string;
+   stxn?: string;
 
    /**
     * Optional message explaining the reason of the transaction
@@ -77,22 +78,34 @@ export interface WalletTransaction {
 export class FidoVaultSDK {
 
     static baseURL="http://localhost:3000";
+    mMessage : MessagingService;
+
+    constructor(){
+        //this.mMessage = new MessagingService(FidoVaultSDK.baseURL);
+        this.mMessage = new MessagingService("*");
+    }
     /**
     *  
     *   https://github.com/algorandfoundation/ARCs/blob/main/ARCs/arc-0006.md
     */
 
-    static async enable( network: EnableOpts): Promise<EnableResult | null> {
-        let w = openPopup(FidoVaultSDK.baseURL+"/fe/enable", defaultOptions);
+    async enable( network: EnableOpts): Promise<EnableResult > {
+        let w = openPopup(FidoVaultSDK.baseURL+"/fe/api/enable", defaultOptions);
         //w.postMessage(JSON.stringify(network),FidoVaultSDK.baseURL);
-        await new Promise((resolve) => setTimeout(resolve, 400));
+        let isLoad = await this.mMessage.pingForResponse(w,10000);
+        if (!isLoad) {
+            return Promise.reject("communication timeout");
+        }
+
         console.log("postmessage " + window.origin);
         let message : Message = {
             channel : "wallet-communication-channel",
             message : JSON.stringify(network)
-        }; 
-        w.postMessage(JSON.stringify(message),"*");
-        return Promise.resolve(null);
+        };
+        let response = await this.mMessage.sendMessageText(w,JSON.stringify(network));
+        console.log("message: " +response);
+        let enable : EnableResult = JSON.parse(response); 
+        return Promise.resolve(enable);
     }
 
     /**
@@ -102,8 +115,21 @@ export class FidoVaultSDK {
      * @returns {Promise<string|null> []}
      * 
     **/
-    async signTxns(txns: WalletTransaction[], opts: SignTxnsOpts): Promise<(PostTxnsResult | null)[]> {
-        return Promise.resolve([]);
+    async signTxns(txns: WalletTransaction[], opts?: SignTxnsOpts): Promise<PostTxnsResult > {
+        let w = openPopup(FidoVaultSDK.baseURL+"/fe/api/transaction", defaultOptions);
+        let isLoad = await this.mMessage.pingForResponse(w,5000);
+        if (!isLoad) {
+            return Promise.reject("communication timeout");
+        }
+        console.log("postmessage " + window.origin);
+        let message : Message = {
+            channel : "wallet-communication-channel",
+            message : JSON.stringify(txns)
+        }; 
+        let response = await this.mMessage.sendMessageText(w,JSON.stringify(txns));
+        console.log("message: " +response);
+        let result : PostTxnsResult = JSON.parse(response); 
+        return Promise.resolve(result);
     }
 
 
@@ -113,9 +139,23 @@ export class FidoVaultSDK {
      * @returns {Promise<string|null> []}
      * 
     **/
-    async signAndPostTxns(txns: WalletTransaction[], opts: SignTxnsOpts): Promise<(PostTxnsResult | null)[]> {
-        return Promise.resolve([]);
+    async signAndPostTxns(txns: WalletTransaction[], opts?: SignTxnsOpts): Promise<PostTxnsResult> {
+        let w = openPopup(FidoVaultSDK.baseURL+"/fe/api/transaction", defaultOptions);
+        //w.postMessage(JSON.stringify(network),FidoVaultSDK.baseURL);
+        await new Promise((resolve) => setTimeout(resolve, 400));
+        console.log("postmessage " + window.origin);
+        let message : Message = {
+            channel : "wallet-communication-channel",
+            message : JSON.stringify(txns)
+        }; 
+        let response = await this.mMessage.sendMessageText(w,JSON.stringify(txns));
+        console.log("message: " +response);
+        let result : PostTxnsResult = JSON.parse(response); 
+        return Promise.resolve(result);
     }
+
+    
+
 }
 
 
