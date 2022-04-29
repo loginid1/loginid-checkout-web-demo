@@ -2,6 +2,7 @@ package algo
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -126,7 +127,11 @@ func updateTealScript(script string, pkList []string, recovery string) (string, 
 
 func ParseTransaction(txnRaw string) (*types.Transaction, error) {
 	var txn types.Transaction
-	err := msgpack.Decode([]byte(txnRaw), &txn)
+	decode, err := base64.StdEncoding.DecodeString(txnRaw)
+	if err != nil {
+		return nil, err
+	}
+	err = msgpack.Decode(decode, &txn)
 	if err != nil {
 		return nil, err
 	}

@@ -17,7 +17,6 @@ export const post = async (server: string, endpoint: string, payload: object, he
 
     const response = await fetch(server + endpoint, payloadJSON);
     const responseJSON = await response.json();
-
     if (response.ok) {
         return responseJSON;
     }

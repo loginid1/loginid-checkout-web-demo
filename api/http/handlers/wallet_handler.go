@@ -1,10 +1,11 @@
 package handlers
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"net/http"
 
-	"github.com/algorand/go-algorand-sdk/encoding/msgpack"
+	"github.com/algorand/go-algorand-sdk/types"
 	"gitlab.com/loginid/software/libraries/goutil.git/logger"
 	http_common "gitlab.com/loginid/software/services/loginid-vault/http/common"
 	"gitlab.com/loginid/software/services/loginid-vault/http/middlewares"
@@ -22,57 +23,97 @@ type WalletHandler struct {
 	AuthService  *middlewares.AuthService
 }
 
-type TxConnectRequest struct {
-	TxRawPayload string
-	origin       string
+type TxValidationRequest struct {
+	Transactions []WalletTransaction
+	Origin       string
 }
 
-type TxConnectResponse struct {
-	TxRawPayload string
-	TxNonce      string
-	AlgoTxID     string
+type WalletTransaction struct {
+	Txn string
+}
+
+type TxValidationResponse struct {
+	TxnData  []string `json:"txn_data"`
+	TxnType  []string `json:"txn_type"`
+	Required []bool   `json:"required"`
+	Username string   `json:"username"`
+}
+
+type PaymentTransaction struct {
+	From           string `json:"from"`
+	To             string `json:"to"`
+	Fee            uint64 `json:"fee"`
+	Amount         uint64 `json:"amount"`
+	Note           string `json:"note"`
+	RawData        string `json:"raw_data"`
+	SigningPayload string `json:"sign_payload"` // txnID
+	SigningNonce   string `json:"sign_nonce"`   // generated nonce
 }
 
 /**
 * TxConnectHandler parse and validate raw transaction payload for signing
 *
  */
-func (h *WalletHandler) TxConnectHandler(w http.ResponseWriter, r *http.Request) {
-	session := r.Context().Value("session").(services.UserSession)
+func (h *WalletHandler) TxValidationHandler(w http.ResponseWriter, r *http.Request) {
 
 	// check if session available
-	var request TxConnectRequest
+	var request TxValidationRequest
 	defer r.Body.Close()
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 		http_common.SendErrorResponse(w, services.NewError("failed to parse request"))
 		return
 	}
 
-	txn, err := algo.ParseTransaction(request.TxRawPayload)
+	if len(request.Transactions) != 1 {
+		http_common.SendErrorResponse(w, services.NewError("error - supported one transaction"))
+		return
+	}
+
+	rawData := request.Transactions[0].Txn
+	txn, err := algo.ParseTransaction(rawData)
 	if err != nil {
 		logger.ForRequest(r).Error(err.Error())
 		http_common.SendErrorResponse(w, services.NewError("invalid transaction format request"))
 		return
 	}
+	genesisHash := base64.StdEncoding.EncodeToString(txn.GenesisHash[:])
 	// check if sender origin has permission to user consent
-	allow := h.AlgoService.CheckUserDappConsent(session.Username, request.origin, txn.Sender.String())
-	if !allow {
+	username := h.AlgoService.CheckUserDappConsent(genesisHash, request.Origin, txn.Sender.String())
+	if username == "" {
 		http_common.SendErrorResponse(w, services.NewError("dapp transaction is not allowed"))
 		return
 	}
 
-	// check Lease if not inject Lease value
-	nonce, _ := utils.GenerateRandomString(32)
-	//txn.AddLeaseWithFlatFee()
-	//txn.AddLease([]byte(nonce))
-
 	id := h.AlgoService.GetTransactionID(*txn)
-	response := TxConnectResponse{
-		TxRawPayload: string(msgpack.Encode(txn)),
-		TxNonce:      nonce,
-		AlgoTxID:     id,
+	nonce, _ := utils.GenerateRandomString(16)
+	// filtering
+	if txn.Type == types.PaymentTx {
+		pTxn := PaymentTransaction{
+			From:           txn.Sender.String(),
+			To:             txn.Receiver.String(),
+			Fee:            uint64(txn.Fee),
+			Amount:         uint64(txn.Amount),
+			Note:           string(txn.Note),
+			RawData:        rawData,
+			SigningPayload: id,
+			SigningNonce:   nonce,
+		}
+		data, err := json.Marshal(pTxn)
+		if err != nil {
+			http_common.SendErrorResponse(w, services.NewError("transaction serialization error"))
+			return
+		}
+
+		response := TxValidationResponse{
+			TxnData:  []string{string(data)},
+			TxnType:  []string{"payment"},
+			Required: []bool{true},
+			Username: username,
+		}
+		http_common.SendSuccessResponse(w, response)
+		return
 	}
-	http_common.SendSuccessResponse(w, response)
+	http_common.SendErrorResponse(w, services.NewError("unsupported transaction"))
 
 }
 
@@ -170,11 +211,12 @@ func (h *WalletHandler) EnableHandler(w http.ResponseWriter, r *http.Request) {
 
 	// create enable accounts
 
-	sErr := h.AlgoService.AddEnableAccounts(session.Username, request.AddressList, request.Origin, request.Network)
+	genesis, sErr := h.AlgoService.AddEnableAccounts(session.Username, request.AddressList, request.Origin, request.Network)
 	if sErr != nil {
 		http_common.SendErrorResponse(w, *sErr)
+		return
 	}
 
-	http_common.SendSuccessResponse(w, map[string]interface{}{"success": true})
+	http_common.SendSuccessResponse(w, genesis)
 
 }

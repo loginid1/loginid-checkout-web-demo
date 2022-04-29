@@ -19,7 +19,8 @@ import vaultSDK from "../lib/VaultSDK";
 import { AuthService } from "../services/auth";
 import { CodeInput } from "../components/CodeInput";
 
-export const Register: React.FC = () => {
+//export const Register: React.FC = () => {
+export default function Register() {
   const navigate = useNavigate();
 
   const [username, setUsername] = useState("");

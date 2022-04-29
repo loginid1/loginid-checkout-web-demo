@@ -130,7 +130,6 @@ export class VaultAuth extends Base {
         assertionPayload.challenge = utils.encoding.base64ToBuffer(assertionPayload.challenge);
         if (assertionPayload.allowCredentials) {
             for (const credential of assertionPayload.allowCredentials) {
-                console.log("cred :" + credential.id);
                 credential.id = utils.encoding.base64ToBuffer(credential.id);
             }
         }
@@ -183,7 +182,6 @@ export class VaultAuth extends Base {
             initPayload,
         );
 
-        console.log(initResponse)
         // Process the register init response and request the credential creation from the browser
         const {  
             attestation_payload: attestationPayload
@@ -198,9 +196,7 @@ export class VaultAuth extends Base {
             publicKey.excludeCredentials = publicKey.excludeCredentials.map(utils.navigator.convertCredentialDescriptor);
         }
 
-        console.log("before payload")
         const credential = await utils.navigator.createCredential({ publicKey });
-        console.log("after payload")
         const response = <AuthenticatorAttestationResponse>credential.response
 
         const deviceName = this.getDeviceNameFromAgent()
@@ -229,7 +225,6 @@ export class VaultAuth extends Base {
         };
 
 
-        console.log("payload")
         // TODO: Check for backward compatibility
         return await utils.http.post(
             this._baseURL,
