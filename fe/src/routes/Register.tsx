@@ -16,7 +16,7 @@ import { LoginID } from "../theme/theme";
 import background from "../assets/background.svg";
 import logo from "../assets/logo.svg";
 import vaultSDK from "../lib/VaultSDK";
-import { AuthService } from "../lib//auth";
+import { AuthService } from "../services/auth";
 import { CodeInput } from "../components/CodeInput";
 
 export const Register: React.FC = () => {
