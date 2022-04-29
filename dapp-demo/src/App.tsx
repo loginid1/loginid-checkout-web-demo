@@ -1,22 +1,30 @@
-import { Routes, Route, Link, Navigate, Router } from "react-router-dom";
-import "./App.css";
-import Login from "./routes/Login";
-import { FidoVaultSDK } from "./lib/LoginidVaultSDK";
-import { Register } from "./routes/Register";
-import React, { useState } from "react";
-import { AuthService } from "./services/auth";
+import React from 'react';
+import logo from './logo.svg';
+import './App.css';
+import { FidoVaultSDK } from './lib/LoginidVaultSDK';
 
-export default function App() {
-  const [auth, setAuth] = useState(AuthService.isLoggedIn());
-  
+function App() {
+
+  function handleEnableClick(){
+    FidoVaultSDK.enable({network:"sandnet"});
+  }
   return (
     <div className="App">
-      <Routes>
-        <Route path="/" element={<Navigate replace to="/login" />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="*" element={<Navigate replace to="/login" />} />
-      </Routes>
+      <header className="App-header">
+        <p>
+          Edit <code>src/App.tsx</code> and save to reload.
+        </p>
+        <a
+          className="App-link"
+          onClick={handleEnableClick}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Test Enable
+        </a>
+      </header>
     </div>
   );
 }
+
+export default App;
