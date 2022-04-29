@@ -1,32 +1,38 @@
-import { Alert, Avatar, Box, Button, Container, createTheme, CssBaseline, Link, TextField, ThemeProvider, Typography } from '@mui/material';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import React, { useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import vaultSDK  from '../lib/VaultSDK';
-import { AuthService } from '../services/auth';
-import { NavigatorError } from '../lib/VaultSDK/utils/errors';
+import {
+  Alert,
+  Box,
+  Button,
+  CssBaseline,
+  Link,
+  TextField,
+  ThemeProvider,
+  Typography,
+} from "@mui/material";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import React, { useState } from "react";
+import { LoginID } from "../theme/theme";
+import background from "../assets/background.svg";
+import prodLogo from "../assets/logo.svg";
+import vaultSDK from "../lib/VaultSDK";
+import { AuthService } from "../services/auth";
 
-
-const theme = createTheme();
-
-function Login() {
-  
+const Login: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  let redirect_error = searchParams.get("redirect_error")
-  let redirect_url = searchParams.get("redirect_url")
-  if(redirect_error == null) {
-    redirect_error = '';
+  let redirect_error = searchParams.get("redirect_error");
+  let redirect_url = searchParams.get("redirect_url");
+  if (redirect_error == null) {
+    redirect_error = "";
   }
 
-  const [username, setUsername] = useState('');
+  const [username, setUsername] = useState("");
   const [errorMessage, setErrorMessage] = useState(redirect_error);
 
-  async function handleSubmit(e : React.FormEvent) {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       const response = await vaultSDK.authenticate(username);
-      AuthService.storeSession({username:username,token:response.jwt});
+      AuthService.storeSession({ username: username, token: response.jwt });
       if (redirect_url != null) {
         navigate(redirect_url);
       } else {
@@ -35,56 +41,74 @@ function Login() {
     } catch (error) {
       setErrorMessage((error as Error).message);
     }
-  }
+  };
   return (
-    <ThemeProvider theme={theme}>
-      <Container component="main" maxWidth="xs">
+    <ThemeProvider theme={LoginID}>
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "100vh",
+          backgroundImage: `url(${background})`,
+        }}
+      >
         <CssBaseline />
         <Box
           sx={{
-            marginTop: 8,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "60px",
+            borderRadius: "2%",
+            backgroundColor: "white",
+            maxWidth: "40%",
           }}
         >
-          <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
-            <LockOutlinedIcon />
-          </Avatar>
-          <Typography component="h1" variant="h5">
-            Let's log in securely
-          </Typography>
-          <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
-            {errorMessage.length > 0 &&
+          <Box
+            sx={{
+              width: "400px",
+              height: "69px",
+            }}
+          >
+            <img src={prodLogo} alt="logo"></img>
+            <Typography variant="h3" marginTop={2}>
+              Log in securely to your FIDO Vault Account.
+            </Typography>
+          </Box>
+
+          <Box component="form" onSubmit={handleSubmit} sx={{ mt: 4, maxWidth: "250px" }}>
+            {errorMessage.length > 0 && (
               <Alert severity="error">{errorMessage}</Alert>
-            }
+            )}
             <TextField
               margin="normal"
-              required
               fullWidth
               id="username"
               label="Username"
-              name="username"
-              autoComplete="username"
-              onChange= {e => setUsername(e.target.value)}
-              autoFocus
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              focused
             />
             <Button
               type="submit"
-              fullWidth
               variant="contained"
-              sx={{ mt: 3, mb: 2 }}
+              size="large"
+              sx={{ mt: 4, mb: 2 }}
             >
-              Next 
+              Login
             </Button>
-            <Typography  variant="body1" sx={{ mt: 3, ml: 5, mr: 5 }}>
-            Don't have an account? <Link href="./register">Register</Link>
-            </Typography>
           </Box>
+          <Typography variant="body1">
+            Don't have an account yet?{" "}
+            <Link href="./register">Create Account Now</Link>
+          </Typography>
         </Box>
-      </Container>
+      </Box>
     </ThemeProvider>
   );
-}
+};
 
 export default Login;

@@ -17,7 +17,7 @@ import WalletTxnConfirmation from './routes/api/WalletTransaction';
 
 
 function App() {
-  const [auth, setAuth] = useState(AuthService.isLoggedIn()); 
+  const [auth, setAuth] = useState(AuthService.isLoggedIn());
   return (
     <div className="App">
       <Routes>
@@ -37,6 +37,5 @@ function App() {
     </div>
   );
 }
-
 
 export default App;
