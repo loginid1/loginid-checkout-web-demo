@@ -38,7 +38,7 @@ function Home() {
 	const [errorMessage, setErrorMessage] = useState("");
 
 	useEffect(() => {
-		retrieveProfile();
+		// retrieveProfile();
 	}, []);
 
 	async function retrieveProfile() {
