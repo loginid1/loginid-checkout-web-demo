@@ -106,6 +106,20 @@ func (as *AlgorandNetworkService) compile(script string) (string, string, error)
 	return response.Hash, response.Result, nil
 }
 
+func (as *AlgorandNetworkService) PostTxn(script string) (string, string, error) {
+	compile_script := as.client.TealCompile([]byte(script))
+	if compile_script == nil {
+		return "", "", errors.New("failed to compile script")
+	}
+	response, err := compile_script.Do(context.Background())
+	if err != nil {
+		logger.Global.Error(err.Error())
+		return "", "", errors.New("failed to compile script")
+
+	}
+	return response.Hash, response.Result, nil
+}
+
 func updateTealScript(script string, pkList []string, recovery string) (string, error) {
 	for i, pk := range pkList {
 		var jwk services.EccJWK

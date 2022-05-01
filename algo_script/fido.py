@@ -29,8 +29,6 @@ def fido_signature(fido2_pk1x,fido2_pk1y,recovery_pk):
     return (
         If(verify_fido(fido2_pk1x,fido2_pk1y,sig1, sig2, clientData, authData, server_challenge,nonce,tx_b64))
         .Then(Int(1)) # exit success if fido2_pk1 successful
-        .ElseIf(verify_recovery(recovery_pk,sig1))
-        .Then(Int(1)) # exit success if recovery successful
         .Else(Int(0)) # exit fail
     )
 

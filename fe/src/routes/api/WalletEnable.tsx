@@ -161,8 +161,6 @@ export default function WalletEnable() {
 	}
 
 	async function handleCancel(){
-	//	MessagingService.sendMessage(window.opener,{})
-	//	setDisplayMessage({})
 		mService.sendErrorMessage("user cancel");
 		window.close();
 	}

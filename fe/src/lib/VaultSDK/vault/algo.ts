@@ -51,7 +51,8 @@ export interface TxnValidationResponse {
 }
 
 export interface SignedTxn {
-    txn: string;
+    stxn: string;
+    tx_id: string;
 }
 
 export interface PaymentTransaction {
@@ -117,35 +118,40 @@ export class VaultAlgo extends Base{
         );
     }
 
-    async txnConfirmation(username: string, payload: string, nonce: string) : Promise<SignedTxn> {
+    async txConfirmation(username: string, payload: string, nonce: string, rawTxn: string, post: boolean) : Promise<SignedTxn> {
 
         let headers;
 
         // Init the authentication flow
         let initPayload = <{
             username: string;
+            payload: string;
+            nonce: string;
         }> {
             username,
+            payload,
+            nonce,
         };
 
-
+        console.log(payload);
         let initResponse = await utils.http.post(
             this._baseURL,
-            "/api/authenticate/init",
+            "/api/wallet/txInit",
             initPayload,
             headers
         );
 
+        console.log(initResponse);
         // Process the authenticate init response and request the credential from the browser
         const {
-            assertion_payload: assertionPayload
+            assertion_options: assertionPayload,
+            tx_id: tx_id,
           } = initResponse;
 
         const { challenge } = assertionPayload;
         assertionPayload.challenge = utils.encoding.base64ToBuffer(assertionPayload.challenge);
         if (assertionPayload.allowCredentials) {
             for (const credential of assertionPayload.allowCredentials) {
-                console.log("cred :" + credential.id);
                 credential.id = utils.encoding.base64ToBuffer(credential.id);
             }
         }
@@ -161,9 +167,15 @@ export class VaultAlgo extends Base{
             client_data: string;
             authenticator_data: string;
             signature: string;
+            raw_txn: string;
+            tx_id: string;
+            post: boolean;
         }> {
             username,
                 challenge,
+                tx_id,
+                post,
+                raw_txn: rawTxn,
                 credential_id: utils.encoding.bufferToBase64(credential.rawId),
                 client_data: utils.encoding.bufferToBase64(response.clientDataJSON),
                 authenticator_data: utils.encoding.bufferToBase64(response.authenticatorData),
@@ -172,7 +184,7 @@ export class VaultAlgo extends Base{
 
         return await utils.http.post(
             this._baseURL,
-            "/api/authenticate/complete",
+            "/api/wallet/txComplete",
             completePayload,
         );
     }
