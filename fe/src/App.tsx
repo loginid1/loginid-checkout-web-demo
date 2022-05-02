@@ -19,6 +19,7 @@ import Credentials from './routes/protected/Credentials';
 
 function App() {
   const [auth, setAuth] = useState(AuthService.isLoggedIn());
+  
   return (
     <div className="App">
       <Routes>
