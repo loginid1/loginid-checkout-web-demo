@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -111,9 +112,11 @@ func main() {
 	dispenser := api.PathPrefix("/dispenser").Subrouter()
 	dispenser.HandleFunc("/withdraw", dispenserHandler.DispenserHandler)
 
+	cor_origins := goutil.GetEnv("CORS_ORIGIN", "http://localhost:3000,http://localhost:3030")
+	cor_array := strings.Split(cor_origins, ",")
 	//TODO: change CORS handling to middleware
 	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost", "http://localhost:3000", "http://localhost:3030"},
+		AllowedOrigins:   cor_array,
 		AllowCredentials: true,
 		AllowedHeaders:   []string{"Content-Type", "X-Session-Token", "x-api-token"},
 		// Enable Debugging for testing, consider disabling in production
