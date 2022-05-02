@@ -2,44 +2,42 @@ import { Box, Button, Grid, Paper, Typography } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import vaultSDK from "../lib/VaultSDK";
-import { Credentials } from "../lib/VaultSDK/vault/user";
+import { Credentials, RecoveryList } from "../lib/VaultSDK/vault/user";
 import { AuthService } from "../services/auth";
 import { CredentialCards } from "./CredentialCard";
+import { RecoveryCard } from "./RecoveryCard";
 
-export const CredentialsManage: React.FC = () => {
+export const RecoveryManage: React.FC = () => {
   const navigate = useNavigate();
-  
-  const [credentials, setCredentials] = useState<Credentials | null>(null);
+
+  const [recoveryList, setRecoveryList] = useState<RecoveryList | null>(null);
 
   useEffect(() => {
-    retrieveCredentials();
+    retrieveRecoveryList();
   });
 
-  async function retrieveCredentials() {
+  async function retrieveRecoveryList() {
     const token = AuthService.getToken();
     if (token) {
-      const myCredentials = await vaultSDK.getCredentials(token);
-      setCredentials(myCredentials);
+      const recoveryList = await vaultSDK.getRecoveryList(token);
+      setRecoveryList(recoveryList);
     } else {
     }
   }
 
   return (
     <Grid container spacing={2} direction="column">
-      <Grid item xs container direction="row" spacing={1}>
+      <Grid item xs container direction="row" spacing={2}>
         <Grid
           item
           xs={6}
           sx={{ display: "flex", justifyContent: "flex-start" }}
         >
-          <Typography variant="h2">My Credentials</Typography>
+          <Typography variant="h2">Recovery Options</Typography>
         </Grid>
         <Grid item xs={6} sx={{ display: "flex", justifyContent: "flex-end" }}>
-          <Button
-            variant="contained"
-            onClick={() => navigate("/add_credential")}
-          >
-            + Add New Credential
+          <Button variant="contained" onClick={() => navigate("/add_recovery")}>
+            + Add New Recovery Option
           </Button>
         </Grid>
         <Grid
@@ -48,15 +46,15 @@ export const CredentialsManage: React.FC = () => {
           sx={{ display: "flex", justifyContent: "flex-start" }}
         >
           <Typography variant="body2">
-            Credentials are a combination of browsers and devices used to give
-            you access to your account.
+            This feature will allow you to regain access to your account if you
+            lose/upgrade your credentials.
           </Typography>
         </Grid>
       </Grid>
-      <Grid item xs container direction="row" spacing={2}>
-        {credentials?.credentials.map((credential) => (
+      <Grid item xs container direction="column" spacing={2}>
+        {recoveryList?.recovery.map((recovery) => (
           <Grid item>
-            <CredentialCards credential={credential}></CredentialCards>
+            <RecoveryCard recovery={recovery}></RecoveryCard>
           </Grid>
         ))}
       </Grid>

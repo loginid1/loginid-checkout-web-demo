@@ -11,7 +11,7 @@ import {
   ThemeProvider,
   Toolbar,
 } from "@mui/material";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Profile } from "../../lib/VaultSDK/vault/user";
 import { AuthService } from "../../services/auth";
@@ -20,6 +20,8 @@ import background from "../../assets/background.svg";
 import { Menu } from "../../components/Menu";
 import VaultAppBar from "../../components/VaultAppbar";
 import { CredentialsManage } from "../../components/CredentialsManage";
+import { RecoveryManage } from "../../components/RecoveryManage";
+import vaultSDK from "../../lib/VaultSDK";
 
 const Credentials: React.FC = () => {
   const navigate = useNavigate();
@@ -27,6 +29,24 @@ const Credentials: React.FC = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [username, setUsername] = useState(AuthService.getUsername());
   const [errorMessage, setErrorMessage] = useState("");
+
+	useEffect(() => {
+		retrieveProfile();
+	}, []);
+
+	async function retrieveProfile() {
+		const token = AuthService.getToken();
+		if (token) {
+			const myProfile = await vaultSDK.getProfile(token);
+			setProfile(myProfile);
+		} else {
+			// redirect to login
+			navigate(
+				"/login?redirect_error=" +
+					encodeURIComponent("not authorized - please login again")
+			);
+		}
+	}
 
   return (
     <ThemeProvider theme={LoginID}>
@@ -60,8 +80,9 @@ const Credentials: React.FC = () => {
               </Grid>
               <Grid item xs={12} md={12} lg={12}>
                 <Paper
+                  elevation={0}
                   sx={{
-                    p: 4,
+                    p: 6,
                     display: "flex",
                     flexDirection: "column",
                   }}
@@ -71,13 +92,14 @@ const Credentials: React.FC = () => {
               </Grid>
               <Grid item xs={12} md={12} lg={12}>
                 <Paper
+                  elevation={0}
                   sx={{
-                    p: 2,
+                    p: 6,
                     display: "flex",
                     flexDirection: "column",
-                    height: 240,
                   }}
                 >
+                  <RecoveryManage />
                 </Paper>
               </Grid>
             </Grid>

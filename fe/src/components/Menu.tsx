@@ -18,8 +18,6 @@ import { ReactComponent as VaultLogo } from "../assets/logoContrast.svg";
 import LoginIDLogo from "../assets/sidemenu/LoginIDLogo.svg";
 import { useNavigate } from "react-router-dom";
 
-const drawerWidth = 246;
-
 const menuItems = [
   "Credential",
   "Algorand",
@@ -34,12 +32,15 @@ export const Menu: React.FC = () => {
 
   const clickMenu = (index: number) => {
     setActiveMenu(index);
-    navigate("/"+menuItems[index]);
+    navigate("/" + menuItems[index]);
   };
+
+  const drawerWidth = 246;
 
   const menuList = menuItems.map((item, index) => {
     return (
       <MenuItem
+        key={item}
         name={item}
         index={index}
         active={activeMenu === index}
@@ -53,13 +54,12 @@ export const Menu: React.FC = () => {
       <Drawer
         variant="permanent"
         anchor="left"
-        open
         sx={{
           width: `${drawerWidth}px`,
           minHeight: "100vh",
-          flexShrink: 1,
+          flexShrink: 0,
           "& .MuiDrawer-paper": {
-            width: drawerWidth,
+            width: `${drawerWidth}px`,
           },
         }}
       >
@@ -73,6 +73,7 @@ export const Menu: React.FC = () => {
             zIndex: "-1",
           }}
         >
+          {/* Hard Coded */}
           <Box sx={{ mt: "34px", mb: "34px" }}>
             <VaultLogo />
           </Box>
@@ -83,14 +84,13 @@ export const Menu: React.FC = () => {
             borderRadius: "2%",
             mt: "-10px",
             height: "100vh",
-            display:"flex",
-            flexDirection:"column",
+            display: "flex",
+            flexDirection: "column",
             backgroundColor: "white",
           }}
         >
-          <List component="nav">{menuList}</List>
+          <List>{menuList}</List>
 
-          
           <Stack spacing={2} sx={{ mt: "auto", mb: 2 }}>
             <Link href="#" color="#615E5E" sx={{ textDecoration: "none" }}>
               <Typography variant="body1">Contact Us</Typography>
@@ -107,7 +107,8 @@ export const Menu: React.FC = () => {
                 justifyContent: "center",
               }}
             >
-              powered by&nbsp;<img src={LoginIDLogo} alt="something" />
+              powered by&nbsp;
+              <img src={LoginIDLogo} alt="something" />
             </Typography>
           </Stack>
         </Box>
