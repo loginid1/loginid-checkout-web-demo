@@ -103,6 +103,8 @@ func main() {
 	wallet := api.PathPrefix("/wallet").Subrouter()
 	wallet.HandleFunc("/enable", walletHandler.EnableHandler)
 	wallet.HandleFunc("/txValidation", walletHandler.TxValidationHandler)
+	wallet.HandleFunc("/txInit", walletHandler.TxInitHandler)
+	wallet.HandleFunc("/txComplete", walletHandler.TxCompleteHandler)
 
 	//TODO: change CORS handling to middleware
 	c := cors.New(cors.Options{

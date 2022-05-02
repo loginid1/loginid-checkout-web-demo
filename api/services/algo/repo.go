@@ -36,10 +36,12 @@ func (repo *AlgoRepository) AddAlgoAccount(username string, account *AlgoAccount
 
 	var user user.User
 	if err := tx.Where("username = ?", username).Take(&user).Error; err != nil {
+		tx.Rollback()
 		return err
 	}
 
 	if user.ID == "" {
+		tx.Rollback()
 		return errors.New("no user found")
 	}
 
@@ -65,6 +67,16 @@ func (repo *AlgoRepository) GetAccountList(username string) ([]AlgoAccount, erro
 	return accounts, nil
 }
 
+func (repo *AlgoRepository) GetAccountByAddress(address string) (*AlgoAccount, error) {
+
+	var account AlgoAccount
+	err := repo.DB.Where("algo_accounts.address=?", address).Take(&account).Error
+	if err != nil {
+		return nil, err
+	}
+	return &account, nil
+}
+
 func (repo *AlgoRepository) CheckOriginPermission(address string, origin string, network string) (*user.User, error) {
 
 	var user user.User
@@ -86,6 +98,7 @@ func (repo *AlgoRepository) AddEnableAccount(enable EnableAccount) error {
 		if r := recover(); r != nil {
 			tx.Rollback()
 		}
+
 	}()
 
 	if err := tx.Error; err != nil {
@@ -96,6 +109,7 @@ func (repo *AlgoRepository) AddEnableAccount(enable EnableAccount) error {
 	var found EnableAccount
 	tx.Where("wallet_address=?", enable.WalletAddress).Where("dapp_origin=?", enable.DappOrigin).Where("network=?", enable.Network).Take(&found)
 	if found.ID != "" {
+		tx.Rollback()
 		return nil
 	}
 

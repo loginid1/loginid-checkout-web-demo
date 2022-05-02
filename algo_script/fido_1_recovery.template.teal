@@ -1,17 +1,22 @@
-#pragma version 7
+#pragma version 5
+txn TxID
+arg 6
+base64_decode URLEncoding
+==
 arg 2
 byte "challenge"
 json_ref JSONString
 byte "="
 concat
 base64_decode URLEncoding
-txn TxID
-txn Lease
+arg 6
+arg 5
 concat
 arg 4
 concat
 sha256
 ==
+&&
 arg 3
 arg 2
 sha256
@@ -26,7 +31,7 @@ ecdsa_verify Secp256r1
 bnz main_l4
 txn TxID
 arg 0
-addr RRRRR55555RRRRR55555RRRRR55555RRRRR55555RRRRR5555522224444
+addr XQWXNV7XXLCOWY5TKIKKSDAEEIN7J4FRF3SQJ4GES4KL43TGDT2FXY7UVI
 ed25519verify
 bnz main_l3
 int 0

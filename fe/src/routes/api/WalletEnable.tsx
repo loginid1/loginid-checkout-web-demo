@@ -6,6 +6,8 @@ import { EnableOpts, EnableResult } from "../../lib/common/api";
 import vaultSDK from "../../lib/VaultSDK";
 import { AccountList, Genesis } from "../../lib/VaultSDK/vault/algo";
 import { ThemeProvider } from "@emotion/react";
+import VaultLogo from "../../assets/logo_light.svg";
+import styles from "../../styles/common.module.css";
 import {
 	Container,
 	AppBar,
@@ -17,8 +19,11 @@ import {
 	FormControlLabel,
 	Button,
 	AlertColor,
+	Link,
+	Box,
 } from "@mui/material";
 import { DisplayMessage } from "../../lib/common/message";
+import ParseUtil from "../../lib/util/parse";
 
 interface WalletEnableSession {
 	network: string;
@@ -161,47 +166,43 @@ export default function WalletEnable() {
 	}
 
 	async function handleCancel(){
-	//	MessagingService.sendMessage(window.opener,{})
-	//	setDisplayMessage({})
 		mService.sendErrorMessage("user cancel");
 		window.close();
 	}
 
 	return (
 		<ThemeProvider theme={theme}>
-			<Container component="main" maxWidth="xs">
-				<AppBar position="static">
-					<Toolbar variant="dense">
-						<Typography
-							variant="h6"
-							color="inherit"
-							component="div"
-						>
-							Account Consent
-						</Typography>
-					</Toolbar>
-				</AppBar>
+			<Container component="main" >
+				<Box sx={{m:4}}>
+				
+					<img src={VaultLogo} width="160" height="30"/>
 
+				</Box>
 				{displayMessage &&
 				<Alert severity={displayMessage?.type as AlertColor || 'info'} sx={{mt: 4}}>{displayMessage.text}</Alert>
 				}
 				
 				<Typography
-					sx={{ m: 2 }}
+					sx={{ m: 1 }}
+					variant="subtitle1"
+				>
+					Request come from <Link>{enable?.origin }</Link> app <br />
+				</Typography>
+				<Typography
+					sx={{ m: 1 }}
 					variant="body2"
 					color="text.secondary"
-					align="left"
 				>
-					dApp origin: {enable?.origin } <br />
-					Network: {enable?.network } <br />
+					Origin network: {enable?.network } <br />
 				</Typography>
-				{accountList == null && <p>You have no account setup yet!</p>}
 
 				{accountList?.accounts?.map((account) => (
-					<FormControlLabel
-						label={account.address}
+					<Box >
+					<FormControlLabel  sx={{width: "80%", m:1}} className={styles.formControl}
+						label={ParseUtil.displayLongAddress(account.address)}
 						control={<Checkbox id={account.address} value={account.address} onChange={accountSelection}/>}
 					/>
+					</Box>
 				))}
 
 				<Button fullWidth variant="contained" onClick={handleEnable} sx={{ mt: 1, mb: 1 }}>

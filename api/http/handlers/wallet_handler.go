@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/algorand/go-algorand-sdk/types"
@@ -40,14 +41,14 @@ type TxValidationResponse struct {
 }
 
 type PaymentTransaction struct {
-	From           string `json:"from"`
-	To             string `json:"to"`
-	Fee            uint64 `json:"fee"`
-	Amount         uint64 `json:"amount"`
-	Note           string `json:"note"`
-	RawData        string `json:"raw_data"`
-	SigningPayload string `json:"sign_payload"` // txnID
-	SigningNonce   string `json:"sign_nonce"`   // generated nonce
+	From        string `json:"from"`
+	To          string `json:"to"`
+	Fee         uint64 `json:"fee"`
+	Amount      uint64 `json:"amount"`
+	Note        string `json:"note"`
+	RawData     string `json:"raw_data"`
+	SignPayload string `json:"sign_payload"` // txnID
+	SignNonce   string `json:"sign_nonce"`   // generated nonce
 }
 
 /**
@@ -84,19 +85,25 @@ func (h *WalletHandler) TxValidationHandler(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	id := h.AlgoService.GetTransactionID(*txn)
+	//id := h.AlgoService.GetTransactionID(*txn)
+	id := algo.TxIDFromTransactionB64(*txn)
+	/*
+		id_raw, err := base32.StdEncoding.WithPadding(base32.NoPadding).DecodeString(id)
+		if err != nil {
+			logger.ForRequest(r).Error("convert txID error")
+		}*/
 	nonce, _ := utils.GenerateRandomString(16)
 	// filtering
 	if txn.Type == types.PaymentTx {
 		pTxn := PaymentTransaction{
-			From:           txn.Sender.String(),
-			To:             txn.Receiver.String(),
-			Fee:            uint64(txn.Fee),
-			Amount:         uint64(txn.Amount),
-			Note:           string(txn.Note),
-			RawData:        rawData,
-			SigningPayload: id,
-			SigningNonce:   nonce,
+			From:        txn.Sender.String(),
+			To:          txn.Receiver.String(),
+			Fee:         uint64(txn.Fee),
+			Amount:      uint64(txn.Amount),
+			Note:        string(txn.Note),
+			RawData:     rawData,
+			SignPayload: id,
+			SignNonce:   nonce,
 		}
 		data, err := json.Marshal(pTxn)
 		if err != nil {
@@ -118,9 +125,9 @@ func (h *WalletHandler) TxValidationHandler(w http.ResponseWriter, r *http.Reque
 }
 
 type TxInitRequest struct {
-	Username  string `json:"username"`
-	TxPayload string `json:"tx_payload"`
-	TxNonce   string `json:"tx_nonce"`
+	Username string `json:"username"`
+	Payload  string `json:"payload"`
+	Nonce    string `json:"nonce"`
 }
 
 /**
@@ -128,7 +135,6 @@ type TxInitRequest struct {
 
 func (h *WalletHandler) TxInitHandler(w http.ResponseWriter, r *http.Request) {
 
-	session := r.Context().Value("session").(services.UserSession)
 	var request TxInitRequest
 	defer r.Body.Close()
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
@@ -137,9 +143,13 @@ func (h *WalletHandler) TxInitHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	logger.Global.Info(fmt.Sprintf("txInit request %#v", request))
+
+	fmt.Println([]byte(request.Payload))
 	// proxy transaction/init request to fido2 service
-	response, err := h.Fido2Service.TransactionInit(session.Username, request.TxPayload, request.TxNonce)
+	response, err := h.Fido2Service.TransactionInit(request.Username, request.Payload, request.Nonce)
 	if err != nil {
+		logger.ForRequest(r).Error(err.Message)
 		http_common.SendErrorResponse(w, *err)
 		return
 	}
@@ -147,19 +157,21 @@ func (h *WalletHandler) TxInitHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 type TxCompleteRequest struct {
-	Username        string `json:"username"`
-	DeviceName      string `json:"device_name"`
-	Challenge       string `json:"challenge"`
-	CredentialUuid  string `json:"credential_uuid"`
-	CredentialID    string `json:"credential_id"`
-	ClientData      string `json:"client_data"`
-	AttestationData string `json:"attestation_data"`
-	TxID            string `json:"tx_id"`
-	TxRawPayload    string `json:"tx_raw_payload"`
+	Username          string `json:"username"`
+	Challenge         string `json:"challenge"`
+	CredentialUuid    string `json:"credential_uuid"`
+	CredentialID      string `json:"credential_id"`
+	ClientData        string `json:"client_data"`
+	AuthenticatorData string `json:"authenticator_data"`
+	Signature         string `json:"signature"`
+	TxID              string `json:"tx_id"`
+	RawTxn            string `json:"raw_txn"`
+	Post              bool   `json:"post"`
 }
 
 type TxCompleteResponse struct {
-	TxSignPayload string `json:"tx_sign_payload"`
+	Stxn string `json:"stxn"`
+	TxID string `json:"tx_id"`
 }
 
 /**
@@ -169,22 +181,31 @@ func (h *WalletHandler) TxCompleteHandler(w http.ResponseWriter, r *http.Request
 	var request TxCompleteRequest
 	defer r.Body.Close()
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		logger.ForRequest(r).Error(err.Error())
 		http_common.SendErrorResponse(w, services.NewError("failed to parse request"))
 		return
 	}
 
 	// send to fido2 server
 	// proxy transaction/complete request to fido2 service
-	response, err := h.Fido2Service.TransactionComplete(request.Username, request.TxID, request.CredentialUuid, request.CredentialID, request.Challenge, request.AttestationData, request.ClientData)
+	response, err := h.Fido2Service.TransactionComplete(request.Username, request.TxID, request.CredentialID, request.Challenge, request.AuthenticatorData, request.ClientData, request.Signature)
 	if err != nil {
 		logger.ForRequest(r).Error(err.Message)
-		http_common.SendErrorResponse(w, services.NewError("transaction error"))
+		http_common.SendErrorResponse(w, services.NewError("transaction fido error"))
 		return
 	}
 
 	// need to conpute sign transaction package here
+	id, stxn, err := h.AlgoService.SignedTransaction(request.RawTxn, request.Signature, request.ClientData, request.AuthenticatorData, response.Jwt)
+	if err != nil {
+		logger.ForRequest(r).Error(err.Message)
+		http_common.SendErrorResponse(w, services.NewError("transaction signing error"))
+		return
+	}
 
-	http_common.SendSuccessResponseRaw(w, response)
+	logger.ForRequest(r).Info("transaction success")
+
+	http_common.SendSuccessResponse(w, TxCompleteResponse{TxID: id, Stxn: stxn})
 }
 
 type EnableRequest struct {

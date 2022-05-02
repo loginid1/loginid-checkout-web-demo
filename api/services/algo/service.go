@@ -1,13 +1,21 @@
 package algo
 
 import (
+	"context"
+	"encoding/base32"
+	"encoding/base64"
+	"fmt"
 	"strings"
 
+	"github.com/algorand/go-algorand-sdk/crypto"
 	algo_crypto "github.com/algorand/go-algorand-sdk/crypto"
+	"github.com/algorand/go-algorand-sdk/encoding/msgpack"
+	"github.com/algorand/go-algorand-sdk/future"
 	"github.com/algorand/go-algorand-sdk/types"
 	"gitlab.com/loginid/software/libraries/goutil.git/logger"
 	"gitlab.com/loginid/software/services/loginid-vault/services"
 	"gitlab.com/loginid/software/services/loginid-vault/services/user"
+	"gitlab.com/loginid/software/services/loginid-vault/utils"
 	"gorm.io/gorm"
 )
 
@@ -57,7 +65,7 @@ func (algo *AlgoService) CreateAccount(username string, verify_address string, c
 	}
 
 	_, err = algo.AlgoRepository.LookupAddress(verify_address)
-	if err != nil {
+	if err == nil {
 		return services.CreateError("address already existed! ")
 	}
 
@@ -218,6 +226,115 @@ func (algo *AlgoService) GetTransactionID(txn types.Transaction) string {
 	return algo_crypto.GetTxID(txn)
 }
 
+type TxClaims struct {
+	Issuer      string `json:"iss,omitempty"`
+	Subject     string `json:"sub,omitempty"`
+	Audience    string `json:"aud,omitempty"`
+	Username    string `json:"udata,omitempty"`
+	IssuedAt    int64  `json:"iat,omitempty"`
+	ID          string `json:"jti,omitempty"`
+	Nonce       string `json:"nonce,omitempty"`
+	ServerNonce string `json:"server_nonce,omitempty"`
+	TxHash      string `json:"tx_hash,omitempty"`
+}
+
+func (algo *AlgoService) SignedTransaction(txnRaw string, signData string, clientData string, authData string, jwt string) (string, string, *services.ServiceError) {
+	txn, err := ParseTransaction(txnRaw)
+	if err != nil {
+		return "", "", services.CreateError("failed to parse txn")
+	}
+	// get sender logicsignature
+
+	// get logic signature
+	account, err := algo.AlgoRepository.GetAccountByAddress(txn.Sender.String())
+	if err != nil {
+		return "", "", services.CreateError("account not found")
+	}
+	program, err := base64.StdEncoding.DecodeString(account.CompileScript)
+	if err != nil {
+		return "", "", services.CreateError("account script error")
+	}
+
+	// build args
+	// extract nonce, server_challenge from jwt
+	var claims TxClaims
+	err = utils.ParseClaims(jwt, &claims)
+	if err != nil {
+		return "", "", services.CreateError("invalid txn claim")
+	}
+	sig1, sig2, err := utils.ConvertSignatureRS(signData)
+	if err != nil {
+		return "", "", services.CreateError("invalid txn signature")
+	}
+	/*
+		client_data_b64, err := utils.ConvertBase64UrlToBase64(clientData)
+		if err != nil {
+			logger.Global.Error(fmt.Sprintf("invalid client_data %v", err))
+			return "", "", services.CreateError("invalid txn signature")
+		}*/
+	client_data_byte, err := base64.RawURLEncoding.DecodeString(clientData)
+	if err != nil {
+		logger.Global.Error(fmt.Sprintf("invalid client_data %v", err))
+		return "", "", services.CreateError("invalid txn signature")
+	}
+	auth_data_byte, err := base64.RawURLEncoding.DecodeString(authData)
+	if err != nil {
+		logger.Global.Error(fmt.Sprintf("invalid auth_data %v", err))
+		return "", "", services.CreateError("invalid txn signature")
+	}
+	server_challenge_byte := []byte(claims.ServerNonce)
+	nonce_byte := []byte(claims.Nonce)
+	payload_byte := []byte(TxIDFromTransactionB64(*txn))
+
+	// string parameter
+
+	//sig1 = Arg(0)
+	//sig2 = Arg(1)
+	//clientData = Arg(2)
+	//authData = Arg(3)
+	//server_challenge = Arg(4)
+	//nonce = Arg(5)
+	args := make([][]byte, 7)
+	args[0] = sig1
+	args[1] = sig2
+	args[2] = client_data_byte
+	args[3] = auth_data_byte
+	args[4] = server_challenge_byte
+	args[5] = nonce_byte
+	args[6] = payload_byte
+
+	lsig, err := MakeLogicSig(program, args)
+	if err != nil {
+		logger.Global.Error(fmt.Sprintf("make logicsig failed with %v", err))
+		return "", "", services.CreateError("invalid txn signature")
+	}
+
+	txID, stx, err := SignLogicsigTransaction(lsig, *txn)
+	if err != nil {
+		logger.Global.Error(fmt.Sprintf("Signing failed with %v", err))
+		return "", "", services.CreateError("invalid txn signature")
+	}
+
+	// Submit the raw transaction to network
+	transactionID, err := algo.AlgoNet.client.SendRawTransaction(stx).Do(context.Background())
+	if err != nil {
+		fmt.Printf("Sending failed with %v\n", err)
+		return "", "", services.CreateError("failed to submit transaction")
+	}
+
+	// Wait for confirmation
+	confirmedTxn, err := future.WaitForConfirmation(algo.AlgoNet.client, transactionID, 4, context.Background())
+	if err != nil {
+		fmt.Printf("Error waiting for confirmation on txID: %s\n", transactionID)
+		return "", "", services.CreateError("failed to confirm transaction")
+	}
+	fmt.Printf("Confirmed Transaction: %s in Round %d\n", transactionID, confirmedTxn.ConfirmedRound)
+
+	stx_b64 := base64.StdEncoding.EncodeToString(stx)
+	return txID, stx_b64, nil
+
+}
+
 func extractCredentialPKs(credentials []user.UserCredential) []string {
 	var credList []string
 	for _, cred := range credentials {
@@ -247,4 +364,61 @@ func convertStringArrayToText(strArray []string) string {
 
 func convertTextToStringArray(arrayText string) []string {
 	return strings.Split(arrayText, ",")
+}
+
+func MakeLogicSig(program []byte, args [][]byte) (lsig types.LogicSig, err error) {
+	lsig.Logic = program
+	lsig.Args = args
+	return
+}
+
+// SignLogicsigTransaction takes LogicSig object and a transaction and returns the
+// bytes of a signed transaction ready to be broadcasted to the network
+// Note, LogicSig actually can be attached to any transaction and it is a
+// program's responsibility to approve/decline the transaction
+//
+// This function supports signing transactions with a sender that differs from
+// the LogicSig's address, EXCEPT IF the LogicSig is delegated to a non-multisig
+// account. In order to properly handle that case, create a LogicSigAccount and
+// use SignLogicSigAccountTransaction instead.
+func SignLogicsigTransaction(lsig types.LogicSig, tx types.Transaction) (txid string, stxBytes []byte, err error) {
+
+	lsigAddress := crypto.LogicSigAddress(lsig)
+	txid, stxBytes, err = signLogicSigTransactionWithAddress(lsig, lsigAddress, tx)
+	return
+}
+
+// txIDFromTransaction is a convenience function for generating txID from txn
+func txIDFromTransaction(tx types.Transaction) (txid string) {
+	txidBytes := crypto.TransactionID(tx)
+	txid = base32.StdEncoding.WithPadding(base32.NoPadding).EncodeToString(txidBytes[:])
+	return
+}
+
+// txIDFromTransactionB64 is a convenience function for generating txID from txn
+func TxIDFromTransactionB64(tx types.Transaction) (txid string) {
+	txidBytes := crypto.TransactionID(tx)
+	txid = base64.URLEncoding.EncodeToString(txidBytes[:])
+	return
+}
+
+// signLogicSigTransactionWithAddress signs a transaction with a LogicSig.
+//
+// lsigAddress is the address of the account that the LogicSig represents.
+func signLogicSigTransactionWithAddress(lsig types.LogicSig, lsigAddress types.Address, tx types.Transaction) (txid string, stxBytes []byte, err error) {
+
+	txid = txIDFromTransaction(tx)
+	// Construct the SignedTxn
+	stx := types.SignedTxn{
+		Lsig: lsig,
+		Txn:  tx,
+	}
+
+	if stx.Txn.Sender != lsigAddress {
+		stx.AuthAddr = lsigAddress
+	}
+
+	// Encode the SignedTxn
+	stxBytes = msgpack.Encode(stx)
+	return
 }

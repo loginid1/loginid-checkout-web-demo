@@ -2,6 +2,7 @@ package utils
 
 import (
 	"crypto/ecdsa"
+	"crypto/sha256"
 	"crypto/x509"
 	"encoding/asn1"
 	"encoding/base64"
@@ -78,12 +79,26 @@ func VerifyClaims(token string, key *ecdsa.PublicKey, out interface{}) error {
 
 }
 
+func ParseClaims(token string, out interface{}) error {
+
+	tok, err := jwt.ParseSigned(token)
+	if err != nil {
+		return err
+	}
+
+	if err := tok.UnsafeClaimsWithoutVerification(&out); err != nil {
+		return err
+	}
+	return nil
+}
+
 type ApiClaims struct {
-	Type     string `json:"type,omitempty"`
-	Nonce    string `json:"nonce,omitempty"`
-	Username string `json:"username,omitempty"`
-	Sub      string `json:"sub,omitempty"`
-	IssuedAt int64  `json:"iat,omitempty"`
+	Type        string `json:"type,omitempty"`
+	Nonce       string `json:"nonce,omitempty"`
+	Username    string `json:"username,omitempty"`
+	Sub         string `json:"sub,omitempty"`
+	IssuedAt    int64  `json:"iat,omitempty"`
+	PayloadHash string `json:"payload_hash,omitempty"`
 }
 
 func GenerateLoginApiTokenByUsername(key *ecdsa.PrivateKey, tokenType string, username string, payload string) (string, error) {
@@ -93,6 +108,11 @@ func GenerateLoginApiTokenByUsername(key *ecdsa.PrivateKey, tokenType string, us
 		Nonce:    nonce,
 		Username: username,
 		IssuedAt: time.Now().Unix(),
+	}
+	if payload != "" {
+		h := sha256.Sum256([]byte(payload))
+		hash := base64.RawURLEncoding.EncodeToString(h[:])
+		claim.PayloadHash = hash
 	}
 
 	sig, err := jose.NewSigner(jose.SigningKey{Algorithm: jose.ES256, Key: key}, (&jose.SignerOptions{}).WithType("JWT"))
@@ -150,4 +170,22 @@ func ConvertSignatureBase64RS(signature string) (string, string, error) {
 	}
 
 	return base64.StdEncoding.EncodeToString(sig.R.Bytes()), base64.StdEncoding.EncodeToString(sig.S.Bytes()), nil
+}
+
+/**
+* signature base64Url encode
+ */
+func ConvertSignatureRS(signature string) ([]byte, []byte, error) {
+
+	decode, err := base64.RawURLEncoding.DecodeString(signature)
+	if err != nil {
+		return nil, nil, err
+	}
+	var sig ECDSASig
+	_, err = asn1.Unmarshal(decode, &sig)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return sig.R.Bytes(), sig.S.Bytes(), nil
 }
