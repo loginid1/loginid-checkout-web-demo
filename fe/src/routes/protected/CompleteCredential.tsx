@@ -64,11 +64,11 @@ const CompleteCredential: React.FC = () => {
                     justifyContent="space-evenly"
                   >
                     <Typography variant="h2" color="secondary">
-                      New Credential Created{" "}
+                      New Credential Created
                     </Typography>
                     <Typography variant="body1">
                       Congratulations! You have successfully created a new
-                      credential from your current device/browser.{" "}
+                      credential from your current device/browser.
                     </Typography>
                     <img
                       src={CompleteImg}

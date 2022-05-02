@@ -12,7 +12,6 @@ import { useNavigate } from "react-router-dom";
 import { Menu } from "../../components/Menu";
 import VaultAppBar from "../../components/VaultAppbar";
 import { LoginID } from "../../theme/theme";
-import CompleteImg from "../../assets/CompleteCredential.png";
 import { ArrowBack } from "@mui/icons-material";
 import vaultSDK from "../../lib/VaultSDK";
 import { useState } from "react";
@@ -22,13 +21,11 @@ import { AuthService } from "../../services/auth";
 const AddRecovery: React.FC = () => {
   const navigate = useNavigate();
 
-  const [recovery, setRecovery] = useState<RecoveryPhrase | null>(null);
 
   async function handleCreateRecovery() {
     const token = AuthService.getToken();
     if (token) {
         const recovery = await vaultSDK.createRecovery(token);
-        setRecovery(recovery);
         navigate("/complete_recovery", {
             state: recovery
         })

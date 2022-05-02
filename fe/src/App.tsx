@@ -38,8 +38,6 @@ function App() {
           <Route path="/add_recovery" element={<AddRecovery />} />
           <Route path="/complete_recovery" element={<CompleteRecovery />} />
 
-
-          {/* Remove later */}
           <Route path="/oldhome" element={<Home />} /> 
 
           <Route path="/manage_credential" element={<ManageCredential />} />

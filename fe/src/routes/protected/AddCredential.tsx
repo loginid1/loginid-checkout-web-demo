@@ -3,10 +3,7 @@ import {
   Button,
   CssBaseline,
   Dialog,
-  DialogActions,
-  DialogContent,
   DialogContentText,
-  DialogTitle,
   Grid,
   Paper,
   Stack,
@@ -16,7 +13,6 @@ import {
 } from "@mui/material";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Profile } from "../../lib/VaultSDK/vault/user";
 import { AuthService } from "../../services/auth";
 import { LoginID } from "../../theme/theme";
 import { Menu } from "../../components/Menu";
@@ -54,6 +50,7 @@ const AddCredential: React.FC = () => {
   const handleCloseCredential = () => {
     setOpenCredential(false);
     setIsCodeGenerated(true);
+    navigate("/home");
   };
 
   const handleRestartCredential = () => {
@@ -150,14 +147,13 @@ const AddCredential: React.FC = () => {
                         label="Credential name"
                         onChange={(e) => setCredentialName(e.target.value)}
                         focused
-                      />{" "}
+                      />
                       <Stack direction="row" spacing={2}>
                         <Button onClick={handleRestartCredential}>
                           <ArrowBack />
                           &nbsp;Back
                         </Button>
                         <Button
-                          variant="contained"
                           color="primary"
                           onClick={handleCompleteCredential}
                         >
@@ -205,6 +201,14 @@ const AddCredential: React.FC = () => {
                       <DialogContentText>
                         This code will expire in 5 minutes
                       </DialogContentText>
+
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={handleCloseCredential}
+                      >
+                        Close
+                      </Button>
                     </Stack>
                   </Dialog>
                 </Paper>
