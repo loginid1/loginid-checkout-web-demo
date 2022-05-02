@@ -62,6 +62,7 @@ export interface PaymentTransaction {
     amount: number;
     note: string;
     raw_data: string;
+    iat: string;
     sign_payload: string; // txnID
     sign_nonce: string; // generated nonce
 }
