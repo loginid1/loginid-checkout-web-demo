@@ -106,11 +106,16 @@ func main() {
 	wallet.HandleFunc("/txInit", walletHandler.TxInitHandler)
 	wallet.HandleFunc("/txComplete", walletHandler.TxCompleteHandler)
 
+	// dispenser handler
+	dispenserHandler := handlers.DispenserHandler{AlgoService: algoService}
+	dispenser := api.PathPrefix("/dispenser").Subrouter()
+	dispenser.HandleFunc("/withdraw", dispenserHandler.DispenserHandler)
+
 	//TODO: change CORS handling to middleware
 	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost", "http://localhost:3000"},
+		AllowedOrigins:   []string{"http://localhost", "http://localhost:3000", "http://localhost:3030"},
 		AllowCredentials: true,
-		AllowedHeaders:   []string{"Content-Type", "X-Session-Token"},
+		AllowedHeaders:   []string{"Content-Type", "X-Session-Token", "x-api-token"},
 		// Enable Debugging for testing, consider disabling in production
 		Debug: true,
 	})

@@ -37,6 +37,18 @@ func SendErrorResponseWithCode(w http.ResponseWriter, code string, message strin
 	w.Write(jsonResponse)
 }
 
+func SendSuccess(w http.ResponseWriter) {
+
+	jsonResponse, jsonError := json.Marshal(map[string]interface{}{"success": true})
+
+	if jsonError != nil {
+		logger.Global.Error("failed to encode success json")
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(jsonResponse)
+}
+
 func SendSuccessResponse(w http.ResponseWriter, response interface{}) {
 
 	jsonResponse, jsonError := json.Marshal(response)

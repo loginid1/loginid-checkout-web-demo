@@ -23,6 +23,7 @@ import CompleteRecovery from './routes/protected/CompleteRecovery';
 
 function App() {
   const [auth, setAuth] = useState(AuthService.isLoggedIn());
+  
   return (
     <div className="App">
       <Routes>
