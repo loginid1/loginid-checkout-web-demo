@@ -24,6 +24,11 @@ type Fido2Service struct {
 	apiKey      *ecdsa.PrivateKey
 }
 
+type FidoResponse struct {
+	Jwt     string `json:"jwt"`
+	Success bool   `json:"success"`
+}
+
 func NewFido2Service(clientID string, baseURL string, apiClientID string, apiPem string) (*Fido2Service, error) {
 	var netTransport = &http.Transport{
 		Dial: (&net.Dialer{
@@ -209,7 +214,7 @@ func (f *Fido2Service) TransactionInit(username string, tx_payload string, tx_no
 		"username":   username,
 		"tx_type":    "text",
 		"tx_payload": tx_payload,
-		"tx_nonce":   tx_nonce,
+		"nonce":      tx_nonce,
 	}
 
 	data, err := json.Marshal(request)
@@ -240,7 +245,7 @@ func (f *Fido2Service) TransactionInit(username string, tx_payload string, tx_no
 	return respBody, nil
 }
 
-func (f *Fido2Service) TransactionComplete(username string, tx_id string, credential_id string, challenge string, authenticator_data string, client_data string, signature string) ([]byte, *services.ServiceError) {
+func (f *Fido2Service) TransactionComplete(username string, tx_id string, credential_id string, challenge string, authenticator_data string, client_data string, signature string) (*FidoResponse, *services.ServiceError) {
 
 	/*
 		assertion_payload := map[string]string{
@@ -284,7 +289,12 @@ func (f *Fido2Service) TransactionComplete(username string, tx_id string, creden
 		msg := decodeError(respBody)
 		return nil, &services.ServiceError{Message: msg.Message}
 	}
-	return respBody, nil
+	var fresp FidoResponse
+	err = json.Unmarshal(respBody, &fresp)
+	if err != nil {
+		return nil, &services.ServiceError{Message: "transaction response error"}
+	}
+	return &fresp, nil
 }
 
 func (f *Fido2Service) GenerateCode(userID string) ([]byte, *services.ServiceError) {

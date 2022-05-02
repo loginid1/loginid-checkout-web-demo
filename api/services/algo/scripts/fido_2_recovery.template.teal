@@ -1,4 +1,8 @@
 #pragma version 7
+txn TxID
+arg 6
+base64_decode URLEncoding
+==
 arg 2
 byte "challenge"
 json_ref JSONString
@@ -6,12 +10,13 @@ byte "="
 concat
 base64_decode URLEncoding
 txn TxID
-txn Lease
+arg 5
 concat
 arg 4
 concat
 sha256
 ==
+&&
 arg 3
 arg 2
 sha256
@@ -24,6 +29,10 @@ byte base64(FIDO1111YYYY)
 ecdsa_verify Secp256r1
 &&
 bnz main_l6
+txn TxID
+arg 6
+base64_decode URLEncoding
+==
 arg 2
 byte "challenge"
 json_ref JSONString
@@ -31,12 +40,13 @@ byte "="
 concat
 base64_decode URLEncoding
 txn TxID
-txn Lease
+arg 5
 concat
 arg 4
 concat
 sha256
 ==
+&&
 arg 3
 arg 2
 sha256

@@ -62,10 +62,12 @@ func (repo *UserRepository) AddUserCredential(username string, credential UserCr
 
 	var user User
 	if err := tx.Where("username = ?", username).Take(&user).Error; err != nil {
+		tx.Rollback()
 		return err
 	}
 
 	if user.ID == "" {
+		tx.Rollback()
 		return errors.New("no user found")
 	}
 
@@ -117,6 +119,7 @@ func (repo *UserRepository) SaveRecovery(username string, recovery UserRecovery)
 
 	var user User
 	if err := tx.Where("username = ?", username).Take(&user).Error; err != nil {
+		tx.Rollback()
 		return err
 	}
 

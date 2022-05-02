@@ -27,6 +27,6 @@ export interface VaultSDK extends Base, Browser,  VaultAuth, VaultUser, VaultAlg
 applyMixins(VaultSDK, [Base, Browser,  VaultAuth, VaultUser, VaultAlgo]);
 
 
-const BASE_URL = process.env.VAULT_URL || "http://localhost:3001";
+const BASE_URL = process.env.REACT_APP_VAULT_API_URL || "http://localhost:3001";
 const vaultSDK = new VaultSDK(BASE_URL);
 export default vaultSDK;
