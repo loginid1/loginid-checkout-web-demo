@@ -17,6 +17,7 @@ const VaultAppBar: React.FC = ({}) => {
   return (
     <Box sx={{ flexGrow: 1 }}>
       <Paper
+        elevation={0}
         sx={{
           p: 2,
           display: "flex",

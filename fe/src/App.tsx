@@ -14,6 +14,10 @@ import CreateAlgorand from './routes/protected/CreateAlgorand';
 import WalletEnable from './routes/api/WalletEnable';
 import WalletTxnConfirmation from './routes/api/WalletTransaction';
 import Credentials from './routes/protected/Credentials';
+import AddCredential from './routes/protected/AddCredential';
+import CompleteCredential from './routes/protected/CompleteCredential';
+import AddRecovery from './routes/protected/AddRecovery';
+import CompleteRecovery from './routes/protected/CompleteRecovery';
 
 
 
@@ -29,7 +33,14 @@ function App() {
         <Route path="/api/enable" element={<WalletEnable />} />
         <Route path="/api/transaction" element={<WalletTxnConfirmation />} />
         <Route path="/" element={<ProtectedRoute />} >
-          <Route path="/home" element={<Home />} />
+          <Route path="/home" element={<Credentials />} />
+          <Route path="/add_credential" element={<AddCredential />} />
+          <Route path="/complete_credential" element={<CompleteCredential />} />
+          <Route path="/add_recovery" element={<AddRecovery />} />
+          <Route path="/complete_recovery" element={<CompleteRecovery />} />
+
+          <Route path="/oldhome" element={<Home />} /> 
+
           <Route path="/manage_credential" element={<ManageCredential />} />
           <Route path="/manage_algorand" element={<ManageAlgorand />} />
           <Route path="/credential" element={<Credentials />} />

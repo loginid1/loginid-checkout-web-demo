@@ -102,7 +102,7 @@ const Login: React.FC = () => {
             </Button>
           </Box>
           <Typography variant="body1">
-            Don't have an account yet?{" "}
+            Don't have an account yet?
             <Link href="./register">Create Account Now</Link>
           </Typography>
         </Box>
