@@ -10,8 +10,13 @@ import (
 	"strings"
 
 	"github.com/algorand/go-algorand-sdk/client/v2/algod"
+	"github.com/algorand/go-algorand-sdk/crypto"
 	"github.com/algorand/go-algorand-sdk/encoding/msgpack"
+	"github.com/algorand/go-algorand-sdk/future"
+	"github.com/algorand/go-algorand-sdk/mnemonic"
+	"github.com/algorand/go-algorand-sdk/transaction"
 	"github.com/algorand/go-algorand-sdk/types"
+	"gitlab.com/loginid/software/libraries/goutil.git"
 	"gitlab.com/loginid/software/libraries/goutil.git/logger"
 	"gitlab.com/loginid/software/services/loginid-vault/services"
 	"gitlab.com/loginid/software/services/loginid-vault/utils"
@@ -104,6 +109,79 @@ func (as *AlgorandNetworkService) compile(script string) (string, string, error)
 
 	}
 	return response.Hash, response.Result, nil
+}
+
+func (as *AlgorandNetworkService) Dispenser(to string, amount uint64) error {
+	passphrase := goutil.GetEnv("DISPENSER_MNEMONIC", "")
+	if passphrase == "" {
+		return errors.New("no dispenser")
+	}
+	privateKey, err := mnemonic.ToPrivateKey(passphrase)
+	if err != nil {
+		fmt.Printf("Issue with mnemonic conversion: %s\n", err)
+		return err
+	}
+
+	dAddress := goutil.GetEnv("DISPENSER_ADDRESS", "")
+	if dAddress == "" {
+		return errors.New("no dispenser")
+	}
+	fmt.Printf("My address: %s\n", dAddress)
+
+	accountInfo, err := as.client.AccountInformation(dAddress).Do(context.Background())
+	if err != nil {
+		fmt.Printf("Error getting account info: %s\n", err)
+		return err
+	}
+	fmt.Printf("Account balance: %d microAlgos\n", accountInfo.Amount)
+
+	txParams, err := as.client.SuggestedParams().Do(context.Background())
+	if err != nil {
+		fmt.Printf("Error getting suggested tx params: %s\n", err)
+		return err
+	}
+	// comment out the next two (2) lines to use suggested fees
+	txParams.FlatFee = true
+	txParams.Fee = 1000
+
+	fromAddr := dAddress
+	toAddr := to
+	var minFee uint64 = 1000
+	note := []byte("Sandnet Dispenser")
+	genID := txParams.GenesisID
+	genHash := txParams.GenesisHash
+	firstValidRound := uint64(txParams.FirstRoundValid)
+	lastValidRound := uint64(txParams.LastRoundValid)
+
+	txn, err := transaction.MakePaymentTxnWithFlatFee(fromAddr, toAddr, minFee, amount, firstValidRound, lastValidRound, note, "", genID, genHash)
+	if err != nil {
+		fmt.Printf("Error creating transaction: %s\n", err)
+		return err
+	}
+
+	txID, signedTxn, err := crypto.SignTransaction(privateKey, txn)
+	if err != nil {
+		fmt.Printf("Failed to sign transaction: %s\n", err)
+		return err
+	}
+	fmt.Printf("Signed txid: %s\n", txID)
+
+	sendResponse, err := as.client.SendRawTransaction(signedTxn).Do(context.Background())
+	if err != nil {
+		fmt.Printf("failed to send transaction: %s\n", err)
+		return err
+	}
+	fmt.Printf("Submitted transaction %s\n", sendResponse)
+
+	// Wait for confirmation
+	confirmedTxn, err := future.WaitForConfirmation(as.client, txID, 4, context.Background())
+	if err != nil {
+		fmt.Printf("Error waiting for confirmation on txID: %s\n", txID)
+		return err
+	}
+	fmt.Printf("Confirmed Transaction: %s in Round %d\n", txID, confirmedTxn.ConfirmedRound)
+
+	return nil
 }
 
 func (as *AlgorandNetworkService) PostTxn(script string) (string, string, error) {

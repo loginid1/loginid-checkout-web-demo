@@ -19,9 +19,9 @@ function App() {
 
 	async function handleTransactionClick() {
 		const token =
-			"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
-		const server = "http://localhost";
-		const port = 4001;
+			process.env.REACT_APP_ALGO_CLIENT_TOKEN || "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+		const server = process.env.REACT_APP_ALGO_CLIENT_SERVER || "http://localhost";
+		const port = process.env.REACT_APP_ALGO_CLIENT_PORT || 4001;
 		const algodv2 = new algosdk.Algodv2(token, server, port);
 		const suggestedParams = await algodv2.getTransactionParams().do();
 		// construct a transaction note

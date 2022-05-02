@@ -13,6 +13,7 @@ import ManageAlgorand from './routes/protected/ManageAlgorand';
 import CreateAlgorand from './routes/protected/CreateAlgorand';
 import WalletEnable from './routes/api/WalletEnable';
 import WalletTxnConfirmation from './routes/api/WalletTransaction';
+import Credentials from './routes/protected/Credentials';
 
 
 
@@ -30,6 +31,7 @@ function App() {
           <Route path="/home" element={<Home />} />
           <Route path="/manage_credential" element={<ManageCredential />} />
           <Route path="/manage_algorand" element={<ManageAlgorand />} />
+          <Route path="/credential" element={<Credentials />} />
           <Route path="/create_algorand" element={<CreateAlgorand />} />
         </Route>
         <Route path="*" element={<Navigate replace to="/login" />} />
