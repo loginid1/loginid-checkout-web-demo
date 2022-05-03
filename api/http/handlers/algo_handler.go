@@ -20,6 +20,7 @@ type AlgoHandler struct {
 }
 
 type FilterAlgoAccount struct {
+	Alias           string   `json:"alias"`
 	ID              string   `json:"id"`
 	Address         string   `json:"address"`
 	CredentialsName []string `json:"credentials_name"`
@@ -44,6 +45,7 @@ func (h *AlgoHandler) GetAccountListHandler(w http.ResponseWriter, r *http.Reque
 	var fAccounts []FilterAlgoAccount
 	for _, account := range accounts {
 		fAccount := FilterAlgoAccount{
+			Alias:           account.Alias,
 			ID:              account.ID,
 			Address:         account.Address,
 			CredentialsName: extractCredentialsName(account.Credentials),

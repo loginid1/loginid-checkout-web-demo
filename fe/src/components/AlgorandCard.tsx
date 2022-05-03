@@ -56,13 +56,13 @@ export const AlgorandCard: React.FC<AlgorandAccountCard> = ({ account }) => {
                 overflow="hidden"
                 textOverflow="ellipsis"
               >
-                {account.address}
+                {account.alias}
               </Typography>
               <Typography variant="body1" align="left">
                 Added {credIAT}
               </Typography>
               <Typography variant="body1" align="left">
-                Recovery option: {cutoff(account.recovery_address)} | Account address: {cutoff(account.address)}
+                Recovery option: {cutoff(account.recovery_address)} | Credentials: {account.credentials_name}
               </Typography>
             </Box>
             <Box>
