@@ -77,10 +77,13 @@ export interface WalletTransaction {
 
 export class FidoVaultSDK {
 
-    static baseURL="http://localhost:3000";
+    baseURL="http://localhost:3000";
     mMessage : MessagingService;
 
-    constructor(){
+    constructor(url : string){
+        if (url !== ""){
+            this.baseURL = url;
+        }
         //this.mMessage = new MessagingService(FidoVaultSDK.baseURL);
         this.mMessage = new MessagingService("*");
     }
@@ -90,9 +93,9 @@ export class FidoVaultSDK {
     */
 
     async enable( network: EnableOpts): Promise<EnableResult > {
-        let w = openPopup(FidoVaultSDK.baseURL+"/fe/api/enable", defaultOptions);
+        let w = openPopup(this.baseURL+"/fe/api/enable", defaultOptions);
         //w.postMessage(JSON.stringify(network),FidoVaultSDK.baseURL);
-        let isLoad = await this.mMessage.pingForResponse(w,10000);
+        let isLoad = await this.mMessage.pingForResponse(w,20000);
         if (!isLoad) {
             return Promise.reject("communication timeout");
         }
@@ -116,8 +119,8 @@ export class FidoVaultSDK {
      * 
     **/
     async signTxns(txns: WalletTransaction[], opts?: SignTxnsOpts): Promise<PostTxnsResult > {
-        let w = openPopup(FidoVaultSDK.baseURL+"/fe/api/transaction", defaultOptions);
-        let isLoad = await this.mMessage.pingForResponse(w,5000);
+        let w = openPopup(this.baseURL+"/fe/api/transaction", defaultOptions);
+        let isLoad = await this.mMessage.pingForResponse(w,30000);
         if (!isLoad) {
             return Promise.reject("communication timeout");
         }
@@ -140,9 +143,12 @@ export class FidoVaultSDK {
      * 
     **/
     async signAndPostTxns(txns: WalletTransaction[], opts?: SignTxnsOpts): Promise<PostTxnsResult> {
-        let w = openPopup(FidoVaultSDK.baseURL+"/fe/api/transaction", defaultOptions);
+        let w = openPopup(this.baseURL+"/fe/api/transaction", defaultOptions);
         //w.postMessage(JSON.stringify(network),FidoVaultSDK.baseURL);
-        await new Promise((resolve) => setTimeout(resolve, 400));
+        let isLoad = await this.mMessage.pingForResponse(w,30000);
+        if (!isLoad) {
+            return Promise.reject("communication timeout");
+        }
         console.log("postmessage " + window.origin);
         let message : Message = {
             channel : "wallet-communication-channel",

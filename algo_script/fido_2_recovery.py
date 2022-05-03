@@ -3,7 +3,7 @@ from inlineasm import *
 
 def verify_fido(pk_x,pk_y,sig_r,sig_s,clientData,authData,server_challenge,nonce, tx_b64):
     decode_tx = InlineAssembly("base64_decode URLEncoding", tx_b64, type = TealType.bytes)
-    compute_challenge = Sha256(Concat(Txn.tx_id(),nonce,server_challenge))
+    compute_challenge = Sha256(Concat(tx_b64,nonce,server_challenge))
     extract_challenge = InlineAssembly("json_ref JSONString", clientData, Bytes("challenge"), type = TealType.bytes)
     padded_extract_challenge = Concat(extract_challenge,Bytes("="))
     decode_challenge = InlineAssembly("base64_decode URLEncoding", padded_extract_challenge, type = TealType.bytes)

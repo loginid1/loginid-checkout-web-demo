@@ -1,4 +1,4 @@
-#pragma version 7
+#pragma version 5
 txn TxID
 arg 6
 base64_decode URLEncoding
@@ -9,7 +9,7 @@ json_ref JSONString
 byte "="
 concat
 base64_decode URLEncoding
-txn TxID
+arg 6
 arg 5
 concat
 arg 4
@@ -39,7 +39,7 @@ json_ref JSONString
 byte "="
 concat
 base64_decode URLEncoding
-txn TxID
+arg 6
 arg 5
 concat
 arg 4

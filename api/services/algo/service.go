@@ -222,6 +222,15 @@ func (algo *AlgoService) AddEnableAccounts(username string, address_list []strin
 	return &genesis, nil
 }
 
+func (algo *AlgoService) SandnetDispenser(to string) (uint64, *services.ServiceError) {
+	// deposit 10 ALGO
+	amount, err := algo.AlgoNet.Dispenser(to, 10000000)
+	if err != nil {
+		return 0, services.CreateError("failed to deposit")
+	}
+	return amount, nil
+}
+
 func (algo *AlgoService) GetTransactionID(txn types.Transaction) string {
 	return algo_crypto.GetTxID(txn)
 }

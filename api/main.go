@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -35,10 +36,10 @@ func main() {
 		os.Exit(0)
 	}
 
-	apiClientID := "iBlHjpbHGYEp1JdCEn4ZMx-p6V9xBbwLbMn9R8sQNOqRgeLzCm5OxWhdEsVEv7q9lPyA32KuZqOpMaIVIsOiZA"
-	apiPem := "LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JR0hBZ0VBTUJNR0J5cUdTTTQ5QWdFR0NDcUdTTTQ5QXdFSEJHMHdhd0lCQVFRZ0RDNHNHSnZNSjFUcjJtY0IKT05sUmJTRG9CWFRiak1ZdE1DTXNXRER6YURxaFJBTkNBQVRkV29qVEhCejZMVTlOMGhHYUhlTU9MZkdVZ0ZxUgpDOGRvMU1SL3pZL3YwSzVzYTJROXpmNUIxMUZNTm9UWXZwVCtqQmFVNTB5SkFwblN1VVhkVmJiUAotLS0tLUVORCBQUklWQVRFIEtFWS0tLS0t"
-	clientID := "3Tn8S4chICTf2cy6TdciBJXJFZgpcVJcFiRAIb0zuo21jaA_4W2BCnVrqBIoY04dr12W47bYGrZRlPlzyVD30Q"
-	baseURL := "https://directweb.qa.loginid.io"
+	apiClientID := goutil.GetEnv("FIDO_API_ID", "iBlHjpbHGYEp1JdCEn4ZMx-p6V9xBbwLbMn9R8sQNOqRgeLzCm5OxWhdEsVEv7q9lPyA32KuZqOpMaIVIsOiZA")
+	apiPem := goutil.GetEnv("API_PRIVATE_KEY", "LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JR0hBZ0VBTUJNR0J5cUdTTTQ5QWdFR0NDcUdTTTQ5QXdFSEJHMHdhd0lCQVFRZ0RDNHNHSnZNSjFUcjJtY0IKT05sUmJTRG9CWFRiak1ZdE1DTXNXRER6YURxaFJBTkNBQVRkV29qVEhCejZMVTlOMGhHYUhlTU9MZkdVZ0ZxUgpDOGRvMU1SL3pZL3YwSzVzYTJROXpmNUIxMUZNTm9UWXZwVCtqQmFVNTB5SkFwblN1VVhkVmJiUAotLS0tLUVORCBQUklWQVRFIEtFWS0tLS0t")
+	clientID := goutil.GetEnv("FIDO_CLIENT_ID", "3Tn8S4chICTf2cy6TdciBJXJFZgpcVJcFiRAIb0zuo21jaA_4W2BCnVrqBIoY04dr12W47bYGrZRlPlzyVD30Q")
+	baseURL := goutil.GetEnv("FIDO_BASEURL", "https://directweb.qa.loginid.io")
 	jwtURL := "https://directweb.qa.loginid.io"
 	fidoService, err := fido2.NewFido2Service(clientID, baseURL, apiClientID, apiPem)
 	if err != nil {
@@ -106,11 +107,18 @@ func main() {
 	wallet.HandleFunc("/txInit", walletHandler.TxInitHandler)
 	wallet.HandleFunc("/txComplete", walletHandler.TxCompleteHandler)
 
+	// dispenser handler
+	dispenserHandler := handlers.DispenserHandler{AlgoService: algoService}
+	dispenser := api.PathPrefix("/dispenser").Subrouter()
+	dispenser.HandleFunc("/withdraw", dispenserHandler.DispenserHandler)
+
+	cor_origins := goutil.GetEnv("CORS_ORIGINS", "http://localhost:3000,http://localhost:3030")
+	cor_array := strings.Split(cor_origins, ",")
 	//TODO: change CORS handling to middleware
 	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost", "http://localhost:3000"},
+		AllowedOrigins:   cor_array,
 		AllowCredentials: true,
-		AllowedHeaders:   []string{"Content-Type", "X-Session-Token"},
+		AllowedHeaders:   []string{"Content-Type", "X-Session-Token", "x-api-token"},
 		// Enable Debugging for testing, consider disabling in production
 		Debug: true,
 	})

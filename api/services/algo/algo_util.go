@@ -49,6 +49,8 @@ func NewAlgorandNeworkService() (*AlgorandNetworkService, error) {
 	if err != nil {
 		return nil, err
 	}
+	//genesis, err := algodClient.GetGenesis().Do(context.Background())
+
 	return &AlgorandNetworkService{client: algodClient}, nil
 }
 
@@ -111,34 +113,34 @@ func (as *AlgorandNetworkService) compile(script string) (string, string, error)
 	return response.Hash, response.Result, nil
 }
 
-func (as *AlgorandNetworkService) Dispenser(to string, amount uint64) error {
+func (as *AlgorandNetworkService) Dispenser(to string, amount uint64) (uint64, error) {
 	passphrase := goutil.GetEnv("DISPENSER_MNEMONIC", "")
 	if passphrase == "" {
-		return errors.New("no dispenser")
+		return 0, errors.New("no dispenser")
 	}
 	privateKey, err := mnemonic.ToPrivateKey(passphrase)
 	if err != nil {
 		fmt.Printf("Issue with mnemonic conversion: %s\n", err)
-		return err
+		return 0, err
 	}
 
 	dAddress := goutil.GetEnv("DISPENSER_ADDRESS", "")
 	if dAddress == "" {
-		return errors.New("no dispenser")
+		return 0, errors.New("no dispenser")
 	}
 	fmt.Printf("My address: %s\n", dAddress)
 
 	accountInfo, err := as.client.AccountInformation(dAddress).Do(context.Background())
 	if err != nil {
 		fmt.Printf("Error getting account info: %s\n", err)
-		return err
+		return 0, err
 	}
 	fmt.Printf("Account balance: %d microAlgos\n", accountInfo.Amount)
 
 	txParams, err := as.client.SuggestedParams().Do(context.Background())
 	if err != nil {
 		fmt.Printf("Error getting suggested tx params: %s\n", err)
-		return err
+		return 0, err
 	}
 	// comment out the next two (2) lines to use suggested fees
 	txParams.FlatFee = true
@@ -156,20 +158,20 @@ func (as *AlgorandNetworkService) Dispenser(to string, amount uint64) error {
 	txn, err := transaction.MakePaymentTxnWithFlatFee(fromAddr, toAddr, minFee, amount, firstValidRound, lastValidRound, note, "", genID, genHash)
 	if err != nil {
 		fmt.Printf("Error creating transaction: %s\n", err)
-		return err
+		return 0, err
 	}
 
 	txID, signedTxn, err := crypto.SignTransaction(privateKey, txn)
 	if err != nil {
 		fmt.Printf("Failed to sign transaction: %s\n", err)
-		return err
+		return 0, err
 	}
 	fmt.Printf("Signed txid: %s\n", txID)
 
 	sendResponse, err := as.client.SendRawTransaction(signedTxn).Do(context.Background())
 	if err != nil {
 		fmt.Printf("failed to send transaction: %s\n", err)
-		return err
+		return 0, err
 	}
 	fmt.Printf("Submitted transaction %s\n", sendResponse)
 
@@ -177,11 +179,17 @@ func (as *AlgorandNetworkService) Dispenser(to string, amount uint64) error {
 	confirmedTxn, err := future.WaitForConfirmation(as.client, txID, 4, context.Background())
 	if err != nil {
 		fmt.Printf("Error waiting for confirmation on txID: %s\n", txID)
-		return err
+		return 0, err
 	}
 	fmt.Printf("Confirmed Transaction: %s in Round %d\n", txID, confirmedTxn.ConfirmedRound)
 
-	return nil
+	toInfo, err := as.client.AccountInformation(to).Do(context.Background())
+	if err != nil {
+		fmt.Printf("Error getting account info: %s\n", err)
+		return 0, err
+	}
+	fmt.Printf("Account balance for %s: %d microAlgos\n", toInfo.Address, toInfo.Amount)
+	return toInfo.Amount, nil
 }
 
 func (as *AlgorandNetworkService) PostTxn(script string) (string, string, error) {

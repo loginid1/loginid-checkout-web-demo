@@ -3,6 +3,7 @@ package algo
 import (
 	"time"
 
+	"gitlab.com/loginid/software/libraries/goutil.git"
 	"gitlab.com/loginid/software/services/loginid-vault/services/user"
 )
 
@@ -15,7 +16,8 @@ var ALGO_NETWORK = map[string]string{
 }
 
 var ALGO_NETWORK_GENESIS = map[string]Genesis{
-	"sandnet": {ID: "sandnet-v1", Hash: "kRzYkNRKXtnl6TyFvtrkAYO5wm17eMd0aXtDBRytVnQ="},
+	//"sandnet": {ID: "sandnet-v1", Hash: "kRzYkNRKXtnl6TyFvtrkAYO5wm17eMd0aXtDBRytVnQ="},
+	"sandnet": {ID: "sandnet-v1", Hash: goutil.GetEnv("SANDNET_GENESIS_HASH", "")},
 }
 
 type Genesis struct {

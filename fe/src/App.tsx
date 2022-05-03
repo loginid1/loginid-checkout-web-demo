@@ -27,6 +27,7 @@ import CompleteAlgorandAccount from './routes/protected/CompleteAlgorandAccount'
 
 function App() {
   const [auth, setAuth] = useState(AuthService.isLoggedIn());
+  
   return (
     <div className="App">
       <Routes>
