@@ -49,6 +49,8 @@ func NewAlgorandNeworkService() (*AlgorandNetworkService, error) {
 	if err != nil {
 		return nil, err
 	}
+	//genesis, err := algodClient.GetGenesis().Do(context.Background())
+
 	return &AlgorandNetworkService{client: algodClient}, nil
 }
 

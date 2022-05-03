@@ -66,8 +66,7 @@ function App() {
 		// construct a transaction note
 		const note = new Uint8Array(Buffer.from("Hello World", "utf8"));
 		const addr = localStorage.getItem("enable_account");
-		const receiver =
-			"OJMOSX7LZR7LW7NORKEXERK34WF4H2A2YJA43UANQTGVL3ENDI3FSGQJQ4";
+		const receiver = process.env.REACT_APP_DAPP_ADDRESS || "OZL4D23EET2S44UJBHZGHSMUQPJSA5YK7X4J737N5QZUJY3WE4X6PFHIXE";
 		if (addr == null) {
 			alert("no address enable");
 			return;
