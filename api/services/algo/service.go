@@ -41,7 +41,7 @@ func NewAlgoService(db *gorm.DB) (*AlgoService, error) {
 	return &algoService, nil
 }
 
-func (algo *AlgoService) CreateAccount(username string, verify_address string, credential_id_list []string, recovery string) *services.ServiceError {
+func (algo *AlgoService) CreateAccount(username string, alias string, verify_address string, credential_id_list []string, recovery string) *services.ServiceError {
 	// get script from credential_list and recovery
 
 	credentials, err := algo.UserRepository.LookupCredentials(username, credential_id_list)
@@ -52,7 +52,7 @@ func (algo *AlgoService) CreateAccount(username string, verify_address string, c
 
 	credential_list := extractCredentialPKs(credentials)
 
-	contractAccount, err := algo.AlgoNet.GenerateContractAccount(credential_list, recovery)
+	contractAccount, err := algo.AlgoNet.GenerateContractAccount(credential_list, recovery, true)
 	if err != nil {
 		logger.Global.Error(err.Error())
 		return services.CreateError("failed to generate Algorand account")
@@ -69,9 +69,12 @@ func (algo *AlgoService) CreateAccount(username string, verify_address string, c
 		return services.CreateError("address already existed! ")
 	}
 
+	if alias == "" {
+		alias = contractAccount.Address
+	}
 	// create AlgoAccount
 	account := AlgoAccount{
-		Alias:           contractAccount.Address,
+		Alias:           alias,
 		Address:         contractAccount.Address,
 		TealScript:      contractAccount.TealScript,
 		CompileScript:   contractAccount.CompileScript,
@@ -110,7 +113,7 @@ func (algo *AlgoService) GetAccountList(username string) ([]AlgoAccount, *servic
 }
 
 func (algo *AlgoService) GenerateFido2Signature(credentialList []string, recovery string) (*ContractAccount, *services.ServiceError) {
-	account, err := algo.AlgoNet.GenerateContractAccount(credentialList, recovery)
+	account, err := algo.AlgoNet.GenerateContractAccount(credentialList, recovery, true)
 	if err != nil {
 		logger.Global.Error(err.Error())
 		return nil, services.CreateError("generate script error")
@@ -131,15 +134,18 @@ func (algo *AlgoService) QuickAccountCreation(username string, recovery_pk strin
 	credential_id_list := extractCredentialIDs(credentials)
 	credential_list := extractCredentialPKs(credentials)
 
-	recovery := user.UserRecovery{PublicKey: recovery_pk}
-	// save recovery public key
-	err = algo.UserRepository.SaveRecovery(username, recovery)
-	if err != nil {
-		logger.Global.Error(err.Error())
-		return nil, services.CreateError("failed to setup recovery")
+	if recovery_pk != "" {
+
+		recovery := user.UserRecovery{PublicKey: recovery_pk}
+		// save recovery public key
+		err = algo.UserRepository.SaveRecovery(username, recovery)
+		if err != nil {
+			logger.Global.Error(err.Error())
+			return nil, services.CreateError("failed to setup recovery")
+		}
 	}
 
-	contractAccount, err := algo.AlgoNet.GenerateContractAccount(credential_list, recovery_pk)
+	contractAccount, err := algo.AlgoNet.GenerateContractAccount(credential_list, recovery_pk, false)
 	if err != nil {
 		logger.Global.Error(err.Error())
 		return nil, services.CreateError("failed to generate Algorand account")

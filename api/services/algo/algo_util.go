@@ -22,18 +22,17 @@ import (
 	"gitlab.com/loginid/software/services/loginid-vault/utils"
 )
 
-var fido_template = [3]string{"AAAAA55555AAAAA55555AAAAA55555AAAAA55555AAAAA5555522224444",
-	"BBBBB55555BBBBB55555BBBBB55555BBBBB55555BBBBB5555522224444",
-	"CCCCC55555CCCCC55555CCCCC55555CCCCC55555CCCCC5555522224444"}
+const MAX_CRECRENTIAL = 3
 
-var fido_x_template = [2]string{"FIDO1111XXXX", "FIDO2222XXXX"}
-var fido_y_template = [2]string{"FIDO1111YYYY", "FIDO2222YYYY"}
+var fido_x_template = [MAX_CRECRENTIAL]string{"FIDO1111XXXX", "FIDO2222XXXX", "FIDO3333XXXX"}
+var fido_y_template = [MAX_CRECRENTIAL]string{"FIDO1111YYYY", "FIDO2222YYYY", "FIDO3333YYYY"}
 
 const recovery_template = "RRRRR55555RRRRR55555RRRRR55555RRRRR55555RRRRR5555522224444"
 
 var script_template = map[string]string{
 	"fido_1_recovery": "services/algo/scripts/fido_1_recovery.template.teal",
 	"fido_2_recovery": "services/algo/scripts/fido_2_recovery.template.teal",
+	"fido_3_recovery": "services/algo/scripts/fido_3_recovery.template.teal",
 }
 
 type AlgorandNetworkService struct {
@@ -60,13 +59,13 @@ type ContractAccount struct {
 	CompileScript string `json:"compile_script"`
 }
 
-func (as *AlgorandNetworkService) GenerateContractAccount(pkList []string, recovery string) (*ContractAccount, error) {
+func (as *AlgorandNetworkService) GenerateContractAccount(pkList []string, recovery string, require_recovery bool) (*ContractAccount, error) {
 
-	if recovery == "" {
+	if require_recovery && recovery == "" {
 		return nil, errors.New("missing recovery")
 	}
-	if len(pkList) > 2 {
-		return nil, errors.New("maximum 2 credentials")
+	if len(pkList) > MAX_CRECRENTIAL {
+		return nil, fmt.Errorf("maximum %d credentials", MAX_CRECRENTIAL)
 	}
 
 	key := fmt.Sprintf("fido_%d", len(pkList))
