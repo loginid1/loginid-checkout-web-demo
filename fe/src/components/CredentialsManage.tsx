@@ -42,7 +42,7 @@ export const CredentialsManage: React.FC = () => {
           xs={6}
           sx={{ display: "flex", justifyContent: "flex-start" }}
         >
-          <Typography variant="h2">My Credentials</Typography>
+          <Typography variant="h2" color="secondary">My Credentials</Typography>
         </Grid>
         <Grid item xs={6} sx={{ display: "flex", justifyContent: "flex-end" }}>
           <Button

@@ -179,7 +179,7 @@ const AddAlgorandAccountForm: React.FC = () => {
                 >
                   <Stack
                     spacing={6}
-                    sx={{width:"100%", maxWidth:"100%"}}
+                    sx={{ width: "100%", maxWidth: "100%" }}
                     alignItems="center"
                   >
                     <Stack spacing={2} alignItems="center">
@@ -199,7 +199,7 @@ const AddAlgorandAccountForm: React.FC = () => {
                       </Alert>
                     )}
 
-                    <Stack spacing={2} alignItems="center" maxWidth="400px">
+                    <Stack spacing={2} width="100%" maxWidth="400px">
                       <Typography variant="h3">
                         Name your Algorand Account
                       </Typography>
@@ -209,13 +209,14 @@ const AddAlgorandAccountForm: React.FC = () => {
                       ></TextField>
                     </Stack>
 
-                    <Stack spacing={2}>
+                    <Stack spacing={2} width="100%" alignItems="center">
                       <Typography variant="h3">
                         Select your credential
                       </Typography>
                       <Stack direction="row" spacing={2}>
                         {credentials?.credentials?.map((credential) => (
                           <Card
+                          id={credential.id}
                             variant="outlined"
                             sx={{
                               width: "100",
@@ -248,15 +249,16 @@ const AddAlgorandAccountForm: React.FC = () => {
                       </Stack>
                     </Stack>
 
-                    <Stack spacing={2}>
+                    <Stack spacing={2} width="100%" alignItems="center">
                       <Typography variant="h3">
                         Select your recovery option
                       </Typography>
                       {recoveryList?.recovery.map((recovery) => (
                         <Card
+                          id={recovery.id}
                           variant="outlined"
                           sx={{
-                            width: "100%",
+                            width: "80%",
                             backgroundColor: alpha("#F2F2F2", 0.2),
                           }}
                           elevation={0}
@@ -267,23 +269,21 @@ const AddAlgorandAccountForm: React.FC = () => {
                               justifyContent="space-between"
                               alignItems="center"
                             >
-                              <Radio
-                                checked={formRecovery === recovery.public_key}
-                                onChange={() =>
-                                  handleChangeRecovery(recovery.public_key)
-                                }
-                              />
-                              <RecoveryCard
-                                recovery={recovery}
-                                showCopy={false}
-                              ></RecoveryCard>
-                              <Box>
-                                <Stack direction="row" spacing={2}>
-                                  <Button variant="outlined" color="primary">
-                                    Show Details
-                                  </Button>
-                                </Stack>
-                              </Box>
+                              <Stack direction="row" spacing={2}>
+                                <Radio
+                                  checked={formRecovery === recovery.public_key}
+                                  onChange={() =>
+                                    handleChangeRecovery(recovery.public_key)
+                                  }
+                                />
+                                <RecoveryCard
+                                  recovery={recovery}
+                                  showCopy={false}
+                                ></RecoveryCard>
+                              </Stack>
+                              <Button variant="outlined" color="primary">
+                                Show Details
+                              </Button>
                             </Stack>
                           </CardContent>
                         </Card>
@@ -300,7 +300,7 @@ const AddAlgorandAccountForm: React.FC = () => {
                         variant="contained"
                         onClick={handleAccountCreation}
                       >
-                        Create Account
+                        Next
                       </Button>
                     </Stack>
                   </Stack>

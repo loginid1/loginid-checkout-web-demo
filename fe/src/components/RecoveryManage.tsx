@@ -43,7 +43,7 @@ export const RecoveryManage: React.FC = () => {
           xs={6}
           sx={{ display: "flex", justifyContent: "flex-start" }}
         >
-          <Typography variant="h2">Recovery Options</Typography>
+          <Typography variant="h2" color="secondary">Recovery Options</Typography>
         </Grid>
         <Grid item xs={6} sx={{ display: "flex", justifyContent: "flex-end" }}>
           <Button variant="contained" onClick={() => navigate("/add_recovery")}>
