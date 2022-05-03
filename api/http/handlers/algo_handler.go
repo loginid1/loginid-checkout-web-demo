@@ -59,6 +59,7 @@ func (h *AlgoHandler) GetAccountListHandler(w http.ResponseWriter, r *http.Reque
 }
 
 type CreateAccountRequest struct {
+	Alias            string   `json:"alias"`
 	VerifyAddress    string   `json:"verify_address"`
 	CredentialIDList []string `json:"cred_id_list"`
 	Recovery         string   `json:"recovery"`
@@ -74,7 +75,7 @@ func (h *AlgoHandler) CreateAccountHandler(w http.ResponseWriter, r *http.Reques
 	}
 	session := r.Context().Value("session").(services.UserSession)
 
-	err := h.AlgoService.CreateAccount(session.Username, request.VerifyAddress, request.CredentialIDList, request.Recovery)
+	err := h.AlgoService.CreateAccount(session.Username, request.Alias, request.VerifyAddress, request.CredentialIDList, request.Recovery)
 
 	if err != nil {
 		http_common.SendErrorResponse(w, *err)
