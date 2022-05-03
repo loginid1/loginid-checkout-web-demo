@@ -3,35 +3,30 @@ import {
   Button,
   CssBaseline,
   Grid,
+  Link,
   Paper,
   Stack,
+  TextField,
   ThemeProvider,
   Typography,
 } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Menu } from "../../components/Menu";
 import VaultAppBar from "../../components/VaultAppbar";
 import { LoginID } from "../../theme/theme";
 import { ArrowBack } from "@mui/icons-material";
 import vaultSDK from "../../lib/VaultSDK";
-import { useState } from "react";
-import { RecoveryPhrase } from "../../lib/VaultSDK/vault/user";
+import { ReactComponent as ALgorandLogo } from "../../assets/AlgorandLogo.svg";
+import { useEffect, useState } from "react";
 import { AuthService } from "../../services/auth";
+import { KeyDisplay } from "../../components/KeyDisplay";
 
-const AddRecovery: React.FC = () => {
+const CompleteAlgorandAccount: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
 
+  const address = location.state as string;
 
-  async function handleCreateRecovery() {
-    const token = AuthService.getToken();
-    if (token) {
-        const recovery = await vaultSDK.createRecovery(token);
-        navigate("/complete_recovery", {
-            state: recovery
-        })
-    } else {
-    }
-}
   return (
     <ThemeProvider theme={LoginID}>
       <Box
@@ -40,7 +35,7 @@ const AddRecovery: React.FC = () => {
         }}
       >
         <CssBaseline />
-        <Menu focus={0}/>
+        <Menu focus={1} />
 
         <Box
           component="main"
@@ -73,31 +68,39 @@ const AddRecovery: React.FC = () => {
                 >
                   <Stack
                     spacing={6}
-                    direction="column"
                     maxWidth="400px"
                     alignItems="center"
                     justifyContent="space-evenly"
                   >
-                    <Typography variant="h2" color="secondary">
-                      Add New Recovery Option
-                    </Typography>
-                    <Typography variant="body1">
-                      Recovery options will allow you to regain access to your
-                      account if you lose or upgrade your credentials.
-                    </Typography>
-                    <Stack direction="row" spacing={2}>
-                      <Button onClick={() => navigate("/home")}>
-                        <ArrowBack />
-                        &nbsp;Back
-                      </Button>
-
-                      <Button
-                        variant="contained"
-                        onClick={handleCreateRecovery}
-                      >
-                        Next
-                      </Button>
+                    <Stack spacing={2} alignItems="center">
+                      <ALgorandLogo />
+                      <Typography variant="h2" color="secondary">
+                        Create Algorand Account
+                      </Typography>
                     </Stack>
+                    <Stack spacing={2} alignItems="center">
+                      <Typography variant="body1">
+                        Your new Algorand account has been created! To activate
+                        your account, please go to your wallet and transfer
+                        funds to the account below.
+                      </Typography>
+                    </Stack>
+
+                    <Stack spacing={2} alignItems="center">
+                      <Typography variant="h3">Account Address</Typography>
+                      <KeyDisplay
+                        color="error"
+                        value={address}
+                      />
+                    </Stack>
+
+                    <Button
+                      variant="contained"
+                      onClick={() => navigate("/algorand_success")}
+                    >
+                      Complete
+                    </Button>
+                    <Link color="#000" onClick={() => navigate("/algorand_accounts")}>I will activate later</Link>
                   </Stack>
                 </Paper>
               </Grid>
@@ -109,4 +112,4 @@ const AddRecovery: React.FC = () => {
   );
 };
 
-export default AddRecovery;
+export default CompleteAlgorandAccount;

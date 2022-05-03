@@ -25,7 +25,7 @@ const CompleteCredential: React.FC = () => {
         }}
       >
         <CssBaseline />
-        <Menu />
+        <Menu focus={0}/>
 
         <Box
           component="main"

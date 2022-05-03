@@ -1,22 +1,15 @@
 import {
   Box,
-  Container,
   CssBaseline,
-  Divider,
-  Drawer,
   Grid,
-  IconButton,
-  List,
   Paper,
   ThemeProvider,
-  Toolbar,
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Profile } from "../../lib/VaultSDK/vault/user";
 import { AuthService } from "../../services/auth";
 import { LoginID } from "../../theme/theme";
-import background from "../../assets/background.svg";
 import { Menu } from "../../components/Menu";
 import VaultAppBar from "../../components/VaultAppbar";
 import { CredentialsManage } from "../../components/CredentialsManage";
@@ -56,7 +49,7 @@ const Credentials: React.FC = () => {
         }}
       >
         <CssBaseline />
-        <Menu />
+        <Menu focus={0}/>
 
         <Box
           component="main"
