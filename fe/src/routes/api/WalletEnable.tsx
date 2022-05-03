@@ -32,6 +32,7 @@ interface WalletEnableSession {
 
 const theme = createTheme();
 const mService = new MessagingService(window.opener);
+let input : boolean = false;
 
 export default function WalletEnable() {
 	const navigate = useNavigate();
@@ -90,12 +91,14 @@ export default function WalletEnable() {
 				let enableSession : WalletEnableSession = {network: enable.network || "", origin: origin}
 				sessionStorage.setItem("enableSession",JSON.stringify(enableSession))
 				setEnable(enableSession);
+				input = true;
 			}
 		} catch (error) {
 			console.log(error);
 		}
 	}
 
+	/*
 	const retries = 10;
 	async function waitForEnableInput() {
 		for (let i = 0; i < retries; i++) {
@@ -105,6 +108,21 @@ export default function WalletEnable() {
 				return;
 			}
 		}
+	}*/
+
+	const INTERVAL = 100;
+	const TIMEOUT = 10000;
+	async function waitForEnableInput(): Promise<boolean> {
+		let wait = TIMEOUT;
+		while (wait > 0) {
+			if (input == false) {
+				await new Promise((resolve) => setTimeout(resolve, INTERVAL));
+			} else {
+				return Promise.resolve(true);
+			}
+			wait = wait - INTERVAL;
+		}
+		return Promise.resolve(false);
 	}
 
 	async function getAccountList() {
