@@ -114,6 +114,7 @@ function CreateAlgorand() {
 		console.log("credID: ", formCredIDList);
 
 		let request : AlgoAccountCreationRequest = {
+			alias: aliasName,
 			verify_address: script?.address ,
 			cred_id_list: formCredIDList,
 			recovery: formRecovery,

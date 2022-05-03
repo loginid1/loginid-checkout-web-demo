@@ -30,10 +30,10 @@ const menuItems = [
 const navigateMenu = [
   "/home",
   "/algorand_accounts",
-  "Dapps",
-  "DIDs",
-  "Profile",
-  "Settings",
+  "",
+  "",
+  "",
+  "",
 ];
 
 interface MenuInterface {

@@ -7,6 +7,7 @@ export interface AccountList {
 }
 
 export interface Account {
+    alias: string
     id: string;
     address: string;
     iat: string;
@@ -23,6 +24,7 @@ export interface ContractAccount {
 }
 
 export interface AlgoAccountCreationRequest {
+    alias: string;
     verify_address: string;
     cred_id_list: string [];
     recovery: string;
