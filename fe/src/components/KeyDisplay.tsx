@@ -10,7 +10,7 @@ import { ContentCopy } from "@mui/icons-material";
 
 type keyDisplayProps = {
   value: string;
-  onClick: () => void;
+  onClick?: () => void;
   color?:
     | "primary"
     | "secondary"
@@ -21,7 +21,11 @@ type keyDisplayProps = {
     | undefined;
 };
 
-const KeyDisplay: React.FC<keyDisplayProps> = ({ value, color = "", onClick }) => {
+export const KeyDisplay: React.FC<keyDisplayProps> = ({
+  value,
+  color = "",
+  onClick,
+}) => {
   return (
     <Card
       variant="outlined"
@@ -51,5 +55,3 @@ const KeyDisplay: React.FC<keyDisplayProps> = ({ value, color = "", onClick }) =
     </Card>
   );
 };
-
-export default KeyDisplay;

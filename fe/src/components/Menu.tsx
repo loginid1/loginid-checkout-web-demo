@@ -10,7 +10,7 @@ import {
   Toolbar,
   Typography,
 } from "@mui/material";
-import React from "react";
+import React, { useEffect } from "react";
 import { LoginID } from "../theme/theme";
 import { MenuItem } from "./MenuItem";
 import menuHeader from "../assets/sidemenu/MenuHeader.png";
@@ -26,13 +26,30 @@ const menuItems = [
   "Profile",
   "Settings",
 ];
-export const Menu: React.FC = () => {
+
+const navigateMenu = [
+  "/home",
+  "/algorand_accounts",
+  "Dapps",
+  "DIDs",
+  "Profile",
+  "Settings",
+];
+
+interface MenuInterface {
+  focus: number;
+}
+
+export const Menu: React.FC<MenuInterface> = ({ focus }) => {
   const navigate = useNavigate();
   const [activeMenu, setActiveMenu] = React.useState(0);
 
+  useEffect(() => {
+    setActiveMenu(focus);
+  }, []);
+
   const clickMenu = (index: number) => {
-    setActiveMenu(index);
-    navigate("/" + menuItems[index]);
+    navigate(navigateMenu[index]);
   };
 
   const drawerWidth = 246;

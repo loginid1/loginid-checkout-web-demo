@@ -15,9 +15,13 @@ import { ContentCopy } from "@mui/icons-material";
 
 interface RecoveryCard {
   recovery: Recovery;
+  showCopy?: boolean;
 }
 
-export const RecoveryCard: React.FC<RecoveryCard> = ({ recovery }) => {
+export const RecoveryCard: React.FC<RecoveryCard> = ({
+  recovery,
+  showCopy = true,
+}) => {
   const dateTimeFormat = new Intl.DateTimeFormat("en", {
     month: "numeric",
     year: "numeric",
@@ -29,57 +33,28 @@ export const RecoveryCard: React.FC<RecoveryCard> = ({ recovery }) => {
   const credIAT = dateTimeFormat.format(Date.parse(recovery.iat));
   const displayKey = recovery.public_key.substring(0, 18) + "...";
   const copyPublicKey = () => {
-    navigator.clipboard.writeText(recovery.public_key)
-  }
+    navigator.clipboard.writeText(recovery.public_key);
+  };
 
   return (
     <Box>
-      <Card
-        variant="outlined"
-        sx={{ width: "100%", backgroundColor: alpha("#F2F2F2", 0.2) }}
-        elevation={0}
+      <Typography
+        noWrap
+        variant="h3"
+        align="left"
+        overflow="hidden"
+        textOverflow="ellipsis"
       >
-        <CardContent
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-          }}
-        >
-          <Stack direction="row" justifyContent="space-between">
-            <Box>
-              <Typography
-                noWrap
-                variant="h3"
-                align="left"
-                overflow="hidden"
-                textOverflow="ellipsis"
-              >
-                {displayKey}
-                <IconButton size="small" onClick={copyPublicKey}>
-                  <ContentCopy />
-                </IconButton>
-              </Typography>
-              <Typography variant="body1" align="left">
-                Added {credIAT}
-              </Typography>
-            </Box>
-            <Box>
-              <Stack direction="row" spacing={2}>
-                <Button variant="outlined" color="error">
-                  Revoke
-                </Button>
-                <Button variant="outlined" color="primary">
-                  Show Details
-                </Button>
-                <Button variant="outlined" color="primary">
-                  Rephrase
-                </Button>
-              </Stack>
-            </Box>
-          </Stack>
-        </CardContent>
-      </Card>
+        {displayKey}
+        {showCopy && (
+          <IconButton size="small" onClick={copyPublicKey}>
+            <ContentCopy />
+          </IconButton>
+        )}
+      </Typography>
+      <Typography variant="body1" align="left">
+        Added {credIAT}
+      </Typography>
     </Box>
   );
 };

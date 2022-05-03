@@ -64,7 +64,7 @@ const Login: React.FC = () => {
             padding: "60px",
             borderRadius: "2%",
             backgroundColor: "white",
-            maxWidth: "40%",
+            maxWidth: "520px",
           }}
         >
           <Box
