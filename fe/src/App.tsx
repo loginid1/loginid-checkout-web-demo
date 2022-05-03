@@ -18,6 +18,10 @@ import AddCredential from './routes/protected/AddCredential';
 import CompleteCredential from './routes/protected/CompleteCredential';
 import AddRecovery from './routes/protected/AddRecovery';
 import CompleteRecovery from './routes/protected/CompleteRecovery';
+import AlgorandAccounts from './routes/protected/AlgorandAccounts';
+import AddAlgorandAccount from './routes/protected/AddAlgorandAccount';
+import AddAlgorandAccountForm from './routes/protected/AddAlgorandAccountForm';
+import CompleteAlgorandAccount from './routes/protected/CompleteAlgorandAccount';
 
 
 
@@ -38,8 +42,12 @@ function App() {
           <Route path="/add_recovery" element={<AddRecovery />} />
           <Route path="/complete_recovery" element={<CompleteRecovery />} />
 
-          <Route path="/oldhome" element={<Home />} /> 
+          <Route path="/algorand_accounts" element={<AlgorandAccounts />} />
+          <Route path="/add_algorand_account" element={<AddAlgorandAccount />} />
+          <Route path="/add_algorand_account_form" element={<AddAlgorandAccountForm />} />
+          <Route path="/complete_algorand_account" element={<CompleteAlgorandAccount />} />
 
+          <Route path="/oldhome" element={<Home />} /> 
           <Route path="/manage_credential" element={<ManageCredential />} />
           <Route path="/manage_algorand" element={<ManageAlgorand />} />
           <Route path="/credential" element={<Credentials />} />

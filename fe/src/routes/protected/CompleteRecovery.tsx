@@ -15,10 +15,9 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Menu } from "../../components/Menu";
 import VaultAppBar from "../../components/VaultAppbar";
 import { LoginID } from "../../theme/theme";
-import CompleteImg from "../../assets/CompleteCredential.png";
 import { ArrowBack } from "@mui/icons-material";
 import { RecoveryPhrase } from "../../lib/VaultSDK/vault/user";
-import KeyDisplay from "../../components/keyDisplayProps";
+import {KeyDisplay} from "../../components/KeyDisplay";
 import { useState } from "react";
 
 const CompleteRecovery: React.FC = () => {
@@ -44,7 +43,7 @@ const CompleteRecovery: React.FC = () => {
         }}
       >
         <CssBaseline />
-        <Menu />
+        <Menu focus={0}/>
 
         <Box
           component="main"
@@ -86,7 +85,7 @@ const CompleteRecovery: React.FC = () => {
                     </Typography>
                     <Stack spacing={2}>
                       <Typography variant="medium">Recovery Address</Typography>
-                      <KeyDisplay
+               ``       <KeyDisplay
                         value={recovery.public_key}
                         onClick={copyPublicKey}
                       />
@@ -114,7 +113,7 @@ const CompleteRecovery: React.FC = () => {
                       />
                       <FormControlLabel
                         control={
-                          <Checkbox value={isChecked} onClick={() => setIsChecked(!isChecked)} />
+                          <Checkbox value={isChecked} onChange={(e) => setIsChecked(e.target.checked)} />
                         }
                         label="I confirm that I saved and secured my passphrase"
                       />

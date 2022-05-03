@@ -71,7 +71,7 @@ const AddCredential: React.FC = () => {
         }}
       >
         <CssBaseline />
-        <Menu />
+        <Menu focus={0}/>
 
         <Box
           component="main"
@@ -119,7 +119,6 @@ const AddCredential: React.FC = () => {
                         Code is a 6-digit code that will allow you to register a
                         new credential with this account.
                       </Typography>
-                      <img src={AddImg} alt="Add Credential" width="auto" />
                       <Typography variant="body1">
                         When you have your other device ready, select Get
                         Registration Code.

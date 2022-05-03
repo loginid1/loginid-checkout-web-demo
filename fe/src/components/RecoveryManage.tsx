@@ -1,4 +1,14 @@
-import { Box, Button, Grid, Paper, Typography } from "@mui/material";
+import {
+  alpha,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Grid,
+  Paper,
+  Stack,
+  Typography,
+} from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import vaultSDK from "../lib/VaultSDK";
@@ -14,7 +24,7 @@ export const RecoveryManage: React.FC = () => {
 
   useEffect(() => {
     retrieveRecoveryList();
-  });
+  }, []);
 
   async function retrieveRecoveryList() {
     const token = AuthService.getToken();
@@ -45,16 +55,39 @@ export const RecoveryManage: React.FC = () => {
           xs={6}
           sx={{ display: "flex", justifyContent: "flex-start" }}
         >
-          <Typography variant="body2">
+          <Typography variant="body1">
             This feature will allow you to regain access to your account if you
             lose/upgrade your credentials.
           </Typography>
         </Grid>
       </Grid>
       <Grid item xs container direction="column" spacing={2}>
-        {recoveryList?.recovery.map((recovery) => (
+        {recoveryList?.recovery?.map((recovery) => (
           <Grid item>
-            <RecoveryCard recovery={recovery}></RecoveryCard>
+            <Card
+              variant="outlined"
+              sx={{ width: "100%", backgroundColor: alpha("#F2F2F2", 0.2) }}
+              elevation={0}
+            >
+              <CardContent>
+                <Stack direction="row" justifyContent="space-between" alignItems="center">
+                  <RecoveryCard recovery={recovery}></RecoveryCard>
+                  <Box>
+                    <Stack direction="row" spacing={2}>
+                      <Button variant="outlined" color="error">
+                        Revoke
+                      </Button>
+                      <Button variant="outlined" color="primary">
+                        Show Details
+                      </Button>
+                      <Button variant="outlined" color="primary">
+                        Rephrase
+                      </Button>
+                    </Stack>
+                  </Box>
+                </Stack>
+              </CardContent>
+            </Card>
           </Grid>
         ))}
       </Grid>
