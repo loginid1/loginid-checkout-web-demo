@@ -146,14 +146,14 @@ const AddAlgorandForm: React.FC = () => {
       <Paper
         elevation={0}
         sx={{
-          p: 6,
+          p: { md: 4, xs: 2 },
           mb: 2,
           display: "flex",
           justifyContent: "center",
         }}
       >
         <Stack
-          spacing={6}
+          spacing={{ md: 4, xs: 2 }}
           sx={{ width: "100%", maxWidth: "100%" }}
           alignItems="center"
         >

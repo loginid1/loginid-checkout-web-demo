@@ -12,13 +12,14 @@ import React from "react";
 import { Recovery } from "../lib/VaultSDK/vault/user";
 import { LoginID } from "../theme/theme";
 import { ContentCopy } from "@mui/icons-material";
+import ParseUtil from "../lib/util/parse";
 
-interface RecoveryCard {
+interface RecoveryCardInterface {
   recovery: Recovery;
   showCopy?: boolean;
 }
 
-export const RecoveryCard: React.FC<RecoveryCard> = ({
+export const RecoveryCard: React.FC<RecoveryCardInterface> = ({
   recovery,
   showCopy,
 }) => {
@@ -31,6 +32,7 @@ export const RecoveryCard: React.FC<RecoveryCard> = ({
   });
 
   const credIAT = dateTimeFormat.format(Date.parse(recovery.iat));
+  const cutKey = ParseUtil.displayRecovery(recovery.public_key);
   const copyPublicKey = () => {
     navigator.clipboard.writeText(recovery.public_key);
   };
@@ -39,13 +41,14 @@ export const RecoveryCard: React.FC<RecoveryCard> = ({
     <Box>
       <Stack direction="row" spacing={2} alignItems="center">
         <Typography
-          noWrap
-          maxWidth="30%"
           variant="h3"
           align="left"
-          overflow="hidden"
+          sx={{
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+          }}
         >
-          {recovery.public_key}
+          {cutKey}
         </Typography>
         {showCopy && (
           <IconButton size="small" onClick={copyPublicKey}>

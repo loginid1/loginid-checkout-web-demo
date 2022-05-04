@@ -14,34 +14,14 @@ import { VaultBase } from "../../components/VaultBase";
 const Credentials: React.FC = () => {
   const navigate = useNavigate();
 
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [username, setUsername] = useState(AuthService.getUsername());
   const [errorMessage, setErrorMessage] = useState("");
-
-  useEffect(() => {
-    retrieveProfile();
-  }, []);
-
-  async function retrieveProfile() {
-    const token = AuthService.getToken();
-    if (token) {
-      const myProfile = await vaultSDK.getProfile(token);
-      setProfile(myProfile);
-    } else {
-      // redirect to login
-      navigate(
-        "/login?redirect_error=" +
-          encodeURIComponent("not authorized - please login again")
-      );
-    }
-  }
 
   return (
     <VaultBase focus={0}>
       <Paper
         elevation={0}
         sx={{
-          p: 6,
+          p: { xs: 4, md: 6 },
           display: "flex",
           flexDirection: "column",
         }}
@@ -51,7 +31,7 @@ const Credentials: React.FC = () => {
       <Paper
         elevation={0}
         sx={{
-          p: 6,
+          p: { xs: 4, md: 6 },
           display: "flex",
           flexDirection: "column",
         }}

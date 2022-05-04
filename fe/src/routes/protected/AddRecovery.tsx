@@ -37,13 +37,13 @@ const AddRecovery: React.FC = () => {
       <Paper
         elevation={0}
         sx={{
-          p: 6,
+          p: { md: 4, xs: 2 },
           display: "flex",
           justifyContent: "center",
         }}
       >
         <Stack
-          spacing={6}
+          spacing={{ md: 4, xs: 2 }}
           direction="column"
           maxWidth="400px"
           alignItems="center"

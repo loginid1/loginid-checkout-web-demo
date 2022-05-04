@@ -14,6 +14,7 @@ import { Recovery } from "../lib/VaultSDK/vault/user";
 import { LoginID } from "../theme/theme";
 import { ContentCopy } from "@mui/icons-material";
 import { Account } from "../lib/VaultSDK/vault/algo";
+import ParseUtil from "../lib/util/parse";
 
 interface AlgorandAccountCard {
   account: Account;
@@ -33,7 +34,10 @@ export const AlgorandCard: React.FC<AlgorandAccountCard> = ({ account }) => {
   });
 
   const credIAT = dateTimeFormat.format(Date.parse(account.iat));
-
+  const cutAddress = ParseUtil.displayLongAddress(account.address);
+  const copyAddress = () => {
+    navigator.clipboard.writeText(account.address);
+  };
   return (
     <Box>
       <Card
@@ -53,10 +57,10 @@ export const AlgorandCard: React.FC<AlgorandAccountCard> = ({ account }) => {
             justifyContent="space-between"
             alignItems="center"
           >
-            <Box>
+            <Box maxWidth="50vw">
               <Typography
                 noWrap
-                maxWidth="50vw"
+                maxWidth="30vw"
                 variant="h3"
                 align="left"
                 overflow="hidden"
@@ -64,12 +68,29 @@ export const AlgorandCard: React.FC<AlgorandAccountCard> = ({ account }) => {
               >
                 {account.alias}
               </Typography>
+              <Stack direction="row" spacing={2} alignItems="center">
+                <Typography
+                  noWrap
+                  variant="body1"
+                  align="left"
+                  overflow="hidden"
+                  textOverflow="ellipsis"
+                >
+                  {cutAddress}
+                </Typography>
+                <IconButton size="small" onClick={copyAddress}>
+                  <ContentCopy />
+                </IconButton>
+              </Stack>
               <Typography variant="body1" align="left">
                 Added {credIAT}
               </Typography>
               <Typography variant="body1" align="left">
-                Recovery option: <Chip label={cutoff(account.recovery_address)}/> {" "}
-                | Credentials: {account.credentials_name.map((name) => <Chip label={name}/>)}
+                Recovery option:{" "}
+                <Chip label={cutoff(account.recovery_address)} /> | Credentials:{" "}
+                {account.credentials_name.map((name) => (
+                  <Chip label={name} />
+                ))}
               </Typography>
             </Box>
             <Box>

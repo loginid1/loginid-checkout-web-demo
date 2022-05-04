@@ -44,7 +44,12 @@ export const KeyDisplay: React.FC<keyDisplayProps> = ({
           justifyContent: "center",
         }}
       >
-        <Stack spacing={2} direction="row" justifyContent="center" alignItems="center">
+        <Stack
+          spacing={2}
+          direction="row"
+          justifyContent="center"
+          alignItems="center"
+        >
           <Typography
             maxWidth="50vw"
             noWrap

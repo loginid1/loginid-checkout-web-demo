@@ -33,14 +33,14 @@ const CompleteAlgorand: React.FC = () => {
       <Paper
         elevation={0}
         sx={{
-          p: 6,
+          p: { md: 4, xs: 2 },
           mb: 2,
           display: "flex",
           justifyContent: "center",
         }}
       >
         <Stack
-          spacing={6}
+          spacing={{ md: 4, xs: 2 }}
           maxWidth="400px"
           alignItems="center"
           justifyContent="space-evenly"
@@ -66,13 +66,13 @@ const CompleteAlgorand: React.FC = () => {
 
           <Button
             variant="contained"
-            onClick={() => navigate("/algorand_account_success")}
+            onClick={() => navigate("/algorand_accounts")}
           >
             Complete
           </Button>
-          <Link color="#000" onClick={() => navigate("/algorand_accounts")}>
+          {/* <Link color="#000" onClick={() => navigate("/algorand_accounts")}>
             I will activate later
-          </Link>
+          </Link> */}
         </Stack>
       </Paper>
     </VaultBase>

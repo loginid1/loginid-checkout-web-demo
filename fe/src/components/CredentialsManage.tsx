@@ -86,8 +86,8 @@ export const CredentialsManage: React.FC = () => {
           md={12}
           sx={{
             display: "flex",
-            justifyContent: {md: "flex-start", xs: "center"},
-            maxWidth: "400px",
+            justifyContent: { md: "flex-start", xs: "center" },
+            // maxWidth: "400px",
           }}
         >
           <Typography variant="body1">
@@ -98,10 +98,10 @@ export const CredentialsManage: React.FC = () => {
       </Grid>
       <Grid item xs container direction="row" spacing={2}>
         {credentials?.credentials?.map((credential) => (
-          <Grid item>
+          <Grid item xs={12} md={4}>
             <Card
               variant="outlined"
-              sx={{ width: "100", backgroundColor: alpha("#F2F2F2", 0.2) }}
+              sx={{ width: "100%", backgroundColor: alpha("#F2F2F2", 0.2) }}
               elevation={0}
             >
               <CardContent>
