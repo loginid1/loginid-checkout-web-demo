@@ -23,6 +23,7 @@ import AddAlgorand from './routes/protected/AddAlgorand';
 import AddAlgorandForm from './routes/protected/AddAlgorandForm';
 import CompleteAlgorand from './routes/protected/CompleteAlgorand';
 import AlgorandSuccess from './routes/protected/AddAlgorandSuccess';
+import { QuickAddAlgorand } from './routes/protected/QuickAddAlgorand';
 
 
 
@@ -55,6 +56,7 @@ function App() {
           <Route path="/manage_algorand" element={<ManageAlgorand />} />
           <Route path="/credential" element={<Credentials />} />
           <Route path="/create_algorand" element={<CreateAlgorand />} />
+          <Route path="/quick_add_algorand" element={<QuickAddAlgorand />} />
         </Route>
         <Route path="*" element={<Navigate replace to="/login" />} />
       </Routes>
