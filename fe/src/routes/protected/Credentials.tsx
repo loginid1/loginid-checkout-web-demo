@@ -21,7 +21,7 @@ const Credentials: React.FC = () => {
       <Paper
         elevation={0}
         sx={{
-          p: { xs: 4, md: 6 },
+          p: { md: 4, xs: 2 },
           display: "flex",
           flexDirection: "column",
         }}
@@ -31,7 +31,7 @@ const Credentials: React.FC = () => {
       <Paper
         elevation={0}
         sx={{
-          p: { xs: 4, md: 6 },
+          p: { md: 4, xs: 2 },
           display: "flex",
           flexDirection: "column",
         }}

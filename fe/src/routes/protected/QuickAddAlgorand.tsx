@@ -62,7 +62,7 @@ export function QuickAddAlgorand() {
     if (reason === "clickaway") {
       return;
     }
-  setDisplayMessage(null);
+    setDisplayMessage(null);
   };
 
   return (
@@ -70,7 +70,7 @@ export function QuickAddAlgorand() {
       <Paper
         elevation={0}
         sx={{
-          p: { xs: 2, md: 4 },
+          p: { md: 4, xs: 2 },
           mb: 2,
           display: "flex",
           justifyContent: "center",
@@ -91,7 +91,7 @@ export function QuickAddAlgorand() {
           </Snackbar>
         )}
         <Stack
-          spacing={{ xs: 2, md: 4 }}
+          spacing={ { md: 4, xs: 2 }}
           maxWidth="400px"
           alignItems="center"
           justifyContent="space-evenly"

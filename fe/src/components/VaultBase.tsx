@@ -45,11 +45,11 @@ export const VaultBase: React.FC<VaultBaseInterface> = ({
   return (
     <ThemeProvider theme={LoginID}>
       <Stack
-        spacing={{ xs: 2, md: 4 }}
+        spacing={{ md: 4, xs: 2 }}
         direction="row"
         sx={{
           display: "flex",
-          mr: { xs: 2, md: 4 },
+          mr: { md: 4, xs: 2 },
           my: 2,
         }}
       >
