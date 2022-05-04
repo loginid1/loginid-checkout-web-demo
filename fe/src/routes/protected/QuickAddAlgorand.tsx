@@ -94,7 +94,7 @@ export function QuickAddAlgorand() {
 					</Snackbar>
 				)}
         <Stack
-          spacing={6}
+          spacing={2}
           maxWidth="400px"
           alignItems="center"
           justifyContent="space-evenly"

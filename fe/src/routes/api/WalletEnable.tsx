@@ -21,9 +21,11 @@ import {
 	AlertColor,
 	Link,
 	Box,
+	Stack,
 } from "@mui/material";
 import { DisplayMessage } from "../../lib/common/message";
 import ParseUtil from "../../lib/util/parse";
+import { render } from "@testing-library/react";
 
 interface WalletEnableSession {
 	network: string;
@@ -217,7 +219,7 @@ export default function WalletEnable() {
 				{accountList?.accounts?.map((account) => (
 					<Box >
 					<FormControlLabel  sx={{width: "80%", m:1}} className={styles.formControl}
-						label={ParseUtil.displayLongAddress(account.address)}
+						label={EnableLabel(account.alias,account.address, account.iat)}
 						control={<Checkbox id={account.address} value={account.address} onChange={accountSelection}/>}
 					/>
 					</Box>
@@ -232,4 +234,16 @@ export default function WalletEnable() {
 			</Container>
 		</ThemeProvider>
 	);
+}
+
+function EnableLabel(alias: string, address: string, date: string) {
+  
+	return(
+		<Stack sx={{ justifyContent: 'flex-start' }}>
+			<Typography align="left" variant="subtitle1">{alias}</Typography>
+			<Typography align="left" variant="body2">{ParseUtil.displayLongAddress(address)}</Typography>
+			<Typography align="left" variant="caption">{ParseUtil.parseDate(date)}</Typography>
+		</Stack>
+	);
+
 }
