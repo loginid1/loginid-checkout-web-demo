@@ -54,10 +54,10 @@ export const defaultOptions = <PopupOptions> {
  * Go to https://github.com/krakenjs/belter for full license details.
  */
 
-export function openPopup(url : string, options : PopupOptions = defaultOptions ) : Window {
+export function openPopup(url : string, name: string, options : PopupOptions = defaultOptions ) : Window {
 
 	//let options = { name : ""; width: 0; height:0; top : 0; left : 0 } ;
-    let name = "";
+    //let name = "";
     let left = 0;
     let top = 0;
     let width = options.width;

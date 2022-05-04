@@ -93,11 +93,11 @@ export class FidoVaultSDK {
     */
 
     async enable( network: EnableOpts): Promise<EnableResult > {
-        let w = openPopup(this.baseURL+"/fe/api/enable", defaultOptions);
+        let w = openPopup(this.baseURL+"/fe/api/enable", "enable", defaultOptions);
         //w.postMessage(JSON.stringify(network),FidoVaultSDK.baseURL);
         let isLoad = await this.mMessage.pingForResponse(w,20000);
         if (!isLoad) {
-            return Promise.reject("communication timeout");
+            return Promise.reject({message:"communication timeout"});
         }
 
         console.log("postmessage " + window.origin);
@@ -119,10 +119,10 @@ export class FidoVaultSDK {
      * 
     **/
     async signTxns(txns: WalletTransaction[], opts?: SignTxnsOpts): Promise<PostTxnsResult > {
-        let w = openPopup(this.baseURL+"/fe/api/transaction", defaultOptions);
+        let w = openPopup(this.baseURL+"/fe/api/transaction", "sign", defaultOptions);
         let isLoad = await this.mMessage.pingForResponse(w,30000);
         if (!isLoad) {
-            return Promise.reject("communication timeout");
+            return Promise.reject({message:"communication timeout"});
         }
         console.log("postmessage " + window.origin);
         let message : Message = {
@@ -143,11 +143,11 @@ export class FidoVaultSDK {
      * 
     **/
     async signAndPostTxns(txns: WalletTransaction[], opts?: SignTxnsOpts): Promise<PostTxnsResult> {
-        let w = openPopup(this.baseURL+"/fe/api/transaction", defaultOptions);
+        let w = openPopup(this.baseURL+"/fe/api/transaction", "signpost",defaultOptions);
         //w.postMessage(JSON.stringify(network),FidoVaultSDK.baseURL);
         let isLoad = await this.mMessage.pingForResponse(w,30000);
         if (!isLoad) {
-            return Promise.reject("communication timeout");
+            return Promise.reject({message:"communication timeout"});
         }
         console.log("postmessage " + window.origin);
         let message : Message = {

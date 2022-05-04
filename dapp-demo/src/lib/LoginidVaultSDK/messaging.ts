@@ -56,10 +56,10 @@ export class MessagingService {
         // wait for reply
         let result = await this.waitForResponse(nextId, this.timeout);
         if (result == null) {
-            return Promise.reject("timeout");
+            return Promise.reject({message:"timeout"});
         } 
         if (result.type === MessageType.error.valueOf()) {
-            return Promise.reject(result?.data);
+            return Promise.reject({message:result?.data});
         }
         return Promise.resolve(result.data);
     }
