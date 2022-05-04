@@ -2,6 +2,7 @@ package algo
 
 import (
 	"errors"
+	"strings"
 
 	"github.com/google/uuid"
 	"gitlab.com/loginid/software/services/loginid-vault/services/user"
@@ -35,7 +36,7 @@ func (repo *AlgoRepository) AddAlgoAccount(username string, account *AlgoAccount
 	}
 
 	var user user.User
-	if err := tx.Where("username = ?", username).Take(&user).Error; err != nil {
+	if err := tx.Where("username_lower = ?", strings.ToLower(username)).Take(&user).Error; err != nil {
 		tx.Rollback()
 		return err
 	}
@@ -60,7 +61,7 @@ func (repo *AlgoRepository) AddAlgoAccount(username string, account *AlgoAccount
 func (repo *AlgoRepository) GetAccountList(username string) ([]AlgoAccount, error) {
 
 	var accounts []AlgoAccount
-	err := repo.DB.Joins("JOIN users ON users.id = algo_accounts.user_id").Where("users.username = ? ", username).Find(&accounts).Error
+	err := repo.DB.Joins("JOIN users ON users.id = algo_accounts.user_id").Where("users.username_lower = ? ", strings.ToLower(username)).Find(&accounts).Error
 	if err != nil {
 		return accounts, err
 	}

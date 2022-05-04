@@ -2,6 +2,7 @@ package user
 
 import (
 	"errors"
+	"strings"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -61,7 +62,7 @@ func (repo *UserRepository) AddUserCredential(username string, credential UserCr
 	}
 
 	var user User
-	if err := tx.Where("username = ?", username).Take(&user).Error; err != nil {
+	if err := tx.Where("username_lower = ?", strings.ToLower(username)).Take(&user).Error; err != nil {
 		tx.Rollback()
 		return err
 	}
@@ -87,7 +88,7 @@ func (repo *UserRepository) AddUserCredential(username string, credential UserCr
 func (repo *UserRepository) GetCredentialsByUsername(username string) ([]UserCredential, error) {
 
 	var credentials []UserCredential
-	err := repo.DB.Joins("JOIN users ON users.id = user_credentials.user_id").Where("users.username = ? ", username).Find(&credentials).Error
+	err := repo.DB.Joins("JOIN users ON users.id = user_credentials.user_id").Where("users.username_lower = ? ", strings.ToLower(username)).Find(&credentials).Error
 	if err != nil {
 		return credentials, err
 	}
@@ -96,7 +97,7 @@ func (repo *UserRepository) GetCredentialsByUsername(username string) ([]UserCre
 
 func (repo *UserRepository) LookupCredentials(username string, credential_ids []string) ([]UserCredential, error) {
 	var credentials []UserCredential
-	err := repo.DB.Joins("JOIN users ON users.id = user_credentials.user_id").Where("users.username = ? ", username).Where("user_credentials.id in ?", credential_ids).Find(&credentials).Error
+	err := repo.DB.Joins("JOIN users ON users.id = user_credentials.user_id").Where("users.username_lower = ? ", strings.ToLower(username)).Where("user_credentials.id in ?", credential_ids).Find(&credentials).Error
 	if err != nil {
 		return credentials, err
 	}
@@ -118,7 +119,7 @@ func (repo *UserRepository) SaveRecovery(username string, recovery UserRecovery)
 	}
 
 	var user User
-	if err := tx.Where("username = ?", username).Take(&user).Error; err != nil {
+	if err := tx.Where("username_lower = ?", strings.ToLower(username)).Take(&user).Error; err != nil {
 		tx.Rollback()
 		return err
 	}
@@ -139,7 +140,7 @@ func (repo *UserRepository) SaveRecovery(username string, recovery UserRecovery)
 func (repo *UserRepository) GetRecoveryByUsername(username string) ([]UserRecovery, error) {
 
 	var recovery []UserRecovery
-	err := repo.DB.Joins("JOIN users ON users.id = user_recovery.user_id").Where("users.username = ? ", username).Find(&recovery).Error
+	err := repo.DB.Joins("JOIN users ON users.id = user_recovery.user_id").Where("users.username_lower = ? ", strings.ToLower(username)).Find(&recovery).Error
 	if err != nil {
 		return recovery, err
 	}
@@ -149,7 +150,7 @@ func (repo *UserRepository) GetRecoveryByUsername(username string) ([]UserRecove
 func (repo *UserRepository) GetUserByUsername(username string) (*User, error) {
 
 	var user User
-	err := repo.DB.Where("users.username = ? ", username).Find(&user).Error
+	err := repo.DB.Where("users.username_lower = ? ", strings.ToLower(username)).Find(&user).Error
 	if err != nil {
 		return nil, err
 	}
