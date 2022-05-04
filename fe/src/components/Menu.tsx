@@ -105,7 +105,7 @@ export const Menu: React.FC<MenuInterface> = ({
         sx={{
           alignItems: "center",
           justifyContent: "center",
-          pb: 4
+          pb: 4,
         }}
       >
         <Link href="#" color="#615E5E" sx={{ textDecoration: "none" }}>

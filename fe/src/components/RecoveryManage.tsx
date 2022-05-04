@@ -93,15 +93,15 @@ export const RecoveryManage: React.FC = () => {
           </Typography>
         </Grid>
       </Grid>
-      <Grid item xs container direction="column" spacing={2}>
+      <Grid item xs container direction="row" spacing={2}>
         {recoveryList?.recovery?.map((recovery) => (
-          <Grid item>
+          <Grid item xs={12} md={6}>
             <Card
               variant="outlined"
-              sx={{ width: "100%", backgroundColor: alpha("#F2F2F2", 0.2) }}
+              sx={{ maxWidth: "100%", backgroundColor: alpha("#F2F2F2", 0.2) }}
               elevation={0}
             >
-              <CardContent>
+              <CardContent sx={{ maxWidth: "100%" }}>
                 <Stack
                   direction="row"
                   justifyContent="space-between"

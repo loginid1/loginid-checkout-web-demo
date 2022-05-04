@@ -13,16 +13,18 @@ interface AccountProp {
 export const Account: React.FC<AccountProp> = ({}) => {
   return (
     <ThemeProvider theme={LoginID}>
-      <Box sx={{
-        display: "flex",
-        paddingX: "20px",
-        paddingY: "16px",
-        width: "720px",
-        height: "76px",
-        alignItems: "center",
-        border: 1,
-        borderRadius: "5px"
-      }}>
+      <Box
+        sx={{
+          display: "flex",
+          paddingX: "20px",
+          paddingY: "16px",
+          width: "720px",
+          height: "76px",
+          alignItems: "center",
+          border: 1,
+          borderRadius: "5px",
+        }}
+      >
         <Stack spacing={1}>
           <Typography variant="h5">MyAlgorandAccount</Typography>
           <Typography variant="h6">added at some date</Typography>

@@ -33,23 +33,8 @@ const AlgorandAccounts: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
-    retrieveProfile();
     getAccountList();
   }, []);
-
-  async function retrieveProfile() {
-    const token = AuthService.getToken();
-    if (token) {
-      const myProfile = await vaultSDK.getProfile(token);
-      setProfile(myProfile);
-    } else {
-      // redirect to login
-      navigate(
-        "/login?redirect_error=" +
-          encodeURIComponent("not authorized - please login again")
-      );
-    }
-  }
 
   async function getAccountList() {
     const token = AuthService.getToken();
@@ -67,12 +52,12 @@ const AlgorandAccounts: React.FC = () => {
       <Paper
         elevation={0}
         sx={{
-          p: 6,
+          p: { md: 4, xs: 2 },
           display: "flex",
           flexDirection: "column",
         }}
       >
-        <Grid container spacing={2} direction="column">
+        <Grid container spacing={{ md: 4, xs: 2 }} direction="column">
           <Grid item xs container direction="row" spacing={2}>
             <Grid
               item
@@ -121,7 +106,7 @@ const AlgorandAccounts: React.FC = () => {
               md={12}
               sx={{
                 display: "flex",
-                justifyContent: {md: "flex-start", xs: "center"},
+                justifyContent: { md: "flex-start", xs: "center" },
                 maxWidth: "400px",
               }}
             >

@@ -32,16 +32,12 @@ export function QuickAddAlgorand() {
   const [isRecovery, setIsRecovery] = useState(false);
   const [displayMessage, setDisplayMessage] = useState<DisplayMessage | null>();
 
-  useEffect(() => {
-  }, []);
-
+  useEffect(() => {}, []);
 
   async function handleAccountCreation() {
-
     const token = AuthService.getToken();
     if (token) {
       try {
-
         const response = await vaultSDK.quickCreateAccount(token);
 
         navigate("/complete_algorand_account", {
@@ -59,42 +55,43 @@ export function QuickAddAlgorand() {
     }
   }
 
-	const handleDisplayClose = (
-		event?: React.SyntheticEvent | Event,
-		reason?: string
-	) => {
-		if (reason === "clickaway") {
-			return;
-		}
-		setDisplayMessage(null);
-	};
+  const handleDisplayClose = (
+    event?: React.SyntheticEvent | Event,
+    reason?: string
+  ) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setDisplayMessage(null);
+  };
 
   return (
     <VaultBase focus={1}>
       <Paper
         elevation={0}
         sx={{
-          p: 6,
+          p: { md: 4, xs: 2 },
           mb: 2,
           display: "flex",
           justifyContent: "center",
         }}
       >
-
-				{displayMessage && (
-					<Snackbar open={displayMessage?true:false} autoHideDuration={6000} onClose={handleDisplayClose} >
-					<Alert
-						severity={
-							(displayMessage?.type as AlertColor) || "info"
-						}
-						sx={{width:'100%', minWidth:300 }}
-					>
-						{displayMessage.text}
-					</Alert>
-					</Snackbar>
-				)}
+        {displayMessage && (
+          <Snackbar
+            open={displayMessage ? true : false}
+            autoHideDuration={6000}
+            onClose={handleDisplayClose}
+          >
+            <Alert
+              severity={(displayMessage?.type as AlertColor) || "info"}
+              sx={{ width: "100%", minWidth: 300 }}
+            >
+              {displayMessage.text}
+            </Alert>
+          </Snackbar>
+        )}
         <Stack
-          spacing={2}
+          spacing={ { md: 4, xs: 2 }}
           maxWidth="400px"
           alignItems="center"
           justifyContent="space-evenly"
@@ -107,7 +104,7 @@ export function QuickAddAlgorand() {
           </Stack>
           <Stack spacing={2} alignItems="center">
             <Typography variant="body1" display="inline">
-              Let’s create your first Algorand account. 
+              Let’s create your first Algorand account.
             </Typography>
           </Stack>
           <img src={AddImg} alt="Add Algorand" height="auto" />
@@ -115,9 +112,7 @@ export function QuickAddAlgorand() {
           <Typography>
             Not ready yet?
             <div />
-            Go to <Link onClick={() => navigate("/home")}>
-              Learn more
-            </Link>{" "}
+            Go to <Link onClick={() => navigate("/home")}>Learn more</Link>{" "}
             about Algorand on the Vault
           </Typography>
           <Stack direction="row" spacing={2}>
@@ -126,10 +121,7 @@ export function QuickAddAlgorand() {
               &nbsp;Skip
             </Button>
 
-            <Button
-              variant="contained"
-              onClick={handleAccountCreation}
-            >
+            <Button variant="contained" onClick={handleAccountCreation}>
               Create Account
             </Button>
           </Stack>
@@ -137,5 +129,4 @@ export function QuickAddAlgorand() {
       </Paper>
     </VaultBase>
   );
-};
-
+}
