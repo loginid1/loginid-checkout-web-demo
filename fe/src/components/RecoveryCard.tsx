@@ -20,7 +20,7 @@ interface RecoveryCard {
 
 export const RecoveryCard: React.FC<RecoveryCard> = ({
   recovery,
-  showCopy = true,
+  showCopy,
 }) => {
   const dateTimeFormat = new Intl.DateTimeFormat("en", {
     month: "numeric",
@@ -31,28 +31,29 @@ export const RecoveryCard: React.FC<RecoveryCard> = ({
   });
 
   const credIAT = dateTimeFormat.format(Date.parse(recovery.iat));
-  const displayKey = recovery.public_key.substring(0, 18) + "...";
   const copyPublicKey = () => {
     navigator.clipboard.writeText(recovery.public_key);
   };
 
   return (
     <Box>
-      <Typography
-        noWrap
-        variant="h3"
-        align="left"
-        overflow="hidden"
-        textOverflow="ellipsis"
-      >
-        {displayKey}
+      <Stack direction="row" spacing={2} alignItems="center">
+        <Typography
+          noWrap
+          maxWidth="30%"
+          variant="h3"
+          align="left"
+          overflow="hidden"
+        >
+          {recovery.public_key}
+        </Typography>
         {showCopy && (
           <IconButton size="small" onClick={copyPublicKey}>
             <ContentCopy />
           </IconButton>
         )}
-      </Typography>
-      <Typography variant="body1" align="left">
+      </Stack>
+      <Typography noWrap variant="body1" align="left">
         Added {credIAT}
       </Typography>
     </Box>

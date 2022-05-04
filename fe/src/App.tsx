@@ -19,9 +19,10 @@ import CompleteCredential from './routes/protected/CompleteCredential';
 import AddRecovery from './routes/protected/AddRecovery';
 import CompleteRecovery from './routes/protected/CompleteRecovery';
 import AlgorandAccounts from './routes/protected/AlgorandAccounts';
-import AddAlgorandAccount from './routes/protected/AddAlgorandAccount';
-import AddAlgorandAccountForm from './routes/protected/AddAlgorandAccountForm';
-import CompleteAlgorandAccount from './routes/protected/CompleteAlgorandAccount';
+import AddAlgorand from './routes/protected/AddAlgorand';
+import AddAlgorandForm from './routes/protected/AddAlgorandForm';
+import CompleteAlgorand from './routes/protected/CompleteAlgorand';
+import AlgorandSuccess from './routes/protected/AddAlgorandSuccess';
 
 
 
@@ -44,9 +45,10 @@ function App() {
           <Route path="/complete_recovery" element={<CompleteRecovery />} />
 
           <Route path="/algorand_accounts" element={<AlgorandAccounts />} />
-          <Route path="/add_algorand_account" element={<AddAlgorandAccount />} />
-          <Route path="/add_algorand_account_form" element={<AddAlgorandAccountForm />} />
-          <Route path="/complete_algorand_account" element={<CompleteAlgorandAccount />} />
+          <Route path="/add_algorand_account" element={<AddAlgorand />} />
+          <Route path="/add_algorand_account_form" element={<AddAlgorandForm />} />
+          <Route path="/complete_algorand_account" element={<CompleteAlgorand />} />
+          <Route path="/algorand_account_success" element={<AlgorandSuccess />} />
 
           <Route path="/oldhome" element={<Home />} /> 
           <Route path="/manage_credential" element={<ManageCredential />} />

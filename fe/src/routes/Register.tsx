@@ -14,7 +14,7 @@ import { useNavigate } from "react-router-dom";
 import React, { useState } from "react";
 import { LoginID } from "../theme/theme";
 import background from "../assets/background.svg";
-import logo from "../assets/logo.svg";
+import vaultLogo from "../assets/logo.svg";
 import vaultSDK from "../lib/VaultSDK";
 import { AuthService } from "../services/auth";
 import { CodeInput } from "../components/CodeInput";
@@ -81,14 +81,14 @@ export default function Register() {
             flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
-            padding: "60px",
+            padding: 10,
             borderRadius: "2%",
             backgroundColor: "white",
-            maxWidth: "520px",
+            maxWidth: "50vx",
           }}
         >
-          <img src={logo} alt="logo" />
-          <Typography variant="body1" marginTop={2}>
+          <img src={vaultLogo} alt="logo" />
+          <Typography variant="body1" marginTop={2} maxWidth="400px">
             Create a FIDO Vault Account and manage your Crypto Accounts with
             Security and Ease.
           </Typography>
@@ -103,7 +103,7 @@ export default function Register() {
                 value={username}
                 color="primary"
                 focused
-                sx={{width: "250px"}}
+                sx={{ width: "250px" }}
                 onChange={(e) => setUsername(e.target.value)}
               />
             </Box>
@@ -143,4 +143,4 @@ export default function Register() {
       </Box>
     </ThemeProvider>
   );
-};
+}

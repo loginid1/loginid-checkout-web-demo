@@ -12,7 +12,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import React, { useState } from "react";
 import { LoginID } from "../theme/theme";
 import background from "../assets/background.svg";
-import prodLogo from "../assets/logo.svg";
+import vaultLogo from "../assets/logo.svg";
 import vaultSDK from "../lib/VaultSDK";
 import { AuthService } from "../services/auth";
 
@@ -61,25 +61,22 @@ const Login: React.FC = () => {
             flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
-            padding: "60px",
+            padding: 10,
             borderRadius: "2%",
             backgroundColor: "white",
-            maxWidth: "520px",
+            maxWidth: "50vx",
           }}
         >
-          <Box
-            sx={{
-              width: "400px",
-              height: "69px",
-            }}
-          >
-            <img src={prodLogo} alt="logo"></img>
-            <Typography variant="h3" marginTop={2}>
-              Log in securely to your FIDO Vault Account.
-            </Typography>
-          </Box>
+          <img src={vaultLogo} alt="logo"></img>
+          <Typography variant="body1" marginTop={2}>
+            Log in securely to your FIDO Vault Account.
+          </Typography>
 
-          <Box component="form" onSubmit={handleSubmit} sx={{ mt: 4, maxWidth: "250px" }}>
+          <Box
+            component="form"
+            onSubmit={handleSubmit}
+            sx={{ mt: 4, maxWidth: "250px" }}
+          >
             {errorMessage.length > 0 && (
               <Alert severity="error">{errorMessage}</Alert>
             )}
@@ -102,7 +99,7 @@ const Login: React.FC = () => {
             </Button>
           </Box>
           <Typography variant="body1">
-            Don't have an account yet?
+            Don't have an account yet?{" "}
             <Link href="./register">Create Account Now</Link>
           </Typography>
         </Box>
