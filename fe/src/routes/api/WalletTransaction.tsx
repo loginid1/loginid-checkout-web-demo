@@ -20,6 +20,8 @@ import { DisplayMessage } from "../../lib/common/message";
 import ParseUtil from "../../lib/util/parse";
 import vaultSDK from "../../lib/VaultSDK";
 import VaultLogo from "../../assets/logo_dark.svg";
+import TxConfirmLogo from "../../assets/icon-1-exclamation.svg";
+import TxApproveLogo from "../../assets/icon-2-checkmark.svg";
 import {
 	PaymentTransaction,
 	SignedTxn,
@@ -46,6 +48,7 @@ export default function WalletTxnConfirmation() {
 	);
 	const [payment, setPayment] = useState<PaymentTransaction | null>(null);
 	const [username, setUsername] = useState<string>("");
+	const [success, setSuccess] = useState<boolean>(false);
 	useEffect(() => {
 		console.log("init " + transactions.length);
 		let target = window.opener;
@@ -142,6 +145,7 @@ export default function WalletTxnConfirmation() {
 			// clear old error message
 			if (result) {
 				mService.sendMessageText(JSON.stringify(result));
+				setSuccess(true);
 				setDisplayMessage({
 					text: "transaction successful!!",
 					type: "info",
@@ -171,8 +175,34 @@ export default function WalletTxnConfirmation() {
 			<Box>
 				<AppBar position="static">
 					<Toolbar>
-							<img src={VaultLogo} width="160" height="30"/>
-					</Toolbar>	
+						<Grid container spacing={1} justifyContent="center" alignItems="center">
+							<Grid item xs={8} sx={{ "text-align": "left" }}>
+								<img src={VaultLogo} width="160" height="30" />
+							</Grid>
+							{ success? (
+							<Grid item xs={4} justifyContent="center" alignItems="center" sx={{ "text-align": "left" ,display:"inline-flex"}} >
+								<img
+									src={TxApproveLogo}
+									width="40"
+									height="40"
+								/>
+								<Typography sx={{m:1}}>Approve Transaction!</Typography>
+							</Grid>
+
+							): (
+							<Grid item xs={4} justifyContent="center" alignItems="center" sx={{ "text-align": "left" ,display:"inline-flex"}} >
+								<img
+									src={TxConfirmLogo}
+									width="40"
+									height="40"
+								/>
+								<Typography sx={{m:1}}>Approve Transaction?</Typography>
+							</Grid>
+
+							)
+							}
+						</Grid>
+					</Toolbar>
 				</AppBar>
 
 				{displayMessage && (
@@ -233,7 +263,7 @@ export default function WalletTxnConfirmation() {
 								</Grid>
 								<Grid item xs={6} sx={{ "text-align": "left" }}>
 									<Typography variant="body1">
-									{ParseUtil.displayAddress(payment.from)}
+										{ParseUtil.displayAddress(payment.from)}
 									</Typography>
 								</Grid>
 								<Grid item xs={6} sx={{ "text-align": "left" }}>
@@ -243,7 +273,7 @@ export default function WalletTxnConfirmation() {
 								</Grid>
 								<Grid item xs={6} sx={{ "text-align": "left" }}>
 									<Typography variant="body1">
-									{ParseUtil.displayAddress(payment.to)}
+										{ParseUtil.displayAddress(payment.to)}
 									</Typography>
 								</Grid>
 								<Grid item xs={6} sx={{ "text-align": "left" }}>
@@ -253,7 +283,7 @@ export default function WalletTxnConfirmation() {
 								</Grid>
 								<Grid item xs={6} sx={{ "text-align": "left" }}>
 									<Typography variant="body1">
-									{ParseUtil.displayAlgo(payment.fee)}
+										{ParseUtil.displayAlgo(payment.fee)}
 									</Typography>
 								</Grid>
 							</>
@@ -265,7 +295,7 @@ export default function WalletTxnConfirmation() {
 								onClick={handleCancel}
 								sx={{ mt: 1, mb: 1 }}
 							>
-								Cancel
+								Close
 							</Button>
 						</Grid>
 						<Grid item xs={6}>
