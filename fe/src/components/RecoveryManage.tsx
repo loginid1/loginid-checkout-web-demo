@@ -1,3 +1,4 @@
+import { Add } from "@mui/icons-material";
 import {
   alpha,
   Box,
@@ -40,20 +41,51 @@ export const RecoveryManage: React.FC = () => {
       <Grid item xs container direction="row" spacing={2}>
         <Grid
           item
-          xs={6}
-          sx={{ display: "flex", justifyContent: "flex-start" }}
+          xs={12}
+          md={6}
+          sx={{
+            display: "flex",
+            justifyContent: { md: "flex-start", xs: "center" },
+          }}
         >
-          <Typography variant="h2" color="secondary">Recovery Options</Typography>
+          <Stack spacing={2} direction="row" alignItems={"center"}>
+            <Typography variant="h2" color="secondary">
+              Recovery Options
+            </Typography>
+            <Button
+              onClick={() => navigate("/add_recovery")}
+              color="primary"
+              variant="contained"
+              sx={{
+                display: { xs: "inherit", md: "none" },
+              }}
+            >
+              <Add />
+            </Button>
+          </Stack>
         </Grid>
-        <Grid item xs={6} sx={{ display: "flex", justifyContent: "flex-end" }}>
+        <Grid
+          item
+          xs={12}
+          md={6}
+          sx={{
+            justifyContent: "flex-end",
+            display: { xs: "none", md: "flex" },
+          }}
+        >
           <Button variant="contained" onClick={() => navigate("/add_recovery")}>
             + Add New Recovery Option
           </Button>
         </Grid>
         <Grid
           item
-          xs={6}
-          sx={{ display: "flex", justifyContent: "flex-start" }}
+          xs={12}
+          md={12}
+          sx={{
+            display: "flex",
+            justifyContent: "flex-start",
+            maxWidth: "400px",
+          }}
         >
           <Typography variant="body1">
             This feature will allow you to regain access to your account if you
@@ -70,11 +102,18 @@ export const RecoveryManage: React.FC = () => {
               elevation={0}
             >
               <CardContent>
-                <Stack direction="row" justifyContent="space-between" alignItems="center">
-                  <RecoveryCard recovery={recovery}></RecoveryCard>
+                <Stack
+                  direction="row"
+                  justifyContent="space-between"
+                  alignItems="center"
+                >
+                  <RecoveryCard
+                    recovery={recovery}
+                    showCopy={true}
+                  ></RecoveryCard>
                   <Box>
                     <Stack direction="row" spacing={2}>
-                      <Button variant="outlined" color="error">
+                      {/* <Button variant="outlined" color="error">
                         Revoke
                       </Button>
                       <Button variant="outlined" color="primary">
@@ -82,7 +121,7 @@ export const RecoveryManage: React.FC = () => {
                       </Button>
                       <Button variant="outlined" color="primary">
                         Rephrase
-                      </Button>
+                      </Button> */}
                     </Stack>
                   </Box>
                 </Stack>

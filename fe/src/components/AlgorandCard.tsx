@@ -4,6 +4,7 @@ import {
   Button,
   Card,
   CardContent,
+  Chip,
   IconButton,
   Stack,
   Typography,
@@ -47,10 +48,15 @@ export const AlgorandCard: React.FC<AlgorandAccountCard> = ({ account }) => {
             justifyContent: "center",
           }}
         >
-          <Stack direction="row" justifyContent="space-between" alignItems="center">
+          <Stack
+            direction="row"
+            justifyContent="space-between"
+            alignItems="center"
+          >
             <Box>
               <Typography
                 noWrap
+                maxWidth="50vw"
                 variant="h3"
                 align="left"
                 overflow="hidden"
@@ -62,18 +68,19 @@ export const AlgorandCard: React.FC<AlgorandAccountCard> = ({ account }) => {
                 Added {credIAT}
               </Typography>
               <Typography variant="body1" align="left">
-                Recovery option: {cutoff(account.recovery_address)} | Credentials: {account.credentials_name}
+                Recovery option: <Chip label={cutoff(account.recovery_address)}/> {" "}
+                | Credentials: {account.credentials_name.map((name) => <Chip label={name}/>)}
               </Typography>
             </Box>
             <Box>
-              <Stack direction="row" spacing={2}>
+              {/* <Stack direction="row" spacing={2}>
                 <Button variant="outlined" color="primary">
                   Show Details
                 </Button>
                 <Button variant="outlined" color="primary">
                   Rekey
                 </Button>
-              </Stack>
+              </Stack> */}
             </Box>
           </Stack>
         </CardContent>

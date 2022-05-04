@@ -18,9 +18,10 @@ import VaultAppBar from "../../components/VaultAppbar";
 import { CredentialsManage } from "../../components/CredentialsManage";
 import { RecoveryManage } from "../../components/RecoveryManage";
 import vaultSDK from "../../lib/VaultSDK";
-import { ArrowBack } from "@mui/icons-material";
+import { Add, ArrowBack } from "@mui/icons-material";
 import { AccountList } from "../../lib/VaultSDK/vault/algo";
 import { AlgorandCard } from "../../components/AlgorandCard";
+import { VaultBase } from "../../components/VaultBase";
 
 const AlgorandAccounts: React.FC = () => {
   const navigate = useNavigate();
@@ -62,100 +63,91 @@ const AlgorandAccounts: React.FC = () => {
   console.log(accountList);
 
   return (
-    <ThemeProvider theme={LoginID}>
-      <Box
+    <VaultBase focus={1}>
+      <Paper
+        elevation={0}
         sx={{
+          p: 6,
           display: "flex",
+          flexDirection: "column",
         }}
       >
-        <CssBaseline />
-        <Menu focus={1}/>
-
-        <Box
-          component="main"
-          sx={{
-            flexGrow: 1,
-            height: "100vh",
-            paddingX: 4,
-          }}
-        >
-          <Box
-            sx={{
-              height: "100%",
-              width: "100%",
-              paddingRight: "",
-              mt: 2,
-            }}
-          >
-            <Grid container spacing={2} marginRight={10}>
-              <Grid item xs={12} md={12} lg={12}>
-                <VaultAppBar />
-              </Grid>
-              <Grid item xs={12} md={12} lg={12}>
-                <Paper
-                  elevation={0}
+        <Grid container spacing={2} direction="column">
+          <Grid item xs container direction="row" spacing={2}>
+            <Grid
+              item
+              xs={12}
+              md={6}
+              sx={{
+                display: "flex",
+                justifyContent: { md: "flex-start", xs: "center" },
+              }}
+            >
+              <Stack spacing={2} direction="row" alignItems={"center"}>
+                <Typography variant="h2" color="secondary">
+                  Algorand Accounts
+                </Typography>
+                <Button
+                  onClick={() => navigate("/add_algorand_account")}
+                  color="primary"
+                  variant="contained"
                   sx={{
-                    p: 6,
-                    display: "flex",
-                    flexDirection: "column",
+                    display: { xs: "inherit", md: "none" },
                   }}
                 >
-                  <Grid container spacing={2} direction="column">
-                    <Grid item xs container direction="row" spacing={2}>
-                      <Grid
-                        item
-                        xs={6}
-                        sx={{ display: "flex", justifyContent: "flex-start" }}
-                      >
-                        <Typography variant="h2" color="secondary">
-                          Algorand Accounts
-                        </Typography>
-                      </Grid>
-                      <Grid
-                        item
-                        xs={6}
-                        sx={{ display: "flex", justifyContent: "flex-end" }}
-                      >
-                        <Button
-                          variant="contained"
-                          onClick={() => navigate("/add_algorand_account")}
-                        >
-                          + Create Algorand Account
-                        </Button>
-                      </Grid>
-                      <Grid
-                        item
-                        xs={6}
-                        sx={{ display: "flex", justifyContent: "flex-start" }}
-                      >
-                        {accountList?.accounts?.length ? (
-                          <Typography variant="body1">
-                            Your Algorand account(s) are below.
-                          </Typography>
-                        ) : (
-                          <Typography variant="body1">
-                            To setup FIDO authentication for Algorand based
-                            DApps, start by creating your account.
-                          </Typography>
-                        )}
-                      </Grid>
-                    </Grid>
-
-                    <Grid item xs container direction="column" spacing={2}>
-                      {accountList?.accounts?.map((account) => (
-                        <Grid item>
-                          <AlgorandCard account={account}></AlgorandCard>
-                        </Grid>
-                      ))}
-                    </Grid>
-                  </Grid>
-                </Paper>
-              </Grid>
+                  <Add />
+                </Button>
+              </Stack>
             </Grid>
-          </Box>
-        </Box>
-      </Box>
-    </ThemeProvider>
+            <Grid
+              item
+              xs={12}
+              md={6}
+              sx={{
+                display: { xs: "none", md: "flex" },
+                justifyContent: "flex-end",
+              }}
+            >
+              <Button
+                variant="contained"
+                onClick={() => navigate("/add_algorand_account")}
+              >
+                + Create Algorand Account
+              </Button>
+            </Grid>
+            <Grid
+              item
+              xs={12}
+              md={12}
+              sx={{
+                display: "flex",
+                justifyContent: {md: "flex-start", xs: "center"},
+                maxWidth: "400px",
+              }}
+            >
+              {accountList?.accounts?.length ? (
+                <Typography variant="body1">
+                  Your Algorand account(s) are below.
+                </Typography>
+              ) : (
+                <Typography variant="body1">
+                  To setup FIDO authentication for Algorand based DApps, start
+                  by creating your account.
+                </Typography>
+              )}
+            </Grid>
+          </Grid>
+
+          <Grid item xs container direction="column" spacing={2}>
+            {accountList?.accounts?.map((account) => (
+              <Grid item>
+                <AlgorandCard account={account}></AlgorandCard>
+              </Grid>
+            ))}
+          </Grid>
+        </Grid>
+      </Paper>
+    </VaultBase>
   );
 };
 

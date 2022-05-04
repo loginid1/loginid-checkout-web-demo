@@ -1,3 +1,4 @@
+import { Menu } from "@mui/icons-material";
 import {
   AppBar,
   Avatar,
@@ -7,7 +8,6 @@ import {
   Divider,
   IconButton,
   Link,
-  Menu,
   MenuItem,
   Paper,
   Stack,
@@ -21,9 +21,10 @@ import { AuthService } from "../services/auth";
 
 interface AppBarInterface {
   backUrl?: string;
+  mobileMenuHandler?: () => void;
 }
 
-const VaultAppBar: React.FC<AppBarInterface> = ({ backUrl }) => {
+const VaultAppBar: React.FC<AppBarInterface> = ({ backUrl, mobileMenuHandler }) => {
   const navigate = useNavigate();
 
   function handleLogout(e: React.MouseEvent) {
@@ -32,7 +33,7 @@ const VaultAppBar: React.FC<AppBarInterface> = ({ backUrl }) => {
   }
 
   return (
-    <Box sx={{ flexGrow: 1 }}>
+    <Box>
       <Paper
         elevation={0}
         sx={{
@@ -40,17 +41,24 @@ const VaultAppBar: React.FC<AppBarInterface> = ({ backUrl }) => {
           display: "flex",
           height: 40,
         }}
-        >
+      >
         <Stack
           spacing={2}
           direction="row"
           sx={{
             width: "100%",
-            justifyContent:"space-between",
-            alignItems:"center"
+            justifyContent: "space-between",
+            alignItems: "center",
           }}
         >
           <Box>
+            <IconButton
+              onClick={mobileMenuHandler}
+              sx={{ display: { xs: "inherit", sm: "none" } }}
+            >
+              <Menu />
+            </IconButton>
+
             {backUrl && (
               <Button
                 sx={{

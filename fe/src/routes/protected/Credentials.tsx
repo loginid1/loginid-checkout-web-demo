@@ -1,10 +1,4 @@
-import {
-  Box,
-  CssBaseline,
-  Grid,
-  Paper,
-  ThemeProvider,
-} from "@mui/material";
+import { Box, CssBaseline, Grid, Paper, ThemeProvider } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Profile } from "../../lib/VaultSDK/vault/user";
@@ -15,6 +9,7 @@ import VaultAppBar from "../../components/VaultAppbar";
 import { CredentialsManage } from "../../components/CredentialsManage";
 import { RecoveryManage } from "../../components/RecoveryManage";
 import vaultSDK from "../../lib/VaultSDK";
+import { VaultBase } from "../../components/VaultBase";
 
 const Credentials: React.FC = () => {
   const navigate = useNavigate();
@@ -23,83 +18,47 @@ const Credentials: React.FC = () => {
   const [username, setUsername] = useState(AuthService.getUsername());
   const [errorMessage, setErrorMessage] = useState("");
 
-	useEffect(() => {
-		retrieveProfile();
-	}, []);
+  useEffect(() => {
+    retrieveProfile();
+  }, []);
 
-	async function retrieveProfile() {
-		const token = AuthService.getToken();
-		if (token) {
-			const myProfile = await vaultSDK.getProfile(token);
-			setProfile(myProfile);
-		} else {
-			// redirect to login
-			navigate(
-				"/login?redirect_error=" +
-					encodeURIComponent("not authorized - please login again")
-			);
-		}
-	}
+  async function retrieveProfile() {
+    const token = AuthService.getToken();
+    if (token) {
+      const myProfile = await vaultSDK.getProfile(token);
+      setProfile(myProfile);
+    } else {
+      // redirect to login
+      navigate(
+        "/login?redirect_error=" +
+          encodeURIComponent("not authorized - please login again")
+      );
+    }
+  }
 
   return (
-    <ThemeProvider theme={LoginID}>
-      <Box
+    <VaultBase focus={0}>
+      <Paper
+        elevation={0}
         sx={{
+          p: 6,
           display: "flex",
+          flexDirection: "column",
         }}
       >
-        <CssBaseline />
-        <Menu focus={0}/>
-
-        <Box
-          component="main"
-          sx={{
-            flexGrow: 1,
-            height: "100vh",
-            paddingX: 4,
-          }}
-        >
-          <Box
-            sx={{
-              height: "100%",
-              width: "100%",
-              paddingRight: "",
-              mt: 2,
-            }}
-          >
-            <Grid container spacing={2} marginRight={10}>
-              <Grid item xs={12} md={12} lg={12}>
-                <VaultAppBar />
-              </Grid>
-              <Grid item xs={12} md={12} lg={12}>
-                <Paper
-                  elevation={0}
-                  sx={{
-                    p: 6,
-                    display: "flex",
-                    flexDirection: "column",
-                  }}
-                >
-                  <CredentialsManage />
-                </Paper>
-              </Grid>
-              <Grid item xs={12} md={12} lg={12}>
-                <Paper
-                  elevation={0}
-                  sx={{
-                    p: 6,
-                    display: "flex",
-                    flexDirection: "column",
-                  }}
-                >
-                  <RecoveryManage />
-                </Paper>
-              </Grid>
-            </Grid>
-          </Box>
-        </Box>
-      </Box>
-    </ThemeProvider>
+        <CredentialsManage />
+      </Paper>
+      <Paper
+        elevation={0}
+        sx={{
+          p: 6,
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        <RecoveryManage />
+      </Paper>
+    </VaultBase>
   );
 };
 
