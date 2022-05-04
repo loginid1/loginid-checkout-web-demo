@@ -25,15 +25,7 @@ const cutoff = (s: string) => {
 };
 
 export const AlgorandCard: React.FC<AlgorandAccountCard> = ({ account }) => {
-  const dateTimeFormat = new Intl.DateTimeFormat("en", {
-    month: "numeric",
-    year: "numeric",
-    day: "numeric",
-    hour: "numeric",
-    minute: "numeric",
-  });
-
-  const credIAT = dateTimeFormat.format(Date.parse(account.iat));
+  const accountIAT = ParseUtil.parseDate(account.iat);
   const cutAddress = ParseUtil.displayLongAddress(account.address);
   const copyAddress = () => {
     navigator.clipboard.writeText(account.address);
@@ -83,7 +75,7 @@ export const AlgorandCard: React.FC<AlgorandAccountCard> = ({ account }) => {
                 </IconButton>
               </Stack>
               <Typography variant="body1" align="left">
-                Added {credIAT}
+                Added {accountIAT}
               </Typography>
               <Typography variant="body1" align="left">
                 Recovery option:{" "}

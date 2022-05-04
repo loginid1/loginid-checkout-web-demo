@@ -23,15 +23,7 @@ export const RecoveryCard: React.FC<RecoveryCardInterface> = ({
   recovery,
   showCopy,
 }) => {
-  const dateTimeFormat = new Intl.DateTimeFormat("en", {
-    month: "numeric",
-    year: "numeric",
-    day: "numeric",
-    hour: "numeric",
-    minute: "numeric",
-  });
-
-  const credIAT = dateTimeFormat.format(Date.parse(recovery.iat));
+  const recoveryIAT = ParseUtil.parseDate(recovery.iat);
   const cutKey = ParseUtil.displayRecovery(recovery.public_key);
   const copyPublicKey = () => {
     navigator.clipboard.writeText(recovery.public_key);
@@ -57,7 +49,7 @@ export const RecoveryCard: React.FC<RecoveryCardInterface> = ({
         )}
       </Stack>
       <Typography noWrap variant="body1" align="left">
-        Added {credIAT}
+        Added {recoveryIAT}
       </Typography>
     </Box>
   );

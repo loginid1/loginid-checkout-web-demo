@@ -151,6 +151,7 @@ function App() {
 						open={displayMessage ? true : false}
 						autoHideDuration={6000}
 						onClose={handleDisplayClose}
+						sx={{ width: "100%" }}
 					>
 						<Alert
 							severity={
