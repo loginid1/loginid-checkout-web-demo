@@ -49,6 +49,7 @@ export default function WalletTxnConfirmation() {
 	const [payment, setPayment] = useState<PaymentTransaction | null>(null);
 	const [username, setUsername] = useState<string>("");
 	const [success, setSuccess] = useState<boolean>(false);
+	const [validation, setValidation] = useState<TxnValidationResponse>();
 	useEffect(() => {
 		console.log("init " + transactions.length);
 		let target = window.opener;
@@ -79,6 +80,7 @@ export default function WalletTxnConfirmation() {
 
 					console.log(payment);
 					setPayment(payment);
+					setValidation(txnValidation);
 					setUsername(txnValidation.username);
 				}
 			} catch (error) {
@@ -233,7 +235,6 @@ export default function WalletTxnConfirmation() {
 								<Grid item xs={12}>
 									<Divider
 										variant="fullWidth"
-										sx={{ background: "#2870FA" }}
 									/>
 								</Grid>
 								<Grid item xs={6} sx={{ "text-align": "left" }}>
@@ -286,6 +287,17 @@ export default function WalletTxnConfirmation() {
 										{ParseUtil.displayAlgo(payment.fee)}
 									</Typography>
 								</Grid>
+
+								<Grid item xs={6} sx={{ "text-align": "left" }}>
+									<Typography variant="subtitle1">
+										Note:
+									</Typography>
+								</Grid>
+								<Grid item xs={6} sx={{ "text-align": "left" }}>
+									<Typography  variant="body1" >
+										{payment.note}
+									</Typography>
+								</Grid>
 							</>
 						)}
 						<Grid item xs={6}>
@@ -308,6 +320,18 @@ export default function WalletTxnConfirmation() {
 								Approve
 							</Button>
 						</Grid>
+
+								<Grid item xs={12}>
+									<Divider
+										variant="fullWidth"
+									/>
+								</Grid>
+
+								<Grid item xs={12}>
+									<Typography  variant="caption" >
+										Send from my account "{validation?.alias}" to {validation?.origin}
+									</Typography>
+								</Grid>
 					</Grid>
 				</Box>
 			</Box>

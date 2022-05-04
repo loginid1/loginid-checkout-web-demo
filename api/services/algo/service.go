@@ -171,7 +171,7 @@ func (algo *AlgoService) QuickAccountCreation(username string, recovery_pk strin
 	return &account, nil
 }
 
-func (algo *AlgoService) CheckUserDappConsent(genesisHash string, origin string, sender string) string {
+func (algo *AlgoService) CheckUserDappConsent(genesisHash string, origin string, sender string) (string, string) {
 	var key string
 	for k, v := range ALGO_NETWORK_GENESIS {
 		if v.Hash == genesisHash {
@@ -182,11 +182,16 @@ func (algo *AlgoService) CheckUserDappConsent(genesisHash string, origin string,
 	if network, hasKey := ALGO_NETWORK[key]; hasKey {
 		user, err := algo.AlgoRepository.CheckOriginPermission(sender, origin, network)
 		if err != nil {
-			return ""
+			return "", ""
 		}
-		return user.Username
+		account, err := algo.AlgoRepository.LookupAddress(sender)
+		if err != nil {
+			return "", ""
+		}
+
+		return user.Username, account.Alias
 	}
-	return ""
+	return "", ""
 }
 
 func (algo *AlgoService) AddEnableAccounts(username string, address_list []string, origin string, network string) (*Genesis, *services.ServiceError) {

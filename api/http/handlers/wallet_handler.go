@@ -38,6 +38,8 @@ type TxValidationResponse struct {
 	TxnType  []string `json:"txn_type"`
 	Required []bool   `json:"required"`
 	Username string   `json:"username"`
+	Origin   string   `json:"origin"`
+	Alias    string   `json:"alias"`
 }
 
 type PaymentTransaction struct {
@@ -79,8 +81,8 @@ func (h *WalletHandler) TxValidationHandler(w http.ResponseWriter, r *http.Reque
 	}
 	genesisHash := base64.StdEncoding.EncodeToString(txn.GenesisHash[:])
 	// check if sender origin has permission to user consent
-	username := h.AlgoService.CheckUserDappConsent(genesisHash, request.Origin, txn.Sender.String())
-	if username == "" {
+	username, alias := h.AlgoService.CheckUserDappConsent(genesisHash, request.Origin, txn.Sender.String())
+	if username == "" || alias == "" {
 		http_common.SendErrorResponse(w, services.NewError("dapp transaction is not allowed"))
 		return
 	}
@@ -116,6 +118,8 @@ func (h *WalletHandler) TxValidationHandler(w http.ResponseWriter, r *http.Reque
 			TxnType:  []string{"payment"},
 			Required: []bool{true},
 			Username: username,
+			Origin:   request.Origin,
+			Alias:    alias,
 		}
 		http_common.SendSuccessResponse(w, response)
 		return
