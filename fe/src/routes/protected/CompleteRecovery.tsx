@@ -41,13 +41,13 @@ const CompleteRecovery: React.FC = () => {
       <Paper
         elevation={0}
         sx={{
-          p: 6,
+          p: { md: 4, xs: 2 },
           display: "flex",
           justifyContent: "center",
         }}
       >
         <Stack
-          spacing={4}
+          spacing={{ md: 4, xs: 2 }}
           direction="column"
           maxWidth={"400px"}
           alignItems="center"
@@ -60,7 +60,12 @@ const CompleteRecovery: React.FC = () => {
             <Typography variant="medium">Recovery Address</Typography>
             <KeyDisplay value={recovery.public_key} onClick={copyPublicKey} />
           </Stack>
-          <Stack spacing={2} direction="column" alignItems="center" display={"flex"}>
+          <Stack
+            spacing={2}
+            direction="column"
+            alignItems="center"
+            display={"flex"}
+          >
             <Typography variant="medium">Passphrase</Typography>
             <Box maxWidth="400px">
               <Typography variant="body1" display="inline">

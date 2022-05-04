@@ -5,14 +5,17 @@ import { LoginID } from "../theme/theme";
 
 interface CodeInputProps {
   inputName: string;
-  validateCode: ((e: string) => void )
+  validateCode: (e: string) => void;
 }
 
-export const CodeInput: React.FC<CodeInputProps> = ({ inputName, validateCode }) => {
+export const CodeInput: React.FC<CodeInputProps> = ({
+  inputName,
+  validateCode,
+}) => {
   const props = {
     inputStyle: {
       fontFamily: LoginID.typography.fontFamily,
-      margin: "4px",
+      margin: "2px",
       borderRadius: "6px",
       fontSize: "14px",
       paddingLeft: "8px",

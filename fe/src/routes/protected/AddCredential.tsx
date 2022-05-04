@@ -10,6 +10,8 @@ import {
   TextField,
   ThemeProvider,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -69,14 +71,14 @@ const AddCredential: React.FC = () => {
       <Paper
         elevation={0}
         sx={{
-          p: 6,
+          p: { md: 4, xs: 2 },
           display: "flex",
           justifyContent: "center",
         }}
       >
         {!isCodeGenerated ? (
           <Stack
-            spacing={6}
+            spacing={{ md: 4, xs: 2 }}
             direction="column"
             maxWidth="400px"
             alignItems={"center"}
@@ -140,6 +142,8 @@ const AddCredential: React.FC = () => {
           aria-describedby="alert-dialog-description"
           sx={{
             p: 4,
+            display: "flex",
+            justifyContent: "center",
           }}
         >
           <Stack

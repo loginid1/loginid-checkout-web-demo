@@ -1,4 +1,4 @@
-import { Menu } from "@mui/icons-material";
+import { ArrowDropDown, Menu } from "@mui/icons-material";
 import {
   AppBar,
   Avatar,
@@ -8,6 +8,7 @@ import {
   Divider,
   IconButton,
   Link,
+  Menu as Drop,
   MenuItem,
   Paper,
   Stack,
@@ -15,6 +16,7 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Profile } from "../lib/VaultSDK/vault/user";
 import { AuthService } from "../services/auth";
@@ -24,8 +26,21 @@ interface AppBarInterface {
   mobileMenuHandler?: () => void;
 }
 
-const VaultAppBar: React.FC<AppBarInterface> = ({ backUrl, mobileMenuHandler }) => {
+const VaultAppBar: React.FC<AppBarInterface> = ({
+  backUrl,
+  mobileMenuHandler,
+}) => {
   const navigate = useNavigate();
+
+  const [username, setUsername] = useState(AuthService.getUsername());
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
 
   function handleLogout(e: React.MouseEvent) {
     AuthService.logout();
@@ -51,8 +66,9 @@ const VaultAppBar: React.FC<AppBarInterface> = ({ backUrl, mobileMenuHandler }) 
             alignItems: "center",
           }}
         >
-          <Box>
+          <Stack direction="row" spacing={2} alignItems="center">
             <IconButton
+              color="primary"
               onClick={mobileMenuHandler}
               sx={{ display: { xs: "inherit", sm: "none" } }}
             >
@@ -70,20 +86,32 @@ const VaultAppBar: React.FC<AppBarInterface> = ({ backUrl, mobileMenuHandler }) 
                 {"<"} back
               </Button>
             )}
-          </Box>
-          <Stack direction="row" spacing={2}>
-            <Divider variant="middle" />
+          </Stack>
+          <Stack direction="row" spacing={2} alignItems="center">
+            <Divider orientation="vertical" />
             <Button
               sx={{
                 textTransform: "none",
                 "&:hover": { backgroundColor: "transparent" },
               }}
-              onClick={handleLogout}
+              aria-controls={open ? "basic-menu" : undefined}
+              aria-haspopup="true"
+              aria-expanded={open ? "true" : undefined}
+              onClick={handleClick}
             >
-              log out
+              {username}
+              <ArrowDropDown />
             </Button>
           </Stack>
         </Stack>
+        <Drop
+          id="basic-menu"
+          anchorEl={anchorEl}
+          open={open}
+          onClose={handleClose}
+        >
+          <MenuItem onClick={handleLogout}>Logout</MenuItem>
+        </Drop>
       </Paper>
     </Box>
   );

@@ -1,29 +1,56 @@
 import { Box, CssBaseline, Grid, Stack, ThemeProvider } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import vaultSDK from "../lib/VaultSDK";
+import { Profile } from "../lib/VaultSDK/vault/user";
+import { AuthService } from "../services/auth";
 import { LoginID } from "../theme/theme";
 import { Menu } from "./Menu";
 import VaultAppBar from "./VaultAppbar";
 
 interface VaultBaseInterface {
-  focus: number
+  focus: number;
 }
 
-export const VaultBase: React.FC<VaultBaseInterface> = ({focus, ...props}) => {
+export const VaultBase: React.FC<VaultBaseInterface> = ({
+  focus,
+  ...props
+}) => {
+  const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [profile, setProfile] = useState<Profile | null>(null);
 
   const mobileMenuHandler = () => {
     setMobileOpen(!mobileOpen);
   };
 
+  useEffect(() => {
+    retrieveProfile();
+  }, []);
+
+  async function retrieveProfile() {
+    const token = AuthService.getToken();
+    if (token) {
+      const myProfile = await vaultSDK.getProfile(token);
+      setProfile(myProfile);
+    } else {
+      // redirect to login
+      navigate(
+        "/login?redisrect_error=" +
+          encodeURIComponent("not authorized - please login again")
+      );
+    }
+  }
+
   return (
     <ThemeProvider theme={LoginID}>
       <Stack
-        spacing={4}
+        spacing={{ md: 4, xs: 2 }}
         direction="row"
         sx={{
           display: "flex",
-          mr: 4,
-          my: 2
+          mr: { md: 4, xs: 2 },
+          my: 2,
         }}
       >
         <CssBaseline />
