@@ -26,10 +26,15 @@ export const CredentialCards: React.FC<CredentialCard> = ({ credential }) => {
 
   return (
     <Box>
-      <Typography variant="h3" align="left">
+      <Typography
+        noWrap
+        variant="h3"
+        align="left"
+        overflow="hidden"
+      >
         {credential.name}
       </Typography>
-      <Typography variant="body1" align="left">
+      <Typography noWrap variant="body1" align="left">
         Added {credIAT}
       </Typography>
     </Box>

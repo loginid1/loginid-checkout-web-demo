@@ -4,6 +4,7 @@ import {
   CardContent,
   IconButton,
   Palette,
+  Stack,
   Typography,
 } from "@mui/material";
 import { ContentCopy } from "@mui/icons-material";
@@ -29,7 +30,11 @@ export const KeyDisplay: React.FC<keyDisplayProps> = ({
   return (
     <Card
       variant="outlined"
-      sx={{ width: "100%", backgroundColor: alpha("#F2F2F2", 0.2) }}
+      sx={{
+        display: "flex",
+        maxWidth: "100%",
+        backgroundColor: alpha("#F2F2F2", 0.2),
+      }}
       elevation={0}
     >
       <CardContent
@@ -39,18 +44,20 @@ export const KeyDisplay: React.FC<keyDisplayProps> = ({
           justifyContent: "center",
         }}
       >
-        <Typography
-          noWrap
-          variant="body1"
-          overflow="hidden"
-          textOverflow="ellipsis"
-          color={color}
-        >
-          {value}
+        <Stack spacing={2} direction="row" justifyContent="center" alignItems="center">
+          <Typography
+            maxWidth="50vw"
+            noWrap
+            variant="body1"
+            textOverflow="ellipsis"
+            color={color}
+          >
+            {value}
+          </Typography>
           <IconButton size="small" onClick={onClick}>
             <ContentCopy />
           </IconButton>
-        </Typography>
+        </Stack>
       </CardContent>
     </Card>
   );

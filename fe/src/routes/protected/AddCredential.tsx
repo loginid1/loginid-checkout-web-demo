@@ -20,6 +20,7 @@ import VaultAppBar from "../../components/VaultAppbar";
 import AddImg from "../../assets/AddCredential.png";
 import { ArrowBack } from "@mui/icons-material";
 import vaultSDK from "../../lib/VaultSDK";
+import { VaultBase } from "../../components/VaultBase";
 
 const AddCredential: React.FC = () => {
   const navigate = useNavigate();
@@ -50,7 +51,7 @@ const AddCredential: React.FC = () => {
   const handleCloseCredential = () => {
     setOpenCredential(false);
     setIsCodeGenerated(true);
-    navigate("/home");
+    navigate("/complete_credential");
   };
 
   const handleRestartCredential = () => {
@@ -64,159 +65,120 @@ const AddCredential: React.FC = () => {
   };
 
   return (
-    <ThemeProvider theme={LoginID}>
-      <Box
+    <VaultBase focus={0}>
+      <Paper
+        elevation={0}
         sx={{
+          p: 6,
           display: "flex",
+          justifyContent: "center",
         }}
       >
-        <CssBaseline />
-        <Menu focus={0}/>
+        {!isCodeGenerated ? (
+          <Stack
+            spacing={6}
+            direction="column"
+            maxWidth="400px"
+            alignItems={"center"}
+          >
+            <Typography variant="h2" color="secondary">
+              Add New Credential
+            </Typography>
+            <Typography variant="body1">
+              Credentials are a combination of browsers and devices used to give
+              you access to your account. A Registration Code is a 6-digit code
+              that will allow you to register a new credential with this
+              account.
+            </Typography>
 
-        <Box
-          component="main"
+            <img src={AddImg} alt="Add Credential" />
+
+            <Typography variant="body1">
+              When you have your other device ready, select Get Registration
+              Code.
+            </Typography>
+            <Stack direction="row" spacing={2}>
+              <Button onClick={() => navigate("/home")}>
+                <ArrowBack />
+                &nbsp;Back
+              </Button>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleClickOpenCredential}
+              >
+                Get Registration Code
+              </Button>
+            </Stack>
+          </Stack>
+        ) : (
+          <Stack spacing={6}>
+            <Typography variant="h2" color="secondary">
+              Name New Credential
+            </Typography>
+            <TextField
+              label="Credential name"
+              onChange={(e) => setCredentialName(e.target.value)}
+              focused
+            />
+            <Stack direction="row" spacing={2}>
+              <Button onClick={handleRestartCredential}>
+                <ArrowBack />
+                &nbsp;Back
+              </Button>
+              <Button color="primary" onClick={handleCompleteCredential}>
+                Next
+              </Button>
+            </Stack>
+          </Stack>
+        )}
+
+        <Dialog
+          open={openCredential}
+          onClose={handleCloseCredential}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
           sx={{
-            flexGrow: 1,
-            height: "100vh",
-            paddingX: 4,
+            p: 4,
           }}
         >
-          <Box
+          <Stack
+            spacing={2}
             sx={{
-              height: "100%",
-              width: "100%",
-              mt: 2,
+              alignItems: "center",
+              p: 6,
+              width: "400px",
             }}
           >
-            <Grid container spacing={2} marginRight={10}>
-              <Grid item xs={12} md={12} lg={12}>
-                <VaultAppBar />
-              </Grid>
-              <Grid item xs={12} md={12} lg={12}>
-                <Paper
-                  elevation={0}
-                  sx={{
-                    p: 6,
-                    mb: 2,
-                    display: "flex",
-                    justifyContent: "center",
-                  }}
-                >
-                  {!isCodeGenerated ? (
-                    <Stack
-                      spacing={6}
-                      direction="column"
-                      maxWidth="400px"
-                      alignItems="center"
-                      justifyContent="space-evenly"
-                    >
-                      <Typography variant="h2" color="secondary">
-                        Add New Credential
-                      </Typography>
-                      <Typography variant="body1">
-                        Credentials are a combination of browsers and devices
-                        used to give you access to your account. A Registration
-                        Code is a 6-digit code that will allow you to register a
-                        new credential with this account.
-                      </Typography>
-                      <Typography variant="body1">
-                        When you have your other device ready, select Get
-                        Registration Code.
-                      </Typography>
-                      <Stack direction="row" spacing={2}>
-                        <Button onClick={() => navigate("/home")}>
-                          <ArrowBack />
-                          &nbsp;Back
-                        </Button>
-                        <Button
-                          variant="contained"
-                          color="primary"
-                          onClick={handleClickOpenCredential}
-                        >
-                          Get Registration Code
-                        </Button>
-                      </Stack>
-                    </Stack>
-                  ) : (
-                    <Stack spacing={6}>
-                      <Typography variant="h2" color="secondary">
-                        Name New Credential
-                      </Typography>
-                      <TextField
-                        label="Credential name"
-                        onChange={(e) => setCredentialName(e.target.value)}
-                        focused
-                      />
-                      <Stack direction="row" spacing={2}>
-                        <Button onClick={handleRestartCredential}>
-                          <ArrowBack />
-                          &nbsp;Back
-                        </Button>
-                        <Button
-                          color="primary"
-                          onClick={handleCompleteCredential}
-                        >
-                          Next
-                        </Button>
-                      </Stack>
-                    </Stack>
-                  )}
+            <Typography variant="h2" color="secondary" id="alert-dialog-title">
+              Your Registration Code
+            </Typography>
+            <Typography
+              variant="body1"
+              id="alert-dialog-description"
+              textAlign="center"
+            >
+              Enter this 6-digit code on your other device in order to add it to
+              Your Credentials.
+            </Typography>
+            <Typography variant="h2" color="primary">
+              {credentialCode}
+            </Typography>
+            <DialogContentText>
+              This code will expire in 5 minutes
+            </DialogContentText>
 
-                  <Dialog
-                    open={openCredential}
-                    onClose={handleCloseCredential}
-                    aria-labelledby="alert-dialog-title"
-                    aria-describedby="alert-dialog-description"
-                    sx={{
-                      p: 4,
-                    }}
-                  >
-                    <Stack
-                      spacing={2}
-                      sx={{
-                        alignItems: "center",
-                        p: 6,
-                        width: "400px",
-                      }}
-                    >
-                      <Typography
-                        variant="h2"
-                        color="secondary"
-                        id="alert-dialog-title"
-                      >
-                        Your Registration Code
-                      </Typography>
-                      <Typography
-                        variant="body1"
-                        id="alert-dialog-description"
-                        textAlign="center"
-                      >
-                        Enter this 6-digit code on your other device in order to
-                        add it to Your Credentials.
-                      </Typography>
-                      <Typography variant="h2" color="primary">
-                        {credentialCode}
-                      </Typography>
-                      <DialogContentText>
-                        This code will expire in 5 minutes
-                      </DialogContentText>
-
-                      <Button
-                        variant="contained"
-                        color="primary"
-                        onClick={handleCloseCredential}
-                      >
-                        Close
-                      </Button>
-                    </Stack>
-                  </Dialog>
-                </Paper>
-              </Grid>
-            </Grid>
-          </Box>
-        </Box>
-      </Box>
-    </ThemeProvider>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleCloseCredential}
+            >
+              Close
+            </Button>
+          </Stack>
+        </Dialog>
+      </Paper>
+    </VaultBase>
   );
 };
 

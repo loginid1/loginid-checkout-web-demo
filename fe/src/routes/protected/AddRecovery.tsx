@@ -17,95 +17,58 @@ import vaultSDK from "../../lib/VaultSDK";
 import { useState } from "react";
 import { RecoveryPhrase } from "../../lib/VaultSDK/vault/user";
 import { AuthService } from "../../services/auth";
+import { VaultBase } from "../../components/VaultBase";
 
 const AddRecovery: React.FC = () => {
   const navigate = useNavigate();
 
-
   async function handleCreateRecovery() {
     const token = AuthService.getToken();
     if (token) {
-        const recovery = await vaultSDK.createRecovery(token);
-        navigate("/complete_recovery", {
-            state: recovery
-        })
+      const recovery = await vaultSDK.createRecovery(token);
+      navigate("/complete_recovery", {
+        state: recovery,
+      });
     } else {
     }
-}
+  }
   return (
-    <ThemeProvider theme={LoginID}>
-      <Box
+    <VaultBase focus={0}>
+      <Paper
+        elevation={0}
         sx={{
+          p: 6,
           display: "flex",
+          justifyContent: "center",
         }}
       >
-        <CssBaseline />
-        <Menu focus={0}/>
-
-        <Box
-          component="main"
-          sx={{
-            flexGrow: 1,
-            height: "100vh",
-            paddingX: 4,
-          }}
+        <Stack
+          spacing={6}
+          direction="column"
+          maxWidth="400px"
+          alignItems="center"
+          justifyContent="space-evenly"
         >
-          <Box
-            sx={{
-              height: "100%",
-              width: "100%",
-              mt: 2,
-            }}
-          >
-            <Grid container spacing={2} marginRight={10}>
-              <Grid item xs={12} md={12} lg={12}>
-                <VaultAppBar />
-              </Grid>
-              <Grid item xs={12} md={12} lg={12}>
-                <Paper
-                  elevation={0}
-                  sx={{
-                    p: 6,
-                    mb: 2,
-                    display: "flex",
-                    justifyContent: "center",
-                  }}
-                >
-                  <Stack
-                    spacing={6}
-                    direction="column"
-                    maxWidth="400px"
-                    alignItems="center"
-                    justifyContent="space-evenly"
-                  >
-                    <Typography variant="h2" color="secondary">
-                      Add New Recovery Option
-                    </Typography>
-                    <Typography variant="body1">
-                      Recovery options will allow you to regain access to your
-                      account if you lose or upgrade your credentials.
-                    </Typography>
-                    <Stack direction="row" spacing={2}>
-                      <Button onClick={() => navigate("/home")}>
-                        <ArrowBack />
-                        &nbsp;Back
-                      </Button>
+          <Typography variant="h2" color="secondary">
+            Add New Recovery Option
+          </Typography>
+          <Typography variant="body1">
+            Recovery options will allow you to regain access to your account if
+            you lose or upgrade your credentials.
+          </Typography>
+          <Stack direction="row" spacing={2}>
+            <Button onClick={() => navigate("/home")}>
+              <ArrowBack />
+              &nbsp;Back
+            </Button>
 
-                      <Button
-                        variant="contained"
-                        onClick={handleCreateRecovery}
-                      >
-                        Next
-                      </Button>
-                    </Stack>
-                  </Stack>
-                </Paper>
-              </Grid>
-            </Grid>
-          </Box>
-        </Box>
-      </Box>
-    </ThemeProvider>
+            <Button variant="contained" onClick={handleCreateRecovery}>
+              Next
+            </Button>
+          </Stack>
+        </Stack>
+      </Paper>
+    </VaultBase>
   );
 };
 

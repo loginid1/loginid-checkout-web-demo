@@ -1,3 +1,4 @@
+import { Add } from "@mui/icons-material";
 import {
   alpha,
   Box,
@@ -5,6 +6,7 @@ import {
   Card,
   CardContent,
   Grid,
+  IconButton,
   Paper,
   Stack,
   Typography,
@@ -39,12 +41,38 @@ export const CredentialsManage: React.FC = () => {
       <Grid item xs container direction="row" spacing={1}>
         <Grid
           item
-          xs={6}
-          sx={{ display: "flex", justifyContent: "flex-start" }}
+          xs={12}
+          md={6}
+          sx={{
+            display: "flex",
+            justifyContent: { md: "flex-start", xs: "center" },
+          }}
         >
-          <Typography variant="h2" color="secondary">My Credentials</Typography>
+          <Stack spacing={2} direction="row" alignItems={"center"}>
+            <Typography variant="h2" color="secondary" display="inline">
+              My Credentials
+            </Typography>
+            <Button
+              onClick={() => navigate("/add_credential")}
+              color="primary"
+              variant="contained"
+              sx={{
+                display: { xs: "inherit", md: "none" },
+              }}
+            >
+              <Add />
+            </Button>
+          </Stack>
         </Grid>
-        <Grid item xs={6} sx={{ display: "flex", justifyContent: "flex-end" }}>
+        <Grid
+          item
+          xs={12}
+          md={6}
+          sx={{
+            justifyContent: "flex-end",
+            display: { xs: "none", md: "flex" },
+          }}
+        >
           <Button
             variant="contained"
             onClick={() => navigate("/add_credential")}
@@ -54,8 +82,13 @@ export const CredentialsManage: React.FC = () => {
         </Grid>
         <Grid
           item
-          xs={6}
-          sx={{ display: "flex", justifyContent: "flex-start" }}
+          xs={12}
+          md={12}
+          sx={{
+            display: "flex",
+            justifyContent: {md: "flex-start", xs: "center"},
+            maxWidth: "400px",
+          }}
         >
           <Typography variant="body1">
             Credentials are a combination of browsers and devices used to give
