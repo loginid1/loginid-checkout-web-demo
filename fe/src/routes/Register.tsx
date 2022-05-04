@@ -47,7 +47,7 @@ export default function Register() {
       } else {
         const response = await vaultSDK.register(username);
         AuthService.storeSession({ username: username, token: response.jwt });
-        navigate("/home");
+        navigate("/quick_add_algorand");
       }
     } catch (error) {
       setErrorMessage((error as Error).message);

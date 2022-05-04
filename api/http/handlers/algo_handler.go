@@ -132,10 +132,19 @@ func (h *AlgoHandler) QuickAccountCreationHandler(w http.ResponseWriter, r *http
 	session := r.Context().Value("session").(services.UserSession)
 
 	account, err := h.AlgoService.QuickAccountCreation(session.Username, request.PublicKey)
-
 	if err != nil {
 		http_common.SendErrorResponse(w, *err)
 		return
 	}
-	http_common.SendSuccessResponse(w, account)
+	fAccount := FilterAlgoAccount{
+		Alias:           account.Alias,
+		ID:              account.ID,
+		Address:         account.Address,
+		CredentialsName: extractCredentialsName(account.Credentials),
+		RecoveryAddress: account.RecoveryAddress,
+		Status:          account.AccountStatus,
+		Iat:             account.Iat.Format(time.RFC822),
+		TealScript:      account.TealScript,
+	}
+	http_common.SendSuccessResponse(w, fAccount)
 }

@@ -69,6 +69,7 @@ export interface PaymentTransaction {
     sign_nonce: string; // generated nonce
 }
 
+
 export class VaultAlgo extends Base{
 
     async getAccountList(token: string) : Promise<AccountList> {
@@ -87,6 +88,17 @@ export class VaultAlgo extends Base{
             this._baseURL,
             "/api/protected/algo/createAccount",
             request,
+            header
+        );
+    }
+
+
+    async quickCreateAccount(token: string) : Promise<Account> {
+        const header = { "x-session-token": token };
+        return await utils.http.post(
+            this._baseURL,
+            "/api/protected/algo/quickAccountCreation",
+            {},
             header
         );
     }

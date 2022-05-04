@@ -153,7 +153,7 @@ func (algo *AlgoService) QuickAccountCreation(username string, recovery_pk strin
 
 	// create AlgoAccount
 	account := AlgoAccount{
-		Alias:           contractAccount.Address,
+		Alias:           "Default Algorand Account",
 		Address:         contractAccount.Address,
 		TealScript:      contractAccount.TealScript,
 		CompileScript:   contractAccount.CompileScript,

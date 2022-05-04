@@ -33,6 +33,7 @@ var script_template = map[string]string{
 	"fido_1_recovery": "services/algo/scripts/fido_1_recovery.template.teal",
 	"fido_2_recovery": "services/algo/scripts/fido_2_recovery.template.teal",
 	"fido_3_recovery": "services/algo/scripts/fido_3_recovery.template.teal",
+	"fido_1":          "services/algo/scripts/fido_1.template.teal",
 }
 
 type AlgorandNetworkService struct {
