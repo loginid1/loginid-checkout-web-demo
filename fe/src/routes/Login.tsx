@@ -2,8 +2,13 @@ import {
   Alert,
   Box,
   Button,
+  Card,
+  CardContent,
+  Container,
   CssBaseline,
   Link,
+  Paper,
+  Stack,
   TextField,
   ThemeProvider,
   Typography,
@@ -12,7 +17,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import React, { useState } from "react";
 import { LoginID } from "../theme/theme";
 import background from "../assets/background.svg";
-import vaultLogo from "../assets/logo.svg";
+import { ReactComponent as VaultLogo } from "../assets/logo.svg";
 import vaultSDK from "../lib/VaultSDK";
 import { AuthService } from "../services/auth";
 
@@ -44,46 +49,45 @@ const Login: React.FC = () => {
   };
   return (
     <ThemeProvider theme={LoginID}>
-      <Box
+      <CssBaseline />
+      <Container
+        component="main"
+        maxWidth={false}
         sx={{
           display: "flex",
-          flexDirection: "column",
           justifyContent: "center",
           alignItems: "center",
-          minHeight: "100vh",
           backgroundImage: `url(${background})`,
+          height: `${window.innerHeight}px`,
         }}
       >
-        <CssBaseline />
-        <Box
+        <Paper
+          elevation={0}
           sx={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: { md: 6, xs: 2 },
+            p: { md: 6, xs: 2 },
             borderRadius: "2%",
-            backgroundColor: "white",
-            maxWidth: "50vx",
           }}
         >
-          <img src={vaultLogo} alt="logo"></img>
-          <Typography variant="body1" marginTop={2}>
-            Log in securely to your FIDO Vault Account.
-          </Typography>
-
-          <Box
+          <Stack
             component="form"
             onSubmit={handleSubmit}
-            sx={{ mt: 4, maxWidth: "250px" }}
+            spacing={2}
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
           >
+            <VaultLogo />
+            <Typography variant="body1" marginTop={2}>
+              Log in securely to your FIDO Vault Account.
+            </Typography>
             {errorMessage.length > 0 && (
               <Alert severity="error">{errorMessage}</Alert>
             )}
             <TextField
-              margin="normal"
               fullWidth
-              id="username"
               label="Username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
@@ -97,13 +101,13 @@ const Login: React.FC = () => {
             >
               Login
             </Button>
-          </Box>
-          <Typography variant="body1">
-            Don't have an account yet?{" "}
-            <Link href="./register">Create Account Now</Link>
-          </Typography>
-        </Box>
-      </Box>
+            <Typography variant="body1">
+              Don't have an account yet?{" "}
+              <Link href="./register">Create Account Now</Link>
+            </Typography>
+          </Stack>
+        </Paper>
+      </Container>
     </ThemeProvider>
   );
 };

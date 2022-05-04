@@ -3,9 +3,12 @@ import {
   Box,
   Button,
   Checkbox,
+  Container,
   CssBaseline,
   FormControlLabel,
   Link,
+  Paper,
+  Stack,
   TextField,
   ThemeProvider,
   Typography,
@@ -14,7 +17,7 @@ import { useNavigate } from "react-router-dom";
 import React, { useState } from "react";
 import { LoginID } from "../theme/theme";
 import background from "../assets/background.svg";
-import vaultLogo from "../assets/logo.svg";
+import { ReactComponent as VaultLogo } from "../assets/logo.svg";
 import vaultSDK from "../lib/VaultSDK";
 import { AuthService } from "../services/auth";
 import { CodeInput } from "../components/CodeInput";
@@ -64,49 +67,51 @@ export default function Register() {
 
   return (
     <ThemeProvider theme={LoginID}>
-      <Box
+      <CssBaseline />
+      <Container
+        component="main"
+        maxWidth={false}
         sx={{
           display: "flex",
-          flexDirection: "column",
           justifyContent: "center",
           alignItems: "center",
-          minHeight: "100vh",
           backgroundImage: `url(${background})`,
+          height: `${window.innerHeight}px`,
         }}
       >
-        <CssBaseline />
-        <Box
+        <Paper
+          elevation={0}
           sx={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: { md: 6, xs: 2 },
+            p: { md: 6, xs: 2 },
             borderRadius: "2%",
-            backgroundColor: "white",
-            maxWidth: "50vx",
           }}
         >
-          <img src={vaultLogo} alt="logo" />
-          <Typography variant="body1" marginTop={2} maxWidth="400px">
-            Create a FIDO Vault Account and manage your Crypto Accounts with
-            Security and Ease.
-          </Typography>
-          <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
+          <Stack
+            component="form"
+            onSubmit={handleSubmit}
+            spacing={2}
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <VaultLogo />
+            <Typography variant="body1" marginTop={2} maxWidth="400px">
+              Create a FIDO Vault Account and manage your Crypto Accounts with
+              Security and Ease.
+            </Typography>
             {errorMessage.length > 0 && (
               <Alert severity="error">{errorMessage}</Alert>
             )}
-            <Box sx={{ mt: 2, mb: 2 }}>
-              <TextField
-                id="username"
-                label="Username"
-                value={username}
-                color="primary"
-                focused
-                sx={{ width: "250px" }}
-                onChange={(e) => setUsername(e.target.value)}
-              />
-            </Box>
+            <TextField
+              fullWidth
+              label="Username"
+              value={username}
+              focused
+              onChange={(e) => setUsername(e.target.value)}
+            />
             <FormControlLabel
               control={
                 <Checkbox
@@ -118,15 +123,14 @@ export default function Register() {
               label="I would like to add this device to my credentials"
             />
             {showCode && (
-              <Box sx={{ mt: 2 }}>
-                <Typography variant="body1">
+              <Stack spacing={2}>
+                <Typography variant="body1" maxWidth="400px">
                   Please enter the 6-digit code generated from your
                   FIDO-registered device.
                 </Typography>
                 <CodeInput inputName="code" validateCode={validateCode} />
-              </Box>
+              </Stack>
             )}
-            <div></div>
             <Button
               type="submit"
               variant="contained"
@@ -135,12 +139,12 @@ export default function Register() {
             >
               Create Account
             </Button>
-          </Box>
-          <Typography variant="body1">
-            Already have an account? <Link href="./login">Login</Link>
-          </Typography>
-        </Box>
-      </Box>
+            <Typography variant="body1">
+              Already have an account? <Link href="./login">Login</Link>
+            </Typography>
+          </Stack>
+        </Paper>
+      </Container>
     </ThemeProvider>
   );
 }
