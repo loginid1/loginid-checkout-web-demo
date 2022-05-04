@@ -50,6 +50,8 @@ export interface TxnValidationResponse {
     txn_type: string [];
     required: boolean [];
     username: string;
+    origin: string;
+    alias: string;
 }
 
 export interface SignedTxn {

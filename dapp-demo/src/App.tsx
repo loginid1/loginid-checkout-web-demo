@@ -91,7 +91,7 @@ function App() {
 	async function handleTransactionClick() {
 		try {
 			// construct a transaction note
-			const note = new Uint8Array(Buffer.from("Hello World", "utf8"));
+			const note = new Uint8Array(Buffer.from("Hello World NFT", "utf8"));
 			const addr = localStorage.getItem("enable_account");
 			const receiver =
 				process.env.REACT_APP_DAPP_ADDRESS ||
