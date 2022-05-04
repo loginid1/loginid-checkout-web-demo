@@ -81,7 +81,7 @@ export default function Register() {
             flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
-            padding: 10,
+            padding: { md: 6, xs: 2 },
             borderRadius: "2%",
             backgroundColor: "white",
             maxWidth: "50vx",
