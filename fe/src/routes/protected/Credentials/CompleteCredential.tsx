@@ -9,11 +9,11 @@ import {
   Typography,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { Menu } from "../../components/Menu";
-import VaultAppBar from "../../components/VaultAppbar";
-import { LoginID } from "../../theme/theme";
+import { Menu } from "../../../components/Menu";
+import VaultAppBar from "../../../components/VaultAppbar";
+import { LoginID } from "../../../theme/theme";
 import CompleteImg from "../../assets/CompleteCredential.png";
-import { VaultBase } from "../../components/VaultBase";
+import { VaultBase } from "../../../components/VaultBase";
 
 const CompleteCredential: React.FC = () => {
   const navigate = useNavigate();

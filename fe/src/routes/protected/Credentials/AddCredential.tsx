@@ -15,14 +15,14 @@ import {
 } from "@mui/material";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { AuthService } from "../../services/auth";
-import { LoginID } from "../../theme/theme";
-import { Menu } from "../../components/Menu";
-import VaultAppBar from "../../components/VaultAppbar";
+import { AuthService } from "../../../services/auth";
+import { LoginID } from "../../../theme/theme";
+import { Menu } from "../../../components/Menu";
+import VaultAppBar from "../../../components/VaultAppbar";
 import AddImg from "../../assets/AddCredential.png";
 import { ArrowBack } from "@mui/icons-material";
-import vaultSDK from "../../lib/VaultSDK";
-import { VaultBase } from "../../components/VaultBase";
+import vaultSDK from "../../../lib/VaultSDK";
+import { VaultBase } from "../../../components/VaultBase";
 
 const AddCredential: React.FC = () => {
   const navigate = useNavigate();

@@ -10,16 +10,16 @@ import {
   Typography,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { Menu } from "../../components/Menu";
-import VaultAppBar from "../../components/VaultAppbar";
-import { LoginID } from "../../theme/theme";
+import { Menu } from "../../../components/Menu";
+import VaultAppBar from "../../../components/VaultAppbar";
+import { LoginID } from "../../../theme/theme";
 import { ArrowBack } from "@mui/icons-material";
-import vaultSDK from "../../lib/VaultSDK";
+import vaultSDK from "../../../lib/VaultSDK";
 import SuccessImg from "../../assets/AlgorandSuccess.png";
 import { ReactComponent as ALgorandLogo } from "../../assets/AlgorandLogo.svg";
 import { useEffect, useState } from "react";
-import { AuthService } from "../../services/auth";
-import { VaultBase } from "../../components/VaultBase";
+import { AuthService } from "../../../services/auth";
+import { VaultBase } from "../../../components/VaultBase";
 
 const AlgorandSuccess: React.FC = () => {
   const navigate = useNavigate();

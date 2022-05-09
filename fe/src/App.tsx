@@ -13,17 +13,17 @@ import ManageAlgorand from './routes/protected/ManageAlgorand';
 import CreateAlgorand from './routes/protected/CreateAlgorand';
 import WalletEnable from './routes/api/WalletEnable';
 import WalletTxnConfirmation from './routes/api/WalletTransaction';
-import Credentials from './routes/protected/Credentials';
-import AddCredential from './routes/protected/AddCredential';
-import CompleteCredential from './routes/protected/CompleteCredential';
-import AddRecovery from './routes/protected/AddRecovery';
-import CompleteRecovery from './routes/protected/CompleteRecovery';
-import AlgorandAccounts from './routes/protected/AlgorandAccounts';
-import AddAlgorand from './routes/protected/AddAlgorand';
-import AddAlgorandForm from './routes/protected/AddAlgorandForm';
-import CompleteAlgorand from './routes/protected/CompleteAlgorand';
-import AlgorandSuccess from './routes/protected/AddAlgorandSuccess';
-import { QuickAddAlgorand } from './routes/protected/QuickAddAlgorand';
+import Credentials from './routes/protected/Credentials/Credentials';
+import AddCredential from './routes/protected/Credentials/AddCredential';
+import CompleteCredential from './routes/protected/Credentials/CompleteCredential';
+import AddRecovery from './routes/protected/Credentials/AddRecovery';
+import CompleteRecovery from './routes/protected/Credentials/CompleteRecovery';
+import AlgorandAccounts from './routes/protected/Algorand/AlgorandAccounts';
+import AddAlgorand from './routes/protected/Algorand/AddAlgorand';
+import AddAlgorandForm from './routes/protected/Algorand/AddAlgorandForm';
+import CompleteAlgorand from './routes/protected/Algorand/CompleteAlgorand';
+import AlgorandSuccess from './routes/protected/Algorand/AddAlgorandSuccess';
+import { QuickAddAlgorand } from './routes/protected/Algorand/QuickAddAlgorand';
 
 
 

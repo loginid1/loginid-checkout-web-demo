@@ -13,17 +13,17 @@ import {
   Typography,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { Menu } from "../../components/Menu";
-import VaultAppBar from "../../components/VaultAppbar";
-import { LoginID } from "../../theme/theme";
+import { Menu } from "../../../components/Menu";
+import VaultAppBar from "../../../components/VaultAppbar";
+import { LoginID } from "../../../theme/theme";
 import { ArrowBack } from "@mui/icons-material";
-import vaultSDK from "../../lib/VaultSDK";
+import vaultSDK from "../../../lib/VaultSDK";
 import AddImg from "../../assets/AddAlgorantAccount.png";
 import { ReactComponent as ALgorandLogo } from "../../assets/AlgorandLogo.svg";
 import { useEffect, useState } from "react";
-import { AuthService } from "../../services/auth";
-import { VaultBase } from "../../components/VaultBase";
-import { DisplayMessage } from "../../lib/common/message";
+import { AuthService } from "../../../services/auth";
+import { VaultBase } from "../../../components/VaultBase";
+import { DisplayMessage } from "../../../lib/common/message";
 
 export function QuickAddAlgorand() {
   const navigate = useNavigate();
