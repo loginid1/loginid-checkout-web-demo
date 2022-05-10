@@ -148,3 +148,38 @@ func (h *AlgoHandler) QuickAccountCreationHandler(w http.ResponseWriter, r *http
 	}
 	http_common.SendSuccessResponse(w, fAccount)
 }
+
+type FilterEnableAccount struct {
+	ID            string `json:"id"`
+	WalletAddress string `json:"wallet_address"`
+	Network       string `json:"network"`
+	DappOrigin    string `json:"dapp_origin"`
+	Iat           string `json:"iat"`
+}
+
+type EnableAccountListResponse struct {
+	Accounts []FilterEnableAccount `json:"accounts"`
+}
+
+func (h *AlgoHandler) GetEnableAccountListHandler(w http.ResponseWriter, r *http.Request) {
+	session := r.Context().Value("session").(services.UserSession)
+	enableAccounts, err := h.AlgoService.GetEnableAccountList(session.Username)
+	if err != nil {
+		http_common.SendErrorResponse(w, services.NewError("no account found"))
+		return
+	}
+
+	var fEnableAccounts []FilterEnableAccount
+	for _, enableAccount := range enableAccounts {
+		fEnableAccount := FilterEnableAccount{
+			ID:            enableAccount.ID,
+			WalletAddress: enableAccount.WalletAddress,
+			Network:       enableAccount.Network,
+			DappOrigin:    enableAccount.DappOrigin,
+			Iat:           enableAccount.Iat.Format(time.RFC822),
+		}
+		fEnableAccounts = append(fEnableAccounts, fEnableAccount)
+	}
+
+	http_common.SendSuccessResponse(w, EnableAccountListResponse{Accounts: fEnableAccounts})
+}

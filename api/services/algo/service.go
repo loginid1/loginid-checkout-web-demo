@@ -233,6 +233,17 @@ func (algo *AlgoService) AddEnableAccounts(username string, address_list []strin
 	return &genesis, nil
 }
 
+func (algo *AlgoService) GetEnableAccountList(username string) ([]EnableAccount, *services.ServiceError) {
+
+	enableAccountList, err := algo.AlgoRepository.GetEnableAccountList(username)
+	if err != nil {
+		logger.Global.Error(err.Error())
+		return enableAccountList, services.CreateError("failed to retrieve enable accounts - try again")
+	}
+
+	return enableAccountList, nil
+}
+
 func (algo *AlgoService) SandnetDispenser(to string) (uint64, *services.ServiceError) {
 	// deposit 10 ALGO
 	amount, err := algo.AlgoNet.Dispenser(to, 10000000)

@@ -124,3 +124,13 @@ func (repo *AlgoRepository) AddEnableAccount(enable EnableAccount) error {
 
 	return tx.Commit().Error
 }
+
+func (repo *AlgoRepository) GetEnableAccountList(username string) ([]EnableAccount, error) {
+
+	var accounts []EnableAccount
+	err := repo.DB.Joins("JOIN users ON users.id = enable_accounts.user_id").Where("users.username_lower = ? ", strings.ToLower(username)).Find(&accounts).Error
+	if err != nil {
+		return accounts, err
+	}
+	return accounts, nil
+}
