@@ -244,6 +244,16 @@ func (algo *AlgoService) GetEnableAccountList(username string) ([]EnableAccount,
 	return enableAccountList, nil
 }
 
+func (algo *AlgoService) RevokeEnableAccount(ID string) *services.ServiceError {
+	if err := algo.AlgoRepository.revokeEnableAccount(ID); err != nil {
+		logger.Global.Error(err.Error())
+		return services.CreateError("failed to revoke enable accounts - try again")
+	}
+
+	return nil
+
+}
+
 func (algo *AlgoService) SandnetDispenser(to string) (uint64, *services.ServiceError) {
 	// deposit 10 ALGO
 	amount, err := algo.AlgoNet.Dispenser(to, 10000000)

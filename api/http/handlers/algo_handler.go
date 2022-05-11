@@ -183,3 +183,26 @@ func (h *AlgoHandler) GetEnableAccountListHandler(w http.ResponseWriter, r *http
 
 	http_common.SendSuccessResponse(w, EnableAccountListResponse{Accounts: fEnableAccounts})
 }
+
+type RevokeEnableAccountRequest struct {
+	ID string `json:"id"`
+}
+
+func (h *AlgoHandler) RevokeEnableAccountHandler(w http.ResponseWriter, r *http.Request) {
+
+	var request RevokeEnableAccountRequest
+	defer r.Body.Close()
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		http_common.SendErrorResponse(w, services.NewError("failed to parse request"))
+		return
+	}
+
+	err := h.AlgoService.RevokeEnableAccount(request.ID)
+	if err != nil {
+		http_common.SendErrorResponse(w, services.NewError("no account found"))
+		return
+	}
+
+	http_common.SendSuccess(w)
+
+}

@@ -98,6 +98,7 @@ func main() {
 	protected.HandleFunc("/algo/generateScript", algoHandler.GenerateScriptHandler)
 	protected.HandleFunc("/algo/quickAccountCreation", algoHandler.QuickAccountCreationHandler)
 	protected.HandleFunc("/algo/getEnableAccountList", algoHandler.GetEnableAccountListHandler)
+	protected.HandleFunc("/algo/revokeEnableAccount", algoHandler.RevokeEnableAccountHandler)
 
 	// open transaction api handlers
 

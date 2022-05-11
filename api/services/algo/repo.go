@@ -134,3 +134,27 @@ func (repo *AlgoRepository) GetEnableAccountList(username string) ([]EnableAccou
 	}
 	return accounts, nil
 }
+
+func (repo *AlgoRepository) revokeEnableAccount(ID string) error {
+	tx := repo.DB.Begin()
+
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+
+	}()
+
+	if err := tx.Error; err != nil {
+		return err
+	}
+
+	var found EnableAccount
+	if err := tx.Delete(&found, ID).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	return tx.Commit().Error
+
+}
