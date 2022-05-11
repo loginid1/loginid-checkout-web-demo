@@ -3,7 +3,7 @@ import Base from "../base";
 import utils from "../utils";
 
 export interface AccountList {
-    accounts : Account []
+    accounts: Account[]
 }
 
 export interface Account {
@@ -26,18 +26,27 @@ export interface ContractAccount {
 export interface AlgoAccountCreationRequest {
     alias: string;
     verify_address: string;
-    cred_id_list: string [];
+    cred_id_list: string[];
     recovery: string;
 }
 
 export interface EnableRequest {
-    address_list: string [];
+    address_list: string[];
     origin: string;
     network: string;
 }
 export interface Genesis {
     id: string;
     hash: string;
+}
+export interface EnableAccountList {
+    accounts: EnableAccount[]
+}
+export interface EnableAccount {
+    wallet_address: string;
+    network: string;
+    dapp_origin: string;
+    iat: string;
 }
 
 export interface TxnValidationRequest {
@@ -46,9 +55,9 @@ export interface TxnValidationRequest {
 }
 
 export interface TxnValidationResponse {
-    txn_data: string [];
-    txn_type: string [];
-    required: boolean [];
+    txn_data: string[];
+    txn_type: string[];
+    required: boolean[];
     username: string;
     origin: string;
     alias: string;
@@ -60,7 +69,7 @@ export interface SignedTxn {
 }
 
 export interface PaymentTransaction {
-    from: string; 
+    from: string;
     to: string;
     fee: number;
     amount: number;
@@ -72,9 +81,9 @@ export interface PaymentTransaction {
 }
 
 
-export class VaultAlgo extends Base{
+export class VaultAlgo extends Base {
 
-    async getAccountList(token: string) : Promise<AccountList> {
+    async getAccountList(token: string): Promise<AccountList> {
         const header = { "x-session-token": token };
         return await utils.http.get(
             this._baseURL,
@@ -84,7 +93,7 @@ export class VaultAlgo extends Base{
         );
     }
 
-    async createAccount(token: string, request: AlgoAccountCreationRequest) : Promise<any> {
+    async createAccount(token: string, request: AlgoAccountCreationRequest): Promise<any> {
         const header = { "x-session-token": token };
         return await utils.http.post(
             this._baseURL,
@@ -95,7 +104,7 @@ export class VaultAlgo extends Base{
     }
 
 
-    async quickCreateAccount(token: string) : Promise<Account> {
+    async quickCreateAccount(token: string): Promise<Account> {
         const header = { "x-session-token": token };
         return await utils.http.post(
             this._baseURL,
@@ -105,37 +114,46 @@ export class VaultAlgo extends Base{
         );
     }
 
-    async generateScript(token: string, credentials: string[], recovery: string) : Promise<ContractAccount> {
+    async generateScript(token: string, credentials: string[], recovery: string): Promise<ContractAccount> {
         const header = { "x-session-token": token };
         return await utils.http.post(
             this._baseURL,
             "/api/protected/algo/generateScript",
-            {credential_list: credentials, recovery: recovery},
+            { credential_list: credentials, recovery: recovery },
             header
         );
     }
 
-    async enable(token: string, address_list: string[], origin: string, network: string) : Promise<Genesis> {
+    async enable(token: string, address_list: string[], origin: string, network: string): Promise<Genesis> {
         const header = { "x-session-token": token };
         return await utils.http.post(
             this._baseURL,
             "/api/wallet/enable",
-            {address_list: address_list, origin: origin, network: network},
+            { address_list: address_list, origin: origin, network: network },
             header
         );
     }
 
+    async getEnableAccountList(token: string): Promise<EnableAccountList> {
+        const header = { "x-session-token": token };
+        return await utils.http.get(
+            this._baseURL,
+            "/api/protected/algo/getEnableAccountList",
+            undefined,
+            header
+        );
+    }
 
-    async txnValidation(transactions: WalletTransaction[],  origin: string) : Promise<TxnValidationResponse> {
+    async txnValidation(transactions: WalletTransaction[], origin: string): Promise<TxnValidationResponse> {
         //const header = { "x-session-token": token };
         return await utils.http.post(
             this._baseURL,
             "/api/wallet/txValidation",
-            {transactions: transactions, origin: origin },
+            { transactions: transactions, origin: origin },
         );
     }
 
-    async txConfirmation(username: string, payload: string, nonce: string, rawTxn: string, post: boolean) : Promise<SignedTxn> {
+    async txConfirmation(username: string, payload: string, nonce: string, rawTxn: string, post: boolean): Promise<SignedTxn> {
 
         let headers;
 
@@ -144,11 +162,11 @@ export class VaultAlgo extends Base{
             username: string;
             payload: string;
             nonce: string;
-        }> {
-            username,
-            payload,
-            nonce,
-        };
+        }>{
+                username,
+                payload,
+                nonce,
+            };
 
         console.log(payload);
         let initResponse = await utils.http.post(
@@ -163,7 +181,7 @@ export class VaultAlgo extends Base{
         const {
             assertion_options: assertionPayload,
             tx_id: tx_id,
-          } = initResponse;
+        } = initResponse;
 
         const { challenge } = assertionPayload;
         assertionPayload.challenge = utils.encoding.base64ToBuffer(assertionPayload.challenge);
@@ -187,8 +205,8 @@ export class VaultAlgo extends Base{
             raw_txn: string;
             tx_id: string;
             post: boolean;
-        }> {
-            username,
+        }>{
+                username,
                 challenge,
                 tx_id,
                 post,
@@ -197,7 +215,7 @@ export class VaultAlgo extends Base{
                 client_data: utils.encoding.bufferToBase64(response.clientDataJSON),
                 authenticator_data: utils.encoding.bufferToBase64(response.authenticatorData),
                 signature: utils.encoding.bufferToBase64(response.signature),
-        };
+            };
 
         return await utils.http.post(
             this._baseURL,

@@ -1,12 +1,10 @@
 import { ThemeProvider } from "@emotion/react";
 import {
   Box,
-  Divider,
   Drawer,
   Link,
   List,
   Stack,
-  SvgIcon,
   Toolbar,
   Typography,
 } from "@mui/material";
@@ -27,7 +25,7 @@ const menuItems = [
   "Settings",
 ];
 
-const navigateMenu = ["/home", "/algorand_accounts", "", "", "", ""];
+const navigateMenu = ["/home", "/algorand_accounts", "/dapp_connections", "", "", ""];
 
 interface MenuInterface {
   focus: number;
