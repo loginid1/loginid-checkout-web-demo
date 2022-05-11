@@ -11,16 +11,16 @@ import {
   Typography,
 } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Menu } from "../../components/Menu";
-import VaultAppBar from "../../components/VaultAppbar";
-import { LoginID } from "../../theme/theme";
+import { Menu } from "../../../components/Menu";
+import VaultAppBar from "../../../components/VaultAppbar";
+import { LoginID } from "../../../theme/theme";
 import { ArrowBack } from "@mui/icons-material";
-import vaultSDK from "../../lib/VaultSDK";
+import vaultSDK from "../../../lib/VaultSDK";
 import { ReactComponent as ALgorandLogo } from "../../assets/AlgorandLogo.svg";
 import { useEffect, useState } from "react";
-import { AuthService } from "../../services/auth";
-import { KeyDisplay } from "../../components/KeyDisplay";
-import { VaultBase } from "../../components/VaultBase";
+import { AuthService } from "../../../services/auth";
+import { KeyDisplay } from "../../../components/KeyDisplay";
+import { VaultBase } from "../../../components/VaultBase";
 
 const CompleteAlgorand: React.FC = () => {
   const navigate = useNavigate();

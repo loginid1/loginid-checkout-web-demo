@@ -10,18 +10,18 @@ import {
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Profile } from "../../lib/VaultSDK/vault/user";
-import { AuthService } from "../../services/auth";
-import { LoginID } from "../../theme/theme";
-import { Menu } from "../../components/Menu";
-import VaultAppBar from "../../components/VaultAppbar";
-import { CredentialsManage } from "../../components/CredentialsManage";
-import { RecoveryManage } from "../../components/RecoveryManage";
-import vaultSDK from "../../lib/VaultSDK";
+import { Profile } from "../../../lib/VaultSDK/vault/user";
+import { AuthService } from "../../../services/auth";
+import { LoginID } from "../../../theme/theme";
+import { Menu } from "../../../components/Menu";
+import VaultAppBar from "../../../components/VaultAppbar";
+import { CredentialsManage } from "../../../components/CredentialsManage";
+import { RecoveryManage } from "../../../components/RecoveryManage";
+import vaultSDK from "../../../lib/VaultSDK";
 import { Add, ArrowBack } from "@mui/icons-material";
-import { AccountList } from "../../lib/VaultSDK/vault/algo";
-import { AlgorandCard } from "../../components/AlgorandCard";
-import { VaultBase } from "../../components/VaultBase";
+import { AccountList } from "../../../lib/VaultSDK/vault/algo";
+import { AlgorandCard } from "../../../components/AlgorandCard";
+import { VaultBase } from "../../../components/VaultBase";
 
 const AlgorandAccounts: React.FC = () => {
   const navigate = useNavigate();

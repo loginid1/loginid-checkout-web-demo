@@ -12,14 +12,14 @@ import {
   Typography,
 } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Menu } from "../../components/Menu";
-import VaultAppBar from "../../components/VaultAppbar";
-import { LoginID } from "../../theme/theme";
+import { Menu } from "../../../components/Menu";
+import VaultAppBar from "../../../components/VaultAppbar";
+import { LoginID } from "../../../theme/theme";
 import { ArrowBack } from "@mui/icons-material";
-import { RecoveryPhrase } from "../../lib/VaultSDK/vault/user";
-import { KeyDisplay } from "../../components/KeyDisplay";
+import { RecoveryPhrase } from "../../../lib/VaultSDK/vault/user";
+import { KeyDisplay } from "../../../components/KeyDisplay";
 import { useState } from "react";
-import { VaultBase } from "../../components/VaultBase";
+import { VaultBase } from "../../../components/VaultBase";
 
 const CompleteRecovery: React.FC = () => {
   const navigate = useNavigate();

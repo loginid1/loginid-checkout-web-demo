@@ -9,15 +9,15 @@ import {
   Typography,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { Menu } from "../../components/Menu";
-import VaultAppBar from "../../components/VaultAppbar";
-import { LoginID } from "../../theme/theme";
+import { Menu } from "../../../components/Menu";
+import VaultAppBar from "../../../components/VaultAppbar";
+import { LoginID } from "../../../theme/theme";
 import { ArrowBack } from "@mui/icons-material";
-import vaultSDK from "../../lib/VaultSDK";
+import vaultSDK from "../../../lib/VaultSDK";
 import { useState } from "react";
-import { RecoveryPhrase } from "../../lib/VaultSDK/vault/user";
-import { AuthService } from "../../services/auth";
-import { VaultBase } from "../../components/VaultBase";
+import { RecoveryPhrase } from "../../../lib/VaultSDK/vault/user";
+import { AuthService } from "../../../services/auth";
+import { VaultBase } from "../../../components/VaultBase";
 
 const AddRecovery: React.FC = () => {
   const navigate = useNavigate();

@@ -20,11 +20,11 @@ import {
   Typography,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { Menu } from "../../components/Menu";
-import VaultAppBar from "../../components/VaultAppbar";
-import { LoginID } from "../../theme/theme";
+import { Menu } from "../../../components/Menu";
+import VaultAppBar from "../../../components/VaultAppbar";
+import { LoginID } from "../../../theme/theme";
 import { ArrowBack, Info } from "@mui/icons-material";
-import vaultSDK from "../../lib/VaultSDK";
+import vaultSDK from "../../../lib/VaultSDK";
 import AddImg from "../../assets/AddAlgorantAccount.png";
 import { ReactComponent as AlgorandLogo } from "../../assets/AlgorandLogo.svg";
 import { useEffect, useState } from "react";
@@ -32,16 +32,16 @@ import {
   Credentials,
   RecoveryList,
   RecoveryPhrase,
-} from "../../lib/VaultSDK/vault/user";
-import { AuthService } from "../../services/auth";
-import { CredentialCards } from "../../components/CredentialCard";
-import { RecoveryCard } from "../../components/RecoveryCard";
-import { DisplayMessage } from "../../lib/common/message";
+} from "../../../lib/VaultSDK/vault/user";
+import { AuthService } from "../../../services/auth";
+import { CredentialCards } from "../../../components/CredentialCard";
+import { RecoveryCard } from "../../../components/RecoveryCard";
+import { DisplayMessage } from "../../../lib/common/message";
 import {
   AlgoAccountCreationRequest,
   ContractAccount,
-} from "../../lib/VaultSDK/vault/algo";
-import { VaultBase } from "../../components/VaultBase";
+} from "../../../lib/VaultSDK/vault/algo";
+import { VaultBase } from "../../../components/VaultBase";
 
 const AddAlgorandForm: React.FC = () => {
   const navigate = useNavigate();
