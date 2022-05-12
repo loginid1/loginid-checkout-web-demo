@@ -1,21 +1,14 @@
 import {
   Alert,
   AlertColor,
-  Box,
   Button,
-  CssBaseline,
-  Grid,
   Link,
   Paper,
   Snackbar,
   Stack,
-  ThemeProvider,
   Typography,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { Menu } from "../../../components/Menu";
-import VaultAppBar from "../../../components/VaultAppbar";
-import { LoginID } from "../../../theme/theme";
 import { ArrowBack } from "@mui/icons-material";
 import vaultSDK from "../../../lib/VaultSDK";
 import AddImg from "../../../assets/AddAlgorantAccount.png";

@@ -43,6 +43,7 @@ export interface EnableAccountList {
     accounts: EnableAccount[]
 }
 export interface EnableAccount {
+    id: string;
     wallet_address: string;
     network: string;
     dapp_origin: string;
@@ -142,6 +143,16 @@ export class VaultAlgo extends Base {
             undefined,
             header
         );
+    }
+
+    async revokeEnableAccount(token: string, id: string): Promise<any> {
+        const header = { "x-session-token": token };
+        return await utils.http.post(
+            this._baseURL,
+            "/api/protected/algo/revokeEnableAccount",
+            { ID: id },
+            header
+        )
     }
 
     async txnValidation(transactions: WalletTransaction[], origin: string): Promise<TxnValidationResponse> {

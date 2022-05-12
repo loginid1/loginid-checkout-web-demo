@@ -15,7 +15,6 @@ import {
 } from "@mui/material";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { AlgorandCard } from "../../../components/AlgorandCard";
 import { VaultBase } from "../../../components/VaultBase";
 import ParseUtil from "../../../lib/util/parse";
 import vaultSDK from "../../../lib/VaultSDK";
@@ -29,13 +28,9 @@ import { AuthService } from "../../../services/auth";
 const DappConnections: React.FC = () => {
   const navigate = useNavigate();
 
-  const [profile, setProfile] = useState<Profile | null>(null);
   const [accountList, setAccountList] = useState<EnableAccountList | null>(
     null
   );
-  const [username, setUsername] = useState(AuthService.getUsername());
-
-  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     getEnableAccountList();
@@ -52,7 +47,12 @@ const DappConnections: React.FC = () => {
   }
 
   async function revokeEnableAccount(account: EnableAccount) {
-    console.log(account);
+    const token = AuthService.getToken();
+    if (token) {
+      await vaultSDK.revokeEnableAccount(token, account.id);
+      getEnableAccountList();
+    } else {
+    }
   }
 
   const copyAddress = (account: EnableAccount) => {
@@ -116,7 +116,7 @@ const DappConnections: React.FC = () => {
               </TableHead>
               <TableBody>
                 {accountList?.accounts?.map((account) => (
-                  <TableRow>
+                  <TableRow key={account.id}>
                     <TableCell component="th" scope="row">
                       <Button
                         variant="outlined"
@@ -135,7 +135,9 @@ const DappConnections: React.FC = () => {
                       </IconButton>
                       {ParseUtil.displayLongAddress(account.wallet_address)}
                     </TableCell>
-                    <TableCell align="right">{ParseUtil.parseDate(account.iat)}</TableCell>
+                    <TableCell align="right">
+                      {ParseUtil.parseDate(account.iat)}
+                    </TableCell>
                     <TableCell align="right">{account.dapp_origin}</TableCell>
                     <TableCell align="right">{account.network}</TableCell>
                   </TableRow>

@@ -250,6 +250,8 @@ func (algo *AlgoService) RevokeEnableAccount(ID string) *services.ServiceError {
 		return services.CreateError("failed to revoke enable accounts - try again")
 	}
 
+	logger.Global.Info("Deleted")
+
 	return nil
 
 }

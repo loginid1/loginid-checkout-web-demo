@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
+	"gitlab.com/loginid/software/libraries/goutil.git/logger"
 	"gitlab.com/loginid/software/services/loginid-vault/services/user"
 	"gorm.io/gorm"
 )
@@ -150,9 +151,17 @@ func (repo *AlgoRepository) revokeEnableAccount(ID string) error {
 	}
 
 	var found EnableAccount
-	if err := tx.Delete(&found, ID).Error; err != nil {
+	if err := tx.Where("enable_accounts.id = ?", ID).
+		Delete(&found).Error; err != nil {
 		tx.Rollback()
 		return err
+	}
+
+	if err := tx.Where("enable_accounts.id = ?", ID).Take(&found).Error; err != nil {
+
+		logger.Global.Info("HELLO")
+		logger.Global.Info(found.ID)
+
 	}
 
 	return tx.Commit().Error
