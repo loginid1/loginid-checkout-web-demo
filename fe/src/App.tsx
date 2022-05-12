@@ -24,6 +24,7 @@ import AddAlgorandForm from './routes/protected/Algorand/AddAlgorandForm';
 import CompleteAlgorand from './routes/protected/Algorand/CompleteAlgorand';
 import AlgorandSuccess from './routes/protected/Algorand/AddAlgorandSuccess';
 import { QuickAddAlgorand } from './routes/protected/Algorand/QuickAddAlgorand';
+import DappConnections from './routes/protected/Dapp/DappConnections';
 
 
 
@@ -50,6 +51,8 @@ function App() {
           <Route path="/add_algorand_account_form" element={<AddAlgorandForm />} />
           <Route path="/complete_algorand_account" element={<CompleteAlgorand />} />
           <Route path="/algorand_account_success" element={<AlgorandSuccess />} />
+
+          <Route path="/dapp_connections" element={<DappConnections />} />
 
           <Route path="/oldhome" element={<Home />} /> 
           <Route path="/manage_credential" element={<ManageCredential />} />

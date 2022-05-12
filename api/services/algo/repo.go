@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
+	"gitlab.com/loginid/software/libraries/goutil.git/logger"
 	"gitlab.com/loginid/software/services/loginid-vault/services/user"
 	"gorm.io/gorm"
 )
@@ -123,4 +124,46 @@ func (repo *AlgoRepository) AddEnableAccount(enable EnableAccount) error {
 	}
 
 	return tx.Commit().Error
+}
+
+func (repo *AlgoRepository) GetEnableAccountList(username string) ([]EnableAccount, error) {
+
+	var accounts []EnableAccount
+	err := repo.DB.Joins("JOIN users ON users.id = enable_accounts.user_id").Where("users.username_lower = ? ", strings.ToLower(username)).Find(&accounts).Error
+	if err != nil {
+		return accounts, err
+	}
+	return accounts, nil
+}
+
+func (repo *AlgoRepository) revokeEnableAccount(ID string) error {
+	tx := repo.DB.Begin()
+
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+
+	}()
+
+	if err := tx.Error; err != nil {
+		return err
+	}
+
+	var found EnableAccount
+	if err := tx.Where("enable_accounts.id = ?", ID).
+		Delete(&found).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err := tx.Where("enable_accounts.id = ?", ID).Take(&found).Error; err != nil {
+
+		logger.Global.Info("HELLO")
+		logger.Global.Info(found.ID)
+
+	}
+
+	return tx.Commit().Error
+
 }
