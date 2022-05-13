@@ -79,6 +79,39 @@ func (repo *AlgoRepository) GetAccountByAddress(address string) (*AlgoAccount, e
 	return &account, nil
 }
 
+func (repo *AlgoRepository) RenameAccount(accountId, name string) error {
+
+	tx := repo.DB.Begin()
+
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	if err := tx.Error; err != nil {
+		return err
+	}
+
+	var account AlgoAccount
+	if err := tx.Where("algo_accounts.id = ?", accountId).Take(&account).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if account.ID == "" {
+		tx.Rollback()
+		return errors.New("no credential found")
+	}
+
+	if err := tx.Model(&account).Update("alias", name).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	return tx.Commit().Error
+}
+
 func (repo *AlgoRepository) CheckOriginPermission(address string, origin string, network string) (*user.User, error) {
 
 	var user user.User

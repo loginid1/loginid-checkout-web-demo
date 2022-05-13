@@ -96,6 +96,7 @@ func main() {
 
 	protected.HandleFunc("/algo/getAccountList", algoHandler.GetAccountListHandler)
 	protected.HandleFunc("/algo/createAccount", algoHandler.CreateAccountHandler)
+	protected.HandleFunc("/algo/RenameAccount", algoHandler.RenameAccountHandler)
 	protected.HandleFunc("/algo/generateScript", algoHandler.GenerateScriptHandler)
 	protected.HandleFunc("/algo/quickAccountCreation", algoHandler.QuickAccountCreationHandler)
 	protected.HandleFunc("/algo/getEnableAccountList", algoHandler.GetEnableAccountListHandler)
