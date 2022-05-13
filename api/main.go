@@ -86,6 +86,7 @@ func main() {
 	protected.Use(authService.Middleware)
 	protected.HandleFunc("/user/profile", userHandler.GetUserProfileHandler)
 	protected.HandleFunc("/user/getCredentialList", userHandler.GetCredentialListHandler)
+	protected.HandleFunc("/user/renameCredential", userHandler.RenameCredentialHandler)
 	// deprecated in favour of generateRecoveryInit && generateRecoveryComplete flow
 	protected.HandleFunc("/user/createRecovery", userHandler.CreateRecoveryHandler)
 	protected.HandleFunc("/user/generateRecoveryInit", userHandler.GenerateRecoveryInitHandler)

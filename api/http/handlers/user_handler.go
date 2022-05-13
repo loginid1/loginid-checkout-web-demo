@@ -34,6 +34,29 @@ func (u *UserHandler) GetCredentialListHandler(w http.ResponseWriter, r *http.Re
 	http_common.SendSuccessResponse(w, CredentialListResponse{Credentials: credentials})
 }
 
+type RenameCredentialRequest struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
+func (u *UserHandler) RenameCredentialHandler(w http.ResponseWriter, r *http.Request) {
+
+	var request RenameCredentialRequest
+	defer r.Body.Close()
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		http_common.SendErrorResponse(w, services.NewError("failed to parse request"))
+		return
+	}
+
+	err := u.UserService.UserRepository.RenameCredential(request.ID, request.Name)
+	if err != nil {
+		http_common.SendErrorResponse(w, services.NewError("rename credential failed"))
+		return
+	}
+
+	http_common.SendSuccess(w)
+}
+
 func (u *UserHandler) GetUserProfileHandler(w http.ResponseWriter, r *http.Request) {
 	session := r.Context().Value("session").(services.UserSession)
 	profile, err := u.UserService.GetProfile(session.Username)

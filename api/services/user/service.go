@@ -71,6 +71,14 @@ func (u *UserService) GetCredentialList(username string) ([]UserCredential, *ser
 	return credentialList, nil
 }
 
+func (u *UserService) UpdateCredential(id string, name string) *services.ServiceError {
+	if err := u.UserRepository.RenameCredential(id, name); err != nil {
+		return services.CreateError("failed to rename credentials - try again")
+	}
+
+	return nil
+}
+
 func (u *UserService) GenerateRecoveryInit(username string) (string, *UserRecovery, *services.ServiceError) {
 	account := crypto.GenerateAccount()
 	fmt.Printf("account address: %s\n", account.Address)
