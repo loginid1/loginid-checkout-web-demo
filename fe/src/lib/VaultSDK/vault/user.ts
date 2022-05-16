@@ -68,6 +68,16 @@ export class VaultUser extends Base{
         );
     }
 
+    async renameCredential(token: string, id: string, name: string) : Promise<any> {
+        const header = { "x-session-token": token };
+        return await utils.http.post(
+            this._baseURL,
+            "/api/protected/user/renameCredential",
+            {id, name},
+            header
+        );
+    } 
+
     async getRecoveryList(token: string) : Promise<RecoveryList> {
         const header = { "x-session-token": token };
         return await utils.http.get(

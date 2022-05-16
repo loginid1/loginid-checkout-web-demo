@@ -25,7 +25,7 @@ export const CredentialsManage: React.FC = () => {
 
   useEffect(() => {
     retrieveCredentials();
-  }, []);
+  }, [credentials]);
 
   async function retrieveCredentials() {
     const token = AuthService.getToken();
@@ -33,6 +33,13 @@ export const CredentialsManage: React.FC = () => {
       const myCredentials = await vaultSDK.getCredentials(token);
       setCredentials(myCredentials);
     } else {
+    }
+  }
+
+  async function renameCredential(id: string, name: string) {
+    const token = AuthService.getToken();
+    if (token) {
+      await vaultSDK.renameCredential(token, id, name);
     }
   }
 
@@ -98,19 +105,14 @@ export const CredentialsManage: React.FC = () => {
       </Grid>
       <Grid item xs container direction="row" spacing={2}>
         {credentials?.credentials?.map((credential) => (
-          <Grid item xs={12} md={4}>
+          <Grid item xs={12} md={6} key={credential.id}>
             <Card
               variant="outlined"
               sx={{ width: "100%", backgroundColor: alpha("#F2F2F2", 0.2) }}
               elevation={0}
             >
               <CardContent>
-                <Stack spacing={2} alignItems="start">
-                  <CredentialCards credential={credential}></CredentialCards>{" "}
-                  {/* <Button variant="outlined" color="error">
-                    Revoke
-                  </Button> */}
-                </Stack>
+                <CredentialCards credential={credential} rename={renameCredential}></CredentialCards>
               </CardContent>
             </Card>
           </Grid>

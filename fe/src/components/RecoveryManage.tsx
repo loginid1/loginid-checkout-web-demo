@@ -95,7 +95,7 @@ export const RecoveryManage: React.FC = () => {
       </Grid>
       <Grid item xs container direction="row" spacing={2}>
         {recoveryList?.recovery?.map((recovery) => (
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12} md={6} key={recovery.id}>
             <Card
               variant="outlined"
               sx={{ maxWidth: "100%", backgroundColor: alpha("#F2F2F2", 0.2) }}

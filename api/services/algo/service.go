@@ -119,6 +119,15 @@ func (algo *AlgoService) GetAccountList(username string) ([]AlgoAccount, *servic
 	return accountList, nil
 }
 
+func (algo *AlgoService) RenameAccount(id string, name string) *services.ServiceError {
+	if err := algo.AlgoRepository.RenameAccount(id, name); err != nil {
+		logger.Global.Error(err.Error())
+		return services.CreateError("failed to rename account alias - try again")
+	}
+	return nil
+
+}
+
 func (algo *AlgoService) GenerateFido2Signature(credentialList []string, recovery string) (*ContractAccount, *services.ServiceError) {
 	account, err := algo.AlgoNet.GenerateContractAccount(credentialList, recovery, true)
 	if err != nil {

@@ -139,6 +139,16 @@ export class VaultAlgo extends Base {
         );
     }
 
+    async renameAccount(token: string, id: string, alias: string): Promise<any> {
+        const header = { "x-session-token": token };
+        return await utils.http.post(
+            this._baseURL,
+            "/api/protected/algo/RenameAccount",
+            {id, alias},
+            header
+        )
+    }
+
     async generateScript(token: string, credentials: string[], recovery: string): Promise<ContractAccount> {
         const header = { "x-session-token": token };
         return await utils.http.post(

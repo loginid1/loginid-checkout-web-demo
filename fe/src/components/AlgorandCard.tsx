@@ -5,11 +5,13 @@ import {
   Card,
   CardContent,
   Chip,
+  Dialog,
   IconButton,
   Stack,
+  TextField,
   Typography,
 } from "@mui/material";
-import React from "react";
+import React, { useState } from "react";
 import { Recovery } from "../lib/VaultSDK/vault/user";
 import { LoginID } from "../theme/theme";
 import { ContentCopy } from "@mui/icons-material";
@@ -18,18 +20,39 @@ import ParseUtil from "../lib/util/parse";
 
 interface AlgorandAccountCard {
   account: Account;
+  rename: (id: string, alias: string) => Promise<void>;
 }
 
 const cutoff = (s: string) => {
   return s.substring(0, 10) + "...";
 };
 
-export const AlgorandCard: React.FC<AlgorandAccountCard> = ({ account }) => {
+export const AlgorandCard: React.FC<AlgorandAccountCard> = ({
+  account,
+  rename,
+}) => {
+  const [openRename, setOpenRename] = useState(false);
+  const [newAlias, setNewAlias] = useState("");
   const accountIAT = ParseUtil.parseDate(account.iat);
   const cutAddress = ParseUtil.displayLongAddress(account.address);
   const copyAddress = () => {
     navigator.clipboard.writeText(account.address);
   };
+
+  const handleClickRenameAccount = () => {
+    setOpenRename(true);
+  };
+
+  const handleCancelRename = () => {
+    setNewAlias("");
+    setOpenRename(false);
+  };
+
+  const handleSubmitRename = async () => {
+    await rename(account.id, newAlias);
+    setOpenRename(false);
+  };
+
   return (
     <Box>
       <Card
@@ -47,7 +70,8 @@ export const AlgorandCard: React.FC<AlgorandAccountCard> = ({ account }) => {
           <Stack
             direction="row"
             justifyContent="space-between"
-            alignItems="center"
+            spacing={2}
+            // alignItems="center"
           >
             <Box maxWidth="50vw">
               <Typography
@@ -86,18 +110,61 @@ export const AlgorandCard: React.FC<AlgorandAccountCard> = ({ account }) => {
               </Typography>
             </Box>
             <Box>
-              {/* <Stack direction="row" spacing={2}>
-                <Button variant="outlined" color="primary">
-                  Show Details
+              <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
+                <Button
+                  variant="outlined"
+                  color="primary"
+                  onClick={handleClickRenameAccount}
+                >
+                  Change Alias
                 </Button>
-                <Button variant="outlined" color="primary">
+                {/* <Button variant="outlined" color="primary">
                   Rekey
-                </Button>
-              </Stack> */}
+                </Button> */}
+              </Stack>
             </Box>
           </Stack>
         </CardContent>
       </Card>
+
+      <Dialog
+        open={openRename}
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+        }}
+        onClose={handleCancelRename}
+      >
+        <Stack
+          spacing={2}
+          sx={{
+            alignItems: "center",
+            p: 6,
+            width: "400px",
+          }}
+        >
+          <Typography variant="h2" color="secondary">
+            Change Alias
+          </Typography>
+          <Typography variant="body1"></Typography>
+          <TextField
+            fullWidth
+            onChange={(e) => setNewAlias(e.target.value)}
+            label="new alias"
+            focused
+          ></TextField>
+          <Stack spacing={2} direction="row">
+            <Button onClick={handleCancelRename}>Cancel</Button>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleSubmitRename}
+            >
+              Submit
+            </Button>
+          </Stack>
+        </Stack>
+      </Dialog>
     </Box>
   );
 };
