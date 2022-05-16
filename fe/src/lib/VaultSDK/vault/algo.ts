@@ -119,7 +119,7 @@ export class VaultAlgo extends Base {
         const header = { "x-session-token": token };
         return await utils.http.post(
             this._baseURL,
-            "/api/protected/algo/RenameAccount",
+            "/api/protected/algo/renameAccount",
             {id, alias},
             header
         )
