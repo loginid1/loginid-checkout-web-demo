@@ -26,5 +26,9 @@ export default class ParseUtil {
         return dateTimeFormat.format(Date.parse(time));
     }
 
+    static parseDateUnix(time: number) : string {
+        return dateTimeFormat.format(new Date(time));
+    }
+
 
 }

@@ -82,6 +82,30 @@ export interface PaymentTransaction {
 }
 
 
+// Transaction Report
+export interface TxRecord {
+    "round-time" : number;
+    id: string;
+    "tx-type": string;
+    "payment-transaction": TxPaymentRecord;
+    fee: number;
+    sender: string;
+}
+
+export interface TxList {
+    "next-token": string;
+    "current-round": number;
+    transactions: TxRecord[];
+}
+
+export interface TxPaymentRecord {
+    receiver: string;
+    amount: number;
+    "close-amount": number;
+}
+
+
+
 export class VaultAlgo extends Base {
 
     async getAccountList(token: string): Promise<AccountList> {
@@ -141,6 +165,17 @@ export class VaultAlgo extends Base {
             this._baseURL,
             "/api/protected/algo/getEnableAccountList",
             undefined,
+            header
+        );
+    }
+
+
+    async getTransactionList(token: string, address: string): Promise<TxList> {
+        const header = { "x-session-token": token };
+        return await utils.http.get(
+            this._baseURL,
+            "/api/protected/algo/getEnableAccountList",
+            {address: address},
             header
         );
     }

@@ -100,6 +100,10 @@ func main() {
 	protected.HandleFunc("/algo/getEnableAccountList", algoHandler.GetEnableAccountListHandler)
 	protected.HandleFunc("/algo/revokeEnableAccount", algoHandler.RevokeEnableAccountHandler)
 
+	// balance & reporting
+	protected.HandleFunc("/algo/getAccountInfo", algoHandler.GetAccountInfoHandler)
+	protected.HandleFunc("/algo/getTransaction", algoHandler.GetTransactionHandler)
+
 	// open transaction api handlers
 
 	walletHandler := handlers.WalletHandler{UserService: userService, Fido2Service: fidoService, AlgoService: algoService, AuthService: authService}

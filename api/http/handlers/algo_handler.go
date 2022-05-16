@@ -206,3 +206,39 @@ func (h *AlgoHandler) RevokeEnableAccountHandler(w http.ResponseWriter, r *http.
 	http_common.SendSuccess(w)
 
 }
+
+func (h *AlgoHandler) GetAccountInfoHandler(w http.ResponseWriter, r *http.Request) {
+	session := r.Context().Value("session").(services.UserSession)
+	accounts, err := h.AlgoService.GetAccountInfo(session.Username)
+	if err != nil {
+		http_common.SendErrorResponse(w, services.NewError("no account found"))
+		return
+	}
+
+	http_common.SendSuccessResponse(w, accounts)
+
+}
+
+type TransactionRequest struct {
+	Address   string `json:"address"`
+	Limit     int    `json:"limit"`
+	NextToken string `json:"next_token"`
+}
+
+func (h *AlgoHandler) GetTransactionHandler(w http.ResponseWriter, r *http.Request) {
+	//session := r.Context().Value("session").(services.UserSession)
+	var request TransactionRequest
+	defer r.Body.Close()
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		http_common.SendErrorResponse(w, services.NewError("failed to parse request"))
+		return
+	}
+	transactions, sErr := h.AlgoService.GetTransaction(request.Address)
+	if sErr != nil {
+		http_common.SendErrorResponse(w, *sErr)
+		return
+	}
+
+	http_common.SendSuccessResponse(w, transactions)
+
+}
