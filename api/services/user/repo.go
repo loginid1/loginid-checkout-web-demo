@@ -104,6 +104,38 @@ func (repo *UserRepository) LookupCredentials(username string, credential_ids []
 	return credentials, nil
 }
 
+func (repo *UserRepository) RenameCredential(credentialId string, name string) error {
+	tx := repo.DB.Begin()
+
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	if err := tx.Error; err != nil {
+		return err
+	}
+
+	var credential UserCredential
+	if err := tx.Where("user_credentials.id = ?", credentialId).Take(&credential).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if credential.ID == "" {
+		tx.Rollback()
+		return errors.New("no credential found")
+	}
+
+	if err := tx.Model(&credential).Update("name", name).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	return tx.Commit().Error
+}
+
 func (repo *UserRepository) SaveRecovery(username string, recovery UserRecovery) error {
 
 	tx := repo.DB.Begin()

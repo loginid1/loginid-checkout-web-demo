@@ -34,7 +34,7 @@ const DappConnections: React.FC = () => {
 
   useEffect(() => {
     getEnableAccountList();
-  }, []);
+  }, [accountList]);
 
   async function getEnableAccountList() {
     const token = AuthService.getToken();
@@ -50,7 +50,6 @@ const DappConnections: React.FC = () => {
     const token = AuthService.getToken();
     if (token) {
       await vaultSDK.revokeEnableAccount(token, account.id);
-      getEnableAccountList();
     } else {
     }
   }

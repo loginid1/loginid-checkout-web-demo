@@ -86,6 +86,29 @@ func (h *AlgoHandler) CreateAccountHandler(w http.ResponseWriter, r *http.Reques
 	http_common.SendSuccessResponse(w, map[string]interface{}{"success": true})
 }
 
+type RenameAccountRequest struct {
+	ID    string `json:"id"`
+	Alias string `json:"alias"`
+}
+
+func (h *AlgoHandler) RenameAccountHandler(w http.ResponseWriter, r *http.Request) {
+
+	var request RenameAccountRequest
+	defer r.Body.Close()
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		http_common.SendErrorResponse(w, services.NewError("failed to parse request"))
+		return
+	}
+
+	err := h.AlgoService.RenameAccount(request.ID, request.Alias)
+	if err != nil {
+		http_common.SendErrorResponse(w, services.NewError("rename credential failed"))
+		return
+	}
+
+	http_common.SendSuccess(w)
+}
+
 type GenerateScriptRequest struct {
 	CredentialList []string `json:"credential_list"`
 	Recovery       string   `json:"recovery"`
