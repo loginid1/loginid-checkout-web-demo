@@ -101,7 +101,7 @@ func (repo *AlgoRepository) RenameAccount(accountId, name string) error {
 
 	if account.ID == "" {
 		tx.Rollback()
-		return errors.New("no credential found")
+		return errors.New("no algorand accounts found")
 	}
 
 	if err := tx.Model(&account).Update("alias", name).Error; err != nil {
