@@ -99,6 +99,55 @@ func (algo *AlgoService) CreateAccount(username string, alias string, verify_add
 	return nil
 }
 
+func (algo *AlgoService) RekeyAccount(username string, alias string, verify_address string, credential_id_list []string, recovery string) (*AlgoAccount, *services.ServiceError) {
+	// get script from credential_list and recovery
+
+	credentials, err := algo.UserRepository.LookupCredentials(username, credential_id_list)
+	if err != nil {
+		logger.Global.Error(err.Error())
+		return nil, services.CreateError("failed to validate credentials list")
+	}
+
+	credential_list := extractCredentialPKs(credentials)
+
+	contractAccount, err := algo.AlgoNet.GenerateContractAccount(credential_list, recovery, false)
+	if err != nil {
+		logger.Global.Error(err.Error())
+		return nil, services.CreateError("failed to generate Algorand account")
+	}
+
+	// make sure the key not existed??? may allows same key multiple account
+	_, err = algo.AlgoRepository.LookupAddress(contractAccount.Address)
+	if err == nil {
+		return nil, services.CreateError("address already existed! ")
+	}
+
+	if alias == "" {
+		alias = contractAccount.Address
+	}
+	// create AlgoAccount
+	account := AlgoAccount{
+		Alias:           alias,
+		Address:         contractAccount.Address,
+		TealScript:      contractAccount.TealScript,
+		CompileScript:   contractAccount.CompileScript,
+		CredentialsID:   convertStringArrayToText(credential_id_list),
+		CredentialsPK:   convertStringArrayToText(credential_list),
+		RecoveryAddress: recovery,
+		AccountStatus:   "rekey",
+	}
+
+	err = algo.AlgoRepository.AddAlgoAccount(username, &account)
+	if err != nil {
+		logger.Global.Error(err.Error())
+		return nil, services.CreateError("create Algorand account error")
+	}
+
+	// need to create and
+
+	return &account, nil
+}
+
 func (algo *AlgoService) GetAccountList(username string, includeBalance bool) ([]AlgoAccount, *services.ServiceError) {
 
 	accountList, err := algo.AlgoRepository.GetAccountList(username)
@@ -114,6 +163,18 @@ func (algo *AlgoService) GetAccountList(username string, includeBalance bool) ([
 			return accountList, services.CreateError("failed to retrieve accounts - try again")
 		}
 		accountList[i].Credentials = credentialList
+		if includeBalance {
+			balance, err := algo.Indexer.GetAccountsByID(account.Address)
+			if err != nil {
+				logger.Global.Error(err.Error())
+			} else {
+				accountList[i].Balance = &AccountBalance{
+					Amount:       balance.Amount,
+					CurrentRound: balance.Round,
+					Status:       balance.Status,
+				}
+			}
+		}
 	}
 
 	return accountList, nil
