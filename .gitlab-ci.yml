@@ -1,0 +1,5 @@
+include:
+  - project: 'loginid/software/ci'
+    ref: main
+    file: '/templates/main.gitlab-ci.yml'
+ 
