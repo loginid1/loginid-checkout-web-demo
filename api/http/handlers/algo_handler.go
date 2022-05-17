@@ -37,7 +37,7 @@ type AccountListResponse struct {
 func (h *AlgoHandler) GetAccountListHandler(w http.ResponseWriter, r *http.Request) {
 
 	session := r.Context().Value("session").(services.UserSession)
-	accounts, err := h.AlgoService.GetAccountList(session.Username)
+	accounts, err := h.AlgoService.GetAccountList(session.Username, false)
 	if err != nil {
 		http_common.SendErrorResponse(w, services.NewError("no account found"))
 		return
