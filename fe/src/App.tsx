@@ -20,6 +20,7 @@ import AddRecovery from './routes/protected/Credentials/AddRecovery';
 import CompleteRecovery from './routes/protected/Credentials/CompleteRecovery';
 import AlgorandAccounts from './routes/protected/Algorand/AlgorandAccounts';
 import AddAlgorand from './routes/protected/Algorand/AddAlgorand';
+import {AlgorandTransactions} from './routes/protected/Algorand/AlgorandTransactions';
 import AddAlgorandForm from './routes/protected/Algorand/AddAlgorandForm';
 import CompleteAlgorand from './routes/protected/Algorand/CompleteAlgorand';
 import AlgorandSuccess from './routes/protected/Algorand/AddAlgorandSuccess';
@@ -47,6 +48,7 @@ function App() {
           <Route path="/complete_recovery" element={<CompleteRecovery />} />
 
           <Route path="/algorand_accounts" element={<AlgorandAccounts />} />
+          <Route path="/algorand_transactions" element={<AlgorandTransactions />} />
           <Route path="/add_algorand_account" element={<AddAlgorand />} />
           <Route path="/add_algorand_account_form" element={<AddAlgorandForm />} />
           <Route path="/complete_algorand_account" element={<CompleteAlgorand />} />

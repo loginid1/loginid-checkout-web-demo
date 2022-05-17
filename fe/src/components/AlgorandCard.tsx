@@ -14,9 +14,10 @@ import {
 import React, { useState } from "react";
 import { Recovery } from "../lib/VaultSDK/vault/user";
 import { LoginID } from "../theme/theme";
-import { ContentCopy } from "@mui/icons-material";
+import { ContentCopy, NavigateNextTwoTone } from "@mui/icons-material";
 import { Account } from "../lib/VaultSDK/vault/algo";
 import ParseUtil from "../lib/util/parse";
+import { useNavigate } from "react-router-dom";
 
 interface AlgorandAccountCard {
   account: Account;
@@ -31,6 +32,7 @@ export const AlgorandCard: React.FC<AlgorandAccountCard> = ({
   account,
   rename,
 }) => {
+  const navigate = useNavigate();
   const [openRename, setOpenRename] = useState(false);
   const [newAlias, setNewAlias] = useState("");
   const accountIAT = ParseUtil.parseDate(account.iat);
@@ -52,6 +54,10 @@ export const AlgorandCard: React.FC<AlgorandAccountCard> = ({
     await rename(account.id, newAlias);
     setOpenRename(false);
   };
+
+  function handleClickTransaction(address: string) {
+    navigate("/algorand_transactions?address=" + address);
+  }
 
   return (
     <Box>
@@ -110,7 +116,7 @@ export const AlgorandCard: React.FC<AlgorandAccountCard> = ({
               </Typography>
             </Box>
             <Box>
-              <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
+              <Stack direction={{ xs: "column", md: "column" }} spacing={2}>
                 <Button
                   variant="outlined"
                   color="primary"
@@ -118,6 +124,7 @@ export const AlgorandCard: React.FC<AlgorandAccountCard> = ({
                 >
                   Change Alias
                 </Button>
+                <Button variant="outlined" color="primary" onClick={()=>handleClickTransaction(account.address)} >Transactions</Button>
                 {/* <Button variant="outlined" color="primary">
                   Rekey
                 </Button> */}

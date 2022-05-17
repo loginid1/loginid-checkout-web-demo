@@ -23,7 +23,12 @@ export default class ParseUtil {
         return dpublicKey
     }
     static parseDate(time: string) : string {
+
         return dateTimeFormat.format(Date.parse(time));
+    }
+
+    static parseDateUnix(time: number) : string {
+        return dateTimeFormat.format(new Date(time * 1000));
     }
 
 

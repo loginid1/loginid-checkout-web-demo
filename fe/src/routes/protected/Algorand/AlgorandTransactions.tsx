@@ -12,53 +12,57 @@ import {
   TableRow,
   TableBody,
   IconButton,
+  ListItemSecondaryAction,
 } from "@mui/material";
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { VaultBase } from "../../../components/VaultBase";
 import ParseUtil from "../../../lib/util/parse";
 import vaultSDK from "../../../lib/VaultSDK";
 import {
   EnableAccount,
   EnableAccountList,
+  TxList,
 } from "../../../lib/VaultSDK/vault/algo";
 import { Profile } from "../../../lib/VaultSDK/vault/user";
 import { AuthService } from "../../../services/auth";
 
-const DappConnections: React.FC = () => {
+
+export function AlgorandTransactions (){  
   const navigate = useNavigate();
+  const [searchParams,setSearchParams] = useSearchParams();
 
-  const [accountList, setAccountList] = useState<EnableAccountList | null>(
-    null
-  );
-
+  const [transactionList, setTransactionList] = useState<TxList >();
+  
   useEffect(() => {
-    getEnableAccountList();
+    const address = searchParams.get("address")
+    if(address != null){
+      console.log(address);
+      getTransactionList(address);
+    }
   }, []);
 
-  async function getEnableAccountList() {
+  async function getTransactionList(address: string) {
     const token = AuthService.getToken();
+    try {
+
     if (token) {
-      const accountList = await vaultSDK.getEnableAccountList(token);
-      console.log(accountList);
-      setAccountList(accountList);
+      const txList = await vaultSDK.getTransactionList(token, address);
+      console.log(txList);
+      setTransactionList(txList);
     } else {
+      navigate("/login");  
+    }
+    } catch (error) {
+      console.log("get TxList error: " +error);
     }
   }
 
-  async function revokeEnableAccount(account: EnableAccount) {
-    const token = AuthService.getToken();
-    if (token) {
-      await vaultSDK.revokeEnableAccount(token, account.id);
-    } else {
-    }
-  }
-
-  const copyAddress = (account: EnableAccount) => {
-    navigator.clipboard.writeText(account.wallet_address);
+  const copyAddress = (address: string) => {
+    navigator.clipboard.writeText(address);
   };
   return (
-    <VaultBase focus={2}>
+    <VaultBase focus={1}>
       <Paper
         elevation={0}
         sx={{
@@ -80,7 +84,7 @@ const DappConnections: React.FC = () => {
             >
               <Stack spacing={2} direction="row" alignItems={"center"}>
                 <Typography variant="h2" color="secondary">
-                  Dapp Connections
+                  Transactions
                 </Typography>
               </Stack>
             </Grid>
@@ -106,40 +110,51 @@ const DappConnections: React.FC = () => {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>Revoke Connection</TableCell>
-                  <TableCell align="right">Wallet Address</TableCell>
-                  <TableCell align="right">Added</TableCell>
-                  <TableCell align="right">Dapp Origin</TableCell>
-                  <TableCell align="right">Network</TableCell>
+                  <TableCell>ID</TableCell>
+                  <TableCell align="right">Sender</TableCell>
+                  <TableCell align="right">Type</TableCell>
+                  <TableCell align="right">Time</TableCell>
+                  <TableCell align="right">Fee</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {accountList?.accounts?.map((account) => (
-                  <TableRow key={account.id}>
-                    <TableCell component="th" scope="row">
-                      <Button
-                        variant="outlined"
-                        color="error"
-                        onClick={() => revokeEnableAccount(account)}
-                      >
-                        Revoke
-                      </Button>
-                    </TableCell>
+                {transactionList?.transactions?.map((tx) => (
+                  <>
+                  <TableRow key={tx.id}>
                     <TableCell align="right">
+                      {ParseUtil.displayAddress(tx.id)}
                       <IconButton
                         size="small"
-                        onClick={() => copyAddress(account)}
+                        onClick={() => copyAddress(tx.id)}
                       >
                         <ContentCopy />
                       </IconButton>
-                      {ParseUtil.displayLongAddress(account.wallet_address)}
                     </TableCell>
                     <TableCell align="right">
-                      {ParseUtil.parseDate(account.iat)}
+                      {ParseUtil.displayLongAddress(tx.sender)}
+                      <IconButton
+                        size="small"
+                        onClick={() => copyAddress(tx.sender)}
+                      >
+                        <ContentCopy />
+                      </IconButton>
                     </TableCell>
-                    <TableCell align="right">{account.dapp_origin}</TableCell>
-                    <TableCell align="right">{account.network}</TableCell>
+                    <TableCell align="right">{tx["tx-type"]}</TableCell>
+                    <TableCell align="right">
+                      {ParseUtil.parseDateUnix(tx["round-time"])}
+                    </TableCell>
+                    <TableCell align="right">{tx.fee}</TableCell>
                   </TableRow>
+                  <TableRow sx= {{backgroundColor:"#eceff1"}}>
+                    <TableCell colSpan={5}>
+                      {tx["payment-transaction"] &&
+                      <Typography variant="caption">
+                        pay {tx["payment-transaction"].amount} mAlgos to {ParseUtil.displayLongAddress(tx["payment-transaction"].receiver)}
+                      </Typography>
+                      }
+                    </TableCell>
+                  </TableRow>
+                  </>
                 ))}
               </TableBody>
             </Table>
@@ -150,4 +165,3 @@ const DappConnections: React.FC = () => {
   );
 };
 
-export default DappConnections;

@@ -34,7 +34,7 @@ const AlgorandAccounts: React.FC = () => {
 
   useEffect(() => {
     getAccountList();
-  }, [accountList]);
+  }, []);
 
   async function getAccountList() {
     const token = AuthService.getToken();
@@ -50,6 +50,7 @@ const AlgorandAccounts: React.FC = () => {
     const token = AuthService.getToken();
     if (token) {
       await vaultSDK.renameAccount(token, id, alias);
+      await getAccountList();
     } else {
     }
   }
@@ -132,9 +133,12 @@ const AlgorandAccounts: React.FC = () => {
 
           <Grid item xs container direction="column" spacing={2}>
             {accountList?.accounts?.map((account) => (
+              <>
               <Grid item>
                 <AlgorandCard account={account} rename={renameAccount}></AlgorandCard>
               </Grid>
+
+              </>
             ))}
           </Grid>
         </Grid>

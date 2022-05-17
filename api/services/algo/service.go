@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/algorand/go-algorand-sdk/client/v2/common/models"
 	"github.com/algorand/go-algorand-sdk/crypto"
 	algo_crypto "github.com/algorand/go-algorand-sdk/crypto"
 	"github.com/algorand/go-algorand-sdk/encoding/msgpack"
@@ -23,6 +24,7 @@ type AlgoService struct {
 	UserRepository *user.UserRepository
 	AlgoRepository *AlgoRepository
 	AlgoNet        *AlgorandNetworkService
+	Indexer        *AlgorandIndexerService
 }
 
 // NewUserService
@@ -33,10 +35,15 @@ func NewAlgoService(db *gorm.DB) (*AlgoService, error) {
 	if err != nil {
 		return nil, err
 	}
+	indexer, err := NewAlgorandIndexerService()
+	if err != nil {
+		return nil, err
+	}
 	algoService := AlgoService{
 		UserRepository: &user.UserRepository{DB: db},
 		AlgoRepository: &AlgoRepository{DB: db},
 		AlgoNet:        algoNet,
+		Indexer:        indexer,
 	}
 	return &algoService, nil
 }
@@ -92,7 +99,7 @@ func (algo *AlgoService) CreateAccount(username string, alias string, verify_add
 	return nil
 }
 
-func (algo *AlgoService) GetAccountList(username string) ([]AlgoAccount, *services.ServiceError) {
+func (algo *AlgoService) GetAccountList(username string, includeBalance bool) ([]AlgoAccount, *services.ServiceError) {
 
 	accountList, err := algo.AlgoRepository.GetAccountList(username)
 	if err != nil {
@@ -385,6 +392,34 @@ func (algo *AlgoService) SignedTransaction(txnRaw string, signData string, clien
 	stx_b64 := base64.StdEncoding.EncodeToString(stx)
 	return txID, stx_b64, nil
 
+}
+
+func (s *AlgoService) GetAccountInfo(username string) ([]models.Account, *services.ServiceError) {
+	var accountInfo []models.Account
+	accounts, err := s.AlgoRepository.GetAccountList(username)
+	if err != nil {
+		logger.Global.Error(err.Error())
+		return accountInfo, services.CreateError("no account info")
+	}
+	for _, account := range accounts {
+		acc, err := s.Indexer.GetAccountsByID(account.Address)
+		if err != nil {
+			logger.Global.Error(err.Error())
+			return accountInfo, services.CreateError("no account info")
+		}
+		accountInfo = append(accountInfo, *acc)
+	}
+	return accountInfo, nil
+}
+
+func (s *AlgoService) GetTransaction(address string) (*models.TransactionsResponse, *services.ServiceError) {
+
+	transactions, err := s.Indexer.GetTransactionByAccount(address)
+	if err != nil {
+		logger.Global.Error(err.Error())
+		return transactions, services.CreateError("transaction error")
+	}
+	return transactions, nil
 }
 
 func extractCredentialPKs(credentials []user.UserCredential) []string {

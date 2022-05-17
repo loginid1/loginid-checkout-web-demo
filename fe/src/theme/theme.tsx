@@ -22,6 +22,7 @@ declare module "@mui/material/styles/createPalette" {
   }
 }
 
+
 export const LoginID = createTheme({
   palette: {
     primary: {
