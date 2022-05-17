@@ -12,6 +12,7 @@ import {
   TableRow,
   TableBody,
   IconButton,
+  ListItemSecondaryAction,
 } from "@mui/material";
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -27,7 +28,7 @@ import { Profile } from "../../../lib/VaultSDK/vault/user";
 import { AuthService } from "../../../services/auth";
 
 
-export function TransactionReport (){  
+export function AlgorandTransactions (){  
   const navigate = useNavigate();
   const [searchParams,setSearchParams] = useSearchParams();
 
@@ -36,17 +37,24 @@ export function TransactionReport (){
   useEffect(() => {
     const address = searchParams.get("address")
     if(address != null){
+      console.log(address);
       getTransactionList(address);
     }
   }, []);
 
   async function getTransactionList(address: string) {
     const token = AuthService.getToken();
+    try {
+
     if (token) {
       const txList = await vaultSDK.getTransactionList(token, address);
+      console.log(txList);
       setTransactionList(txList);
     } else {
       navigate("/login");  
+    }
+    } catch (error) {
+      console.log("get TxList error: " +error);
     }
   }
 
@@ -54,7 +62,7 @@ export function TransactionReport (){
     navigator.clipboard.writeText(address);
   };
   return (
-    <VaultBase focus={2}>
+    <VaultBase focus={1}>
       <Paper
         elevation={0}
         sx={{
@@ -76,7 +84,7 @@ export function TransactionReport (){
             >
               <Stack spacing={2} direction="row" alignItems={"center"}>
                 <Typography variant="h2" color="secondary">
-                  Dapp Connections
+                  Transactions
                 </Typography>
               </Stack>
             </Grid>
@@ -102,8 +110,8 @@ export function TransactionReport (){
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>Transactions</TableCell>
-                  <TableCell align="right">Wallet Address</TableCell>
+                  <TableCell>ID</TableCell>
+                  <TableCell align="right">Sender</TableCell>
                   <TableCell align="right">Type</TableCell>
                   <TableCell align="right">Time</TableCell>
                   <TableCell align="right">Fee</TableCell>
@@ -111,15 +119,25 @@ export function TransactionReport (){
               </TableHead>
               <TableBody>
                 {transactionList?.transactions?.map((tx) => (
+                  <>
                   <TableRow key={tx.id}>
                     <TableCell align="right">
+                      {ParseUtil.displayAddress(tx.id)}
+                      <IconButton
+                        size="small"
+                        onClick={() => copyAddress(tx.id)}
+                      >
+                        <ContentCopy />
+                      </IconButton>
+                    </TableCell>
+                    <TableCell align="right">
+                      {ParseUtil.displayLongAddress(tx.sender)}
                       <IconButton
                         size="small"
                         onClick={() => copyAddress(tx.sender)}
                       >
                         <ContentCopy />
                       </IconButton>
-                      {ParseUtil.displayLongAddress(tx.sender)}
                     </TableCell>
                     <TableCell align="right">{tx["tx-type"]}</TableCell>
                     <TableCell align="right">
@@ -127,6 +145,16 @@ export function TransactionReport (){
                     </TableCell>
                     <TableCell align="right">{tx.fee}</TableCell>
                   </TableRow>
+                  <TableRow sx= {{backgroundColor:"#eceff1"}}>
+                    <TableCell colSpan={5}>
+                      {tx["payment-transaction"] &&
+                      <Typography variant="caption">
+                        pay {tx["payment-transaction"].amount} mAlgos to {ParseUtil.displayLongAddress(tx["payment-transaction"].receiver)}
+                      </Typography>
+                      }
+                    </TableCell>
+                  </TableRow>
+                  </>
                 ))}
               </TableBody>
             </Table>

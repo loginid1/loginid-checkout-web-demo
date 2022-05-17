@@ -99,7 +99,7 @@ func (algo *AlgoService) CreateAccount(username string, alias string, verify_add
 	return nil
 }
 
-func (algo *AlgoService) GetAccountList(username string) ([]AlgoAccount, *services.ServiceError) {
+func (algo *AlgoService) GetAccountList(username string, includeBalance bool) ([]AlgoAccount, *services.ServiceError) {
 
 	accountList, err := algo.AlgoRepository.GetAccountList(username)
 	if err != nil {

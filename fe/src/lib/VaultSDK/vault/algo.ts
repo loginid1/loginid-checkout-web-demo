@@ -143,7 +143,7 @@ export class VaultAlgo extends Base {
         const header = { "x-session-token": token };
         return await utils.http.post(
             this._baseURL,
-            "/api/protected/algo/RenameAccount",
+            "/api/protected/algo/renameAccount",
             {id, alias},
             header
         )
@@ -182,9 +182,9 @@ export class VaultAlgo extends Base {
 
     async getTransactionList(token: string, address: string): Promise<TxList> {
         const header = { "x-session-token": token };
-        return await utils.http.get(
+        return await utils.http.post(
             this._baseURL,
-            "/api/protected/algo/getEnableAccountList",
+            "/api/protected/algo/getTransactions",
             {address: address},
             header
         );

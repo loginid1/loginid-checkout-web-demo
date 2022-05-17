@@ -25,7 +25,7 @@ export const CredentialsManage: React.FC = () => {
 
   useEffect(() => {
     retrieveCredentials();
-  }, [credentials]);
+  }, []);
 
   async function retrieveCredentials() {
     const token = AuthService.getToken();
@@ -39,7 +39,10 @@ export const CredentialsManage: React.FC = () => {
   async function renameCredential(id: string, name: string) {
     const token = AuthService.getToken();
     if (token) {
+      console.log("rename begin!")
       await vaultSDK.renameCredential(token, id, name);
+      await retrieveCredentials();
+      console.log("rename completed!")
     }
   }
 

@@ -34,7 +34,7 @@ const DappConnections: React.FC = () => {
 
   useEffect(() => {
     getEnableAccountList();
-  }, [accountList]);
+  }, []);
 
   async function getEnableAccountList() {
     const token = AuthService.getToken();

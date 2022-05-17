@@ -104,7 +104,7 @@ func main() {
 
 	// balance & reporting
 	protected.HandleFunc("/algo/getAccountInfo", algoHandler.GetAccountInfoHandler)
-	protected.HandleFunc("/algo/getTransaction", algoHandler.GetTransactionHandler)
+	protected.HandleFunc("/algo/getTransactions", algoHandler.GetTransactionHandler)
 
 	// open transaction api handlers
 
