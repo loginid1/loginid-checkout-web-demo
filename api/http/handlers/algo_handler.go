@@ -20,14 +20,15 @@ type AlgoHandler struct {
 }
 
 type FilterAlgoAccount struct {
-	Alias           string   `json:"alias"`
-	ID              string   `json:"id"`
-	Address         string   `json:"address"`
-	CredentialsName []string `json:"credentials_name"`
-	RecoveryAddress string   `json:"recovery_address"`
-	Status          string   `json:"status"`
-	Iat             string   `json:"iat"`
-	TealScript      string   `json:"teal_script"`
+	Alias           string               `json:"alias"`
+	ID              string               `json:"id"`
+	Address         string               `json:"address"`
+	CredentialsName []string             `json:"credentials_name"`
+	RecoveryAddress string               `json:"recovery_address"`
+	Status          string               `json:"status"`
+	Iat             string               `json:"iat"`
+	TealScript      string               `json:"teal_script"`
+	Balance         *algo.AccountBalance `json:"balance"`
 }
 
 type AccountListResponse struct {
@@ -37,7 +38,12 @@ type AccountListResponse struct {
 func (h *AlgoHandler) GetAccountListHandler(w http.ResponseWriter, r *http.Request) {
 
 	session := r.Context().Value("session").(services.UserSession)
-	accounts, err := h.AlgoService.GetAccountList(session.Username, false)
+	iBalance := r.URL.Query().Get("include_balance")
+	include_balance := false
+	if iBalance == "true" {
+		include_balance = true
+	}
+	accounts, err := h.AlgoService.GetAccountList(session.Username, include_balance)
 	if err != nil {
 		http_common.SendErrorResponse(w, services.NewError("no account found"))
 		return
@@ -53,6 +59,9 @@ func (h *AlgoHandler) GetAccountListHandler(w http.ResponseWriter, r *http.Reque
 			Status:          account.AccountStatus,
 			Iat:             account.Iat.Format(time.RFC822),
 			TealScript:      account.TealScript,
+		}
+		if account.Balance != nil {
+			fAccount.Balance = account.Balance
 		}
 		fAccounts = append(fAccounts, fAccount)
 	}

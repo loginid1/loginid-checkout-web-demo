@@ -15,6 +15,13 @@ export interface Account {
     credentials_name: string[];
     recovery_address: string;
     teal_script: string;
+    balance?: AccountBalance;
+}
+
+export interface AccountBalance {
+    amount: number;
+    current_round: number;
+    status: string;
 }
 
 export interface ContractAccount {
@@ -108,12 +115,12 @@ export interface TxPaymentRecord {
 
 export class VaultAlgo extends Base {
 
-    async getAccountList(token: string): Promise<AccountList> {
+    async getAccountList(token: string, balance: boolean = false): Promise<AccountList> {
         const header = { "x-session-token": token };
         return await utils.http.get(
             this._baseURL,
             "/api/protected/algo/getAccountList",
-            undefined,
+            {include_balance: balance},
             header
         );
     }
