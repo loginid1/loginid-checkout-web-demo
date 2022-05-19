@@ -170,6 +170,7 @@ export default function WalletEnable() {
 					let enableResult : EnableResult = {accounts:selectedAccountList, genesisID: result.id , genesisHash:result.hash};
 					mService.sendMessageText(JSON.stringify(enableResult));
 					setDisplayMessage({text:"Account enable successful!!",type:"info"})
+					window.close()
 				} else {
 					mService.sendErrorMessage("account enable failed");
 					setDisplayMessage({text:"Account enable failed!!",type:"error"})

@@ -16,31 +16,31 @@ import { WINDOW_NOT_OPENED } from "./errors";
  * @property {0|1} [scrollbars]
  */
 
-export interface PopupOptions  {
-    width: number;
-    height: number;
-    left: number;
-    top: number;
-    status: number,
-    toolbar: number,
-    menubar: number,
-    resizable: number,
-    scrollbars: number,
+export interface PopupOptions {
+	width: number;
+	height: number;
+	left: number;
+	top: number;
+	status: number,
+	toolbar: number,
+	menubar: number,
+	resizable: number,
+	scrollbars: number,
 }
 
 /**
  * @type {PopupOptions}
  */
-export const defaultOptions = <PopupOptions> {
+export const defaultOptions = <PopupOptions>{
 	width: 400,
 	height: 600,
-    left: 0,
-    top: 0,
-			status: 1,
-			toolbar: 0,
-			menubar: 0,
-			resizable: 1,
-			scrollbars: 1,
+	left: 0,
+	top: 0,
+	status: 1,
+	toolbar: 0,
+	menubar: 0,
+	resizable: 1,
+	scrollbars: 1,
 };
 
 /**
@@ -54,14 +54,14 @@ export const defaultOptions = <PopupOptions> {
  * Go to https://github.com/krakenjs/belter for full license details.
  */
 
-export function openPopup(url : string, name: string, options : PopupOptions = defaultOptions ) : Window {
+export function openPopup(url: string, name: string, options: PopupOptions = defaultOptions): Window {
 
 	//let options = { name : ""; width: 0; height:0; top : 0; left : 0 } ;
-    //let name = "";
-    let left = 0;
-    let top = 0;
-    let width = options.width;
-    let height = options.height;
+	//let name = "";
+	let left = 0;
+	let top = 0;
+	let width = options.width;
+	let height = options.height;
 
 	if (width) {
 		if (window.outerWidth) {
@@ -80,17 +80,17 @@ export function openPopup(url : string, name: string, options : PopupOptions = d
 			top = Math.round((window.screen.height - height) / 2);
 		}
 	}
-    options.left = left;
-    options.top = top;
+	options.left = left;
+	options.top = top;
 
 
 	// eslint-disable-next-line array-callback-return
 
-    const params = Object.entries(options).map(([key, value]) => {
-        if (value !== null && value !== undefined && typeof value.toString === 'function') {
+	const params = Object.entries(options).map(([key, value]) => {
+		if (value !== null && value !== undefined && typeof value.toString === 'function') {
 			return `${key}=${value.toString()}`;
 		}
-    }).filter(Boolean).join(',');
+	}).filter(Boolean).join(',');
 
 
 
@@ -110,4 +110,15 @@ export function openPopup(url : string, name: string, options : PopupOptions = d
 	}
 
 	return win;
+}
+
+export function closePopup(w: Window | null) {
+	if (w && !w.closed) {
+		try {
+			w.close();
+		}
+		catch (err) {
+			throw new Error(`${err}`);
+		}
+	}
 }
