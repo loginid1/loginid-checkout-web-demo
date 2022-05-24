@@ -20,14 +20,15 @@ type AlgoHandler struct {
 }
 
 type FilterAlgoAccount struct {
-	Alias           string   `json:"alias"`
-	ID              string   `json:"id"`
-	Address         string   `json:"address"`
-	CredentialsName []string `json:"credentials_name"`
-	RecoveryAddress string   `json:"recovery_address"`
-	Status          string   `json:"status"`
-	Iat             string   `json:"iat"`
-	TealScript      string   `json:"teal_script"`
+	Alias           string               `json:"alias"`
+	ID              string               `json:"id"`
+	Address         string               `json:"address"`
+	CredentialsName []string             `json:"credentials_name"`
+	RecoveryAddress string               `json:"recovery_address"`
+	Status          string               `json:"status"`
+	Iat             string               `json:"iat"`
+	TealScript      string               `json:"teal_script"`
+	Balance         *algo.AccountBalance `json:"balance"`
 }
 
 type AccountListResponse struct {
@@ -37,7 +38,12 @@ type AccountListResponse struct {
 func (h *AlgoHandler) GetAccountListHandler(w http.ResponseWriter, r *http.Request) {
 
 	session := r.Context().Value("session").(services.UserSession)
-	accounts, err := h.AlgoService.GetAccountList(session.Username)
+	iBalance := r.URL.Query().Get("include_balance")
+	include_balance := false
+	if iBalance == "true" {
+		include_balance = true
+	}
+	accounts, err := h.AlgoService.GetAccountList(session.Username, include_balance)
 	if err != nil {
 		http_common.SendErrorResponse(w, services.NewError("no account found"))
 		return
@@ -53,6 +59,9 @@ func (h *AlgoHandler) GetAccountListHandler(w http.ResponseWriter, r *http.Reque
 			Status:          account.AccountStatus,
 			Iat:             account.Iat.Format(time.RFC822),
 			TealScript:      account.TealScript,
+		}
+		if account.Balance != nil {
+			fAccount.Balance = account.Balance
 		}
 		fAccounts = append(fAccounts, fAccount)
 	}
@@ -264,4 +273,54 @@ func (h *AlgoHandler) GetTransactionHandler(w http.ResponseWriter, r *http.Reque
 
 	http_common.SendSuccessResponse(w, transactions)
 
+}
+
+type RekeyAccountRequest struct {
+	Address          string   `json:"address"`
+	CredentialIDList []string `json:"cred_id_list"`
+	Recovery         string   `json:"recovery"`
+}
+
+type RekeyAccountResponse struct {
+	FromAddress       string                `json:"from_address"`
+	RekeyAddress      string                `json:"rekey_address"`
+	AddCredentials    []user.UserCredential `json:"add_credentials"`
+	RemoveCredentials []user.UserCredential `json:"remove_credentials"`
+	AddRecovery       string                `json:"add_recovery"`
+	RemoveRecovery    string                `json:"remove_recovery"`
+	Fee               uint64                `json:"fee"`
+	SignPayload       string                `json:"sign_payload"`
+	RawTxn            string                `json:"raw_txn"`
+}
+
+func (h *AlgoHandler) RekeyAccountHandler(w http.ResponseWriter, r *http.Request) {
+
+	var request RekeyAccountRequest
+	defer r.Body.Close()
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		http_common.SendErrorResponse(w, services.NewError("failed to parse request"))
+		return
+	}
+	session := r.Context().Value("session").(services.UserSession)
+
+	change, txn, err := h.AlgoService.RekeyAccount(session.Username, request.Address, request.CredentialIDList, request.Recovery)
+
+	if err != nil {
+		http_common.SendErrorResponse(w, *err)
+		return
+	}
+
+	id := algo.TxIDFromTransactionB64(*txn)
+	rekey := RekeyAccountResponse{
+		FromAddress:       txn.Sender.String(),
+		RekeyAddress:      txn.RekeyTo.String(),
+		Fee:               uint64(txn.Fee),
+		AddCredentials:    change.AddCreds,
+		RemoveCredentials: change.RemoveCreds,
+		AddRecovery:       change.AddRecovery,
+		RemoveRecovery:    change.RemoveRecovery,
+		SignPayload:       id,
+		RawTxn:            algo.TxnRaw(*txn),
+	}
+	http_common.SendSuccessResponse(w, rekey)
 }

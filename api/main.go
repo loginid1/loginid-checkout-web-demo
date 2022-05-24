@@ -101,6 +101,7 @@ func main() {
 	protected.HandleFunc("/algo/quickAccountCreation", algoHandler.QuickAccountCreationHandler)
 	protected.HandleFunc("/algo/getEnableAccountList", algoHandler.GetEnableAccountListHandler)
 	protected.HandleFunc("/algo/revokeEnableAccount", algoHandler.RevokeEnableAccountHandler)
+	protected.HandleFunc("/algo/RekeyAccount", algoHandler.RekeyAccountHandler)
 
 	// balance & reporting
 	protected.HandleFunc("/algo/getAccountInfo", algoHandler.GetAccountInfoHandler)

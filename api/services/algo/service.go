@@ -12,6 +12,7 @@ import (
 	algo_crypto "github.com/algorand/go-algorand-sdk/crypto"
 	"github.com/algorand/go-algorand-sdk/encoding/msgpack"
 	"github.com/algorand/go-algorand-sdk/future"
+	"github.com/algorand/go-algorand-sdk/transaction"
 	"github.com/algorand/go-algorand-sdk/types"
 	"gitlab.com/loginid/software/libraries/goutil.git/logger"
 	"gitlab.com/loginid/software/services/loginid-vault/services"
@@ -99,6 +100,74 @@ func (algo *AlgoService) CreateAccount(username string, alias string, verify_add
 	return nil
 }
 
+func (algo *AlgoService) RekeyAccount(username string, rekey_address string, credential_id_list []string, recovery string) (*ChangeAccount, *types.Transaction, *services.ServiceError) {
+	// get script from credential_list and recovery
+
+	credentials, err := algo.UserRepository.LookupCredentials(username, credential_id_list)
+	if err != nil {
+		logger.Global.Error(err.Error())
+		return nil, nil, services.CreateError("failed to validate credentials list")
+	}
+
+	credential_list := extractCredentialPKs(credentials)
+
+	contractAccount, err := algo.AlgoNet.GenerateContractAccount(credential_list, recovery, false)
+	if err != nil {
+		logger.Global.Error(err.Error())
+		return nil, nil, services.CreateError("failed to generate Algorand account")
+	}
+
+	// make sure the key not existed??? may allows same key multiple account
+	_, err = algo.AlgoRepository.LookupAddress(contractAccount.Address)
+	if err == nil {
+		return nil, nil, services.CreateError("address already existed! ")
+	}
+
+	// lookup rekey account
+	rekey_account, err := algo.AlgoRepository.LookupAddress(rekey_address)
+	if err != nil {
+		return nil, nil, services.CreateError("account not found!")
+	}
+
+	// create AlgoAccount
+	account := AlgoAccount{
+		Alias:           contractAccount.Address,
+		Address:         contractAccount.Address,
+		TealScript:      contractAccount.TealScript,
+		CompileScript:   contractAccount.CompileScript,
+		CredentialsID:   convertStringArrayToText(credential_id_list),
+		CredentialsPK:   convertStringArrayToText(credential_list),
+		RecoveryAddress: recovery,
+		AccountStatus:   "rekey",
+	}
+
+	err = algo.AlgoRepository.AddAlgoAccount(username, &account)
+	if err != nil {
+		logger.Global.Error(err.Error())
+		return nil, nil, services.CreateError("create Algorand account error")
+	}
+
+	// rekey diff
+
+	diffAccount := algo.compareAccount(username, *rekey_account, account)
+
+	// need to create rekey transaction
+	params, err := algo.AlgoNet.client.SuggestedParams().Do(context.Background())
+	if err != nil {
+		logger.Global.Error(err.Error())
+		return nil, nil, services.CreateError("rekey error - node not available")
+	}
+	txn, err := transaction.MakePaymentTxnWithFlatFee(rekey_address, rekey_address, 1000, 0, uint64(params.FirstRoundValid), uint64(params.LastRoundValid), []byte(""), rekey_address, params.GenesisID, params.GenesisHash)
+	if err != nil {
+		logger.Global.Error(err.Error())
+		return nil, nil, services.CreateError("rekey error - fail to create transaction")
+	}
+
+	txn.Rekey(account.Address)
+
+	return diffAccount, &txn, nil
+}
+
 func (algo *AlgoService) GetAccountList(username string, includeBalance bool) ([]AlgoAccount, *services.ServiceError) {
 
 	accountList, err := algo.AlgoRepository.GetAccountList(username)
@@ -114,6 +183,18 @@ func (algo *AlgoService) GetAccountList(username string, includeBalance bool) ([
 			return accountList, services.CreateError("failed to retrieve accounts - try again")
 		}
 		accountList[i].Credentials = credentialList
+		if includeBalance {
+			balance, err := algo.Indexer.GetAccountsByID(account.Address)
+			if err != nil {
+				logger.Global.Error(err.Error())
+			} else {
+				accountList[i].Balance = &AccountBalance{
+					Amount:       balance.Amount,
+					CurrentRound: balance.Round,
+					Status:       balance.Status,
+				}
+			}
+		}
 	}
 
 	return accountList, nil
@@ -489,6 +570,11 @@ func TxIDFromTransactionB64(tx types.Transaction) (txid string) {
 	return
 }
 
+func TxnRaw(tx types.Transaction) string {
+	txBytes := msgpack.Encode(tx)
+	return base64.URLEncoding.EncodeToString(txBytes)
+}
+
 // signLogicSigTransactionWithAddress signs a transaction with a LogicSig.
 //
 // lsigAddress is the address of the account that the LogicSig represents.
@@ -508,4 +594,65 @@ func signLogicSigTransactionWithAddress(lsig types.LogicSig, lsigAddress types.A
 	// Encode the SignedTxn
 	stxBytes = msgpack.Encode(stx)
 	return
+}
+
+type ChangeAccount struct {
+	AddCreds       []user.UserCredential
+	RemoveCreds    []user.UserCredential
+	AddRecovery    string
+	RemoveRecovery string
+}
+
+func (s *AlgoService) compareAccount(username string, src AlgoAccount, dst AlgoAccount) *ChangeAccount {
+	var changed ChangeAccount
+	if src.RecoveryAddress != dst.RecoveryAddress {
+		changed.AddRecovery = dst.RecoveryAddress
+		changed.RemoveRecovery = src.RecoveryAddress
+	}
+
+	// split credentials into array
+	srcCredentials := strings.Split(src.CredentialsID, ",")
+	dstCredentials := strings.Split(dst.CredentialsID, ",")
+
+	addCredIds := compareArrayNegative(dstCredentials, srcCredentials)
+	removeCredIds := compareArrayNegative(srcCredentials, dstCredentials)
+
+	if len(addCredIds) > 0 {
+		credentials, err := s.UserRepository.LookupCredentials(username, addCredIds)
+		if err != nil {
+			logger.Global.Error(err.Error())
+			return nil
+		}
+		changed.AddCreds = credentials
+	}
+
+	if len(removeCredIds) > 0 {
+		credentials, err := s.UserRepository.LookupCredentials(username, removeCredIds)
+		if err != nil {
+			logger.Global.Error(err.Error())
+			return nil
+		}
+		changed.RemoveCreds = credentials
+	}
+
+	return &changed
+}
+
+// compare element not found in dst array
+func compareArrayNegative(src []string, dst []string) []string {
+	var diff []string
+	for _, aCredId := range src {
+		found := false
+		for _, bCredId := range dst {
+			if aCredId == bCredId {
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			diff = append(diff, aCredId)
+		}
+	}
+	return diff
 }
