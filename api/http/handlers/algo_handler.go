@@ -274,3 +274,53 @@ func (h *AlgoHandler) GetTransactionHandler(w http.ResponseWriter, r *http.Reque
 	http_common.SendSuccessResponse(w, transactions)
 
 }
+
+type RekeyAccountRequest struct {
+	Address          string   `json:"address"`
+	CredentialIDList []string `json:"cred_id_list"`
+	Recovery         string   `json:"recovery"`
+}
+
+type RekeyAccountResponse struct {
+	FromAddress       string                `json:"from_address"`
+	RekeyAddress      string                `json:"rekey_address"`
+	AddCredentials    []user.UserCredential `json:"add_credentials"`
+	RemoveCredentials []user.UserCredential `json:"remove_credentials"`
+	AddRecovery       string                `json:"add_recovery"`
+	RemoveRecovery    string                `json:"remove_recovery"`
+	Fee               uint64                `json:"fee"`
+	SignPayload       string                `json:"sign_payload"`
+	RawTxn            string                `json:"raw_txn"`
+}
+
+func (h *AlgoHandler) RekeyAccountHandler(w http.ResponseWriter, r *http.Request) {
+
+	var request RekeyAccountRequest
+	defer r.Body.Close()
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		http_common.SendErrorResponse(w, services.NewError("failed to parse request"))
+		return
+	}
+	session := r.Context().Value("session").(services.UserSession)
+
+	change, txn, err := h.AlgoService.RekeyAccount(session.Username, request.Address, request.CredentialIDList, request.Recovery)
+
+	if err != nil {
+		http_common.SendErrorResponse(w, *err)
+		return
+	}
+
+	id := algo.TxIDFromTransactionB64(*txn)
+	rekey := RekeyAccountResponse{
+		FromAddress:       txn.Sender.String(),
+		RekeyAddress:      txn.RekeyTo.String(),
+		Fee:               uint64(txn.Fee),
+		AddCredentials:    change.AddCreds,
+		RemoveCredentials: change.RemoveCreds,
+		AddRecovery:       change.AddRecovery,
+		RemoveRecovery:    change.RemoveRecovery,
+		SignPayload:       id,
+		RawTxn:            algo.TxnRaw(*txn),
+	}
+	http_common.SendSuccessResponse(w, rekey)
+}
