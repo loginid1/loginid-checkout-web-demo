@@ -13,9 +13,7 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/mux v1.8.0
 	github.com/rs/cors v1.8.2
-	gitlab.com/loginid/software/libraries/goutil.git v1.5.6
-	golang.org/x/crypto v0.0.0-20220131195533-30dcbda58838 // indirect
-	golang.org/x/sys v0.0.0-20220128215802-99c3d69c2c27 // indirect
+	gitlab.com/loginid/software/libraries/goutil.git v1.14.1
 	gopkg.in/square/go-jose.v2 v2.6.0
 	gorm.io/driver/postgres v1.2.3
 	gorm.io/gorm v1.22.5
