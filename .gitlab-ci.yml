@@ -2,10 +2,3 @@ include:
   - project: 'loginid/software/ci'
     ref: main
     file: '/templates/security/all.gitlab-ci.yml'
-<<<<<<< HEAD
-=======
-
-stages:
-  - test
-
->>>>>>> origin/main
