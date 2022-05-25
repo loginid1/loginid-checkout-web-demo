@@ -7,7 +7,7 @@ require (
 	github.com/allegro/bigcache v1.2.1
 	github.com/fxamacker/cbor/v2 v2.4.0
 	github.com/go-redis/redis v6.15.9+incompatible
-	github.com/golang-migrate/migrate/v4 v4.15.2
+	github.com/golang-migrate/migrate/v4 v4.15.3-0.20220513225907-acc11eda6d26
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/mux v1.8.0
 	github.com/rs/cors v1.8.2
