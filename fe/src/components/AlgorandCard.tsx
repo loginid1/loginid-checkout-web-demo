@@ -114,6 +114,19 @@ export const AlgorandCard: React.FC<AlgorandAccountCard> = ({
                   <Chip label={name} />
                 ))}
               </Typography>
+              {account.balance &&
+              <>
+              <Typography variant="body1" align="left">
+                Balance: {account.balance?.amount} micro Algos
+              </Typography>
+              <Typography variant="body1" align="left">
+                Current: {account.balance?.current_round} 
+              </Typography>
+              <Typography variant="body1" align="left">
+                Status: {account.balance?.status} 
+              </Typography>
+              </>
+              }
             </Box>
             <Box>
               <Stack direction={{ xs: "column", md: "column" }} spacing={2}>

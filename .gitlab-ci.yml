@@ -1,0 +1,4 @@
+include:
+  - project: 'loginid/software/ci'
+    ref: main
+    file: '/templates/security/all.gitlab-ci.yml'

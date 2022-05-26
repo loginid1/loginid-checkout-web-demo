@@ -40,6 +40,13 @@ type AlgoAccount struct {
 	Iat             time.Time             `json:"iat" gorm:"DEFAULT:current_timestamp"`
 	Uat             time.Time             `json:"uat" gorm:"DEFAULT:current_timestamp"`
 	Credentials     []user.UserCredential `gorm:"-"`
+	Balance         *AccountBalance       `gorm:"-"`
+}
+
+type AccountBalance struct {
+	Amount       uint64 `json:"amount"`
+	Status       string `json:"status"`
+	CurrentRound uint64 `json:"current_round"`
 }
 
 type EnableAccount struct {
