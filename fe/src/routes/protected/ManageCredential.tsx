@@ -271,7 +271,7 @@ function ManageCredential() {
 					aria-describedby="alert-dialog-description"
 				>
 					<DialogTitle id="alert-dialog-title">
-						"New Recovery Code"
+						New Recovery Code
 					</DialogTitle>
 					<DialogContent>
 						<Typography
