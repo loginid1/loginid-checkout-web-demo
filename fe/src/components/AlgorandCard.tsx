@@ -59,6 +59,9 @@ export const AlgorandCard: React.FC<AlgorandAccountCard> = ({
     navigate("/algorand_transactions?address=" + address);
   }
 
+  function handleClickRekey(address: string) {
+    navigate("/rekey_algorand/"+address);
+  }
   return (
     <Box>
       <Card
@@ -138,6 +141,7 @@ export const AlgorandCard: React.FC<AlgorandAccountCard> = ({
                   Change Alias
                 </Button>
                 <Button variant="outlined" color="primary" onClick={()=>handleClickTransaction(account.address)} >Transactions</Button>
+                <Button variant="outlined" color="primary" onClick={()=>handleClickRekey(account.address)} >Rekey</Button>
                 {/* <Button variant="outlined" color="primary">
                   Rekey
                 </Button> */}

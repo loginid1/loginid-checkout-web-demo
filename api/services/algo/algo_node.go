@@ -65,6 +65,9 @@ func (as *AlgorandNetworkService) GenerateContractAccount(pkList []string, recov
 	if require_recovery && recovery == "" {
 		return nil, errors.New("missing recovery")
 	}
+	if len(pkList) == 0 {
+		return nil, fmt.Errorf("atleast one credential required")
+	}
 	if len(pkList) > MAX_CRECRENTIAL {
 		return nil, fmt.Errorf("maximum %d credentials", MAX_CRECRENTIAL)
 	}
@@ -192,18 +195,24 @@ func (as *AlgorandNetworkService) Dispenser(to string, amount uint64) (uint64, e
 	return toInfo.Amount, nil
 }
 
-func (as *AlgorandNetworkService) PostTxn(script string) (string, string, error) {
-	compile_script := as.client.TealCompile([]byte(script))
-	if compile_script == nil {
-		return "", "", errors.New("failed to compile script")
-	}
-	response, err := compile_script.Do(context.Background())
-	if err != nil {
-		logger.Global.Error(err.Error())
-		return "", "", errors.New("failed to compile script")
+func (as *AlgorandNetworkService) PostTxn(transactionID string, stx []byte) (string, error) {
 
+	// Submit the raw transaction to network
+	transactionID, err := as.client.SendRawTransaction(stx).Do(context.Background())
+	if err != nil {
+		fmt.Printf("Sending failed with %v\n", err)
+		return "", err
 	}
-	return response.Hash, response.Result, nil
+
+	// Wait for confirmation
+	confirmedTxn, err := future.WaitForConfirmation(as.client, transactionID, 4, context.Background())
+	if err != nil {
+		fmt.Printf("Error waiting for confirmation on txID: %s\n", transactionID)
+		return "", err
+	}
+	fmt.Printf("Confirmed Transaction: %s in Round %d\n", transactionID, confirmedTxn.ConfirmedRound)
+
+	return transactionID, nil
 }
 
 func updateTealScript(script string, pkList []string, recovery string) (string, error) {
