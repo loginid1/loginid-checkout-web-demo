@@ -22,24 +22,32 @@ import vaultSDK from "../lib/VaultSDK";
 import { AuthService } from "../services/auth";
 import { CodeInput } from "../components/CodeInput";
 
-//export const Register: React.FC = () => {
-export default function Register() {
+export default function AddDevice() {
   const navigate = useNavigate();
 
   const [username, setUsername] = useState("");
+  const [regCode, setRegCode] = useState("");
 
   const [errorMessage, setErrorMessage] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-        const response = await vaultSDK.register(username);
-        AuthService.storeSession({ username: username, token: response.jwt });
-        navigate("/quick_add_algorand");
+      const response = await vaultSDK.addCredential(username, regCode);
+      AuthService.storeSession({ username: username, token: response.jwt });
+      navigate("/home");
     } catch (error) {
       setErrorMessage((error as Error).message);
     }
   };
+
+  function validateCode(code: string) {
+    let pattern = new RegExp("^[0-9]+$|^$");
+    if (pattern.test(code)) {
+      console.log("code");
+      setRegCode(code);
+    }
+  }
 
   return (
     <ThemeProvider theme={LoginID}>
@@ -75,8 +83,7 @@ export default function Register() {
           >
             <VaultLogo />
             <Typography variant="body1" marginTop={2} maxWidth="400px">
-              Create a FIDO Vault Account and manage your Crypto Accounts with
-              Security and Ease.
+              Add the current device to your existing FIDO Vault account
             </Typography>
             {errorMessage.length > 0 && (
               <Alert severity="error">{errorMessage}</Alert>
@@ -88,6 +95,13 @@ export default function Register() {
               focused
               onChange={(e) => setUsername(e.target.value)}
             />
+            <Stack spacing={2}>
+              <Typography variant="body1" maxWidth="400px">
+                Please enter the 6-digit code generated from your
+                FIDO-registered device.
+              </Typography>
+              <CodeInput inputName="code" validateCode={validateCode} />
+            </Stack>
             <Button
               type="submit"
               variant="contained"
@@ -100,7 +114,8 @@ export default function Register() {
               Already have an account? <Link href="./login">Login</Link>
             </Typography>
             <Typography variant="body1">
-              Returned user with a new device? <Link href="./add_device">Click Here</Link>
+              Don't have an account yet?{" "}
+              <Link href="./register">Create Account Now</Link>
             </Typography>
           </Stack>
         </Paper>

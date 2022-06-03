@@ -5,6 +5,7 @@ import { Routes, Route, Link, Navigate } from "react-router-dom";
 import './App.css';
 import Register from './routes/Register';
 import Login from './routes/Login';
+import AddDevice from './routes/AddDevice';
 import Home from './routes/protected/Home';
 import ProtectedRoute from './routes/util/ProtectedRoute';
 import { AuthService } from './services/auth';
@@ -38,6 +39,7 @@ function App() {
         <Route path="/" element={<Navigate replace to="/login" />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/add_device" element={<AddDevice />} />
         <Route path="/api/enable" element={<WalletEnable />} />
         <Route path="/api/transaction" element={<WalletTxnConfirmation />} />
         <Route path="/" element={<ProtectedRoute />} >
