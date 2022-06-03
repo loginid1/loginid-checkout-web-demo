@@ -13,9 +13,11 @@ export interface Account {
     iat: string;
     status: string;
     credentials_name: string[];
+    credentials_id: string[];
     recovery_address: string;
     teal_script: string;
     balance?: AccountBalance;
+    auth_address?: string;
 }
 
 export interface AccountBalance {
@@ -121,6 +123,16 @@ export class VaultAlgo extends Base {
             this._baseURL,
             "/api/protected/algo/getAccountList",
             {include_balance: balance},
+            header
+        );
+    }
+
+    async getAccount(token: string, address: string,  balance: boolean = false): Promise<Account> {
+        const header = { "x-session-token": token };
+        return await utils.http.get(
+            this._baseURL,
+            "/api/protected/algo/getAccount",
+            {address: address, include_balance: balance },
             header
         );
     }
@@ -239,7 +251,7 @@ export class VaultAlgo extends Base {
             headers
         );
 
-        console.log(initResponse);
+        // console.log(initResponse);
         // Process the authenticate init response and request the credential from the browser
         const {
             assertion_options: assertionPayload,
@@ -287,6 +299,74 @@ export class VaultAlgo extends Base {
         );
     }
 
+    async rekeyConfirmation(token: string, address: string, credential_list:string[], recovery: string): Promise<SignedTxn> {
+
+        const header = { "x-session-token": token };
+
+        // Init the authentication flow
+        let initPayload = <{
+            address: string;
+            cred_id_list: string[];
+            recovery: string;
+        }>{
+                address,
+                cred_id_list:  credential_list,
+                recovery,
+            };
+
+        let initResponse = await utils.http.post(
+            this._baseURL,
+            "/api/protected/algo/rekeyInit",
+            initPayload,
+            header
+        );
+
+        console.log(initResponse);
+        // Process the authenticate init response and request the credential from the browser
+        const {
+            assertion_options: assertionPayload,
+            tx_id: tx_id,
+        } = initResponse.fido;
+
+        const raw_txn = initResponse.raw_txn;
+        console.log(raw_txn);
+
+        const { challenge } = assertionPayload;
+        assertionPayload.challenge = utils.encoding.base64ToBuffer(assertionPayload.challenge);
+        if (assertionPayload.allowCredentials) {
+            for (const credential of assertionPayload.allowCredentials) {
+                credential.id = utils.encoding.base64ToBuffer(credential.id);
+            }
+        }
+
+        const credential = await utils.navigator.getCredential({ publicKey: assertionPayload });
+        const response = <AuthenticatorAssertionResponse>credential.response
+
+        // Complete the authentication flow
+        const completePayload = <{
+            challenge: string;
+            credential_id: string;
+            client_data: string;
+            authenticator_data: string;
+            signature: string;
+            tx_id: string;
+            raw_txn: string;
+        }>{
+                challenge,
+                tx_id,
+                credential_id: utils.encoding.bufferToBase64(credential.rawId),
+                client_data: utils.encoding.bufferToBase64(response.clientDataJSON),
+                authenticator_data: utils.encoding.bufferToBase64(response.authenticatorData),
+                signature: utils.encoding.bufferToBase64(response.signature),
+                raw_txn: raw_txn,
+            };
+
+        return await utils.http.post(
+            this._baseURL,
+            "/api/protected/algo/rekeyComplete",
+            completePayload,
+        );
+    }
 
 
 }

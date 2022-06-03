@@ -11,7 +11,6 @@ import (
 	"github.com/algorand/go-algorand-sdk/crypto"
 	algo_crypto "github.com/algorand/go-algorand-sdk/crypto"
 	"github.com/algorand/go-algorand-sdk/encoding/msgpack"
-	"github.com/algorand/go-algorand-sdk/future"
 	"github.com/algorand/go-algorand-sdk/transaction"
 	"github.com/algorand/go-algorand-sdk/types"
 	"gitlab.com/loginid/software/libraries/goutil.git/logger"
@@ -100,7 +99,7 @@ func (algo *AlgoService) CreateAccount(username string, alias string, verify_add
 	return nil
 }
 
-func (algo *AlgoService) RekeyAccount(username string, rekey_address string, credential_id_list []string, recovery string) (*ChangeAccount, *types.Transaction, *services.ServiceError) {
+func (algo *AlgoService) RekeyAccountInit(username string, rekey_address string, credential_id_list []string, recovery string) (*ChangeAccount, *types.Transaction, *services.ServiceError) {
 	// get script from credential_list and recovery
 
 	credentials, err := algo.UserRepository.LookupCredentials(username, credential_id_list)
@@ -118,54 +117,117 @@ func (algo *AlgoService) RekeyAccount(username string, rekey_address string, cre
 	}
 
 	// make sure the key not existed??? may allows same key multiple account
-	_, err = algo.AlgoRepository.LookupAddress(contractAccount.Address)
-	if err == nil {
-		return nil, nil, services.CreateError("address already existed! ")
-	}
+	auth_account, err := algo.AlgoRepository.LookupAddress(contractAccount.Address)
+	/*
+		if err == nil {
+			return nil, nil, services.CreateError("address already existed! ")
+		}*/
 
-	// lookup rekey account
+	// lookup main account
 	rekey_account, err := algo.AlgoRepository.LookupAddress(rekey_address)
 	if err != nil {
 		return nil, nil, services.CreateError("account not found!")
 	}
 
+	if rekey_account.AuthAddress != nil {
+		if auth_account != nil && auth_account.Address == *rekey_account.AuthAddress {
+			return nil, nil, services.CreateError("no key change")
+		}
+	} else {
+		if auth_account != nil && auth_account.Address == rekey_account.Address {
+			return nil, nil, services.CreateError("no key change")
+		}
+	}
+
 	// create AlgoAccount
-	account := AlgoAccount{
-		Alias:           contractAccount.Address,
-		Address:         contractAccount.Address,
-		TealScript:      contractAccount.TealScript,
-		CompileScript:   contractAccount.CompileScript,
-		CredentialsID:   convertStringArrayToText(credential_id_list),
-		CredentialsPK:   convertStringArrayToText(credential_list),
-		RecoveryAddress: recovery,
-		AccountStatus:   "rekey",
-	}
+	if auth_account == nil {
 
-	err = algo.AlgoRepository.AddAlgoAccount(username, &account)
-	if err != nil {
-		logger.Global.Error(err.Error())
-		return nil, nil, services.CreateError("create Algorand account error")
-	}
+		account := AlgoAccount{
+			Alias:           contractAccount.Address,
+			Address:         contractAccount.Address,
+			TealScript:      contractAccount.TealScript,
+			CompileScript:   contractAccount.CompileScript,
+			CredentialsID:   convertStringArrayToText(credential_id_list),
+			CredentialsPK:   convertStringArrayToText(credential_list),
+			RecoveryAddress: recovery,
+			AccountStatus:   "rekey",
+		}
 
+		err = algo.AlgoRepository.AddAlgoAccount(username, &account)
+		if err != nil {
+			logger.Global.Error(err.Error())
+			return nil, nil, services.CreateError("create Algorand account error")
+		}
+		auth_account = &account
+	}
 	// rekey diff
 
-	diffAccount := algo.compareAccount(username, *rekey_account, account)
-
+	diffAccount := algo.compareAccount(username, *rekey_account, *auth_account)
+	fmt.Println("here")
 	// need to create rekey transaction
 	params, err := algo.AlgoNet.client.SuggestedParams().Do(context.Background())
 	if err != nil {
-		logger.Global.Error(err.Error())
+		logger.Global.Error(fmt.Sprintf("error suggested param: %s", err.Error()))
 		return nil, nil, services.CreateError("rekey error - node not available")
 	}
-	txn, err := transaction.MakePaymentTxnWithFlatFee(rekey_address, rekey_address, 1000, 0, uint64(params.FirstRoundValid), uint64(params.LastRoundValid), []byte(""), rekey_address, params.GenesisID, params.GenesisHash)
+	txn, err := transaction.MakePaymentTxnWithFlatFee(rekey_address, rekey_address, 1000, 0, uint64(params.FirstRoundValid), uint64(params.LastRoundValid), []byte(""), "", params.GenesisID, params.GenesisHash)
 	if err != nil {
-		logger.Global.Error(err.Error())
+		logger.Global.Error(fmt.Sprintf("error rekey transaction: %s", err.Error()))
 		return nil, nil, services.CreateError("rekey error - fail to create transaction")
 	}
 
-	txn.Rekey(account.Address)
+	txn.Rekey(auth_account.Address)
+	fmt.Println("complete")
 
 	return diffAccount, &txn, nil
+}
+
+func (s *AlgoService) RekeyAccountComplete(username string, address string, auth_address string) *services.ServiceError {
+	err := s.AlgoRepository.RekeyAccount(username, address, auth_address)
+	if err != nil {
+		return services.CreateError("fail to commit account to DB")
+	}
+	return nil
+}
+
+func (algo *AlgoService) GetAccount(username string, address string, includeBalance bool) (*AlgoAccount, *services.ServiceError) {
+
+	account, err := algo.AlgoRepository.GetAccountFull(username, address)
+	if err != nil {
+		logger.Global.Error(err.Error())
+		return nil, services.CreateError("failed to retrieve accounts - try again")
+	}
+
+	credentialList, err := algo.UserRepository.LookupCredentials(username, strings.Split(account.CredentialsID, ","))
+	if err != nil {
+		logger.Global.Error(err.Error())
+		return nil, services.CreateError("failed to retrieve accounts - try again")
+	}
+	account.Credentials = credentialList
+	// load authaccount credential
+	if account.AuthAccount != nil {
+
+		credentialList, err := algo.UserRepository.LookupCredentials(username, strings.Split(account.AuthAccount.CredentialsID, ","))
+		if err != nil {
+			logger.Global.Error(err.Error())
+			return nil, services.CreateError("failed to retrieve accounts - try again")
+		}
+		account.AuthAccount.Credentials = credentialList
+	}
+	if includeBalance {
+		balance, err := algo.Indexer.GetAccountsByID(account.Address)
+		if err != nil {
+			logger.Global.Error(err.Error())
+		} else {
+			account.Balance = &AccountBalance{
+				Amount:       balance.Amount,
+				CurrentRound: balance.Round,
+				Status:       balance.Status,
+			}
+		}
+	}
+
+	return account, nil
 }
 
 func (algo *AlgoService) GetAccountList(username string, includeBalance bool) ([]AlgoAccount, *services.ServiceError) {
@@ -183,6 +245,16 @@ func (algo *AlgoService) GetAccountList(username string, includeBalance bool) ([
 			return accountList, services.CreateError("failed to retrieve accounts - try again")
 		}
 		accountList[i].Credentials = credentialList
+		// load authaccount credential
+		if account.AuthAccount != nil {
+
+			credentialList, err := algo.UserRepository.LookupCredentials(username, strings.Split(account.AuthAccount.CredentialsID, ","))
+			if err != nil {
+				logger.Global.Error(err.Error())
+				return accountList, services.CreateError("failed to retrieve accounts - try again")
+			}
+			account.AuthAccount.Credentials = credentialList
+		}
 		if includeBalance {
 			balance, err := algo.Indexer.GetAccountsByID(account.Address)
 			if err != nil {
@@ -196,7 +268,6 @@ func (algo *AlgoService) GetAccountList(username string, includeBalance bool) ([
 			}
 		}
 	}
-
 	return accountList, nil
 }
 
@@ -378,7 +449,7 @@ type TxClaims struct {
 	TxHash      string `json:"tx_hash,omitempty"`
 }
 
-func (algo *AlgoService) SignedTransaction(txnRaw string, signData string, clientData string, authData string, jwt string) (string, string, *services.ServiceError) {
+func (algo *AlgoService) SignedTransaction(txnRaw string, signData string, clientData string, authData string, jwt string, postNetwork bool) (string, string, *services.ServiceError) {
 	txn, err := ParseTransaction(txnRaw)
 	if err != nil {
 		return "", "", services.CreateError("failed to parse txn")
@@ -386,11 +457,17 @@ func (algo *AlgoService) SignedTransaction(txnRaw string, signData string, clien
 	// get sender logicsignature
 
 	// get logic signature
-	account, err := algo.AlgoRepository.GetAccountByAddress(txn.Sender.String())
+	account, err := algo.AlgoRepository.GetAccountByAddressFull(txn.Sender.String())
 	if err != nil {
 		return "", "", services.CreateError("account not found")
 	}
-	program, err := base64.StdEncoding.DecodeString(account.CompileScript)
+
+	// check for auth Address
+	logicScript := account.CompileScript
+	if account.AuthAddress != nil && account.AuthAccount != nil {
+		logicScript = account.AuthAccount.CompileScript
+	}
+	program, err := base64.StdEncoding.DecodeString(logicScript)
 	if err != nil {
 		return "", "", services.CreateError("account script error")
 	}
@@ -428,12 +505,6 @@ func (algo *AlgoService) SignedTransaction(txnRaw string, signData string, clien
 
 	// string parameter
 
-	//sig1 = Arg(0)
-	//sig2 = Arg(1)
-	//clientData = Arg(2)
-	//authData = Arg(3)
-	//server_challenge = Arg(4)
-	//nonce = Arg(5)
 	args := make([][]byte, 7)
 	args[0] = sig1
 	args[1] = sig2
@@ -455,22 +526,15 @@ func (algo *AlgoService) SignedTransaction(txnRaw string, signData string, clien
 		return "", "", services.CreateError("invalid txn signature")
 	}
 
-	// Submit the raw transaction to network
-	transactionID, err := algo.AlgoNet.client.SendRawTransaction(stx).Do(context.Background())
-	if err != nil {
-		fmt.Printf("Sending failed with %v\n", err)
-		return "", "", services.CreateError("failed to submit transaction")
+	if postNetwork {
+		_, err := algo.AlgoNet.PostTxn(txID, stx)
+		if err != nil {
+			fmt.Printf("Error posting on txID %s: %s\n", txID, err.Error())
+			return "", "", services.CreateError("failed to submit transaction")
+		}
 	}
-
-	// Wait for confirmation
-	confirmedTxn, err := future.WaitForConfirmation(algo.AlgoNet.client, transactionID, 4, context.Background())
-	if err != nil {
-		fmt.Printf("Error waiting for confirmation on txID: %s\n", transactionID)
-		return "", "", services.CreateError("failed to confirm transaction")
-	}
-	fmt.Printf("Confirmed Transaction: %s in Round %d\n", transactionID, confirmedTxn.ConfirmedRound)
-
 	stx_b64 := base64.StdEncoding.EncodeToString(stx)
+
 	return txID, stx_b64, nil
 
 }

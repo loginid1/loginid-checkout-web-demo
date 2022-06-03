@@ -39,6 +39,8 @@ type AlgoAccount struct {
 	AccountStatus   string                `json:"account_status"`
 	Iat             time.Time             `json:"iat" gorm:"DEFAULT:current_timestamp"`
 	Uat             time.Time             `json:"uat" gorm:"DEFAULT:current_timestamp"`
+	AuthAddress     *string               `json:"auth_address"`
+	AuthAccount     *AlgoAccount          `json:"auth_account" gorm:"foreignKey:AuthAddress;references:Address"`
 	Credentials     []user.UserCredential `gorm:"-"`
 	Balance         *AccountBalance       `gorm:"-"`
 }

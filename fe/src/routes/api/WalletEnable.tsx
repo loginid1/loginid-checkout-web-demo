@@ -43,7 +43,6 @@ export default function WalletEnable() {
 	const [selectedAccountList, setSelectedAccountList] = useState<string[] >([]);
 	const [displayMessage, setDisplayMessage] = useState<DisplayMessage | null>(null);
 	useEffect(() => {
-		console.log("here");
 		let target = window.opener;
 		if (target != null) {
 			mService.onMessage( (msg, origin) => onMessageHandle(msg,origin));

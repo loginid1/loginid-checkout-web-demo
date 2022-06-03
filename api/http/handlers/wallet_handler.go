@@ -3,7 +3,6 @@ package handlers
 import (
 	"encoding/base64"
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/algorand/go-algorand-sdk/types"
@@ -147,9 +146,6 @@ func (h *WalletHandler) TxInitHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	logger.Global.Info(fmt.Sprintf("txInit request %#v", request))
-
-	fmt.Println([]byte(request.Payload))
 	// proxy transaction/init request to fido2 service
 	response, err := h.Fido2Service.TransactionInit(request.Username, request.Payload, request.Nonce)
 	if err != nil {
@@ -200,14 +196,12 @@ func (h *WalletHandler) TxCompleteHandler(w http.ResponseWriter, r *http.Request
 	}
 
 	// need to conpute sign transaction package here
-	id, stxn, err := h.AlgoService.SignedTransaction(request.RawTxn, request.Signature, request.ClientData, request.AuthenticatorData, response.Jwt)
+	id, stxn, err := h.AlgoService.SignedTransaction(request.RawTxn, request.Signature, request.ClientData, request.AuthenticatorData, response.Jwt, request.Post)
 	if err != nil {
 		logger.ForRequest(r).Error(err.Message)
 		http_common.SendErrorResponse(w, services.NewError("transaction signing error"))
 		return
 	}
-
-	logger.ForRequest(r).Info("transaction success")
 
 	http_common.SendSuccessResponse(w, TxCompleteResponse{TxID: id, Stxn: stxn})
 }
