@@ -29,11 +29,13 @@ var fido_y_template = [MAX_CRECRENTIAL]string{"FIDO1111YYYY", "FIDO2222YYYY", "F
 
 const recovery_template = "RRRRR55555RRRRR55555RRRRR55555RRRRR55555RRRRR5555522224444"
 
+const CURRENT_TEAL_VERSION = 2
+
 var script_template = map[string]string{
-	"fido_1_recovery": "services/algo/scripts/fido_1_recovery.template.teal",
-	"fido_2_recovery": "services/algo/scripts/fido_2_recovery.template.teal",
-	"fido_3_recovery": "services/algo/scripts/fido_3_recovery.template.teal",
-	"fido_1":          "services/algo/scripts/fido_1.template.teal",
+	"fido_1_recovery": "services/algo/scripts/fido_1_recovery.template2.teal",
+	"fido_2_recovery": "services/algo/scripts/fido_2_recovery.template2.teal",
+	"fido_3_recovery": "services/algo/scripts/fido_3_recovery.template2.teal",
+	"fido_1":          "services/algo/scripts/fido_1.template2.teal",
 }
 
 type AlgorandNetworkService struct {

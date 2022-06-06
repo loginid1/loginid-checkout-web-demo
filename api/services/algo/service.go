@@ -83,6 +83,7 @@ func (algo *AlgoService) CreateAccount(username string, alias string, verify_add
 	account := AlgoAccount{
 		Alias:           alias,
 		Address:         contractAccount.Address,
+		TealVersion:     CURRENT_TEAL_VERSION,
 		TealScript:      contractAccount.TealScript,
 		CompileScript:   contractAccount.CompileScript,
 		CredentialsID:   convertStringArrayToText(credential_id_list),
@@ -145,6 +146,7 @@ func (algo *AlgoService) RekeyAccountInit(username string, rekey_address string,
 		account := AlgoAccount{
 			Alias:           contractAccount.Address,
 			Address:         contractAccount.Address,
+			TealVersion:     CURRENT_TEAL_VERSION,
 			TealScript:      contractAccount.TealScript,
 			CompileScript:   contractAccount.CompileScript,
 			CredentialsID:   convertStringArrayToText(credential_id_list),
@@ -323,6 +325,7 @@ func (algo *AlgoService) QuickAccountCreation(username string, recovery_pk strin
 	account := AlgoAccount{
 		Alias:           "Default Algorand Account",
 		Address:         contractAccount.Address,
+		TealVersion:     CURRENT_TEAL_VERSION,
 		TealScript:      contractAccount.TealScript,
 		CompileScript:   contractAccount.CompileScript,
 		CredentialsID:   convertStringArrayToText(credential_id_list),
@@ -504,15 +507,26 @@ func (algo *AlgoService) SignedTransaction(txnRaw string, signData string, clien
 	payload_byte := []byte(TxIDFromTransactionB64(*txn))
 
 	// string parameter
+	arg_len := 6
+	if account.TealVersion == 0 {
+		arg_len = 7
+	}
 
-	args := make([][]byte, 7)
+	args := make([][]byte, arg_len)
 	args[0] = sig1
 	args[1] = sig2
 	args[2] = client_data_byte
 	args[3] = auth_data_byte
-	args[4] = server_challenge_byte
-	args[5] = nonce_byte
-	args[6] = payload_byte
+
+	if account.TealVersion == 0 {
+
+		args[4] = server_challenge_byte
+		args[5] = nonce_byte
+		args[6] = payload_byte
+	} else {
+		args[4] = append(nonce_byte, server_challenge_byte...)
+		args[5] = payload_byte
+	}
 
 	lsig, err := MakeLogicSig(program, args)
 	if err != nil {

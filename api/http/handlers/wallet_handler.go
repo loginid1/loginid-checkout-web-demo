@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/algorand/go-algorand-sdk/types"
@@ -186,6 +187,8 @@ func (h *WalletHandler) TxCompleteHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	fmt.Println(request.Challenge)
+	fmt.Println("clientdata: " + request.ClientData)
 	// send to fido2 server
 	// proxy transaction/complete request to fido2 service
 	response, err := h.Fido2Service.TransactionComplete(request.Username, request.TxID, request.CredentialID, request.Challenge, request.AuthenticatorData, request.ClientData, request.Signature)
