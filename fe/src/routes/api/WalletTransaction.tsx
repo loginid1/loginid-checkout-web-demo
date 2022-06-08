@@ -245,7 +245,9 @@ export default function WalletTxnConfirmation() {
 		}
 	}
 	async function handleCancel() {
-		mService.sendErrorMessage("user cancel");
+		if (!success) {
+			mService.sendErrorMessage("user cancel");
+		}
 		window.close();
 	}
 	return (
