@@ -245,7 +245,7 @@ export default function WalletEnable() {
 				)}
 
 				<Typography sx={{ m: 1 }} variant="subtitle1">
-					Request come from <Link>{enable?.origin}</Link> app <br />
+					Request came from <Link>{enable?.origin}</Link> app <br />
 				</Typography>
 				<Typography
 					sx={{ m: 1 }}

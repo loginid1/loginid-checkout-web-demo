@@ -533,7 +533,7 @@ function App() {
 						{enableAccount ? (
 							<>
 								<Typography>
-									You have enable the following accounts:
+									You have enabled the following accounts:
 								</Typography>
 								<Typography>
 									{ParseUtil.displayLongAddress(
