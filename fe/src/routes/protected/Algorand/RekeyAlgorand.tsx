@@ -321,10 +321,9 @@ export function RekeyAlgorand() {
 					{account && (
 						<>
 							<Stack spacing={2} alignItems="center">
-								<AlgorandLogo />
 								<Typography
-									variant="subtitle1"
-									color="secondary"
+									variant="subtitle2"
+									color="primary"
 								>
 									{account.alias} -{" "}
 									{ParseUtil.displayLongAddress(

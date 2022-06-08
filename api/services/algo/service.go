@@ -436,6 +436,30 @@ func (algo *AlgoService) SandnetDispenser(to string) (uint64, *services.ServiceE
 	return amount, nil
 }
 
+func (algo *AlgoService) SandnetDispenserSign(txn string) (string, *services.ServiceError) {
+	// deposit 10 ALGO
+	stxn, err := algo.AlgoNet.DispenserSign(txn)
+	if err != nil {
+		return "", services.CreateError("failed to sign")
+	}
+	return stxn, nil
+}
+
+func (algo *AlgoService) SandnetDispenserPost(stxn_raw []string) (string, *services.ServiceError) {
+	var signedGroup []byte
+	for _, value := range stxn_raw {
+		decode, _ := base64.StdEncoding.DecodeString(value)
+		signedGroup = append(signedGroup, decode...)
+
+	}
+	var txID string
+	stxn, err := algo.AlgoNet.PostTxn(txID, signedGroup)
+	if err != nil {
+		return "", services.CreateError("failed to sign")
+	}
+	return stxn, nil
+}
+
 func (algo *AlgoService) GetTransactionID(txn types.Transaction) string {
 	return algo_crypto.GetTxID(txn)
 }

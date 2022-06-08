@@ -197,6 +197,38 @@ func (as *AlgorandNetworkService) Dispenser(to string, amount uint64) (uint64, e
 	return toInfo.Amount, nil
 }
 
+func (as *AlgorandNetworkService) DispenserSign(txnRaw string) (string, error) {
+	passphrase := goutil.GetEnv("DISPENSER_MNEMONIC", "")
+	if passphrase == "" {
+		return "", errors.New("no dispenser")
+	}
+	privateKey, err := mnemonic.ToPrivateKey(passphrase)
+	if err != nil {
+		fmt.Printf("Issue with mnemonic conversion: %s\n", err)
+		return "", err
+	}
+
+	dAddress := goutil.GetEnv("DISPENSER_ADDRESS", "")
+	if dAddress == "" {
+		return "", errors.New("no dispenser")
+	}
+	fmt.Printf("My address: %s\n", dAddress)
+
+	txn, err := ParseTransaction(txnRaw)
+	if err != nil {
+		return "", errors.New("fail to parse transaction")
+	}
+
+	txID, signedTxn, err := crypto.SignTransaction(privateKey, *txn)
+	if err != nil {
+		fmt.Printf("Failed to sign transaction: %s\n", err)
+		return "", err
+	}
+	fmt.Printf("Signed txid: %s\n", txID)
+
+	return B64Transaction(signedTxn), nil
+}
+
 func (as *AlgorandNetworkService) PostTxn(transactionID string, stx []byte) (string, error) {
 
 	// Submit the raw transaction to network
@@ -247,4 +279,8 @@ func ParseTransaction(txnRaw string) (*types.Transaction, error) {
 		return nil, err
 	}
 	return &txn, nil
+}
+
+func B64Transaction(txn []byte) string {
+	return base64.StdEncoding.EncodeToString(txn)
 }

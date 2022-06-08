@@ -121,7 +121,9 @@ func main() {
 	// dispenser handler
 	dispenserHandler := handlers.DispenserHandler{AlgoService: algoService}
 	dispenser := api.PathPrefix("/dispenser").Subrouter()
-	dispenser.HandleFunc("/withdraw", dispenserHandler.DispenserHandler)
+	dispenser.HandleFunc("/deposit", dispenserHandler.DispenserDepositHandler)
+	dispenser.HandleFunc("/sign", dispenserHandler.DispenserSignHandler)
+	dispenser.HandleFunc("/post", dispenserHandler.DispenserPostHandler)
 
 	cor_origins := goutil.GetEnv("CORS_ORIGINS", "http://localhost:3000,http://localhost:3030")
 	cor_array := strings.Split(cor_origins, ",")
