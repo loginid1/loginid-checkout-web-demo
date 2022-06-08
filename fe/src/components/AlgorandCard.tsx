@@ -1,4 +1,5 @@
 import {
+  Alert,
   alpha,
   Box,
   Button,
@@ -7,6 +8,8 @@ import {
   Chip,
   Dialog,
   IconButton,
+  Menu,
+  MenuItem,
   Stack,
   TextField,
   Typography,
@@ -14,7 +17,11 @@ import {
 import React, { useState } from "react";
 import { Recovery } from "../lib/VaultSDK/vault/user";
 import { LoginID } from "../theme/theme";
-import { ContentCopy, NavigateNextTwoTone } from "@mui/icons-material";
+import {
+  ArrowDropDown,
+  ContentCopy,
+  NavigateNextTwoTone,
+} from "@mui/icons-material";
 import { Account } from "../lib/VaultSDK/vault/algo";
 import ParseUtil from "../lib/util/parse";
 import { useNavigate } from "react-router-dom";
@@ -35,11 +42,14 @@ export const AlgorandCard: React.FC<AlgorandAccountCard> = ({
   const navigate = useNavigate();
   const [openRename, setOpenRename] = useState(false);
   const [newAlias, setNewAlias] = useState("");
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+
   const accountIAT = ParseUtil.parseDate(account.iat);
   const cutAddress = ParseUtil.displayLongAddress(account.address);
   const copyAddress = () => {
     navigator.clipboard.writeText(account.address);
   };
+  const open = Boolean(anchorEl);
 
   const handleClickRenameAccount = () => {
     setOpenRename(true);
@@ -60,8 +70,17 @@ export const AlgorandCard: React.FC<AlgorandAccountCard> = ({
   }
 
   function handleClickRekey(address: string) {
-    navigate("/rekey_algorand/"+address);
+    navigate("/rekey_algorand/" + address);
   }
+
+  function handleClick(event: React.MouseEvent<HTMLButtonElement>) {
+    setAnchorEl(event.currentTarget);
+  }
+
+  function handleClose() {
+    setAnchorEl(null);
+  }
+
   return (
     <Box>
       <Card
@@ -83,70 +102,121 @@ export const AlgorandCard: React.FC<AlgorandAccountCard> = ({
             // alignItems="center"
           >
             <Box maxWidth="50vw">
-              <Typography
-                noWrap
-                maxWidth="30vw"
-                variant="h3"
-                align="left"
-                overflow="hidden"
-                textOverflow="ellipsis"
-              >
-                {account.alias}
-              </Typography>
-              <Stack direction="row" spacing={2} alignItems="center">
+              <Stack direction="row" spacing={4} alignItems="center">
                 <Typography
                   noWrap
-                  variant="body1"
+                  maxWidth="30vw"
+                  variant="h3"
                   align="left"
                   overflow="hidden"
                   textOverflow="ellipsis"
                 >
-                  {cutAddress}
+                  {account.alias}
                 </Typography>
-                <IconButton size="small" onClick={copyAddress}>
-                  <ContentCopy />
-                </IconButton>
+                <Stack direction="row" spacing={2} alignItems="center">
+                  <Typography
+                    noWrap
+                    variant="body1"
+                    align="left"
+                    overflow="hidden"
+                    textOverflow="ellipsis"
+                    fontSize="12px"
+                  >
+                    {cutAddress}
+                  </Typography>
+                  <IconButton size="small" onClick={copyAddress}>
+                    <ContentCopy />
+                  </IconButton>
+                </Stack>
               </Stack>
-              <Typography variant="body1" align="left">
+              {/* <Alert severity="error">This is an error alert — check it out!</Alert> */}
+
+              <Typography variant="body1" align="left" fontSize="12px">
                 Added {accountIAT}
               </Typography>
-              <Typography variant="body1" align="left">
-                Recovery option:{" "}
-                <Chip label={cutoff(account.recovery_address)} /> | Credentials:{" "}
+              {account.recovery_address && (
+                <Typography variant="body1" align="left" fontSize="12px">
+                  Recovery option:{" "}
+                  <Chip
+                    sx={{ backgroundColor: "#E2F2FF" }}
+                    size="small"
+                    label={cutoff(account.recovery_address)}
+                  />
+                </Typography>
+              )}
+              <Typography variant="body1" align="left" fontSize="12px">
+                Credentials:{" "}
                 {account.credentials_name.map((name) => (
-                  <Chip label={name} />
+                  <Chip
+                    sx={{ backgroundColor: "#E2F2FF" }}
+                    size="small"
+                    label={name}
+                  />
                 ))}
               </Typography>
-              {account.balance &&
-              <>
-              <Typography variant="body1" align="left">
-                Balance: {account.balance?.amount} micro Algos
-              </Typography>
-              <Typography variant="body1" align="left">
-                Current: {account.balance?.current_round} 
-              </Typography>
-              <Typography variant="body1" align="left">
-                Status: {account.balance?.status} 
-              </Typography>
-              </>
-              }
+              {account.balance && (
+                <>
+                  <Typography noWrap variant="body1" align="left" fontSize="12px">
+                    Balance:{" "}
+                    <Chip
+                      sx={{ backgroundColor: "#E2F2FF" }}
+                      size="small"
+                      label={account.balance?.amount + " mAlgo"}
+                    />
+                  </Typography>
+                  <Typography variant="body1" align="left" fontSize="12px">
+                    Current:{" "}
+                    <Chip
+                      sx={{ backgroundColor: "#E2F2FF" }}
+                      size="small"
+                      label={account.balance?.current_round}
+                    />
+                  </Typography>
+                  <Typography variant="body1" align="left" fontSize="12px">
+                    Status:{" "}
+                    <Chip
+                      sx={{ backgroundColor: "#E2F2FF" }}
+                      size="small"
+                      label={account.balance?.status}
+                    />
+                  </Typography>
+                </>
+              )}
             </Box>
-            <Box>
-              <Stack direction={{ xs: "column", md: "column" }} spacing={2}>
-                <Button
-                  variant="outlined"
-                  color="primary"
-                  onClick={handleClickRenameAccount}
-                >
+            <Stack display={{ display: "flex", justifyContent: "center" }}>
+              <Button
+                variant="outlined"
+                color="primary"
+                aria-controls={open ? "basic-menu" : undefined}
+                aria-haspopup="true"
+                aria-expanded={open ? "true" : undefined}
+                onClick={handleClick}
+              >
+                Options <ArrowDropDown />
+              </Button>
+              <Menu
+                id="basic-menu"
+                anchorEl={anchorEl}
+                open={open}
+                onClose={handleClose}
+              >
+                <MenuItem onClick={handleClickRenameAccount} color="primary">
                   Change Alias
-                </Button>
-                <Button variant="outlined" color="primary" onClick={()=>handleClickTransaction(account.address)} >Transactions</Button>
-                <Button variant="outlined" color="primary" onClick={()=>handleClickRekey(account.address)} >Rekey</Button>
-                {/* <Button variant="outlined" color="primary">
+                </MenuItem>
+                <MenuItem
+                  onClick={() => handleClickTransaction(account.address)}
+                  color="primary"
+                >
+                  Transaction
+                </MenuItem>
+                <MenuItem
+                  onClick={() => handleClickRekey(account.address)}
+                  color="primary"
+                >
                   Rekey
-                </Button> */}
-              </Stack>
-            </Box>
+                </MenuItem>
+              </Menu>
+            </Stack>
           </Stack>
         </CardContent>
       </Card>

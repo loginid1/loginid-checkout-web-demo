@@ -24,7 +24,7 @@ export const CredentialCards: React.FC<CredentialCard> = ({
 }) => {
   const [openRename, setOpenRename] = useState(false);
   const [newName, setNewName] = useState("");
-  const credIAT = ParseUtil.parseDate(credential.iat);
+  const credIAT = ParseUtil.parseDateTime(credential.iat);
 
   const handleClickRenameCredential = () => {
     setOpenRename(true);
