@@ -31,6 +31,7 @@ type AlgoAccount struct {
 	User            user.User             `json:"-"`
 	Alias           string                `json:"alias"`
 	Address         string                `json:"address"`
+	TealVersion     uint32                `json:"teal_version"`
 	TealScript      string                `json:"teal_script"`
 	CompileScript   string                `json:"compile_script"`
 	CredentialsPK   string                `json:"credentials_pk"`
@@ -39,6 +40,8 @@ type AlgoAccount struct {
 	AccountStatus   string                `json:"account_status"`
 	Iat             time.Time             `json:"iat" gorm:"DEFAULT:current_timestamp"`
 	Uat             time.Time             `json:"uat" gorm:"DEFAULT:current_timestamp"`
+	AuthAddress     *string               `json:"auth_address"`
+	AuthAccount     *AlgoAccount          `json:"auth_account" gorm:"foreignKey:AuthAddress;references:Address"`
 	Credentials     []user.UserCredential `gorm:"-"`
 	Balance         *AccountBalance       `gorm:"-"`
 }

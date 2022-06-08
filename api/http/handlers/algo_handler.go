@@ -4,19 +4,25 @@ package handlers
  */
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"net/http"
 	"time"
 
+	"github.com/algorand/go-algorand-sdk/encoding/msgpack"
+	"gitlab.com/loginid/software/libraries/goutil.git/logger"
 	http_common "gitlab.com/loginid/software/services/loginid-vault/http/common"
 	"gitlab.com/loginid/software/services/loginid-vault/services"
 	"gitlab.com/loginid/software/services/loginid-vault/services/algo"
+	"gitlab.com/loginid/software/services/loginid-vault/services/fido2"
 	"gitlab.com/loginid/software/services/loginid-vault/services/user"
+	"gitlab.com/loginid/software/services/loginid-vault/utils"
 )
 
 type AlgoHandler struct {
 	UserService *user.UserService
 	AlgoService *algo.AlgoService
+	FidoService *fido2.Fido2Service
 }
 
 type FilterAlgoAccount struct {
@@ -24,11 +30,13 @@ type FilterAlgoAccount struct {
 	ID              string               `json:"id"`
 	Address         string               `json:"address"`
 	CredentialsName []string             `json:"credentials_name"`
+	CredentialsID   []string             `json:"credentials_id"`
 	RecoveryAddress string               `json:"recovery_address"`
 	Status          string               `json:"status"`
 	Iat             string               `json:"iat"`
 	TealScript      string               `json:"teal_script"`
 	Balance         *algo.AccountBalance `json:"balance"`
+	AuthAddress     string               `json:"auth_address"`
 }
 
 type AccountListResponse struct {
@@ -50,15 +58,28 @@ func (h *AlgoHandler) GetAccountListHandler(w http.ResponseWriter, r *http.Reque
 	}
 	var fAccounts []FilterAlgoAccount
 	for _, account := range accounts {
+
+		credentialsName := extractCredentialsName(account.Credentials)
+		credentialsID := extractCredentialsID(account.Credentials)
+		recoveryAddress := account.RecoveryAddress
+		if account.AuthAccount != nil {
+			credentialsName = extractCredentialsName(account.AuthAccount.Credentials)
+			credentialsID = extractCredentialsID(account.AuthAccount.Credentials)
+			recoveryAddress = account.AuthAccount.RecoveryAddress
+		}
 		fAccount := FilterAlgoAccount{
 			Alias:           account.Alias,
 			ID:              account.ID,
 			Address:         account.Address,
-			CredentialsName: extractCredentialsName(account.Credentials),
-			RecoveryAddress: account.RecoveryAddress,
+			CredentialsName: credentialsName,
+			CredentialsID:   credentialsID,
+			RecoveryAddress: recoveryAddress,
 			Status:          account.AccountStatus,
 			Iat:             account.Iat.Format(time.RFC822),
 			TealScript:      account.TealScript,
+		}
+		if account.AuthAddress != nil {
+			fAccount.AuthAddress = *account.AuthAddress
 		}
 		if account.Balance != nil {
 			fAccount.Balance = account.Balance
@@ -67,6 +88,51 @@ func (h *AlgoHandler) GetAccountListHandler(w http.ResponseWriter, r *http.Reque
 	}
 
 	http_common.SendSuccessResponse(w, AccountListResponse{Accounts: fAccounts})
+}
+
+func (h *AlgoHandler) GetAccountHandler(w http.ResponseWriter, r *http.Request) {
+
+	session := r.Context().Value("session").(services.UserSession)
+	address := r.URL.Query().Get("address")
+	iBalance := r.URL.Query().Get("include_balance")
+	include_balance := false
+	if iBalance == "true" {
+		include_balance = true
+	}
+	account, err := h.AlgoService.GetAccount(session.Username, address, include_balance)
+	if err != nil {
+		http_common.SendErrorResponse(w, services.NewError("no account found"))
+		return
+	}
+
+	credentialsName := extractCredentialsName(account.Credentials)
+	credentialsID := extractCredentialsID(account.Credentials)
+	recoveryAddress := account.RecoveryAddress
+	if account.AuthAccount != nil {
+		credentialsName = extractCredentialsName(account.AuthAccount.Credentials)
+		credentialsID = extractCredentialsID(account.AuthAccount.Credentials)
+		recoveryAddress = account.AuthAccount.RecoveryAddress
+	}
+
+	fAccount := FilterAlgoAccount{
+		Alias:           account.Alias,
+		ID:              account.ID,
+		Address:         account.Address,
+		CredentialsName: credentialsName,
+		CredentialsID:   credentialsID,
+		RecoveryAddress: recoveryAddress,
+		Status:          account.AccountStatus,
+		Iat:             account.Iat.Format(time.RFC822),
+		TealScript:      account.TealScript,
+	}
+	if account.AuthAddress != nil {
+		fAccount.AuthAddress = *account.AuthAddress
+	}
+	if account.Balance != nil {
+		fAccount.Balance = account.Balance
+	}
+
+	http_common.SendSuccessResponse(w, fAccount)
 }
 
 type CreateAccountRequest struct {
@@ -147,6 +213,14 @@ func extractCredentialsName(credentials []user.UserCredential) []string {
 		name = append(name, cred.Name)
 	}
 	return name
+}
+
+func extractCredentialsID(credentials []user.UserCredential) []string {
+	var value []string
+	for _, cred := range credentials {
+		value = append(value, cred.ID)
+	}
+	return value
 }
 
 type QuickAccountCreationRequest struct {
@@ -275,27 +349,20 @@ func (h *AlgoHandler) GetTransactionHandler(w http.ResponseWriter, r *http.Reque
 
 }
 
-type RekeyAccountRequest struct {
+type RekeyInitRequest struct {
 	Address          string   `json:"address"`
 	CredentialIDList []string `json:"cred_id_list"`
 	Recovery         string   `json:"recovery"`
 }
 
-type RekeyAccountResponse struct {
-	FromAddress       string                `json:"from_address"`
-	RekeyAddress      string                `json:"rekey_address"`
-	AddCredentials    []user.UserCredential `json:"add_credentials"`
-	RemoveCredentials []user.UserCredential `json:"remove_credentials"`
-	AddRecovery       string                `json:"add_recovery"`
-	RemoveRecovery    string                `json:"remove_recovery"`
-	Fee               uint64                `json:"fee"`
-	SignPayload       string                `json:"sign_payload"`
-	RawTxn            string                `json:"raw_txn"`
+type RekeyInitResponse struct {
+	RawTxn string      `json:"raw_txn"`
+	Fido   interface{} `json:"fido"`
 }
 
-func (h *AlgoHandler) RekeyAccountHandler(w http.ResponseWriter, r *http.Request) {
+func (h *AlgoHandler) RekeyInitHandler(w http.ResponseWriter, r *http.Request) {
 
-	var request RekeyAccountRequest
+	var request RekeyInitRequest
 	defer r.Body.Close()
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 		http_common.SendErrorResponse(w, services.NewError("failed to parse request"))
@@ -303,7 +370,7 @@ func (h *AlgoHandler) RekeyAccountHandler(w http.ResponseWriter, r *http.Request
 	}
 	session := r.Context().Value("session").(services.UserSession)
 
-	change, txn, err := h.AlgoService.RekeyAccount(session.Username, request.Address, request.CredentialIDList, request.Recovery)
+	_, txn, err := h.AlgoService.RekeyAccountInit(session.Username, request.Address, request.CredentialIDList, request.Recovery)
 
 	if err != nil {
 		http_common.SendErrorResponse(w, *err)
@@ -311,16 +378,98 @@ func (h *AlgoHandler) RekeyAccountHandler(w http.ResponseWriter, r *http.Request
 	}
 
 	id := algo.TxIDFromTransactionB64(*txn)
-	rekey := RekeyAccountResponse{
-		FromAddress:       txn.Sender.String(),
-		RekeyAddress:      txn.RekeyTo.String(),
-		Fee:               uint64(txn.Fee),
-		AddCredentials:    change.AddCreds,
-		RemoveCredentials: change.RemoveCreds,
-		AddRecovery:       change.AddRecovery,
-		RemoveRecovery:    change.RemoveRecovery,
-		SignPayload:       id,
-		RawTxn:            algo.TxnRaw(*txn),
+	/*
+		rekey := RekeyAccountResponse{
+			FromAddress:       txn.Sender.String(),
+			RekeyAddress:      txn.RekeyTo.String(),
+			Fee:               uint64(txn.Fee),
+			AddCredentials:    change.AddCreds,
+			RemoveCredentials: change.RemoveCreds,
+			AddRecovery:       change.AddRecovery,
+			RemoveRecovery:    change.RemoveRecovery,
+			SignPayload:       id,
+			RawTxn:            algo.TxnRaw(*txn),
+		}*/
+
+	// proxy transaction/init request to fido2 service
+	nonce, _ := utils.GenerateRandomString(16)
+	response, err := h.FidoService.TransactionInit(session.Username, id, nonce)
+	if err != nil {
+		logger.ForRequest(r).Error(err.Message)
+		http_common.SendErrorResponse(w, *err)
+		return
 	}
-	http_common.SendSuccessResponse(w, rekey)
+
+	var fido interface{}
+	json.Unmarshal(response, &fido)
+	rawTxn := base64.StdEncoding.EncodeToString(msgpack.Encode(txn))
+
+	rekeyResponse := RekeyInitResponse{
+		Fido:   fido,
+		RawTxn: rawTxn,
+	}
+	http_common.SendSuccessResponse(w, rekeyResponse)
+}
+
+type RekeyCompleteRequest struct {
+	Username          string `json:"username"`
+	Challenge         string `json:"challenge"`
+	CredentialUuid    string `json:"credential_uuid"`
+	CredentialID      string `json:"credential_id"`
+	ClientData        string `json:"client_data"`
+	AuthenticatorData string `json:"authenticator_data"`
+	Signature         string `json:"signature"`
+	TxID              string `json:"tx_id"`
+	RawTxn            string `json:"raw_txn"`
+}
+
+type RekeyCompleteResponse struct {
+	Stxn string `json:"stxn"`
+	TxID string `json:"tx_id"`
+}
+
+/**
+RekeyCompleteHandler
+*/
+func (h *AlgoHandler) RekeyCompleteHandler(w http.ResponseWriter, r *http.Request) {
+	var request TxCompleteRequest
+	defer r.Body.Close()
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		logger.ForRequest(r).Error(err.Error())
+		http_common.SendErrorResponse(w, services.NewError("failed to parse request"))
+		return
+	}
+	session := r.Context().Value("session").(services.UserSession)
+
+	txn, err := algo.ParseTransaction(request.RawTxn)
+	if err != nil {
+		logger.ForRequest(r).Error(err.Error())
+		http_common.SendErrorResponse(w, services.NewError("invalid transaction format request"))
+		return
+	}
+	// send to fido2 server
+	// proxy transaction/complete request to fido2 service
+	response, sErr := h.FidoService.TransactionComplete(session.Username, request.TxID, request.CredentialID, request.Challenge, request.AuthenticatorData, request.ClientData, request.Signature)
+	if err != nil {
+		logger.ForRequest(r).Error(sErr.Message)
+		http_common.SendErrorResponse(w, services.NewError("transaction fido error"))
+		return
+	}
+
+	// need to conpute sign transaction package here
+	id, stxn, sErr := h.AlgoService.SignedTransaction(request.RawTxn, request.Signature, request.ClientData, request.AuthenticatorData, response.Jwt, true)
+	if sErr != nil {
+		logger.ForRequest(r).Error(sErr.Message)
+		http_common.SendErrorResponse(w, services.NewError("transaction signing error"))
+		return
+	}
+
+	sErr = h.AlgoService.RekeyAccountComplete(session.Username, txn.Sender.String(), txn.RekeyTo.String())
+	if sErr != nil {
+		logger.ForRequest(r).Error(sErr.Message)
+		http_common.SendErrorResponse(w, services.NewError("rekey update error"))
+		return
+	}
+
+	http_common.SendSuccessResponse(w, TxCompleteResponse{TxID: id, Stxn: stxn})
 }

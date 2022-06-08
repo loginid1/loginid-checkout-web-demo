@@ -27,6 +27,7 @@ import CompleteAlgorand from './routes/protected/Algorand/CompleteAlgorand';
 import AlgorandSuccess from './routes/protected/Algorand/AddAlgorandSuccess';
 import { QuickAddAlgorand } from './routes/protected/Algorand/QuickAddAlgorand';
 import DappConnections from './routes/protected/Dapp/DappConnections';
+import { RekeyAlgorand } from './routes/protected/Algorand/RekeyAlgorand';
 
 
 
@@ -64,6 +65,7 @@ function App() {
           <Route path="/credential" element={<Credentials />} />
           <Route path="/create_algorand" element={<CreateAlgorand />} />
           <Route path="/quick_add_algorand" element={<QuickAddAlgorand />} />
+          <Route path="/rekey_algorand/:address" element={<RekeyAlgorand />} />
         </Route>
         <Route path="*" element={<Navigate replace to="/login" />} />
       </Routes>

@@ -47,6 +47,10 @@ export interface WalletTransaction {
      */
     txn: string;
     /**
+     * Optional address of the vault account that must sign this transaction  - Group transaction
+     */
+    signer?: string;
+    /**
     * Optional authorized address used to sign the transaction when the account
     * is rekeyed. Also called the signor/sgnr.
     */

@@ -81,7 +81,7 @@ func main() {
 	// protected usesr handler
 
 	userHandler := handlers.UserHandler{UserService: userService, Fido2Service: fidoService}
-	algoHandler := handlers.AlgoHandler{UserService: userService, AlgoService: algoService}
+	algoHandler := handlers.AlgoHandler{UserService: userService, AlgoService: algoService, FidoService: fidoService}
 	protected := api.PathPrefix("/protected").Subrouter()
 	protected.Use(authService.Middleware)
 	protected.HandleFunc("/user/profile", userHandler.GetUserProfileHandler)
@@ -94,6 +94,7 @@ func main() {
 	protected.HandleFunc("/user/getRecoveryList", userHandler.GetRecoveryListHandler)
 	protected.HandleFunc("/user/generateCredentialCode", userHandler.GenerateCredentialCodeHandler)
 
+	protected.HandleFunc("/algo/getAccount", algoHandler.GetAccountHandler)
 	protected.HandleFunc("/algo/getAccountList", algoHandler.GetAccountListHandler)
 	protected.HandleFunc("/algo/createAccount", algoHandler.CreateAccountHandler)
 	protected.HandleFunc("/algo/renameAccount", algoHandler.RenameAccountHandler)
@@ -101,7 +102,8 @@ func main() {
 	protected.HandleFunc("/algo/quickAccountCreation", algoHandler.QuickAccountCreationHandler)
 	protected.HandleFunc("/algo/getEnableAccountList", algoHandler.GetEnableAccountListHandler)
 	protected.HandleFunc("/algo/revokeEnableAccount", algoHandler.RevokeEnableAccountHandler)
-	protected.HandleFunc("/algo/RekeyAccount", algoHandler.RekeyAccountHandler)
+	protected.HandleFunc("/algo/rekeyInit", algoHandler.RekeyInitHandler)
+	protected.HandleFunc("/algo/rekeyComplete", algoHandler.RekeyCompleteHandler)
 
 	// balance & reporting
 	protected.HandleFunc("/algo/getAccountInfo", algoHandler.GetAccountInfoHandler)
@@ -119,7 +121,9 @@ func main() {
 	// dispenser handler
 	dispenserHandler := handlers.DispenserHandler{AlgoService: algoService}
 	dispenser := api.PathPrefix("/dispenser").Subrouter()
-	dispenser.HandleFunc("/withdraw", dispenserHandler.DispenserHandler)
+	dispenser.HandleFunc("/deposit", dispenserHandler.DispenserDepositHandler)
+	dispenser.HandleFunc("/sign", dispenserHandler.DispenserSignHandler)
+	dispenser.HandleFunc("/post", dispenserHandler.DispenserPostHandler)
 
 	cor_origins := goutil.GetEnv("CORS_ORIGINS", "http://localhost:3000,http://localhost:3030")
 	cor_array := strings.Split(cor_origins, ",")

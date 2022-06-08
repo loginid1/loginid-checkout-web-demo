@@ -62,21 +62,64 @@ func (repo *AlgoRepository) AddAlgoAccount(username string, account *AlgoAccount
 func (repo *AlgoRepository) GetAccountList(username string) ([]AlgoAccount, error) {
 
 	var accounts []AlgoAccount
-	err := repo.DB.Joins("JOIN users ON users.id = algo_accounts.user_id").Where("users.username_lower = ? ", strings.ToLower(username)).Find(&accounts).Error
+	err := repo.DB.Preload("AuthAccount").Joins("JOIN users ON users.id = algo_accounts.user_id").Where("users.username_lower = ? ", strings.ToLower(username)).Where("algo_accounts.account_status <> 'rekey'").Find(&accounts).Error
 	if err != nil {
 		return accounts, err
 	}
 	return accounts, nil
 }
 
-func (repo *AlgoRepository) GetAccountByAddress(address string) (*AlgoAccount, error) {
+func (repo *AlgoRepository) GetAccountFull(username string, address string) (*AlgoAccount, error) {
 
 	var account AlgoAccount
-	err := repo.DB.Where("algo_accounts.address=?", address).Take(&account).Error
+	err := repo.DB.Preload("AuthAccount").Joins("JOIN users ON users.id = algo_accounts.user_id").Where("users.username_lower = ? ", strings.ToLower(username)).Where("algo_accounts.address=?", address).Take(&account).Error
 	if err != nil {
 		return nil, err
 	}
 	return &account, nil
+}
+
+func (repo *AlgoRepository) GetAccountByAddressFull(address string) (*AlgoAccount, error) {
+
+	var account AlgoAccount
+	err := repo.DB.Preload("AuthAccount").Where("algo_accounts.address=?", address).Take(&account).Error
+	if err != nil {
+		return nil, err
+	}
+	return &account, nil
+}
+
+func (repo *AlgoRepository) RekeyAccount(username string, address string, auth_address string) error {
+
+	tx := repo.DB.Begin()
+
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	if err := tx.Error; err != nil {
+		return err
+	}
+
+	var account AlgoAccount
+	if err := tx.Joins("JOIN users ON users.id = algo_accounts.user_id").Where("users.username_lower = ? ", strings.ToLower(username)).Where("algo_accounts.address = ?", address).Take(&account).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if account.ID == "" {
+		tx.Rollback()
+		return errors.New("no algorand accounts found")
+	}
+
+	if err := tx.Model(&account).Update("auth_address", auth_address).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	return tx.Commit().Error
 }
 
 func (repo *AlgoRepository) RenameAccount(accountId, name string) error {

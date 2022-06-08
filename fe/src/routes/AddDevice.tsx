@@ -108,7 +108,7 @@ export default function AddDevice() {
               size="large"
               sx={{ mt: 3, mb: 2 }}
             >
-              Create Account
+              Add This Device
             </Button>
             <Typography variant="body1">
               Already have an account? <Link href="./login">Login</Link>
