@@ -31,6 +31,7 @@ type AlgoAccount struct {
 	User            user.User             `json:"-"`
 	Alias           string                `json:"alias"`
 	Address         string                `json:"address"`
+	TealVersion     uint32                `json:"teal_version"`
 	TealScript      string                `json:"teal_script"`
 	CompileScript   string                `json:"compile_script"`
 	CredentialsPK   string                `json:"credentials_pk"`

@@ -1,0 +1,33 @@
+#pragma version 7
+txn TxID
+arg 5
+base64_decode URLEncoding
+==
+arg 2
+byte "challenge"
+json_ref JSONString
+base64_decode URLEncoding
+arg 5
+arg 4
+concat
+sha256
+==
+&&
+arg 3
+arg 2
+sha256
+concat
+sha256
+arg 0
+arg 1
+byte base64(FIDO1111XXXX)
+byte base64(FIDO1111YYYY)
+ecdsa_verify Secp256r1
+&&
+bnz main_l2
+int 0
+b main_l3
+main_l2:
+int 1
+main_l3:
+return

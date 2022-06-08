@@ -68,9 +68,7 @@ export interface TxnValidationResponse {
     txn_data: string[];
     txn_type: string[];
     required: boolean[];
-    username: string;
     origin: string;
-    alias: string;
 }
 
 export interface SignedTxn {
@@ -78,16 +76,35 @@ export interface SignedTxn {
     tx_id: string;
 }
 
-export interface PaymentTransaction {
-    from: string;
-    to: string;
-    fee: number;
-    amount: number;
-    note: string;
-    raw_data: string;
+
+export interface BaseTransaction {
+    base: {
+        from: string;
+        fee: number;
+        note: string;
+        raw_data: string;
+        sign_payload: string; // txnID
+        sign_nonce: string; // generated nonce
+        username: string;
+        alias: string;
+        require: boolean;
+    }
+    type: string;
     iat: string;
-    sign_payload: string; // txnID
-    sign_nonce: string; // generated nonce
+}
+
+export interface PaymentTransaction extends BaseTransaction {
+    to: string;
+    amount: number;
+}
+
+export interface AssetOptin extends BaseTransaction {
+    assetid: number;
+}
+
+export interface AssetTransfer extends BaseTransaction{
+    to: string;
+    assetid: number;
 }
 
 

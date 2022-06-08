@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/algorand/go-algorand-sdk/types"
@@ -29,27 +30,46 @@ type TxValidationRequest struct {
 }
 
 type WalletTransaction struct {
-	Txn string
+	Txn    string
+	Signer string
 }
 
 type TxValidationResponse struct {
-	TxnData  []string `json:"txn_data"`
-	TxnType  []string `json:"txn_type"`
-	Required []bool   `json:"required"`
-	Username string   `json:"username"`
-	Origin   string   `json:"origin"`
-	Alias    string   `json:"alias"`
+	TxnData []string `json:"txn_data"`
+	TxnType []string `json:"txn_type"`
+	Origin  string   `json:"origin"`
 }
 
-type PaymentTransaction struct {
+type BaseTransaction struct {
 	From        string `json:"from"`
-	To          string `json:"to"`
 	Fee         uint64 `json:"fee"`
-	Amount      uint64 `json:"amount"`
 	Note        string `json:"note"`
 	RawData     string `json:"raw_data"`
 	SignPayload string `json:"sign_payload"` // txnID
 	SignNonce   string `json:"sign_nonce"`   // generated nonce
+	Username    string `json:"username"`
+	Alias       string `json:"alias"`
+	Require     bool   `json:"require"`
+}
+
+type PaymentTransaction struct {
+	Base   BaseTransaction `json:"base"`
+	To     string          `json:"to"`
+	Amount uint64          `json:"amount"`
+}
+
+type AssetOptin struct {
+	Base      BaseTransaction `json:"base"`
+	Assetid   uint64          `json:"assetid"`
+	AssetName uint64          `json:"asset_name"`
+}
+
+type AssetTransfer struct {
+	Base      BaseTransaction `json:"base"`
+	To        string          `json:"to"`
+	Amount    uint64          `json:"amount"`
+	Assetid   uint64          `json:"assetid"`
+	AssetName uint64          `json:"asset_name"`
 }
 
 /**
@@ -66,65 +86,128 @@ func (h *WalletHandler) TxValidationHandler(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	if len(request.Transactions) != 1 {
-		http_common.SendErrorResponse(w, services.NewError("error - supported one transaction"))
-		return
-	}
-
-	rawData := request.Transactions[0].Txn
-	txn, err := algo.ParseTransaction(rawData)
-	if err != nil {
-		logger.ForRequest(r).Error(err.Error())
-		http_common.SendErrorResponse(w, services.NewError("invalid transaction format request"))
-		return
-	}
-	genesisHash := base64.StdEncoding.EncodeToString(txn.GenesisHash[:])
-	// check if sender origin has permission to user consent
-	username, alias := h.AlgoService.CheckUserDappConsent(genesisHash, request.Origin, txn.Sender.String())
-	if username == "" || alias == "" {
-		http_common.SendErrorResponse(w, services.NewError("dapp transaction is not allowed"))
-		return
-	}
-
-	//id := h.AlgoService.GetTransactionID(*txn)
-	id := algo.TxIDFromTransactionB64(*txn)
 	/*
-		id_raw, err := base32.StdEncoding.WithPadding(base32.NoPadding).DecodeString(id)
-		if err != nil {
-			logger.ForRequest(r).Error("convert txID error")
+		if len(request.Transactions) != 1 {
+			http_common.SendErrorResponse(w, services.NewError("error - supported one transaction"))
+			return
 		}*/
-	nonce, _ := utils.GenerateRandomString(16)
-	// filtering
-	if txn.Type == types.PaymentTx {
-		pTxn := PaymentTransaction{
-			From:        txn.Sender.String(),
-			To:          txn.Receiver.String(),
-			Fee:         uint64(txn.Fee),
-			Amount:      uint64(txn.Amount),
-			Note:        string(txn.Note),
-			RawData:     rawData,
-			SignPayload: id,
-			SignNonce:   nonce,
-		}
-		data, err := json.Marshal(pTxn)
-		if err != nil {
-			http_common.SendErrorResponse(w, services.NewError("transaction serialization error"))
+
+	var txn_data_list []string
+	var txn_type_list []string
+	require_count := 0
+	for _, txn := range request.Transactions {
+		txdata, txtype, require, sErr := validateRequestTransaction(txn, request.Origin, h.AlgoService)
+		if sErr != nil {
+			logger.ForRequest(r).Error(sErr.Message)
+			http_common.SendErrorResponse(w, *sErr)
 			return
 		}
+		txn_data_list = append(txn_data_list, txdata)
+		txn_type_list = append(txn_type_list, txtype)
+		if require {
+			require_count = require_count + 1
+		}
+	}
+	if require_count > 0 {
 
 		response := TxValidationResponse{
-			TxnData:  []string{string(data)},
-			TxnType:  []string{"payment"},
-			Required: []bool{true},
-			Username: username,
-			Origin:   request.Origin,
-			Alias:    alias,
+			TxnData: txn_data_list,
+			TxnType: txn_type_list,
+			Origin:  request.Origin,
 		}
 		http_common.SendSuccessResponse(w, response)
 		return
-	}
-	http_common.SendErrorResponse(w, services.NewError("unsupported transaction"))
+	} else {
 
+		http_common.SendErrorResponse(w, services.NewError("no signature require"))
+		return
+	}
+
+}
+
+func validateRequestTransaction(requestTxn WalletTransaction, origin string, algoService *algo.AlgoService) (string, string, bool, *services.ServiceError) {
+
+	rawData := requestTxn.Txn
+	txn, err := algo.ParseTransaction(rawData)
+	if err != nil {
+		return "", "", false, services.CreateError("invalid transaction format request")
+	}
+	genesisHash := base64.StdEncoding.EncodeToString(txn.GenesisHash[:])
+	// check if sender origin has permission to user consent
+	// check if signing required
+	require_sign := false
+	if requestTxn.Signer == txn.Sender.String() {
+		require_sign = true
+	}
+
+	fmt.Printf("groupID: %v %s", txn.Group, base64.StdEncoding.EncodeToString(txn.Group[:]))
+	var username, alias, nonce string
+
+	if require_sign {
+
+		username, alias = algoService.CheckUserDappConsent(genesisHash, origin, txn.Sender.String())
+		if username == "" || alias == "" {
+			return "", "", false, services.CreateError("dapp transaction is not allowed")
+		}
+		nonce, _ = utils.GenerateRandomString(16)
+	}
+
+	id := algo.TxIDFromTransactionB64(*txn)
+	base := BaseTransaction{
+		From:        txn.Sender.String(),
+		Fee:         uint64(txn.Fee),
+		Note:        string(txn.Note),
+		RawData:     rawData,
+		SignPayload: id,
+		SignNonce:   nonce,
+		Username:    username,
+		Alias:       alias,
+		Require:     require_sign,
+	}
+	// filtering
+	if txn.Type == types.PaymentTx {
+		pTxn := PaymentTransaction{
+			Base:   base,
+			To:     txn.Receiver.String(),
+			Amount: uint64(txn.Amount),
+		}
+		data, err := json.Marshal(pTxn)
+		if err != nil {
+			return "", "", false, services.CreateError("transaction serialization error")
+		}
+
+		return string(data), "payment", require_sign, nil
+	} else if txn.Type == types.AssetTransferTx {
+
+		// check if asset transfer or opt-in
+		if txn.Sender.String() == txn.AssetReceiver.String() && txn.AssetAmount == 0 {
+			aTxn := AssetOptin{
+				Base:    base,
+				Assetid: uint64(txn.XferAsset),
+			}
+			data, err := json.Marshal(aTxn)
+			if err != nil {
+				return "", "", false, services.CreateError("transaction serialization error")
+			}
+			return string(data), "asset-optin", require_sign, nil
+		} else {
+
+			aTxn := AssetTransfer{
+				Base:    base,
+				To:      txn.AssetReceiver.String(),
+				Amount:  uint64(txn.AssetAmount),
+				Assetid: uint64(txn.XferAsset),
+			}
+			data, err := json.Marshal(aTxn)
+			if err != nil {
+				return "", "", false, services.CreateError("transaction serialization error")
+			}
+			return string(data), "asset-transfer", require_sign, nil
+		}
+
+	} else {
+		return "", "", require_sign, services.CreateError("unsupported transaction")
+	}
 }
 
 type TxInitRequest struct {

@@ -29,11 +29,13 @@ var fido_y_template = [MAX_CRECRENTIAL]string{"FIDO1111YYYY", "FIDO2222YYYY", "F
 
 const recovery_template = "RRRRR55555RRRRR55555RRRRR55555RRRRR55555RRRRR5555522224444"
 
+const CURRENT_TEAL_VERSION = 2
+
 var script_template = map[string]string{
-	"fido_1_recovery": "services/algo/scripts/fido_1_recovery.template.teal",
-	"fido_2_recovery": "services/algo/scripts/fido_2_recovery.template.teal",
-	"fido_3_recovery": "services/algo/scripts/fido_3_recovery.template.teal",
-	"fido_1":          "services/algo/scripts/fido_1.template.teal",
+	"fido_1_recovery": "services/algo/scripts/fido_1_recovery.template2.teal",
+	"fido_2_recovery": "services/algo/scripts/fido_2_recovery.template2.teal",
+	"fido_3_recovery": "services/algo/scripts/fido_3_recovery.template2.teal",
+	"fido_1":          "services/algo/scripts/fido_1.template2.teal",
 }
 
 type AlgorandNetworkService struct {
@@ -195,6 +197,38 @@ func (as *AlgorandNetworkService) Dispenser(to string, amount uint64) (uint64, e
 	return toInfo.Amount, nil
 }
 
+func (as *AlgorandNetworkService) DispenserSign(txnRaw string) (string, error) {
+	passphrase := goutil.GetEnv("DISPENSER_MNEMONIC", "")
+	if passphrase == "" {
+		return "", errors.New("no dispenser")
+	}
+	privateKey, err := mnemonic.ToPrivateKey(passphrase)
+	if err != nil {
+		fmt.Printf("Issue with mnemonic conversion: %s\n", err)
+		return "", err
+	}
+
+	dAddress := goutil.GetEnv("DISPENSER_ADDRESS", "")
+	if dAddress == "" {
+		return "", errors.New("no dispenser")
+	}
+	fmt.Printf("My address: %s\n", dAddress)
+
+	txn, err := ParseTransaction(txnRaw)
+	if err != nil {
+		return "", errors.New("fail to parse transaction")
+	}
+
+	txID, signedTxn, err := crypto.SignTransaction(privateKey, *txn)
+	if err != nil {
+		fmt.Printf("Failed to sign transaction: %s\n", err)
+		return "", err
+	}
+	fmt.Printf("Signed txid: %s\n", txID)
+
+	return B64Transaction(signedTxn), nil
+}
+
 func (as *AlgorandNetworkService) PostTxn(transactionID string, stx []byte) (string, error) {
 
 	// Submit the raw transaction to network
@@ -245,4 +279,8 @@ func ParseTransaction(txnRaw string) (*types.Transaction, error) {
 		return nil, err
 	}
 	return &txn, nil
+}
+
+func B64Transaction(txn []byte) string {
+	return base64.StdEncoding.EncodeToString(txn)
 }
