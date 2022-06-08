@@ -33,7 +33,7 @@ export const LoginID = createTheme({
       main: "#1E2898",
     },
     tertiary: {
-      main: "#1E2898",
+      main: "#E2F2FF",
     },
     background: {
       default: "#E2EAF9",

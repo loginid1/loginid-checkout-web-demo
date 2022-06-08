@@ -242,7 +242,7 @@ function EnableLabel(alias: string, address: string, date: string) {
 		<Stack sx={{ justifyContent: 'flex-start' }}>
 			<Typography align="left" variant="subtitle1">{alias}</Typography>
 			<Typography align="left" variant="body2">{ParseUtil.displayLongAddress(address)}</Typography>
-			<Typography align="left" variant="caption">{ParseUtil.parseDate(date)}</Typography>
+			<Typography align="left" variant="caption">{ParseUtil.parseDateTime(date)}</Typography>
 		</Stack>
 	);
 

@@ -39,11 +39,11 @@ import styles from "../../styles/common.module.css";
 
 const mService = new MessagingService(window.opener);
 const theme = createTheme({
-	typography: {
-		subtitle1: {
-			fontWeight: 600,
-		},
-	},
+  typography: {
+    subtitle1: {
+      fontWeight: 600,
+    },
+  },
 });
 let transactions: WalletTransaction[] = [];
 export default function WalletTxnConfirmation() {
@@ -150,39 +150,39 @@ export default function WalletTxnConfirmation() {
 		}
 	}
 
-	const INTERVAL = 100;
-	const TIMEOUT = 10000;
-	async function waitForInput(): Promise<boolean> {
-		let wait = TIMEOUT;
-		while (wait > 0) {
-			if (transactions.length == 0) {
-				await new Promise((resolve) => setTimeout(resolve, INTERVAL));
-			} else {
-				return Promise.resolve(true);
-			}
-			wait = wait - INTERVAL;
-		}
-		return Promise.resolve(false);
-	}
+  const INTERVAL = 100;
+  const TIMEOUT = 10000;
+  async function waitForInput(): Promise<boolean> {
+    let wait = TIMEOUT;
+    while (wait > 0) {
+      if (transactions.length == 0) {
+        await new Promise((resolve) => setTimeout(resolve, INTERVAL));
+      } else {
+        return Promise.resolve(true);
+      }
+      wait = wait - INTERVAL;
+    }
+    return Promise.resolve(false);
+  }
 
-	function onMessageHandle(msg: Message, origin: string) {
-		try {
-			mService.origin = origin;
-			mService.id = msg.id;
-			let wTxns: WalletTransaction[] = JSON.parse(msg.data);
-			console.log(wTxns);
-			// validate enable
-			if (wTxns.length > 0) {
-				//setTransactions(wTxns);
-				transactions = wTxns;
-				console.log(transactions.length);
-			} else {
-				setDisplayMessage({ text: "no transactions", type: "error" });
-			}
-		} catch (error) {
-			console.log(error);
-		}
-	}
+  function onMessageHandle(msg: Message, origin: string) {
+    try {
+      mService.origin = origin;
+      mService.id = msg.id;
+      let wTxns: WalletTransaction[] = JSON.parse(msg.data);
+      console.log(wTxns);
+      // validate enable
+      if (wTxns.length > 0) {
+        //setTransactions(wTxns);
+        transactions = wTxns;
+        console.log(transactions.length);
+      } else {
+        setDisplayMessage({ text: "no transactions", type: "error" });
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
 
 	async function handleTxConfirm(txn: BaseTransaction) {
 		try {
@@ -306,17 +306,6 @@ export default function WalletTxnConfirmation() {
 						</Grid>
 					</Toolbar>
 				</AppBar>
-
-				{displayMessage && (
-					<Alert
-						severity={
-							(displayMessage?.type as AlertColor) || "info"
-						}
-						sx={{ mt: 4 }}
-					>
-						{displayMessage.text}
-					</Alert>
-				)}
 
 				<Box sx={{ mt: 4, ml: 4, mr: 4 }}>
 					<DisplayGroupStep
