@@ -135,7 +135,7 @@ const DappConnections: React.FC = () => {
                       {ParseUtil.displayLongAddress(account.wallet_address)}
                     </TableCell>
                     <TableCell align="right">
-                      {ParseUtil.parseDate(account.iat)}
+                      {ParseUtil.parseDateTime(account.iat)}
                     </TableCell>
                     <TableCell align="right">{account.dapp_origin}</TableCell>
                     <TableCell align="right">{account.network}</TableCell>

@@ -23,7 +23,7 @@ export const RecoveryCard: React.FC<RecoveryCardInterface> = ({
   recovery,
   showCopy,
 }) => {
-  const recoveryIAT = ParseUtil.parseDate(recovery.iat);
+  const recoveryIAT = ParseUtil.parseDateTime(recovery.iat);
   const cutKey = ParseUtil.displayRecovery(recovery.public_key);
   const copyPublicKey = () => {
     navigator.clipboard.writeText(recovery.public_key);

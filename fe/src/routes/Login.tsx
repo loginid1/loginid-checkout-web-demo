@@ -105,6 +105,9 @@ const Login: React.FC = () => {
               Don't have an account yet?{" "}
               <Link href="./register">Create Account Now</Link>
             </Typography>
+            <Typography variant="body1">
+              Returned user with a new device? <Link href="./add_device">Click Here</Link>
+            </Typography>
           </Stack>
         </Paper>
       </Container>

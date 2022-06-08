@@ -1,11 +1,18 @@
 
-  const dateTimeFormat = new Intl.DateTimeFormat("en", {
+const dateTimeFormat = new Intl.DateTimeFormat("en", {
     month: "numeric",
     year: "numeric",
     day: "numeric",
     hour: "numeric",
     minute: "numeric",
-  });
+});
+
+const dateFormat = new Intl.DateTimeFormat("en", {
+    month: "numeric",
+    year: "numeric",
+    day: "numeric",
+});
+
 export default class ParseUtil {
     static displayLongAddress(address: string): string {
         let dAddress = address.substring(0, 8) + "...." + address.substring(address.length - 4);
@@ -22,14 +29,24 @@ export default class ParseUtil {
         let dpublicKey = publicKey.substring(0, 17) + "..."
         return dpublicKey
     }
-    static parseDate(time: string) : string {
-
+    static parseDateTime(time: string): string {
         return dateTimeFormat.format(Date.parse(time));
     }
 
-    static parseDateUnix(time: number) : string {
+    static parseDateTimeUnix(time: number): string {
         return dateTimeFormat.format(new Date(time * 1000));
     }
 
+    static parseDate(time: string): string {
+        return dateFormat.format(Date.parse(time));
+    }
+
+    static parseDateUnix(time: number): string {
+        return dateFormat.format(new Date(time * 1000));
+    }
+
+    static parseDate_(time: Date): string {
+        return dateFormat.format(time);
+    }
 
 }
