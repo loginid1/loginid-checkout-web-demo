@@ -465,15 +465,16 @@ function App() {
 			}
 
 			// optin asset 2
-			const note = new Uint8Array(Buffer.from("Test Asset", "utf8"));
-			const note1 = new Uint8Array(Buffer.from("Test Asset", "utf8"));
+			const note1 = new Uint8Array(Buffer.from("Opt-in to this asset", "utf8"));
+			const note2 = new Uint8Array(Buffer.from("Make a payment", "utf8"));
+			const note3 = new Uint8Array(Buffer.from("Receive this asset", "utf8"));
 			const txn1 =
 				algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
 					from: addr,
 					to: addr,
 					amount: 0,
 					assetIndex: asset_id,
-					note,
+					note: note1,
 					suggestedParams: params,
 				});
 
@@ -483,7 +484,7 @@ function App() {
 				from: addr,
 				to: dapp_addr,
 				amount: 1000000,
-				note,
+				note: note2,
 				suggestedParams: params,
 				// try adding another option to the list above by using TypeScript autocomplete (ctrl + space in VSCode)
 			});
@@ -498,7 +499,7 @@ function App() {
 					to: addr,
 					amount: 1,
 					assetIndex: asset_id,
-					note,
+					note: note3,
 					suggestedParams: params,
 				});
 			window.crypto.getRandomValues(leaseBuffer);
