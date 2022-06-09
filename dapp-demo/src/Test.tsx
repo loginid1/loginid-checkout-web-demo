@@ -8,7 +8,6 @@ import {
 } from "./lib/LoginidVaultSDK";
 import algosdk, { SuggestedParams } from "algosdk";
 import NFTImage from "./assets/Onboarding-3.png";
-import ExchangeImage from "./assets/AddAlgorandAccount.png";
 import VaultImage from "./assets/vault_logo_light.svg";
 import ParseUtil from "./util/parse";
 import {
@@ -38,7 +37,7 @@ import { DisplayMessage } from "./lib/common/message";
 const theme = createTheme();
 const asset_id = parseInt(process.env.REACT_APP_ASSET_ID || "2");
 
-function App() {
+export function Test() {
 	const [enableAccount, setEnableAccount] = useState<string>("");
 	const [params, setParams] = useState<SuggestedParams>();
 	const [displayMessage, setDisplayMessage] =
@@ -156,14 +155,11 @@ function App() {
 			const txn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
 				from: addr,
 				to: receiver,
-				amount: 1000000,
+				amount: 10000,
 				note,
 				suggestedParams: params,
 				// try adding another option to the list above by using TypeScript autocomplete (ctrl + space in VSCode)
 			});
-			var leaseBuffer = new Uint8Array(32);
-			window.crypto.getRandomValues(leaseBuffer);
-			txn.addLease(leaseBuffer);
 			let wTxn: WalletTransaction = {
 				txn: Buffer.from(txn.toByte()).toString("base64"),
 				signer: addr,
@@ -442,116 +438,6 @@ function App() {
 		}
 	}
 
-	async function handleAssetPurchaseClick() {
-		try {
-			// construct a transaction note
-			const addr = localStorage.getItem("enable_account");
-			const dapp_addr =
-				process.env.REACT_APP_DAPP_ADDRESS ||
-				"OZL4D23EET2S44UJBHZGHSMUQPJSA5YK7X4J737N5QZUJY3WE4X6PFHIXE";
-			if (addr == null) {
-				setDisplayMessage({
-					text: "missing vault account!",
-					type: "error",
-				});
-				return;
-			}
-			if (params == null) {
-				setDisplayMessage({
-					text: "need to prepare transaction!",
-					type: "error",
-				});
-				return;
-			}
-
-			// optin asset 2
-			const note = new Uint8Array(Buffer.from("Test Asset", "utf8"));
-			const note1 = new Uint8Array(Buffer.from("Test Asset", "utf8"));
-			const txn1 =
-				algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
-					from: addr,
-					to: addr,
-					amount: 0,
-					assetIndex: asset_id,
-					note,
-					suggestedParams: params,
-				});
-
-			// create payment transaction
-			// create the transaction
-			const txn2 = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-				from: addr,
-				to: dapp_addr,
-				amount: 1000000,
-				note,
-				suggestedParams: params,
-				// try adding another option to the list above by using TypeScript autocomplete (ctrl + space in VSCode)
-			});
-
-			var leaseBuffer = new Uint8Array(32);
-			window.crypto.getRandomValues(leaseBuffer);
-			txn2.addLease(leaseBuffer);
-			// create asset transfer transaction
-			const txn3 =
-				algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
-					from: dapp_addr,
-					to: addr,
-					amount: 1,
-					assetIndex: asset_id,
-					note,
-					suggestedParams: params,
-				});
-			window.crypto.getRandomValues(leaseBuffer);
-			txn3.addLease(leaseBuffer);
-
-			let txns = [txn1, txn2, txn3];
-			let txgroup = algosdk.assignGroupID(txns);
-
-			const txnb64_1 = Buffer.from(txgroup[0].toByte()).toString(
-				"base64"
-			);
-			let wTxn1: WalletTransaction = {
-				txn: txnb64_1,
-				signer: addr,
-			};
-
-			const txnb64_2 = Buffer.from(txgroup[1].toByte()).toString(
-				"base64"
-			);
-			let wTxn2: WalletTransaction = {
-				txn: txnb64_2,
-				signer: addr,
-			};
-
-			const txnb64_3 = Buffer.from(txgroup[2].toByte()).toString(
-				"base64"
-			);
-			let wTxn3: WalletTransaction = {
-				txn: txnb64_3,
-				signer: addr,
-			};
-
-			// Sign and post
-			// need to sign
-			const res = await wallet.signTxns([wTxn1, wTxn2, wTxn3]);
-			let dis_res = await DispenserSDK.sign(txnb64_3);
-
-			// submit group transaction
-			let signTxn = [...res.signTxn, dis_res.stxn];
-			//let signTxn = [dis_res.stxn, ...res.signTxn]
-			const post = await postTransaction(signTxn);
-			//const post = await DispenserSDK.post(res.signTxn.concat(dis_res.stxn));
-			console.log(post);
-			setDisplayMessage({ text: "purchase complete!", type: "info" });
-		} catch (error) {
-			setDisplayMessage({
-				text: (error as Error).message,
-				type: "error",
-			});
-			console.log(error);
-		}
-	}
-
 	async function handleGroupClick2() {
 		try {
 			// construct a transaction note
@@ -708,10 +594,10 @@ function App() {
 				{enableAccount && (
 					<>
 						<Card sx={{ mt: 2 }}>
-							<CardHeader title="Exchange Demo"></CardHeader>
+							<CardHeader title="Algorand Exchange Demo"></CardHeader>
 							<CardContent>
 								<Typography variant="caption">
-									Fund 100 ALGO to:
+									Deposit 10 ALGO to:
 								</Typography>
 								<Typography>
 									{ParseUtil.displayLongAddress(
@@ -738,21 +624,35 @@ function App() {
 						</Card>
 						<Card sx={{ mt: 2 }}>
 							<CardHeader title="dApp Demo"></CardHeader>
-							<CardMedia
-								component="img"
-								height="194"
-								image={NFTImage}
-								alt="Paella dish"
-							/>
-
 							<CardContent>
 								<Stack>
 									<Button
 										size="small"
 										variant="outlined"
-										onClick={handleAssetPurchaseClick}
+										onClick={handleTransactionClick}
 									>
-										BUY ASSET
+										SINGLE PAYMENT
+									</Button>
+									<Button
+										size="small"
+										variant="outlined"
+										onClick={handleAssetOptinClick}
+									>
+										ASSET OPT-IN
+									</Button>
+									<Button
+										size="small"
+										variant="outlined"
+										onClick={handleGroupClick}
+									>
+										GROUP TRANSACTION #2
+									</Button>
+									<Button
+										size="small"
+										variant="outlined"
+										onClick={handleGroupClick3}
+									>
+										GROUP TRANSACTION #3
 									</Button>
 								</Stack>
 							</CardContent>
@@ -764,4 +664,3 @@ function App() {
 	);
 }
 
-export default App;

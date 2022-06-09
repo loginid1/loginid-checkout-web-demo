@@ -428,8 +428,8 @@ func (algo *AlgoService) RevokeEnableAccount(ID string) *services.ServiceError {
 }
 
 func (algo *AlgoService) SandnetDispenser(to string) (uint64, *services.ServiceError) {
-	// deposit 10 ALGO
-	amount, err := algo.AlgoNet.Dispenser(to, 10000000)
+	// deposit 100 ALGO
+	amount, err := algo.AlgoNet.Dispenser(to, 100000000)
 	if err != nil {
 		return 0, services.CreateError("failed to deposit")
 	}
@@ -437,7 +437,6 @@ func (algo *AlgoService) SandnetDispenser(to string) (uint64, *services.ServiceE
 }
 
 func (algo *AlgoService) SandnetDispenserSign(txn string) (string, *services.ServiceError) {
-	// deposit 10 ALGO
 	stxn, err := algo.AlgoNet.DispenserSign(txn)
 	if err != nil {
 		return "", services.CreateError("failed to sign")

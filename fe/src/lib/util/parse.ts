@@ -1,4 +1,4 @@
-
+import Big from 'big.js';
 const dateTimeFormat = new Intl.DateTimeFormat("en", {
     month: "numeric",
     year: "numeric",
@@ -12,6 +12,8 @@ const dateFormat = new Intl.DateTimeFormat("en", {
     year: "numeric",
     day: "numeric",
 });
+
+const MICRO_UNIT = new Big(1000000);
 
 export default class ParseUtil {
     static displayLongAddress(address: string): string {
@@ -47,6 +49,12 @@ export default class ParseUtil {
 
     static parseDate_(time: Date): string {
         return dateFormat.format(time);
+    }
+
+    static convertAlgo(micro: number): string {
+        let value = new Big(micro);
+        value = value.div(MICRO_UNIT); 
+        return value.toString();
     }
 
 }

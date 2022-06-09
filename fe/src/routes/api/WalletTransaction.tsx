@@ -12,6 +12,7 @@ import {
 	Step,
 	StepLabel,
 	Stepper,
+	SvgIcon,
 	ThemeProvider,
 	Toolbar,
 	Typography,
@@ -25,6 +26,8 @@ import vaultSDK from "../../lib/VaultSDK";
 import VaultLogo from "../../assets/logo_dark.svg";
 import TxConfirmLogo from "../../assets/icon-1-exclamation.svg";
 import TxApproveLogo from "../../assets/icon-2-checkmark.svg";
+import AlgorandLogo from "../../assets/AlgorandLogo.svg";
+import { ReactComponent as AlgoLogo } from "../../assets/AlgoLogo.svg";
 import {
 	AssetOptin,
 	AssetTransfer,
@@ -281,7 +284,7 @@ export default function WalletTxnConfirmation() {
 										height="40"
 									/>
 									<Typography sx={{ m: 1 }}>
-										Approve Transaction!
+										Approved!
 									</Typography>
 								</Grid>
 							) : (
@@ -361,14 +364,14 @@ function DisplayPayment(txn: PaymentTransaction) {
 				<Typography variant="subtitle1">Transfer:</Typography>
 			</Grid>
 			<Grid item xs={6} sx={{ "text-align": "left" }}>
-				<Typography variant="body1">mALGO (micro Algos)</Typography>
+				<Typography variant="body1">ALGO </Typography>
 			</Grid>
 			<Grid item xs={6} sx={{ "text-align": "left" }}>
 				<Typography variant="subtitle1">Amount:</Typography>
 			</Grid>
 			<Grid item xs={6} sx={{ "text-align": "left" }}>
 				<Typography variant="body1">
-					{ParseUtil.displayAlgo(txn.amount)}
+					{ParseUtil.convertAlgo(txn.amount)} <AlgoIcon color="primary" sx={{fontSize: 14}}/>
 				</Typography>
 			</Grid>
 			<Grid item xs={6} sx={{ "text-align": "left" }}>
@@ -392,7 +395,7 @@ function DisplayPayment(txn: PaymentTransaction) {
 			</Grid>
 			<Grid item xs={6} sx={{ "text-align": "left" }}>
 				<Typography variant="body1">
-					{ParseUtil.displayAlgo(txn.base.fee)}
+					{ParseUtil.convertAlgo(txn.base.fee)} <AlgoIcon color="primary" sx={{fontSize: 14}}/>
 				</Typography>
 			</Grid>
 
@@ -422,7 +425,7 @@ function DisplayAssetOptin(txn: AssetOptin) {
 				<Typography variant="subtitle1">ASA Opt-In:</Typography>
 			</Grid>
 			<Grid item xs={6} sx={{ "text-align": "left" }}>
-				<Typography variant="body1">{txn.assetid}</Typography>
+				<Typography variant="body1">ID#{txn.assetid}</Typography>
 			</Grid>
 			<Grid item xs={6} sx={{ "text-align": "left" }}>
 				<Typography variant="subtitle1">From:</Typography>
@@ -437,7 +440,7 @@ function DisplayAssetOptin(txn: AssetOptin) {
 			</Grid>
 			<Grid item xs={6} sx={{ "text-align": "left" }}>
 				<Typography variant="body1">
-					{ParseUtil.displayAlgo(txn.base.fee)}
+					{ParseUtil.convertAlgo(txn.base.fee)} <AlgoIcon color="primary" sx={{fontSize: 14}}/>
 				</Typography>
 			</Grid>
 
@@ -467,7 +470,15 @@ function DisplayAssetTransfer(txn: AssetTransfer) {
 				<Typography variant="subtitle1">ASA Transfer:</Typography>
 			</Grid>
 			<Grid item xs={6} sx={{ "text-align": "left" }}>
-				<Typography variant="body1">{txn.assetid}</Typography>
+				<Typography variant="body1">ID#{txn.assetid}</Typography>
+			</Grid>
+			<Grid item xs={6} sx={{ "text-align": "left" }}>
+				<Typography variant="subtitle1">Amount:</Typography>
+			</Grid>
+			<Grid item xs={6} sx={{ "text-align": "left" }}>
+				<Typography variant="body1">
+					{txn.amount}
+				</Typography>
 			</Grid>
 			<Grid item xs={6} sx={{ "text-align": "left" }}>
 				<Typography variant="subtitle1">From:</Typography>
@@ -490,7 +501,7 @@ function DisplayAssetTransfer(txn: AssetTransfer) {
 			</Grid>
 			<Grid item xs={6} sx={{ "text-align": "left" }}>
 				<Typography variant="body1">
-					{ParseUtil.displayAlgo(txn.base.fee)}
+					{ParseUtil.convertAlgo(txn.base.fee)} <AlgoIcon color="primary" sx={{fontSize: 14}}/>
 				</Typography>
 			</Grid>
 
@@ -550,6 +561,11 @@ interface DisplayButtonProps {
 	onClose: () => void;
 }
 function DisplayButtons(props: DisplayButtonProps) {
+
+	let nextLabel = "next";
+	if (props.current === props.max -1) {
+		nextLabel = "confirm"
+	}
 	if (props.confirm) {
 		return (
 			<>
@@ -597,10 +613,17 @@ function DisplayButtons(props: DisplayButtonProps) {
 						sx={{ mt: 1, mb: 1 }}
 						disabled={props.complete}
 					>
-						Next
+						{nextLabel}
 					</Button>
 				</Grid>
 			</>
 		);
 	}
 }
+
+function AlgoIcon(props : any) {
+	return (
+	  <SvgIcon {...props} component={AlgoLogo} inheritViewBox>
+	  </SvgIcon>
+	);
+  }
