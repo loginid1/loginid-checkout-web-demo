@@ -105,6 +105,7 @@ export interface AssetOptin extends BaseTransaction {
 export interface AssetTransfer extends BaseTransaction{
     to: string;
     assetid: number;
+    amount: number;
 }
 
 

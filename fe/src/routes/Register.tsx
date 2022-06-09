@@ -35,11 +35,29 @@ export default function Register() {
     try {
         const response = await vaultSDK.register(username);
         AuthService.storeSession({ username: username, token: response.jwt });
-        navigate("/quick_add_algorand");
+        //navigate("/quick_add_algorand");
+        handleAccountCreation();
     } catch (error) {
       setErrorMessage((error as Error).message);
     }
   };
+
+  async function handleAccountCreation() {
+    const token = AuthService.getToken();
+    if (token) {
+      try {
+        const response = await vaultSDK.quickCreateAccount(token);
+        navigate("/complete_algorand_account", {
+          state: response.address,
+        });
+      } catch (error) {
+        setErrorMessage((error as Error).message);
+      }
+    } else {
+      setErrorMessage("missing auth token - retry login");
+      return;
+    }
+  }
 
   return (
     <ThemeProvider theme={LoginID}>
