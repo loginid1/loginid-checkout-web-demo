@@ -343,7 +343,7 @@ export function RekeyAlgorand() {
 								<Grid item xs={12}>
 									{" "}
 									<Typography variant="h3">
-										Select your credential
+										Select your credential(s)
 									</Typography>
 								</Grid>
 								{credentials?.credentials?.map((credential) => (

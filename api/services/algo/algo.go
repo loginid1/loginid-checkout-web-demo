@@ -50,6 +50,7 @@ type AccountBalance struct {
 	Amount       uint64 `json:"amount"`
 	Status       string `json:"status"`
 	CurrentRound uint64 `json:"current_round"`
+	ASACount     uint64 `json:"asa_count"`
 }
 
 type EnableAccount struct {

@@ -13,7 +13,7 @@ import {
   ThemeProvider,
   Typography,
 } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import React, { useState } from "react";
 import { LoginID } from "../theme/theme";
 import background from "../assets/background.svg";
@@ -29,12 +29,15 @@ export default function AddDevice() {
   const [regCode, setRegCode] = useState("");
 
   const [errorMessage, setErrorMessage] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
+  let redirect_url = searchParams.get("redirect_url");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       const response = await vaultSDK.addCredential(username, regCode);
       AuthService.storeSession({ username: username, token: response.jwt });
+      AuthService.storePref({username:username});
       navigate("/home");
     } catch (error) {
       setErrorMessage((error as Error).message);
@@ -111,11 +114,11 @@ export default function AddDevice() {
               Add This Device
             </Button>
             <Typography variant="body1">
-              Already have an account? <Link href="./login">Login</Link>
+              Already have an account? <Link href={redirect_url?"./login?redirect_url="+redirect_url:"./login"}>Login</Link>
             </Typography>
             <Typography variant="body1">
               Don't have an account yet?{" "}
-              <Link href="./register">Create Account Now</Link>
+              <Link href={redirect_url?"./login?redirect_url="+redirect_url:"./"}>Create Account Now</Link>
             </Typography>
           </Stack>
         </Paper>

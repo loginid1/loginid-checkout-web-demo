@@ -41,7 +41,7 @@ type AttestObject struct {
 
 type AttestStatement struct {
 	Alg int8   `cbor:"alg,omitempty"`
-	Sig string `cbor:"sig,omitempty"`
+	Sig []byte `cbor:"sig,omitempty"`
 }
 
 func ExtractPublicKey(attestation_data string) (string, string, *services.ServiceError) {

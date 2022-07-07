@@ -3,6 +3,7 @@ import { TypographyStyleOptions } from "@mui/material/styles/createTypography";
 import { PaletteOptions as MuiPallete } from "@mui/material/styles/createPalette";
 declare module "@mui/material/styles/createTypography" {
   export interface TypographyOptions {
+    title?: TypographyStyleOptions | undefined;
     medium?: TypographyStyleOptions | undefined;
     mediumL?: TypographyStyleOptions | undefined;
   }
@@ -10,6 +11,7 @@ declare module "@mui/material/styles/createTypography" {
 
 declare module "@mui/material/Typography" {
   interface TypographyPropsVariantOverrides {
+    title: true;
     medium: true;
     mediumL: true;
   }
@@ -26,7 +28,7 @@ declare module "@mui/material/styles/createPalette" {
 export const LoginID = createTheme({
   palette: {
     primary: {
-      main: "#2870FA",
+      main: "#1642DF",
       contrastText: "#fff",
     },
     secondary: {
@@ -64,11 +66,14 @@ export const LoginID = createTheme({
       lineHeight: "20px",
       fontWeight: "400",
     },
+    title: {
+      color: "#2870FA",
+      fontSize: "16px",
+      fontWeight: "500",
+    },
     medium: {
       color: "#2870FA",
       fontSize: "16px",
-      lineHeight: "24px",
-      letterSpacing: "1.2000000476837158px",
       fontWeight: "500",
     },
     mediumL: {
