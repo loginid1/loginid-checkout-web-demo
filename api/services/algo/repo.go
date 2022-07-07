@@ -212,6 +212,16 @@ func (repo *AlgoRepository) GetEnableAccountList(username string) ([]EnableAccou
 	return accounts, nil
 }
 
+func (repo *AlgoRepository) GetEnableAccountListByAddress(username string, address string) ([]EnableAccount, error) {
+
+	var accounts []EnableAccount
+	err := repo.DB.Joins("JOIN users ON users.id = enable_accounts.user_id").Where("users.username_lower = ? ", strings.ToLower(username)).Where("enable_accounts.wallet_address = ?", address).Find(&accounts).Error
+	if err != nil {
+		return accounts, err
+	}
+	return accounts, nil
+}
+
 func (repo *AlgoRepository) revokeEnableAccount(ID string) error {
 	tx := repo.DB.Begin()
 

@@ -30,7 +30,6 @@ type AlgoService struct {
 // NewUserService
 // initialize UserService struct
 func NewAlgoService(db *gorm.DB) (*AlgoService, error) {
-
 	algoNet, err := NewAlgorandNeworkService()
 	if err != nil {
 		return nil, err
@@ -225,6 +224,7 @@ func (algo *AlgoService) GetAccount(username string, address string, includeBala
 				Amount:       balance.Amount,
 				CurrentRound: balance.Round,
 				Status:       balance.Status,
+				ASACount:     uint64(len(balance.Assets)),
 			}
 		}
 	}
@@ -266,6 +266,7 @@ func (algo *AlgoService) GetAccountList(username string, includeBalance bool) ([
 					Amount:       balance.Amount,
 					CurrentRound: balance.Round,
 					Status:       balance.Status,
+					ASACount:     uint64(len(balance.Assets)),
 				}
 			}
 		}
@@ -404,15 +405,23 @@ func (algo *AlgoService) AddEnableAccounts(username string, address_list []strin
 	return &genesis, nil
 }
 
-func (algo *AlgoService) GetEnableAccountList(username string) ([]EnableAccount, *services.ServiceError) {
+func (algo *AlgoService) GetEnableAccountList(username string, address string) ([]EnableAccount, *services.ServiceError) {
 
-	enableAccountList, err := algo.AlgoRepository.GetEnableAccountList(username)
-	if err != nil {
-		logger.Global.Error(err.Error())
-		return enableAccountList, services.CreateError("failed to retrieve enable accounts - try again")
+	if address == "" {
+		enableAccountList, err := algo.AlgoRepository.GetEnableAccountList(username)
+		if err != nil {
+			logger.Global.Error(err.Error())
+			return enableAccountList, services.CreateError("failed to retrieve enable accounts - try again")
+		}
+		return enableAccountList, nil
+	} else {
+		enableAccountList, err := algo.AlgoRepository.GetEnableAccountListByAddress(username, address)
+		if err != nil {
+			logger.Global.Error(err.Error())
+			return enableAccountList, services.CreateError("failed to retrieve enable accounts - try again")
+		}
+		return enableAccountList, nil
 	}
-
-	return enableAccountList, nil
 }
 
 func (algo *AlgoService) RevokeEnableAccount(ID string) *services.ServiceError {
@@ -594,14 +603,47 @@ func (s *AlgoService) GetAccountInfo(username string) ([]models.Account, *servic
 	return accountInfo, nil
 }
 
-func (s *AlgoService) GetTransaction(address string) (*models.TransactionsResponse, *services.ServiceError) {
+func (s *AlgoService) GetTransaction(address string, limit uint64) (*models.TransactionsResponse, *services.ServiceError) {
 
-	transactions, err := s.Indexer.GetTransactionByAccount(address)
+	transactions, err := s.Indexer.GetTransactionByAccount(address, limit)
 	if err != nil {
 		logger.Global.Error(err.Error())
 		return transactions, services.CreateError("transaction error")
 	}
 	return transactions, nil
+}
+
+func (s *AlgoService) GetAccountAssets(address string) (*ASAHoldingResponse, *services.ServiceError) {
+	result, err := s.Indexer.GetAssetByAccount(address)
+	if err != nil {
+		logger.Global.Error(err.Error())
+		return nil, services.CreateError("get assets error")
+	}
+	var holdings []ASAHolding
+	for _, asset := range result.Assets {
+		info, err := s.Indexer.GetAssetByID(asset.AssetId)
+		if err != nil {
+			logger.Global.Error(err.Error())
+			return nil, services.CreateError("get assets error")
+		}
+
+		asa := ASAHolding{
+			ID:     asset.AssetId,
+			Amount: asset.Amount,
+			Name:   info.Params.Name,
+		}
+		holdings = append(holdings, asa)
+	}
+	return &ASAHoldingResponse{Assets: holdings}, nil
+}
+
+func (s *AlgoService) GetAssetInfo(id uint64) (*models.Asset, *services.ServiceError) {
+	result, err := s.Indexer.GetAssetByID(id)
+	if err != nil {
+		logger.Global.Error(err.Error())
+		return result, services.CreateError("get asset error")
+	}
+	return result, nil
 }
 
 func extractCredentialPKs(credentials []user.UserCredential) []string {

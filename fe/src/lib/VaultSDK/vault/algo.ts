@@ -18,12 +18,16 @@ export interface Account {
     teal_script: string;
     balance?: AccountBalance;
     auth_address?: string;
+    transactions: TxRecord[];
+    assets: AssetRecord[];
+    dapps: EnableAccount[];
 }
 
 export interface AccountBalance {
     amount: number;
     current_round: number;
     status: string;
+    asa_count: number;
 }
 
 export interface ContractAccount {
@@ -108,13 +112,24 @@ export interface AssetTransfer extends BaseTransaction{
     amount: number;
 }
 
+export interface AppOptin extends BaseTransaction {
+    appid: number;
+}
+
+export interface AppCall extends BaseTransaction{
+    appid: number;
+}
+
 
 // Transaction Report
 export interface TxRecord {
     "round-time" : number;
     id: string;
     "tx-type": string;
-    "payment-transaction": TxPaymentRecord;
+    "payment-transaction"?: TxPaymentRecord;
+    "asset-transfer-transaction"?: TxAssetTransfer;
+    "application-transaction"?: TxApplication;
+    "rekey-to": string;
     fee: number;
     sender: string;
 }
@@ -129,6 +144,25 @@ export interface TxPaymentRecord {
     receiver: string;
     amount: number;
     "close-amount": number;
+}
+
+export interface TxApplication {
+    "application-id": number;
+    "on-completion": string;
+}
+
+export interface TxAssetTransfer {
+    "asset-id" : number;
+    amount: number;
+    receiver: string;
+
+}
+
+export interface AssetRecord {
+    id : number;
+    name: string;
+    amount: number;
+
 }
 
 

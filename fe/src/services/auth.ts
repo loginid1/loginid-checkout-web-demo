@@ -2,7 +2,15 @@ export interface UserSession {
     username : string | null;
     token : string | null;
 }
+
+export interface UserPreference {
+    username: string;
+}
 export class AuthService {
+
+    static storePref(pref : UserPreference) {
+        localStorage.setItem("pref",JSON.stringify(pref));
+    }
 
     static storeSession(user : UserSession ) {
         localStorage.setItem("session", JSON.stringify(user) )
@@ -14,6 +22,12 @@ export class AuthService {
 
     static getSession() : UserSession | null  {
         const userStr = localStorage.getItem("session");
+        if (userStr) return JSON.parse(userStr);
+        return null;
+    }
+
+    static getPref() : UserPreference | null  {
+        const userStr = localStorage.getItem("pref");
         if (userStr) return JSON.parse(userStr);
         return null;
     }
@@ -31,6 +45,14 @@ export class AuthService {
     }
     static isLoggedIn() : boolean {
         if(AuthService.getSession() != null) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    static hasAccount() : boolean {
+        if(AuthService.getPref() != null) {
             return true;
         } else {
             return false;

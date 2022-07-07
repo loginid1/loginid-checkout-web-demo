@@ -37,6 +37,7 @@ import { DisplayMessage } from "./lib/common/message";
 
 const theme = createTheme();
 const asset_id = parseInt(process.env.REACT_APP_ASSET_ID || "2");
+const app_id = parseInt(process.env.REACT_APP_APP_ID || "116");
 
 function App() {
 	const [enableAccount, setEnableAccount] = useState<string>("");
@@ -553,6 +554,139 @@ function App() {
 		}
 	}
 
+	async function handleSmartContractClick() {
+		try {
+			// construct a transaction note
+			const addr = localStorage.getItem("enable_account");
+			const dapp_addr =
+				process.env.REACT_APP_DAPP_ADDRESS ||
+				"OZL4D23EET2S44UJBHZGHSMUQPJSA5YK7X4J737N5QZUJY3WE4X6PFHIXE";
+			if (addr == null) {
+				setDisplayMessage({
+					text: "missing vault account!",
+					type: "error",
+				});
+				return;
+			}
+			if (params == null) {
+				setDisplayMessage({
+					text: "need to prepare transaction!",
+					type: "error",
+				});
+				return;
+			}
+
+			// optin asset 2
+			const note1 = new Uint8Array(Buffer.from("Opt-in to this app", "utf8"));
+			const note2 = new Uint8Array(Buffer.from("Call this app add", "utf8"));
+			const args = new Uint8Array(Buffer.from("Add", "utf8"));
+			const txn1 = algosdk.makeApplicationOptInTxnFromObject({from: addr, appIndex:app_id,note:note1, suggestedParams:params });
+			const txn2 = algosdk.makeApplicationNoOpTxnFromObject({from:addr, appIndex: app_id, note:note2,suggestedParams:params,appArgs:[args]});
+
+			var leaseBuffer = new Uint8Array(32);
+			window.crypto.getRandomValues(leaseBuffer);
+			txn2.addLease(leaseBuffer);
+
+
+			const txnb64_1 = Buffer.from(txn2.toByte()).toString(
+				"base64"
+			);
+			let wTxn1: WalletTransaction = {
+				txn: txnb64_1,
+				signer: addr,
+			};
+
+
+
+			// Sign and post
+			// need to sign
+			const res = await wallet.signTxns([wTxn1 ]);
+
+			// submit group transaction
+			//let signTxn = [dis_res.stxn, ...res.signTxn]
+			const post = await postTransaction(res.signTxn);
+			//const post = await DispenserSDK.post(res.signTxn.concat(dis_res.stxn));
+			console.log(post);
+			setDisplayMessage({ text: "smart contract signing complete!", type: "info" });
+		} catch (error) {
+			setDisplayMessage({
+				text: (error as Error).message,
+				type: "error",
+			});
+			console.log(error);
+		}
+	}
+	async function handleSmartContractClick2() {
+		try {
+			// construct a transaction note
+			const addr = localStorage.getItem("enable_account");
+			const dapp_addr =
+				process.env.REACT_APP_DAPP_ADDRESS ||
+				"OZL4D23EET2S44UJBHZGHSMUQPJSA5YK7X4J737N5QZUJY3WE4X6PFHIXE";
+			if (addr == null) {
+				setDisplayMessage({
+					text: "missing vault account!",
+					type: "error",
+				});
+				return;
+			}
+			if (params == null) {
+				setDisplayMessage({
+					text: "need to prepare transaction!",
+					type: "error",
+				});
+				return;
+			}
+
+			// optin asset 2
+			const note1 = new Uint8Array(Buffer.from("Opt-in to this app", "utf8"));
+			const note2 = new Uint8Array(Buffer.from("Call this app add", "utf8"));
+			const txn1 = algosdk.makeApplicationOptInTxnFromObject({from: addr, appIndex:app_id,note:note1, suggestedParams:params });
+			const txn2 = algosdk.makeApplicationNoOpTxnFromObject({from:addr, appIndex: app_id, note:note2,suggestedParams:params});
+
+			var leaseBuffer = new Uint8Array(32);
+			window.crypto.getRandomValues(leaseBuffer);
+			txn2.addLease(leaseBuffer);
+
+			let txns = [txn1, txn2 ];
+			let txgroup = algosdk.assignGroupID(txns);
+
+			const txnb64_1 = Buffer.from(txgroup[0].toByte()).toString(
+				"base64"
+			);
+			let wTxn1: WalletTransaction = {
+				txn: txnb64_1,
+				signer: addr,
+			};
+
+			const txnb64_2 = Buffer.from(txgroup[1].toByte()).toString(
+				"base64"
+			);
+			let wTxn2: WalletTransaction = {
+				txn: txnb64_2,
+				signer: addr,
+			};
+
+
+			// Sign and post
+			// need to sign
+			const res = await wallet.signTxns([wTxn1, wTxn2 ]);
+
+			// submit group transaction
+			//let signTxn = [dis_res.stxn, ...res.signTxn]
+			const post = await postTransaction(res.signTxn);
+			//const post = await DispenserSDK.post(res.signTxn.concat(dis_res.stxn));
+			console.log(post);
+			setDisplayMessage({ text: "smart contract signing complete!", type: "info" });
+		} catch (error) {
+			setDisplayMessage({
+				text: (error as Error).message,
+				type: "error",
+			});
+			console.log(error);
+		}
+	}
+
 	async function handleGroupClick2() {
 		try {
 			// construct a transaction note
@@ -755,8 +889,16 @@ function App() {
 									>
 										BUY ASSET
 									</Button>
+									<Button
+										size="small"
+										variant="outlined"
+										onClick={handleSmartContractClick}
+									>
+										SIGN CONTRACT
+									</Button>
 								</Stack>
 							</CardContent>
+
 						</Card>
 					</>
 				)}

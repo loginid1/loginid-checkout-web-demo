@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { AuthService } from "../../services/auth";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Message, MessagingService } from "../../services/messaging";
 import { EnableOpts, EnableResult } from "../../lib/common/api";
 import vaultSDK from "../../lib/VaultSDK";
@@ -26,17 +26,21 @@ import {
 import { DisplayMessage } from "../../lib/common/message";
 import ParseUtil from "../../lib/util/parse";
 import { render } from "@testing-library/react";
+import EncodingUtil from "../../lib/util/encoding";
 
 interface WalletEnableSession {
 	network: string;
 	origin: string;
+	requestId: number;
 }
 
 const theme = createTheme();
 const mService = new MessagingService(window.opener);
 let input: boolean = false;
+let wSession : WalletEnableSession | null = null;
 
 export default function WalletEnable() {
+	const params = useParams();
 	const navigate = useNavigate();
 	const [enable, setEnable] = useState<WalletEnableSession | null>(null);
 	const [accountList, setAccountList] = useState<AccountList | null>(null);
@@ -47,6 +51,7 @@ export default function WalletEnable() {
 		null
 	);
 	useEffect(() => {
+
 		let target = window.opener;
 		if (target != null) {
 			mService.onMessage((msg, origin) => onMessageHandle(msg, origin));
@@ -69,16 +74,29 @@ export default function WalletEnable() {
 	// check if user logged in
 	// if not redirect to logi await new Promise(resolve => setTimeout(resolve, 1000));n
 	async function checkSession() {
-		await waitForEnableInput();
+		let sessionParam = params["data"];
+		if (sessionParam == null) {
+			await waitForEnableInput();
+		} else {
+			wSession = JSON.parse(EncodingUtil.decodeString(sessionParam));
+			setEnable(wSession);
+			mService.id = wSession!.requestId;
+		}
 		const auth = AuthService.isLoggedIn();
 		if (!auth) {
-			const redirect_url =
-				"/login?redirect_url=" + encodeURIComponent("/api/enable");
+
+			let sessionString =JSON.stringify(wSession);
+			// create session 
+			let redirect_url = "/login?redirect_url=" + encodeURIComponent("/api/enable/")+EncodingUtil.encodeString(sessionString);
+			if (!AuthService.hasAccount()){
+				redirect_url = "/register?redirect_url=" + encodeURIComponent("/api/enable/")+EncodingUtil.encodeString(sessionString);
+			}
 			navigate(redirect_url);
 		}
 
 		// check if enableSession
-		if (sessionStorage.getItem("enableSession") != null) {
+		//if (sessionStorage.getItem("enableSession") != null) {
+		if (wSession != null) {
 			getAccountList();
 		} else {
 			setDisplayMessage({
@@ -102,6 +120,7 @@ export default function WalletEnable() {
 				let enableSession: WalletEnableSession = {
 					network: enable.network || "",
 					origin: origin,
+					requestId: msg.id,
 				};
 				sessionStorage.setItem(
 					"enableSession",
@@ -109,6 +128,7 @@ export default function WalletEnable() {
 				);
 				setEnable(enableSession);
 				input = true;
+				wSession = enableSession;
 			}
 		} catch (error) {
 			console.log(error);

@@ -14,7 +14,7 @@ import {
   Typography,
 } from "@mui/material";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { LoginID } from "../theme/theme";
 import background from "../assets/background.svg";
 import { ReactComponent as VaultLogo } from "../assets/logo.svg";
@@ -32,6 +32,12 @@ const Login: React.FC = () => {
 
   const [username, setUsername] = useState("");
   const [errorMessage, setErrorMessage] = useState(redirect_error);
+
+
+  useEffect(() => {
+    let redirect_url = searchParams.get("redirect_url");
+    console.log(redirect_url);
+	}, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -103,10 +109,10 @@ const Login: React.FC = () => {
             </Button>
             <Typography variant="body1">
               Don't have an account yet?{" "}
-              <Link href="./register">Create Account Now</Link>
+              <Link href={redirect_url?"./register?redirect_url="+redirect_url:"./register"}>Create Account Now</Link>
             </Typography>
             <Typography variant="body1">
-              Returned user with a new device? <Link href="./add_device">Click Here</Link>
+              Returned user with a new device? <Link href={redirect_url?"./add_device?redirect_url="+redirect_url:"./add_device"}>Click Here</Link>
             </Typography>
           </Stack>
         </Paper>

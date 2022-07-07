@@ -72,6 +72,16 @@ type AssetTransfer struct {
 	AssetName uint64          `json:"asset_name"`
 }
 
+type AppOptin struct {
+	Base  BaseTransaction `json:"base"`
+	Appid uint64          `json:"appid"`
+}
+
+type AppCall struct {
+	Base  BaseTransaction `json:"base"`
+	Appid uint64          `json:"appid"`
+}
+
 /**
 * TxConnectHandler parse and validate raw transaction payload for signing
 *
@@ -203,6 +213,33 @@ func validateRequestTransaction(requestTxn WalletTransaction, origin string, alg
 				return "", "", false, services.CreateError("transaction serialization error")
 			}
 			return string(data), "asset-transfer", require_sign, nil
+		}
+
+	} else if txn.Type == types.ApplicationCallTx {
+
+		if txn.ApplicationFields.OnCompletion == types.OptInOC {
+			aTxn := AppOptin{
+				Base:  base,
+				Appid: uint64(txn.ApplicationID),
+			}
+			data, err := json.Marshal(aTxn)
+			if err != nil {
+				return "", "", false, services.CreateError("transaction serialization error")
+			}
+			return string(data), "app-optin", require_sign, nil
+		} else if txn.ApplicationFields.OnCompletion == types.NoOpOC {
+			aTxn := AppCall{
+				Base:  base,
+				Appid: uint64(txn.ApplicationID),
+			}
+			data, err := json.Marshal(aTxn)
+			if err != nil {
+				return "", "", false, services.CreateError("transaction serialization error")
+			}
+			return string(data), "app-call", require_sign, nil
+		} else {
+			return "", "", require_sign, services.CreateError("unsupported transaction")
+
 		}
 
 	} else {

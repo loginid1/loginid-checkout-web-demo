@@ -179,7 +179,7 @@ const AddAlgorandForm: React.FC = () => {
           >
             <Grid item xs={12}>
               {" "}
-              <Typography variant="h3">Select your credential</Typography>
+              <Typography variant="h3">Select your credential(s)</Typography>
             </Grid>
             {credentials?.credentials?.map((credential) => (
               <Grid item xs={12} sm={12} md={6}>

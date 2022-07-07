@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/algorand/go-algorand-sdk/client/v2/common/models"
 	"github.com/algorand/go-algorand-sdk/encoding/msgpack"
 	"gitlab.com/loginid/software/libraries/goutil.git/logger"
 	http_common "gitlab.com/loginid/software/services/loginid-vault/http/common"
@@ -37,6 +38,9 @@ type FilterAlgoAccount struct {
 	TealScript      string               `json:"teal_script"`
 	Balance         *algo.AccountBalance `json:"balance"`
 	AuthAddress     string               `json:"auth_address"`
+	Transactions    []models.Transaction `json:"transactions"`
+	Assets          []algo.ASAHolding    `json:"assets"`
+	Dapps           []algo.EnableAccount `json:"dapps"`
 }
 
 type AccountListResponse struct {
@@ -83,6 +87,22 @@ func (h *AlgoHandler) GetAccountListHandler(w http.ResponseWriter, r *http.Reque
 		}
 		if account.Balance != nil {
 			fAccount.Balance = account.Balance
+		}
+		if include_balance {
+			txn, _ := h.AlgoService.GetTransaction(fAccount.Address, 4)
+			if txn != nil {
+				fAccount.Transactions = txn.Transactions
+			}
+			// get top 5 assets
+			asa, _ := h.AlgoService.GetAccountAssets(fAccount.Address)
+			if asa != nil {
+				fAccount.Assets = asa.Assets
+			}
+			// get recent dapp
+			dapp, _ := h.AlgoService.GetEnableAccountList(session.Username, fAccount.Address)
+			if dapp != nil {
+				fAccount.Dapps = dapp
+			}
 		}
 		fAccounts = append(fAccounts, fAccount)
 	}
@@ -269,7 +289,7 @@ type EnableAccountListResponse struct {
 
 func (h *AlgoHandler) GetEnableAccountListHandler(w http.ResponseWriter, r *http.Request) {
 	session := r.Context().Value("session").(services.UserSession)
-	enableAccounts, err := h.AlgoService.GetEnableAccountList(session.Username)
+	enableAccounts, err := h.AlgoService.GetEnableAccountList(session.Username, "")
 	if err != nil {
 		http_common.SendErrorResponse(w, services.NewError("no account found"))
 		return
@@ -339,13 +359,37 @@ func (h *AlgoHandler) GetTransactionHandler(w http.ResponseWriter, r *http.Reque
 		http_common.SendErrorResponse(w, services.NewError("failed to parse request"))
 		return
 	}
-	transactions, sErr := h.AlgoService.GetTransaction(request.Address)
+	transactions, sErr := h.AlgoService.GetTransaction(request.Address, 100)
 	if sErr != nil {
 		http_common.SendErrorResponse(w, *sErr)
 		return
 	}
 
 	http_common.SendSuccessResponse(w, transactions)
+
+}
+
+type AssetRequest struct {
+	Address   string `json:"address"`
+	Limit     int    `json:"limit"`
+	NextToken string `json:"next_token"`
+}
+
+func (h *AlgoHandler) GetAssetHandler(w http.ResponseWriter, r *http.Request) {
+	//session := r.Context().Value("session").(services.UserSession)
+	var request AssetRequest
+	defer r.Body.Close()
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		http_common.SendErrorResponse(w, services.NewError("failed to parse request"))
+		return
+	}
+	assets, sErr := h.AlgoService.GetAccountAssets(request.Address)
+	if sErr != nil {
+		http_common.SendErrorResponse(w, *sErr)
+		return
+	}
+
+	http_common.SendSuccessResponse(w, assets)
 
 }
 

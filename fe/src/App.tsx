@@ -42,6 +42,7 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/add_device" element={<AddDevice />} />
         <Route path="/api/enable" element={<WalletEnable />} />
+        <Route path="/api/enable/:data" element={<WalletEnable />} />
         <Route path="/api/transaction" element={<WalletTxnConfirmation />} />
         <Route path="/" element={<ProtectedRoute />} >
           <Route path="/home" element={<Credentials />} />

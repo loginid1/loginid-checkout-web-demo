@@ -29,6 +29,8 @@ import TxApproveLogo from "../../assets/icon-2-checkmark.svg";
 import AlgorandLogo from "../../assets/AlgorandLogo.svg";
 import { ReactComponent as AlgoLogo } from "../../assets/AlgoLogo.svg";
 import {
+	AppCall,
+	AppOptin,
 	AssetOptin,
 	AssetTransfer,
 	BaseTransaction,
@@ -126,6 +128,28 @@ export default function WalletTxnConfirmation() {
 						itxns.push(assetTx);
 						isteps.push("ASA tx");
 						if (assetTx.base.require) {
+							sign_count++;
+						}
+					} else if (txnValidation.txn_type[i] === "app-optin") {
+						let aTx: AppOptin = JSON.parse(
+							txnValidation.txn_data[i]
+						);
+						aTx.type = "app-optin";
+						aTx.iat = new Date().toISOString();
+						itxns.push(aTx);
+						isteps.push("App opt-in");
+						if (aTx.base.require) {
+							sign_count++;
+						}
+					} else if (txnValidation.txn_type[i] === "app-call") {
+						let aTx: AppCall = JSON.parse(
+							txnValidation.txn_data[i]
+						);
+						aTx.type = "app-call";
+						aTx.iat = new Date().toISOString();
+						itxns.push(aTx);
+						isteps.push("App call");
+						if (aTx.base.require) {
 							sign_count++;
 						}
 					}
@@ -515,6 +539,96 @@ function DisplayAssetTransfer(txn: AssetTransfer) {
 	);
 }
 
+function DisplayAppOptin(txn: AppOptin) {
+	return (
+		<Grid container spacing={1}>
+			<Grid item xs={12}>
+				<Typography variant="h6">Transaction Details</Typography>
+			</Grid>
+			<Grid item xs={12}>
+				<Typography variant="subtitle2">{txn.iat}</Typography>
+			</Grid>
+			<Grid item xs={12}>
+				<Divider variant="fullWidth" />
+			</Grid>
+			<Grid item xs={6} sx={{ "text-align": "left" }}>
+				<Typography variant="subtitle1">APP Opt-In:</Typography>
+			</Grid>
+			<Grid item xs={6} sx={{ "text-align": "left" }}>
+				<Typography variant="body1">ID#{txn.appid}</Typography>
+			</Grid>
+			<Grid item xs={6} sx={{ "text-align": "left" }}>
+				<Typography variant="subtitle1">From:</Typography>
+			</Grid>
+			<Grid item xs={6} sx={{ "text-align": "left" }}>
+				<Typography variant="body1">
+					{ParseUtil.displayAddress(txn.base.from)}
+				</Typography>
+			</Grid>
+			<Grid item xs={6} sx={{ "text-align": "left" }}>
+				<Typography variant="subtitle1">Fee:</Typography>
+			</Grid>
+			<Grid item xs={6} sx={{ "text-align": "left" }}>
+				<Typography variant="body1">
+					{ParseUtil.convertAlgo(txn.base.fee)} <AlgoIcon color="primary" sx={{fontSize: 14}}/>
+				</Typography>
+			</Grid>
+
+			<Grid item xs={6} sx={{ "text-align": "left" }}>
+				<Typography variant="subtitle1">Note:</Typography>
+			</Grid>
+			<Grid item xs={6} sx={{ "text-align": "left" }}>
+				<Typography variant="body1">{txn.base.note}</Typography>
+			</Grid>
+		</Grid>
+	);
+}
+
+
+function DisplayAppCall(txn: AppCall) {
+	return (
+		<Grid container spacing={1}>
+			<Grid item xs={12}>
+				<Typography variant="h6">Transaction Details</Typography>
+			</Grid>
+			<Grid item xs={12}>
+				<Typography variant="subtitle2">{txn.iat}</Typography>
+			</Grid>
+			<Grid item xs={12}>
+				<Divider variant="fullWidth" />
+			</Grid>
+			<Grid item xs={6} sx={{ "text-align": "left" }}>
+				<Typography variant="subtitle1">APP Call:</Typography>
+			</Grid>
+			<Grid item xs={6} sx={{ "text-align": "left" }}>
+				<Typography variant="body1">ID#{txn.appid}</Typography>
+			</Grid>
+			<Grid item xs={6} sx={{ "text-align": "left" }}>
+				<Typography variant="subtitle1">From:</Typography>
+			</Grid>
+			<Grid item xs={6} sx={{ "text-align": "left" }}>
+				<Typography variant="body1">
+					{ParseUtil.displayAddress(txn.base.from)}
+				</Typography>
+			</Grid>
+			<Grid item xs={6} sx={{ "text-align": "left" }}>
+				<Typography variant="subtitle1">Fee:</Typography>
+			</Grid>
+			<Grid item xs={6} sx={{ "text-align": "left" }}>
+				<Typography variant="body1">
+					{ParseUtil.convertAlgo(txn.base.fee)} <AlgoIcon color="primary" sx={{fontSize: 14}}/>
+				</Typography>
+			</Grid>
+
+			<Grid item xs={6} sx={{ "text-align": "left" }}>
+				<Typography variant="subtitle1">Note:</Typography>
+			</Grid>
+			<Grid item xs={6} sx={{ "text-align": "left" }}>
+				<Typography variant="body1">{txn.base.note}</Typography>
+			</Grid>
+		</Grid>
+	);
+}
 function DisplayTransaction(txn: BaseTransaction) {
 	if (txn.type === "payment") {
 		return DisplayPayment(txn as PaymentTransaction);
@@ -522,6 +636,10 @@ function DisplayTransaction(txn: BaseTransaction) {
 		return DisplayAssetOptin(txn as AssetOptin);
 	} else if (txn.type === "asset-transfer") {
 		return DisplayAssetTransfer(txn as AssetTransfer);
+	} else if (txn.type === "app-optin") {
+		return DisplayAppOptin(txn as AppOptin);
+	} else if (txn.type === "app-call") {
+		return DisplayAppCall(txn as AppCall);
 	} else {
 		return <></>;
 	}
