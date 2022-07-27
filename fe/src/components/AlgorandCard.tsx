@@ -67,7 +67,7 @@ export const AlgorandCard: React.FC<AlgorandAccountCard> = ({
 	};
 	const open = Boolean(anchorEl);
 
-	const [tabValue, setTabValue] = React.useState<string>("tx");
+	const [tabValue, setTabValue] = React.useState<string>("asa");
 
 	const handleChange = (event: any, newValue: string) => {
 		setTabValue(newValue);
@@ -246,10 +246,13 @@ export const AlgorandCard: React.FC<AlgorandAccountCard> = ({
 							indicatorColor="secondary"
 							aria-label="secondary tabs example"
 						>
-							<Tab value="tx" label="Transactions" />
 							<Tab value="asa" label="Assets" />
+							<Tab value="tx" label="Transactions" />
 							<Tab value="dapps" label="Dapps" />
 						</Tabs>
+						<TabPanel value="asa">
+							{DisplayAssets(account.assets, account.address)}
+						</TabPanel>
 						<TabPanel value="tx">
 							{account.transactions &&
 								account.transactions.map((transaction) => (
@@ -262,10 +265,10 @@ export const AlgorandCard: React.FC<AlgorandAccountCard> = ({
 								))}
 
 							{account.transactions && (
-								<Button 
-                  sx={{m:1}}
+								<Button
+									sx={{ m: 1 }}
 									size="small"
-                  fullWidth
+									fullWidth
 									onClick={() =>
 										handleClickTransaction(account.address)
 									}
@@ -274,14 +277,9 @@ export const AlgorandCard: React.FC<AlgorandAccountCard> = ({
 								</Button>
 							)}
 						</TabPanel>
-						<TabPanel value="asa">
-
-                {DisplayAssets(account.assets)}
-              
-            </TabPanel>
 						<TabPanel value="dapps">
-              {DisplayDapps(account.dapps)}
-            </TabPanel>
+							{DisplayDapps(account.dapps)}
+						</TabPanel>
 					</TabContext>
 				</CardContent>
 			</Card>

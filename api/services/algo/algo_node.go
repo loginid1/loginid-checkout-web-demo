@@ -281,6 +281,12 @@ func ParseTransaction(txnRaw string) (*types.Transaction, error) {
 	return &txn, nil
 }
 
+// EncodeTransactionB64 encodes types.Transaction to msgpack base64url string
+func EncodeTransactionB64(txn types.Transaction) string {
+	raw := msgpack.Encode(txn)
+	return base64.StdEncoding.EncodeToString(raw)
+}
+
 func B64Transaction(txn []byte) string {
 	return base64.StdEncoding.EncodeToString(txn)
 }

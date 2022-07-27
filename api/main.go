@@ -105,6 +105,9 @@ func main() {
 	protected.HandleFunc("/algo/rekeyInit", algoHandler.RekeyInitHandler)
 	protected.HandleFunc("/algo/rekeyComplete", algoHandler.RekeyCompleteHandler)
 
+	// algo internal transaction
+	protected.HandleFunc("/algo/createAssetOptin", algoHandler.AssetOptinHandler)
+
 	// balance & reporting
 	protected.HandleFunc("/algo/getAccountInfo", algoHandler.GetAccountInfoHandler)
 	protected.HandleFunc("/algo/getTransactions", algoHandler.GetTransactionHandler)

@@ -422,18 +422,6 @@ func (h *AlgoHandler) RekeyInitHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	id := algo.TxIDFromTransactionB64(*txn)
-	/*
-		rekey := RekeyAccountResponse{
-			FromAddress:       txn.Sender.String(),
-			RekeyAddress:      txn.RekeyTo.String(),
-			Fee:               uint64(txn.Fee),
-			AddCredentials:    change.AddCreds,
-			RemoveCredentials: change.RemoveCreds,
-			AddRecovery:       change.AddRecovery,
-			RemoveRecovery:    change.RemoveRecovery,
-			SignPayload:       id,
-			RawTxn:            algo.TxnRaw(*txn),
-		}*/
 
 	// proxy transaction/init request to fido2 service
 	nonce, _ := utils.GenerateRandomString(16)
@@ -517,3 +505,71 @@ func (h *AlgoHandler) RekeyCompleteHandler(w http.ResponseWriter, r *http.Reques
 
 	http_common.SendSuccessResponse(w, TxCompleteResponse{TxID: id, Stxn: stxn})
 }
+
+/// INTERNAL TRANSACTIONS HANDLER
+
+// AssetOptin
+
+type AssetOptinRequest struct {
+	ID      uint64 `json:"id"`
+	Address string `json:"address"`
+	Origin  string `json:"origin"`
+}
+
+/**
+AssetOptinHandler "/algo/assetOptin"
+*/
+func (h *AlgoHandler) AssetOptinHandler(w http.ResponseWriter, r *http.Request) {
+
+	var request AssetOptinRequest
+	defer r.Body.Close()
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		http_common.SendErrorResponse(w, services.NewError("failed to parse request"))
+		return
+	}
+	session := r.Context().Value("session").(services.UserSession)
+
+	txn, asset, sErr := h.AlgoService.CreateAssetOptionTxn(session.Username, request.Address, request.ID)
+
+	if sErr != nil {
+		http_common.SendErrorResponse(w, *sErr)
+		return
+	}
+
+	nonce, _ := utils.GenerateRandomString(16)
+	id := algo.TxIDFromTransactionB64(*txn)
+	rawData := algo.EncodeTransactionB64(*txn)
+
+	base := BaseTransaction{
+		From:        txn.Sender.String(),
+		Fee:         uint64(txn.Fee),
+		Note:        string(txn.Note),
+		RawData:     rawData,
+		SignPayload: id,
+		SignNonce:   nonce,
+		Username:    session.Username,
+		Alias:       "",
+		Require:     true,
+	}
+	aTxn := AssetOptin{
+		Base:      base,
+		Assetid:   uint64(txn.XferAsset),
+		AssetName: asset.Params.Name,
+		UnitName:  asset.Params.UnitName,
+	}
+	data, err := json.Marshal(aTxn)
+	if err != nil {
+		http_common.SendErrorResponse(w, services.NewError("failed to parse request"))
+		return
+	}
+
+	response := TxValidationResponse{
+		TxnData: []string{string(data)},
+		TxnType: []string{"asset-optin"},
+		Origin:  request.Origin,
+	}
+	http_common.SendSuccessResponse(w, response)
+}
+
+// Send Asset
+// Send Payment

@@ -61,7 +61,8 @@ type PaymentTransaction struct {
 type AssetOptin struct {
 	Base      BaseTransaction `json:"base"`
 	Assetid   uint64          `json:"assetid"`
-	AssetName uint64          `json:"asset_name"`
+	AssetName string          `json:"name"`
+	UnitName  string          `json:"unit"`
 }
 
 type AssetTransfer struct {
@@ -69,7 +70,8 @@ type AssetTransfer struct {
 	To        string          `json:"to"`
 	Amount    uint64          `json:"amount"`
 	Assetid   uint64          `json:"assetid"`
-	AssetName uint64          `json:"asset_name"`
+	AssetName string          `json:"name"`
+	UnitName  string          `json:"unit"`
 }
 
 type AppOptin struct {

@@ -104,6 +104,8 @@ export interface PaymentTransaction extends BaseTransaction {
 
 export interface AssetOptin extends BaseTransaction {
     assetid: number;
+    name: string;
+    unit: string;
 }
 
 export interface AssetTransfer extends BaseTransaction{
@@ -162,7 +164,7 @@ export interface AssetRecord {
     id : number;
     name: string;
     amount: number;
-
+    unit: string;
 }
 
 
@@ -269,6 +271,17 @@ export class VaultAlgo extends Base {
             { ID: id },
             header
         )
+    }
+
+
+    async addAsset(token: string, id: number, address: string, origin: string): Promise<TxnValidationResponse> {
+        const header = { "x-session-token": token };
+        return await utils.http.post(
+            this._baseURL,
+            "/api/protected/algo/createAssetOptin",
+            { id: id, origin: origin, address: address },
+            header
+        );
     }
 
     async txnValidation(transactions: WalletTransaction[], origin: string): Promise<TxnValidationResponse> {
