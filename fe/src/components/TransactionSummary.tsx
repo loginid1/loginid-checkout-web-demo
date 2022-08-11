@@ -67,9 +67,9 @@ export function DisplayTransactions(records: TxRecord[], address: string) {
     return (
 
 		<Grid container  sx={{ mt:1  }}>
-            <Grid item xs={2}><Typography variant="medium">Time</Typography></Grid>
-            <Grid item xs={2}><Typography variant="medium">Fee (micro)</Typography></Grid>
-            <Grid item xs={6}><Typography variant="medium">Description</Typography></Grid>
+            <Grid item container xs={2}><Typography variant="medium" align="left">Time</Typography></Grid>
+            <Grid item container xs={2}><Typography variant="medium" align="left">Fee</Typography></Grid>
+            <Grid item container xs={6}><Typography variant="medium" align="left">Description</Typography></Grid>
             <Grid item xs={12} ><Divider variant="fullWidth" ></Divider></Grid>
             {records && records.map((tx)=> (
                 DisplayLongTransaction(tx,address)
@@ -115,7 +115,7 @@ export function DisplayLongTransaction(record: TxRecord, address: string) {
 
 		<Grid container className={styles.txBox} sx={{mt:1}} spacing={1} alignItems="flex-end" columns={12} >
             <Grid item xs={2}  ><Typography variant="caption" align="left">{ParseUtil.parseDateTimeUnix(record["round-time"])}</Typography></Grid>
-            <Grid item xs={2}><Typography variant="body1"   align="left">{record.fee}</Typography></Grid>
+            <Grid item xs={2}><Typography variant="body1"   align="left">{ParseUtil.convertAlgo(record.fee)}</Typography></Grid>
             <Grid item container xs={6}><Typography variant="medium" align="left">{action} &nbsp;</Typography><Typography variant="body1"   align="left">{summary}</Typography></Grid>
 		</Grid>
     );

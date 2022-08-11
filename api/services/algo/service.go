@@ -191,6 +191,48 @@ func (s *AlgoService) RekeyAccountComplete(username string, address string, auth
 	return nil
 }
 
+// INTERNAL TRANSACTIONS
+func (s *AlgoService) CreateAssetOptionTxn(username string, address string, assetID uint64) (*types.Transaction, *models.Asset, *services.ServiceError) {
+
+	// check if assetID existed
+
+	asset, err := s.Indexer.GetAssetByID(assetID)
+	if err != nil {
+		return nil, nil, services.CreateError("no asset on chain")
+	}
+	// check if address has asset
+	hasAsset, err := s.Indexer.CheckAccountAssetID(address, assetID)
+	if err != nil {
+		return nil, nil, services.CreateError("error while checking account asset - retry later")
+	}
+
+	if hasAsset {
+		return nil, nil, services.CreateError(fmt.Sprintf("You already had asset %d ", assetID))
+	}
+
+	// validate
+	// make transaction
+	// OPT-IN
+	txParams, err := s.AlgoNet.client.SuggestedParams().Do(context.Background())
+	if err != nil {
+		fmt.Printf("Error getting suggested tx params: %s\n", err)
+		return nil, nil, services.CreateError("Error getting suggested tx params")
+	}
+	note := []byte(fmt.Sprintf("Add %s (%d)", asset.Params.Name, assetID))
+	// comment out the next two (2) lines to use suggested fees
+	// txParams.FlatFee = true
+	// txParams.Fee = 1000
+	genesisHash := base64.StdEncoding.EncodeToString(txParams.GenesisHash)
+	txn, err := transaction.MakeAssetAcceptanceTxnWithFlatFee(address, uint64(txParams.Fee), uint64(txParams.FirstRoundValid), uint64(txParams.LastRoundValid), note, txParams.GenesisID, genesisHash, assetID)
+	if err != nil {
+		fmt.Printf("Failed to maketransaction MakeAssetAcceptanceTxn: %s\n", err)
+		return nil, nil, services.CreateError("Error creating optin transaction")
+	}
+	return &txn, asset, nil
+}
+
+// END INTERNAL TRANSACTIONS
+
 func (algo *AlgoService) GetAccount(username string, address string, includeBalance bool) (*AlgoAccount, *services.ServiceError) {
 
 	account, err := algo.AlgoRepository.GetAccountFull(username, address)
@@ -631,6 +673,7 @@ func (s *AlgoService) GetAccountAssets(address string) (*ASAHoldingResponse, *se
 			ID:     asset.AssetId,
 			Amount: asset.Amount,
 			Name:   info.Params.Name,
+			Unit:   info.Params.UnitName,
 		}
 		holdings = append(holdings, asa)
 	}

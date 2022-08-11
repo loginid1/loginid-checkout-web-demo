@@ -162,7 +162,7 @@ export function Test() {
 			});
 			let wTxn: WalletTransaction = {
 				txn: Buffer.from(txn.toByte()).toString("base64"),
-				signer: addr,
+				signers: [addr],
 			};
 			// Sign and post
 			const res = await wallet.signTxns([wTxn]);
@@ -212,7 +212,7 @@ export function Test() {
 				});
 			let wTxn: WalletTransaction = {
 				txn: Buffer.from(txn.toByte()).toString("base64"),
-				signer: addr,
+				signers: [addr],
 			};
 			// Sign and post
 			const res = await wallet.signTxns([wTxn]);
@@ -302,7 +302,7 @@ export function Test() {
 			);
 			let wTxn2: WalletTransaction = {
 				txn: txnb64_2,
-				signer: addr,
+				signers: [addr],
 			};
 
 			console.log(txgroup[0].txID(), " ", txgroup[1].txID());
@@ -398,7 +398,7 @@ export function Test() {
 			);
 			let wTxn1: WalletTransaction = {
 				txn: txnb64_1,
-				signer: addr,
+				signers: [addr],
 			};
 
 			const txnb64_2 = Buffer.from(txgroup[1].toByte()).toString(
@@ -406,7 +406,7 @@ export function Test() {
 			);
 			let wTxn2: WalletTransaction = {
 				txn: txnb64_2,
-				signer: addr,
+				signers: [addr],
 			};
 
 			const txnb64_3 = Buffer.from(txgroup[2].toByte()).toString(
@@ -414,7 +414,7 @@ export function Test() {
 			);
 			let wTxn3: WalletTransaction = {
 				txn: txnb64_3,
-				signer: addr,
+				signers: [addr],
 			};
 
 			// Sign and post
@@ -499,7 +499,7 @@ export function Test() {
 			);
 			let wTxn2: WalletTransaction = {
 				txn: txnb64_2,
-				signer: addr,
+				signers: [addr],
 			};
 
 			console.log(txgroup[0].txID(), " ", txgroup[1].txID());

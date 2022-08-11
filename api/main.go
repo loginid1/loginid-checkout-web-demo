@@ -16,6 +16,7 @@ import (
 	"gitlab.com/loginid/software/services/loginid-vault/http/middlewares"
 	"gitlab.com/loginid/software/services/loginid-vault/services/algo"
 	"gitlab.com/loginid/software/services/loginid-vault/services/fido2"
+	"gitlab.com/loginid/software/services/loginid-vault/services/sendwyre"
 	"gitlab.com/loginid/software/services/loginid-vault/services/user"
 )
 
@@ -46,6 +47,18 @@ func main() {
 		logger.Global.Fatal(err.Error())
 		os.Exit(0)
 	}
+
+	// initialize Sendwyre
+	wyreAccount := goutil.GetEnv("SENDWYRE_ACCOUNT", "")
+	wyreSecret := goutil.GetEnv("SENDWYRE_SECRET", "")
+	wyreUrl := goutil.GetEnv("SENDWYRE_BASEURL", "")
+	wyreRedirectUrl := goutil.GetEnv("SENDWYRE_REDIRECT_URL", "")
+
+	wyreService, err := sendwyre.NewSendWyreService(wyreAccount, wyreSecret, wyreUrl, wyreRedirectUrl)
+	if err != nil {
+		logger.Global.Fatal(err.Error())
+	}
+
 	authService, err := middlewares.NewAuthService(clientID, jwtURL)
 	if err != nil {
 		logger.Global.Fatal(err.Error())
@@ -81,7 +94,7 @@ func main() {
 	// protected usesr handler
 
 	userHandler := handlers.UserHandler{UserService: userService, Fido2Service: fidoService}
-	algoHandler := handlers.AlgoHandler{UserService: userService, AlgoService: algoService, FidoService: fidoService}
+	algoHandler := handlers.AlgoHandler{UserService: userService, AlgoService: algoService, FidoService: fidoService, SendWyreService: wyreService}
 	protected := api.PathPrefix("/protected").Subrouter()
 	protected.Use(authService.Middleware)
 	protected.HandleFunc("/user/profile", userHandler.GetUserProfileHandler)
@@ -104,6 +117,12 @@ func main() {
 	protected.HandleFunc("/algo/revokeEnableAccount", algoHandler.RevokeEnableAccountHandler)
 	protected.HandleFunc("/algo/rekeyInit", algoHandler.RekeyInitHandler)
 	protected.HandleFunc("/algo/rekeyComplete", algoHandler.RekeyCompleteHandler)
+
+	// algo internal transaction
+	protected.HandleFunc("/algo/createAssetOptin", algoHandler.AssetOptinHandler)
+
+	// algo purchase handler
+	protected.HandleFunc("/algo/algoPurchaseInit", algoHandler.AlgoPurchaseRequestHandler)
 
 	// balance & reporting
 	protected.HandleFunc("/algo/getAccountInfo", algoHandler.GetAccountInfoHandler)

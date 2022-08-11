@@ -69,7 +69,7 @@ export const LoginID = createTheme({
     title: {
       color: "#2870FA",
       fontSize: "16px",
-      fontWeight: "500",
+      fontWeight: "600",
     },
     medium: {
       color: "#2870FA",

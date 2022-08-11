@@ -83,9 +83,7 @@ export function RekeyAlgorand() {
 	const [formCredIDList, setFormCredIDList] = useState<string[]>([]);
 	const [credentialColors, setCredentialColors] = useState<Map<string,string>>(new Map<string,string>());
 	const [recoveryColors, setRecoveryColors] = useState<Map<string,string>>(new Map<string,string>());
-	const [displayMessage, setDisplayMessage] = useState<DisplayMessage | null>(
-		null
-	);
+	const [displayMessage, setDisplayMessage] = useState<DisplayMessage | null>(null);
 	useEffect(() => {
 		const fetchData = async () => {
 			let address = params["address"];
