@@ -167,7 +167,7 @@ function App() {
 			txn.addLease(leaseBuffer);
 			let wTxn: WalletTransaction = {
 				txn: Buffer.from(txn.toByte()).toString("base64"),
-				signer: addr,
+				signers: [addr],
 			};
 			// Sign and post
 			const res = await wallet.signTxns([wTxn]);
@@ -217,7 +217,7 @@ function App() {
 				});
 			let wTxn: WalletTransaction = {
 				txn: Buffer.from(txn.toByte()).toString("base64"),
-				signer: addr,
+				signers: [addr],
 			};
 			// Sign and post
 			const res = await wallet.signTxns([wTxn]);
@@ -307,7 +307,7 @@ function App() {
 			);
 			let wTxn2: WalletTransaction = {
 				txn: txnb64_2,
-				signer: addr,
+				signers: [addr],
 			};
 
 			console.log(txgroup[0].txID(), " ", txgroup[1].txID());
@@ -403,7 +403,7 @@ function App() {
 			);
 			let wTxn1: WalletTransaction = {
 				txn: txnb64_1,
-				signer: addr,
+				signers: [addr],
 			};
 
 			const txnb64_2 = Buffer.from(txgroup[1].toByte()).toString(
@@ -411,7 +411,7 @@ function App() {
 			);
 			let wTxn2: WalletTransaction = {
 				txn: txnb64_2,
-				signer: addr,
+				signers: [addr],
 			};
 
 			const txnb64_3 = Buffer.from(txgroup[2].toByte()).toString(
@@ -419,7 +419,7 @@ function App() {
 			);
 			let wTxn3: WalletTransaction = {
 				txn: txnb64_3,
-				signer: addr,
+				signers: [addr],
 			};
 
 			// Sign and post
@@ -514,7 +514,7 @@ function App() {
 			);
 			let wTxn1: WalletTransaction = {
 				txn: txnb64_1,
-				signer: addr,
+				signers: [addr],
 			};
 
 			const txnb64_2 = Buffer.from(txgroup[1].toByte()).toString(
@@ -522,7 +522,7 @@ function App() {
 			);
 			let wTxn2: WalletTransaction = {
 				txn: txnb64_2,
-				signer: addr,
+				signers: [addr],
 			};
 
 			const txnb64_3 = Buffer.from(txgroup[2].toByte()).toString(
@@ -530,7 +530,7 @@ function App() {
 			);
 			let wTxn3: WalletTransaction = {
 				txn: txnb64_3,
-				signer: addr,
+				signers: [addr],
 			};
 
 			// Sign and post
@@ -593,7 +593,7 @@ function App() {
 			);
 			let wTxn1: WalletTransaction = {
 				txn: txnb64_1,
-				signer: addr,
+				signers: [addr],
 			};
 
 
@@ -656,7 +656,7 @@ function App() {
 			);
 			let wTxn1: WalletTransaction = {
 				txn: txnb64_1,
-				signer: addr,
+				signers: [addr],
 			};
 
 			const txnb64_2 = Buffer.from(txgroup[1].toByte()).toString(
@@ -664,7 +664,7 @@ function App() {
 			);
 			let wTxn2: WalletTransaction = {
 				txn: txnb64_2,
-				signer: addr,
+				signers: [addr],
 			};
 
 
@@ -748,7 +748,7 @@ function App() {
 			);
 			let wTxn2: WalletTransaction = {
 				txn: txnb64_2,
-				signer: addr,
+				signers: [addr],
 			};
 
 			console.log(txgroup[0].txID(), " ", txgroup[1].txID());

@@ -57,4 +57,12 @@ export default class ParseUtil {
         return value.toString();
     }
 
+    static parseSendWyreAddress(address: string): string {
+        return address.replace(/algorand:/g,"");
+    }
+
+    static parseWhitespaceQuery(value: string): string {
+        return decodeURI(decodeURI(value));
+        //return value.replace(/qwer/g," ");
+    }
 }

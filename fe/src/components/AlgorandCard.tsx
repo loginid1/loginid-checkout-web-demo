@@ -11,9 +11,11 @@ import {
 	Chip,
 	Dialog,
 	Divider,
+	Grid,
 	IconButton,
 	Menu,
 	MenuItem,
+	Paper,
 	Stack,
 	Tab,
 	Tabs,
@@ -31,6 +33,7 @@ import {
 	ExpandMore,
 	NavigateNextTwoTone,
 } from "@mui/icons-material";
+import SendWyreLogo from "../assets/partners/sendwyre_logo_icon.svg";
 import { Account } from "../lib/VaultSDK/vault/algo";
 import ParseUtil from "../lib/util/parse";
 import { useNavigate } from "react-router-dom";
@@ -41,6 +44,7 @@ import { TabContext } from "@mui/lab";
 import { DisplayAssets, DisplayShortAsset } from "./AssetSummary";
 import styles from "../styles/common.module.css";
 import { DisplayDapps } from "./DappSummary";
+import wyreSDK from "../lib/VaultSDK/sendwyre";
 
 interface AlgorandAccountCard {
 	account: Account;
@@ -86,6 +90,10 @@ export const AlgorandCard: React.FC<AlgorandAccountCard> = ({
 		await rename(account.id, newAlias);
 		setOpenRename(false);
 	};
+
+	function handlePurchaseAlgo() {
+		wyreSDK.orderCall(account.address);
+	}
 
 	function handleClickTransaction(address: string) {
 		navigate("/algorand_transactions?address=" + address);
@@ -143,6 +151,12 @@ export const AlgorandCard: React.FC<AlgorandAccountCard> = ({
 								>
 									Rekey
 								</MenuItem>
+								<MenuItem
+									onClick={() => handlePurchaseAlgo()}
+									color="primary"
+								>
+									Buy ALGO
+								</MenuItem>
 							</Menu>
 						</>
 					}
@@ -158,86 +172,117 @@ export const AlgorandCard: React.FC<AlgorandAccountCard> = ({
 					}}
 				>
 					{/* <Alert severity="error">This is an error alert — check it out!</Alert> */}
-
-					<Typography variant="body1" align="left" fontSize="12px">
-						Address:{" "}
-						<Chip
-							sx={{ backgroundColor: "#E2F2FF" }}
-							size="small"
-							label={cutAddress}
-						/>
-						<IconButton size="small" onClick={copyAddress}>
-							<ContentCopy />
-						</IconButton>
-					</Typography>
-					{account.recovery_address && (
-						<Typography
-							variant="body1"
-							align="left"
-							fontSize="12px"
-						>
-							Recovery option:{" "}
-							<Chip
-								sx={{ backgroundColor: "#E2F2FF" }}
-								size="small"
-								label={cutoff(account.recovery_address)}
-							/>
-						</Typography>
-					)}
-					<Typography variant="body1" align="left" fontSize="12px">
-						Credentials:{" "}
-						{account.credentials_name.map((name) => (
-							<Chip
-								sx={{ backgroundColor: "#E2F2FF" }}
-								size="small"
-								label={name}
-							/>
-						))}
-					</Typography>
-					{account.balance && (
-						<>
-							<Typography
-								noWrap
-								variant="body1"
-								align="left"
-								fontSize="12px"
-							>
-								ASA:{" "}
-								<Chip
-									sx={{ backgroundColor: "#E2F2FF" }}
-									size="small"
-									label={
-										account.balance?.asa_count + " items"
-									}
-								/>
-							</Typography>
-							<Typography
-								noWrap
-								variant="body1"
-								align="left"
-								fontSize="12px"
-							>
-								Balance:{" "}
-								<Chip
-									sx={{ backgroundColor: "#E2F2FF" }}
-									size="small"
-									label={account.balance?.amount + " mAlgo"}
-								/>
-							</Typography>
+					<Grid container>
+						<Grid item xs={6}>
 							<Typography
 								variant="body1"
 								align="left"
 								fontSize="12px"
 							>
-								Status:{" "}
+								Address:{" "}
 								<Chip
 									sx={{ backgroundColor: "#E2F2FF" }}
 									size="small"
-									label={account.balance?.status}
+									label={cutAddress}
 								/>
+								<IconButton size="small" onClick={copyAddress}>
+									<ContentCopy />
+								</IconButton>
 							</Typography>
-						</>
-					)}
+							{account.recovery_address && (
+								<Typography
+									variant="body1"
+									align="left"
+									fontSize="12px"
+								>
+									Recovery option:{" "}
+									<Chip
+										sx={{ backgroundColor: "#E2F2FF" }}
+										size="small"
+										label={cutoff(account.recovery_address)}
+									/>
+								</Typography>
+							)}
+							<Typography
+								variant="body1"
+								align="left"
+								fontSize="12px"
+							>
+								Credentials:{" "}
+								{account.credentials_name.map((name) => (
+									<Chip
+										sx={{ backgroundColor: "#E2F2FF" }}
+										size="small"
+										label={name}
+									/>
+								))}
+							</Typography>
+							{account.balance && (
+								<>
+									<Typography
+										noWrap
+										variant="body1"
+										align="left"
+										fontSize="12px"
+									>
+										ASA:{" "}
+										<Chip
+											sx={{ backgroundColor: "#E2F2FF" }}
+											size="small"
+											label={
+												account.balance?.asa_count +
+												" items"
+											}
+										/>
+									</Typography>
+									<Typography
+										noWrap
+										variant="body1"
+										align="left"
+										fontSize="12px"
+									>
+										Balance:{" "}
+										<Chip
+											sx={{ backgroundColor: "#E2F2FF" }}
+											size="small"
+											label={
+												account.balance?.amount +
+												" mAlgo"
+											}
+										/>
+									</Typography>
+									<Typography
+										variant="body1"
+										align="left"
+										fontSize="12px"
+									>
+										Status:{" "}
+										<Chip
+											sx={{ backgroundColor: "#E2F2FF" }}
+											size="small"
+											label={account.balance?.status}
+										/>
+									</Typography>
+								</>
+							)}
+						</Grid>
+						<Grid item xs={6}>
+							<Paper elevation={2} sx={{p:2}}>
+							<Stack direction="row" spacing={2}>
+								<img src={SendWyreLogo} />
+								<Stack>
+									<Typography variant="title" align="left" >
+										SendWyre
+									</Typography>
+									<Typography variant="body1" align="left" >
+										Purchase ALGO using your credit/debit card. 
+									</Typography>
+									<Button variant="outlined" size="small" onClick={() => handlePurchaseAlgo()}>Buy ALGO</Button>
+								</Stack>
+							</Stack>
+							</Paper>
+						</Grid>
+					</Grid>
 					<TabContext value={tabValue}>
 						<Tabs
 							value={tabValue}

@@ -168,7 +168,6 @@ export interface AssetRecord {
 }
 
 
-
 export class VaultAlgo extends Base {
 
     async getAccountList(token: string, balance: boolean = false): Promise<AccountList> {

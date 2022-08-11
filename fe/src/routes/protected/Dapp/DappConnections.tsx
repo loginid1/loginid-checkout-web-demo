@@ -15,6 +15,7 @@ import {
 } from "@mui/material";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import DappPartnerList from "../../../components/DappPartnerList";
 import { VaultBase } from "../../../components/VaultBase";
 import ParseUtil from "../../../lib/util/parse";
 import vaultSDK from "../../../lib/VaultSDK";
@@ -69,6 +70,9 @@ const DappConnections: React.FC = () => {
         }}
       >
         <Grid container spacing={{ md: 4, xs: 2 }} direction="column">
+          {/* 
+            <DappPartnerList></DappPartnerList>
+          */} 
           <Grid item xs container direction="row" spacing={2}>
             <Grid
               item

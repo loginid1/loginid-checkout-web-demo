@@ -16,14 +16,16 @@ import (
 	"gitlab.com/loginid/software/services/loginid-vault/services"
 	"gitlab.com/loginid/software/services/loginid-vault/services/algo"
 	"gitlab.com/loginid/software/services/loginid-vault/services/fido2"
+	"gitlab.com/loginid/software/services/loginid-vault/services/sendwyre"
 	"gitlab.com/loginid/software/services/loginid-vault/services/user"
 	"gitlab.com/loginid/software/services/loginid-vault/utils"
 )
 
 type AlgoHandler struct {
-	UserService *user.UserService
-	AlgoService *algo.AlgoService
-	FidoService *fido2.Fido2Service
+	UserService     *user.UserService
+	AlgoService     *algo.AlgoService
+	FidoService     *fido2.Fido2Service
+	SendWyreService *sendwyre.SendWyreService
 }
 
 type FilterAlgoAccount struct {
@@ -573,3 +575,29 @@ func (h *AlgoHandler) AssetOptinHandler(w http.ResponseWriter, r *http.Request) 
 
 // Send Asset
 // Send Payment
+
+// AlgoPurchaseRequestHandler
+type AlgoPurchaseRequest struct {
+	Address     string `json:"address"`
+	RedirectUrl string `json:"redirectUrl"`
+}
+
+func (h *AlgoHandler) AlgoPurchaseRequestHandler(w http.ResponseWriter, r *http.Request) {
+	var request AlgoPurchaseRequest
+	defer r.Body.Close()
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		logger.ForRequest(r).Error(err.Error())
+		http_common.SendErrorResponse(w, services.NewError("failed to parse request"))
+		return
+	}
+	session := r.Context().Value("session").(services.UserSession)
+	response, sErr := h.SendWyreService.OrderInit(session.Username, request.Address, request.RedirectUrl)
+	if sErr != nil {
+		logger.ForRequest(r).Error(sErr.Message)
+		http_common.SendErrorResponse(w, *sErr)
+		return
+	}
+
+	http_common.SendSuccessResponse(w, response)
+
+}

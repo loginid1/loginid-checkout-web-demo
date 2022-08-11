@@ -10,6 +10,7 @@ export type TxnId = string;
 export type AlgorandAddress = string;
 
 // support enable function
+// support optional network "mainnet | testnet | sandnet"
 export interface EnableOpts {
     network?: string;
     genesisID?: string;
@@ -29,7 +30,7 @@ export type SignTxnsOpts = {
     message?: string;
 }
 
-export interface PostTxnsResult {
+export interface TxnsResult {
     txnIds: TxnId[];
     signTxn: string[];
 }
@@ -46,10 +47,6 @@ export interface WalletTransaction {
      * Base64 encoding of the canonical msgpack encoding of a Transaction.
      */
     txn: string;
-    /**
-     * Optional address of the vault account that must sign this transaction  - Group transaction
-     */
-    signer?: string;
     /**
     * Optional authorized address used to sign the transaction when the account
     * is rekeyed. Also called the signor/sgnr.
@@ -126,7 +123,7 @@ export class FidoVaultSDK {
      * @returns {Promise<string|null> []}
      * 
     **/
-    async signTxns(txns: WalletTransaction[], opts?: SignTxnsOpts): Promise<PostTxnsResult> {
+    async signTxns(txns: WalletTransaction[], opts?: SignTxnsOpts): Promise<TxnsResult> {
         this.w = openPopup(this.baseURL + "/fe/api/transaction", "sign", defaultOptions);
         let isLoad = await this.mMessage.pingForResponse(this.w, 30000);
         if (!isLoad) {
@@ -139,7 +136,7 @@ export class FidoVaultSDK {
         };
         let response = await this.mMessage.sendMessageText(this.w, JSON.stringify(txns));
         console.log("message: " + response);
-        let result: PostTxnsResult = JSON.parse(response);
+        let result: TxnsResult = JSON.parse(response);
         return Promise.resolve(result);
     }
 
@@ -150,7 +147,7 @@ export class FidoVaultSDK {
      * @returns {Promise<string|null> []}
      * 
     **/
-    async signAndPostTxns(txns: WalletTransaction[], opts?: SignTxnsOpts): Promise<PostTxnsResult> {
+    async signAndPostTxns(txns: WalletTransaction[], opts?: SignTxnsOpts): Promise<TxnsResult> {
         this.w = openPopup(this.baseURL + "/fe/api/transaction", "signpost", defaultOptions);
         //w.postMessage(JSON.stringify(network),FidoVaultSDK.baseURL);
         let isLoad = await this.mMessage.pingForResponse(this.w, 30000);
@@ -164,7 +161,7 @@ export class FidoVaultSDK {
         };
         let response = await this.mMessage.sendMessageText(this.w, JSON.stringify(txns));
         console.log("message: " + response);
-        let result: PostTxnsResult = JSON.parse(response);
+        let result: TxnsResult = JSON.parse(response);
         return Promise.resolve(result);
     }
 

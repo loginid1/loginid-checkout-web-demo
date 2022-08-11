@@ -98,6 +98,8 @@ export function openPopup(url: string, name: string, options: PopupOptions = def
 
 	try {
 		win = window.open(url, name, params);
+		//console.log("my origin " + win?.origin);
+		//win?.postMessage("hello", "*");
 	}
 	catch (err) {
 		throw new Error(`${WINDOW_NOT_OPENED} - ${err}`);

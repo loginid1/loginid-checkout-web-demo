@@ -28,6 +28,9 @@ import AlgorandSuccess from './routes/protected/Algorand/AddAlgorandSuccess';
 import { QuickAddAlgorand } from './routes/protected/Algorand/QuickAddAlgorand';
 import DappConnections from './routes/protected/Dapp/DappConnections';
 import { RekeyAlgorand } from './routes/protected/Algorand/RekeyAlgorand';
+import { SendwyreSDK } from './lib/VaultSDK/sendwyre';
+import { SendWyreOrder } from './routes/protected/Algorand/SendWyreOrder';
+import { SendWyreCallback } from './routes/protected/Algorand/SendWyreCallback';
 
 
 
@@ -67,6 +70,8 @@ function App() {
           <Route path="/create_algorand" element={<CreateAlgorand />} />
           <Route path="/quick_add_algorand" element={<QuickAddAlgorand />} />
           <Route path="/rekey_algorand/:address" element={<RekeyAlgorand />} />
+          <Route path="/algo/order/:address" element={<SendWyreOrder />} />
+          <Route path="/sendwyre/callback" element={<SendWyreCallback />} />
         </Route>
         <Route path="*" element={<Navigate replace to="/login" />} />
       </Routes>

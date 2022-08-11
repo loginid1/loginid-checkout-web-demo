@@ -30,8 +30,8 @@ type TxValidationRequest struct {
 }
 
 type WalletTransaction struct {
-	Txn    string
-	Signer string
+	Txn     string
+	Signers []string
 }
 
 type TxValidationResponse struct {
@@ -148,7 +148,10 @@ func validateRequestTransaction(requestTxn WalletTransaction, origin string, alg
 	// check if sender origin has permission to user consent
 	// check if signing required
 	require_sign := false
-	if requestTxn.Signer == txn.Sender.String() {
+	if utils.Contains(requestTxn.Signers, txn.Sender.String()) {
+		require_sign = true
+	}
+	if len(requestTxn.Signers) == 0 {
 		require_sign = true
 	}
 
