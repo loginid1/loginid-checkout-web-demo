@@ -3,7 +3,7 @@ import logo from "./logo.svg";
 import "./App.css";
 import {
 	FidoVaultSDK,
-	PostTxnsResult,
+	TxnsResult,
 	WalletTransaction,
 } from "./lib/LoginidVaultSDK";
 import algosdk, { SuggestedParams } from "algosdk";
