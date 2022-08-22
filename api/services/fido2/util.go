@@ -54,11 +54,6 @@ func ExtractPublicKey(attestation_data string) (string, string, *services.Servic
 	}
 	cbor.Unmarshal(data, &attestObject)
 
-	if attestObject.AttStmt.Alg != -7 {
-		logger.Global.Info(fmt.Sprintf("PK alg: %d", attestObject.AttStmt.Alg))
-		return "", "", services.CreateError("unsupported public key")
-	}
-
 	coseBytes, err := parseCoseData(attestObject.AuthData)
 	if err != nil {
 		logger.Global.Error(err.Error())
@@ -70,6 +65,11 @@ func ExtractPublicKey(attestation_data string) (string, string, *services.Servic
 	if err != nil {
 		logger.Global.Error(err.Error())
 		return "", "", services.CreateError("invalid FIDO public key")
+	}
+
+	if cose.Kty != 2 && cose.Alg != -7 {
+		logger.Global.Info(fmt.Sprintf("PK alg: %d", attestObject.AttStmt.Alg))
+		return "", "", services.CreateError("unsupported public key")
 	}
 
 	//logger.Global.Info(fmt.Sprintf("%#v ", coseBytes))
