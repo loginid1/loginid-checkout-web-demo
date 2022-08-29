@@ -88,6 +88,26 @@ export class VaultUser extends Base{
         );
     }
 
+    async generateRecoveryInit(token: string) : Promise<RecoveryPhrase> {
+        const header = { "x-session-token": token };
+        return await utils.http.post(
+            this._baseURL,
+            "/api/protected/user/generateRecoveryInit",
+            {},
+            header
+        );
+    }
+
+    async generateRecoveryComplete(token: string, publicKey: string) : Promise<RecoveryPhrase> {
+        const header = { "x-session-token": token };
+        return await utils.http.post(
+            this._baseURL,
+            "/api/protected/user/generateRecoveryComplete",
+            {public_key: publicKey},
+            header
+        );
+    }
+
     async createRecovery(token: string) : Promise<RecoveryPhrase> {
         const header = { "x-session-token": token };
         return await utils.http.post(

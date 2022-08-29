@@ -152,6 +152,7 @@ const AlgorandAccounts: React.FC = () => {
 									<AlgorandCard
 										account={account}
 										rename={renameAccount}
+										refresh={getAccountList}
 									></AlgorandCard>
 								</Grid>
 							</>

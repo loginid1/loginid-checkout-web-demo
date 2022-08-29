@@ -17,6 +17,7 @@ import {
 	MenuItem,
 	Paper,
 	Stack,
+	SvgIcon,
 	Tab,
 	Tabs,
 	TextField,
@@ -33,12 +34,12 @@ import {
 	ExpandMore,
 	NavigateNextTwoTone,
 } from "@mui/icons-material";
-import SendWyreLogo from "../assets/partners/sendwyre_logo_icon.svg";
+import { ReactComponent as SendWyreLogo} from "../assets/partners/sendwyre_logo_icon.svg";
 import { Account } from "../lib/VaultSDK/vault/algo";
 import ParseUtil from "../lib/util/parse";
 import { useNavigate } from "react-router-dom";
 import { red } from "@mui/material/colors";
-import { DisplayShortTransaction } from "./TransactionSummary";
+import { DisplayShortTransaction, DisplayTransactionTab } from "./TransactionSummary";
 import { AlgoIcon } from "../icons/Common";
 import { TabContext } from "@mui/lab";
 import { DisplayAssets, DisplayShortAsset } from "./AssetSummary";
@@ -49,6 +50,7 @@ import wyreSDK from "../lib/VaultSDK/sendwyre";
 interface AlgorandAccountCard {
 	account: Account;
 	rename: (id: string, alias: string) => Promise<void>;
+	refresh?: () => void;
 }
 
 const cutoff = (s: string) => {
@@ -58,6 +60,7 @@ const cutoff = (s: string) => {
 export const AlgorandCard: React.FC<AlgorandAccountCard> = ({
 	account,
 	rename,
+	refresh
 }) => {
 	const navigate = useNavigate();
 	const [openRename, setOpenRename] = useState(false);
@@ -151,12 +154,6 @@ export const AlgorandCard: React.FC<AlgorandAccountCard> = ({
 								>
 									Rekey
 								</MenuItem>
-								<MenuItem
-									onClick={() => handlePurchaseAlgo()}
-									color="primary"
-								>
-									Buy ALGO
-								</MenuItem>
 							</Menu>
 						</>
 					}
@@ -173,7 +170,7 @@ export const AlgorandCard: React.FC<AlgorandAccountCard> = ({
 				>
 					{/* <Alert severity="error">This is an error alert — check it out!</Alert> */}
 					<Grid container>
-						<Grid item xs={6}>
+						<Grid item xs={12} md={6}>
 							<Typography
 								variant="body1"
 								align="left"
@@ -266,24 +263,15 @@ export const AlgorandCard: React.FC<AlgorandAccountCard> = ({
 								</>
 							)}
 						</Grid>
-						<Grid item xs={6}>
-							<Paper elevation={2} sx={{p:2}}>
-							<Stack direction="row" spacing={2}>
-								<img src={SendWyreLogo} />
-								<Stack>
-									<Typography variant="title" align="left" >
-										SendWyre
-									</Typography>
-									<Typography variant="body1" align="left" >
-										Purchase ALGO using your credit/debit card. 
-									</Typography>
-									<Button variant="outlined" size="small" onClick={() => handlePurchaseAlgo()}>Buy ALGO</Button>
-								</Stack>
-							</Stack>
-							</Paper>
+						<Grid container item xs={12} md={6} sx={{mt:1,mb:1}}>
+							<Button variant="outlined" startIcon={<SendWyreIcon />} onClick={handlePurchaseAlgo} fullWidth>Buy ALGO via SendWyre</Button>
+							<Typography variant="caption"   >
+								Purchase ALGO using your credit/debit card. 
+							</Typography>
 						</Grid>
 					</Grid>
 					<TabContext value={tabValue}>
+					<Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
 						<Tabs
 							value={tabValue}
 							onChange={handleChange}
@@ -295,19 +283,14 @@ export const AlgorandCard: React.FC<AlgorandAccountCard> = ({
 							<Tab value="tx" label="Transactions" />
 							<Tab value="dapps" label="Dapps" />
 						</Tabs>
+						</Box>
 						<TabPanel value="asa">
-							{DisplayAssets(account.assets, account.address)}
+							{DisplayAssets(account.assets, account.address, refresh)}
 						</TabPanel>
 						<TabPanel value="tx">
 							{account.transactions &&
-								account.transactions.map((transaction) => (
-									<>
-										{DisplayShortTransaction(
-											transaction,
-											account.address
-										)}
-									</>
-								))}
+							DisplayTransactionTab(account.transactions,account.address)
+										}
 
 							{account.transactions && (
 								<Button
@@ -331,19 +314,17 @@ export const AlgorandCard: React.FC<AlgorandAccountCard> = ({
 
 			<Dialog
 				open={openRename}
-				sx={{
-					display: "flex",
-					justifyContent: "center",
-				}}
+				maxWidth="xs"
+				fullWidth
 				onClose={handleCancelRename}
 			>
 				<Stack
 					spacing={2}
 					sx={{
-						alignItems: "center",
-						p: 6,
-						width: "400px",
+						display: 'flex',
+						m: 2,
 					}}
+					alignItems="center"
 				>
 					<Typography variant="h2" color="secondary">
 						Change Alias
@@ -355,7 +336,7 @@ export const AlgorandCard: React.FC<AlgorandAccountCard> = ({
 						label="new alias"
 						focused
 					></TextField>
-					<Stack spacing={2} direction="row">
+					<Stack spacing={2} direction="row" >
 						<Button onClick={handleCancelRename}>Cancel</Button>
 						<Button
 							variant="contained"
@@ -370,3 +351,7 @@ export const AlgorandCard: React.FC<AlgorandAccountCard> = ({
 		</Box>
 	);
 };
+
+function SendWyreIcon(props: any) {
+	return <SvgIcon {...props} component={SendWyreLogo} inheritViewBox></SvgIcon>;
+}

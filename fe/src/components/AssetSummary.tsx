@@ -16,9 +16,10 @@ import ParseUtil from "../lib/util/parse";
 import { AssetRecord } from "../lib/VaultSDK/vault/algo";
 import styles from "../styles/common.module.css";
 import { ASAIcon  } from "./ASAIcons";
-import AssetOptionDialog from "./TxConfirmation/AssetOptin";
+import AssetOptionDialog from "./TxConfirmation/AssetOptinDialog";
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 
-export function DisplayAssets(assets: AssetRecord[], address: string) {
+export function DisplayAssets(assets: AssetRecord[], address: string, refresh?: ()=>void) {
 	const [open, setOpen] = useState(false);
 
 	const handleClickOpen = () => {
@@ -34,20 +35,20 @@ export function DisplayAssets(assets: AssetRecord[], address: string) {
 	}
 
 	return (
-		<Grid container sx={{ m: 1 }} spacing={1} justifyContent="left">
+		<Grid container  spacing={1} justifyContent="left">
 			<Grid container item xs={12} justifyContent="right">
-				<Button variant="contained" onClick={() => openAddAsset()}>
-					+ Add ASA
+				<Button variant="contained" endIcon={<ArrowForwardIcon/>} onClick={() => openAddAsset()}>
+					Add Asset 
 				</Button>
-                <AssetOptionDialog open={open} handleClose={handleClose} address={address}></AssetOptionDialog>
+                <AssetOptionDialog open={open} handleClose={handleClose} handleSuccess={refresh} address={address}></AssetOptionDialog>
 			</Grid>
 			<Grid item container xs={2}>
 				<Typography variant="medium">ID</Typography>
 			</Grid>
-			<Grid item container xs={6}>
+			<Grid item container xs={5}>
 				<Typography variant="medium">Name</Typography>
 			</Grid>
-			<Grid item container xs={4}>
+			<Grid item container xs={5}>
 				<Typography variant="medium">Balance</Typography>
 			</Grid>
 			<Grid item xs={12}>
@@ -64,7 +65,7 @@ export function DisplayShortAsset(asset: AssetRecord) {
 			<Grid item container xs={2}>
 				{asset.id}
 			</Grid>
-			<Grid item container xs={6} justifyContent="left">
+			<Grid item container xs={5} justifyContent="left">
 				{/*
 				<MyIcon
 			name={asset.unit +"-"+asset.id.toString()}
@@ -78,8 +79,11 @@ export function DisplayShortAsset(asset: AssetRecord) {
 			 }	
 				&nbsp;{asset.unit? asset.unit: asset.name} 
 			</Grid>
-			<Grid item container xs={4}>
+			<Grid item container xs={5}>
 				{asset.amount}
+			</Grid>
+			<Grid item xs={12}>
+				<Divider variant="fullWidth"></Divider>
 			</Grid>
 		</>
 	);

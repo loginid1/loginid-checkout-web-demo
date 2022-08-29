@@ -56,7 +56,7 @@ export class SendwyreSDK {
     baseURL = process.env.REACT_APP_VAULT_API_URL || "http://localhost:3001";
     swURL = process.env.REACT_APP_SENDWIRE_URL || "https://api.testwyre.com";
     
-    mMessage: MessagingService;
+    //mMessage: MessagingService;
     w: Window | null
 
     constructor(url: string) {
@@ -64,7 +64,7 @@ export class SendwyreSDK {
             this.baseURL = url;
         }
         //this.mMessage = new MessagingService(FidoVaultSDK.baseURL);
-        this.mMessage = new MessagingService("*");
+        //this.mMessage = new MessagingService("*");
         this.w = null;
     }
 
