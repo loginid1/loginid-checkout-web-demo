@@ -21,8 +21,6 @@ const menuItems = [
   "Algorand",
   "Dapps",
   "DIDs",
-  "Profile",
-  "Settings",
 ];
 
 const navigateMenu = ["/home", "/algorand_accounts", "/dapp_connections", "", "", ""];

@@ -1,4 +1,6 @@
 import {
+  Alert,
+  AlertColor,
   Box,
   Button,
   Checkbox,
@@ -20,12 +22,16 @@ import { RecoveryPhrase } from "../../../lib/VaultSDK/vault/user";
 import { KeyDisplay } from "../../../components/KeyDisplay";
 import { useState } from "react";
 import { VaultBase } from "../../../components/VaultBase";
+import vaultSDK from "../../../lib/VaultSDK";
+import { AuthService } from "../../../services/auth";
+import { DisplayMessage } from "../../../lib/common/message";
 
 const CompleteRecovery: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const recovery = location.state as RecoveryPhrase;
 
+  const [displayMessage, setDisplayMessage] = useState<DisplayMessage | null>(null)
   const [isChecked, setIsChecked] = useState(false);
 
   const copyPublicKey = () => {
@@ -35,6 +41,20 @@ const CompleteRecovery: React.FC = () => {
   const copyPrivateKey = () => {
     navigator.clipboard.writeText(recovery.private_key);
   };
+
+  async function saveRecovery() {
+
+    const token = AuthService.getToken();
+    if (token) {
+      try {
+        await vaultSDK.generateRecoveryComplete(token,recovery.public_key);
+        navigate("/home");
+      } catch (error) {
+
+      }
+    } else {
+    }
+  }
 
   return (
     <VaultBase focus={0}>
@@ -56,6 +76,14 @@ const CompleteRecovery: React.FC = () => {
           <Typography variant="h2" color="secondary">
             New Recovery Option
           </Typography>
+          {displayMessage && (
+            <Alert
+              severity={(displayMessage?.type as AlertColor) || "info"}
+              sx={{ mt: 4 }}
+            >
+              {displayMessage.text}
+            </Alert>
+          )}
           <Stack spacing={2}>
             <Typography variant="medium">Recovery Address</Typography>
             <KeyDisplay value={recovery.public_key} onClick={copyPublicKey} />
@@ -101,10 +129,10 @@ const CompleteRecovery: React.FC = () => {
 
             <Button
               variant="outlined"
-              onClick={() => navigate("/home")}
+              onClick={saveRecovery}
               disabled={!isChecked}
             >
-              Return To Main Menu
+              Save and Return To Main Menu
             </Button>
           </Stack>
         </Stack>

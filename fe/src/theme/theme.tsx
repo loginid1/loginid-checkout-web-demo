@@ -4,6 +4,8 @@ import { PaletteOptions as MuiPallete } from "@mui/material/styles/createPalette
 declare module "@mui/material/styles/createTypography" {
   export interface TypographyOptions {
     title?: TypographyStyleOptions | undefined;
+    title_light?: TypographyStyleOptions | undefined;
+    h0?: TypographyStyleOptions | undefined;
     medium?: TypographyStyleOptions | undefined;
     mediumL?: TypographyStyleOptions | undefined;
   }
@@ -11,7 +13,9 @@ declare module "@mui/material/styles/createTypography" {
 
 declare module "@mui/material/Typography" {
   interface TypographyPropsVariantOverrides {
+    h0: true;
     title: true;
+    title_light: true;
     medium: true;
     mediumL: true;
   }
@@ -46,6 +50,12 @@ export const LoginID = createTheme({
   },
   typography: {
     // fontFamily: ["Roboto"].join(","),
+    h0: {
+      fontSize: "20px",
+      lineHeight: "30px",
+      fontWeight: "600",
+      color:"#1642DF"
+    },
     h1: {
       fontSize: "30px",
       lineHeight: "34px",
@@ -70,6 +80,11 @@ export const LoginID = createTheme({
       color: "#2870FA",
       fontSize: "16px",
       fontWeight: "600",
+    },
+    title_light: {
+      color: "#2870FA",
+      fontSize: "16px",
+      fontWeight: "500",
     },
     medium: {
       color: "#2870FA",

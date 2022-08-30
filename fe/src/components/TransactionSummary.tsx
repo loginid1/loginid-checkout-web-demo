@@ -3,17 +3,18 @@ import ParseUtil from "../lib/util/parse";
 import { TxRecord } from "../lib/VaultSDK/vault/algo";
 import styles from "../styles/common.module.css";
 
-export function DisplayTransactionTab(records: TxRecord[], owner: string) {
+
+export function DisplayTransactionTab(records: TxRecord[], address: string) {
 
     return (
 
-		<Grid container  sx={{ m:1  }}>
-            <Grid item xs={2}><Typography variant="medium">ID</Typography></Grid>
-            <Grid item xs={6}><Typography variant="medium">Name</Typography></Grid>
-            <Grid item xs={4}><Typography variant="medium">Balance</Typography></Grid>
+		<Grid container spacing={1} sx={{ mt:1  }}>
+            <Grid item container xs={2}><Typography variant="medium" align="left">Type</Typography></Grid>
+            <Grid item container xs={6}><Typography variant="medium" align="left">Action</Typography></Grid>
+            <Grid item container xs={4}><Typography variant="medium" align="left">Time</Typography></Grid>
             <Grid item xs={12} ><Divider variant="fullWidth" ></Divider></Grid>
             {records && records.map((tx)=> (
-                DisplayLongTransaction(tx,owner)
+                DisplayShortTransaction(tx,address)
             ))}
 		</Grid>
     );
@@ -54,10 +55,11 @@ export function DisplayShortTransaction(record: TxRecord, address: string) {
     }
     return (
 
-		<Grid container className={styles.txBox} sx={{m:1}} alignItems="flex-end" columns={12} >
-            <Grid item xs={4} ><Typography variant="title" align="left">{action}</Typography></Grid>
-            <Grid item xs={8}><Typography variant="body1"   align="left">{summary}</Typography></Grid>
-            <Grid container item xs={12} justifyContent="right" ><Typography variant="caption" align="right">{ParseUtil.parseDateTimeUnix(record["round-time"])}</Typography></Grid>
+		<Grid container sx={{m:1}} alignItems="flex-end" columns={12} >
+            <Grid item container xs={2}><Typography variant="body1" align="left">{action}</Typography></Grid>
+            <Grid item container xs={6}><Typography variant="body1" align="left">{summary}</Typography></Grid>
+            <Grid item container xs={4}><Typography variant="body1" align="left">{ParseUtil.parseDateTimeUnix(record["round-time"])}</Typography></Grid>
+            <Grid item xs={12} ><Divider variant="fullWidth" ></Divider></Grid>
 		</Grid>
     );
 }

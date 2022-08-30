@@ -25,7 +25,7 @@ const AddRecovery: React.FC = () => {
   async function handleCreateRecovery() {
     const token = AuthService.getToken();
     if (token) {
-      const recovery = await vaultSDK.createRecovery(token);
+      const recovery = await vaultSDK.generateRecoveryInit(token);
       navigate("/complete_recovery", {
         state: recovery,
       });

@@ -6,10 +6,10 @@ import styles from "../styles/common.module.css";
 export function DisplayDapps(dapps : EnableAccount[]){
     return (
 
-		<Grid container  sx={{ m:1  }}>
-            <Grid item xs={6}><Typography variant="medium">URL</Typography></Grid>
-            <Grid item xs={3}><Typography variant="medium">Network</Typography></Grid>
-            <Grid item xs={3}><Typography variant="medium">Time</Typography></Grid>
+		<Grid container justifyContent="left"  spacing={1} sx={{ mt:1  }}>
+            <Grid container item xs={6}><Typography variant="medium">URL</Typography></Grid>
+            <Grid container item xs={3}><Typography variant="medium">Network</Typography></Grid>
+            <Grid container item xs={3}><Typography variant="medium">Time</Typography></Grid>
             <Grid item xs={12} ><Divider variant="fullWidth" ></Divider></Grid>
             {dapps && dapps.map((dapp)=> (
                 DisplayShortDapp(dapp)
@@ -22,9 +22,10 @@ export function DisplayDapps(dapps : EnableAccount[]){
 export function DisplayShortDapp(account: EnableAccount) {
     return (
         <>
-            <Grid item xs={6}>{account.dapp_origin}</Grid>
-            <Grid item xs={3}>{account.network}</Grid>
-            <Grid item xs={3}>{ParseUtil.parseDateTime(account.iat)}</Grid>
+            <Grid container item xs={6}>{account.dapp_origin}</Grid>
+            <Grid container item xs={3}>{account.network}</Grid>
+            <Grid container item xs={3}>{ParseUtil.parseDateTime(account.iat)}</Grid>
+            <Grid item xs={12} ><Divider variant="fullWidth" ></Divider></Grid>
         </>
     );
 }
