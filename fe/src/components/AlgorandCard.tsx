@@ -34,12 +34,15 @@ import {
 	ExpandMore,
 	NavigateNextTwoTone,
 } from "@mui/icons-material";
-import { ReactComponent as SendWyreLogo} from "../assets/partners/sendwyre_logo_icon.svg";
+import { ReactComponent as SendWyreLogo } from "../assets/partners/sendwyre_logo_icon.svg";
 import { Account } from "../lib/VaultSDK/vault/algo";
 import ParseUtil from "../lib/util/parse";
 import { useNavigate } from "react-router-dom";
 import { red } from "@mui/material/colors";
-import { DisplayShortTransaction, DisplayTransactionTab } from "./TransactionSummary";
+import {
+	DisplayShortTransaction,
+	DisplayTransactionTab,
+} from "./TransactionSummary";
 import { AlgoIcon } from "../icons/Common";
 import { TabContext } from "@mui/lab";
 import { DisplayAssets, DisplayShortAsset } from "./AssetSummary";
@@ -60,7 +63,7 @@ const cutoff = (s: string) => {
 export const AlgorandCard: React.FC<AlgorandAccountCard> = ({
 	account,
 	rename,
-	refresh
+	refresh,
 }) => {
 	const navigate = useNavigate();
 	const [openRename, setOpenRename] = useState(false);
@@ -263,34 +266,53 @@ export const AlgorandCard: React.FC<AlgorandAccountCard> = ({
 								</>
 							)}
 						</Grid>
-						<Grid container item xs={12} md={6} sx={{mt:1,mb:1}}>
-							<Button variant="outlined" startIcon={<SendWyreIcon />} onClick={handlePurchaseAlgo} fullWidth>Buy ALGO via SendWyre</Button>
-							<Typography variant="caption"   >
-								Purchase ALGO using your credit/debit card. 
+						<Grid
+							container
+							item
+							xs={12}
+							md={6}
+							sx={{ mt: 1, mb: 1 }}
+						>
+							<Button
+								variant="outlined"
+								startIcon={<SendWyreIcon />}
+								onClick={handlePurchaseAlgo}
+								sx={{width:"100%"}}
+							>
+								Buy ALGO via SendWyre
+							</Button>
+							<Typography variant="caption">
+								Purchase ALGO using your credit/debit card.
 							</Typography>
 						</Grid>
 					</Grid>
 					<TabContext value={tabValue}>
-					<Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-						<Tabs
-							value={tabValue}
-							onChange={handleChange}
-							textColor="secondary"
-							indicatorColor="secondary"
-							aria-label="secondary tabs example"
-						>
-							<Tab value="asa" label="Assets" />
-							<Tab value="tx" label="Transactions" />
-							<Tab value="dapps" label="Dapps" />
-						</Tabs>
+						<Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+							<Tabs
+								value={tabValue}
+								onChange={handleChange}
+								textColor="secondary"
+								indicatorColor="secondary"
+								aria-label="secondary tabs example"
+							>
+								<Tab value="asa" label="Assets" />
+								<Tab value="tx" label="Transactions" />
+								<Tab value="dapps" label="Dapps" />
+							</Tabs>
 						</Box>
 						<TabPanel value="asa">
-							{DisplayAssets(account.assets, account.address, refresh)}
+							{DisplayAssets(
+								account.assets,
+								account.address,
+								refresh
+							)}
 						</TabPanel>
 						<TabPanel value="tx">
 							{account.transactions &&
-							DisplayTransactionTab(account.transactions,account.address)
-										}
+								DisplayTransactionTab(
+									account.transactions,
+									account.address
+								)}
 
 							{account.transactions && (
 								<Button
@@ -321,7 +343,7 @@ export const AlgorandCard: React.FC<AlgorandAccountCard> = ({
 				<Stack
 					spacing={2}
 					sx={{
-						display: 'flex',
+						display: "flex",
 						m: 2,
 					}}
 					alignItems="center"
@@ -336,7 +358,7 @@ export const AlgorandCard: React.FC<AlgorandAccountCard> = ({
 						label="new alias"
 						focused
 					></TextField>
-					<Stack spacing={2} direction="row" >
+					<Stack spacing={2} direction="row">
 						<Button onClick={handleCancelRename}>Cancel</Button>
 						<Button
 							variant="contained"
@@ -353,5 +375,7 @@ export const AlgorandCard: React.FC<AlgorandAccountCard> = ({
 };
 
 function SendWyreIcon(props: any) {
-	return <SvgIcon {...props} component={SendWyreLogo} inheritViewBox></SvgIcon>;
+	return (
+		<SvgIcon {...props} component={SendWyreLogo} inheritViewBox></SvgIcon>
+	);
 }

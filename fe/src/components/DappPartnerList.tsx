@@ -1,40 +1,53 @@
 import * as React from 'react';
-import ImageList from '@mui/material/ImageList';
-import ImageListItem from '@mui/material/ImageListItem';
-import ImageListItemBar from '@mui/material/ImageListItemBar';
+import styles from "../styles/common.module.css";
+import { Grid, CardMedia, Typography, Box, Stack } from '@mui/material';
+
 
 export default function DappPartnerList() {
   return (
-    <ImageList cols={3}>
+    <Grid container spacing={1}>
       {itemData.map((item) => (
-        <ImageListItem key={item.img}>
-          <img
-            src={`${item.img}?w=248&fit=crop&auto=format`}
-            srcSet={`${item.img}?w=248&fit=crop&auto=format&dpr=2 2x`}
-            alt={item.title}
-            loading="lazy"
+        <Grid container item xs={6} sm={6} md={4} className={styles.parnterRoot}>
+          <Box className={styles.partnerBox} sx={{m:1}}>
+
+          <CardMedia
+            component={"img"}
+            className={styles.partnerMedia}
+            src={images.get(`${item.img}`)}
+            sx={{p:2}}
           />
-          <ImageListItemBar
-            sx={{wordWrap: 'break-word'}}
-            title={item.title}
-            subtitle={item.desc}
-            position="below"
-          />
-        </ImageListItem>
+          <Stack className={styles.partnerText} sx={{ml:1,mr:1}}>
+
+          <Typography variant="title" align="left">{item.title}</Typography>
+          <Typography variant="caption" align="left">{item.desc}</Typography>
+          </Stack>
+          </Box>
+        </Grid>
       ))}
-    </ImageList>
+    </Grid>
   );
 }
 
+  export const importAll = (r: __WebpackModuleApi.RequireContext) =>{
+
+  let filemap = new Map<string,any>();
+  r.keys().forEach((fileName: string) =>{
+
+		const key = fileName.substr(2).replace(/\/index\.mdx$/, '');
+		filemap.set(key,r(fileName));
+  } );
+  return filemap;
+  }
+const images = importAll(require.context('./../assets/partners/', false, /\.svg$/));
 const itemData = [
   {
-    img: 'https://images.unsplash.com/photo-1551963831-b3b1ca40c98e',
-    title: 'Folk Finance',
-    desc: 'DeFi Lending Platform',
+    img: 'AlgorandLogo.svg',
+    title: 'Algorand Foundation',
+    desc: 'Powerful and sustainable blockchain',
   },
   {
-    img: 'https://images.unsplash.com/photo-1551782450-a2132b4ba21d',
-    title: 'AlgoFi',
-    desc: 'Decentralized exchange, lending market, and stablecoin.',
+    img: 'folk_finance.svg',
+    title: 'Folk Finance',
+    desc: 'DeFi Lending Platform',
   },
 ];
