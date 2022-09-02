@@ -65,4 +65,8 @@ export default class ParseUtil {
         return decodeURI(decodeURI(value));
         //return value.replace(/qwer/g," ");
     }
+    // remove ALGO_ prefix
+    static removeNetworkPrefix(value: string) : string {
+        return value.replace(/ALGO_/g,"");
+    }
 }

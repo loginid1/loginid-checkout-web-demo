@@ -22,8 +22,8 @@ export function DisplayDapps(dapps : EnableAccount[]){
 export function DisplayShortDapp(account: EnableAccount) {
     return (
         <>
-            <Grid container item xs={6}>{account.dapp_origin}</Grid>
-            <Grid container item xs={3}>{account.network}</Grid>
+            <Grid container item xs={6} ><Typography noWrap>{account.dapp_origin}</Typography></Grid>
+            <Grid container item xs={3}>{ParseUtil.removeNetworkPrefix(account.network)}</Grid>
             <Grid container item xs={3}>{ParseUtil.parseDateTime(account.iat)}</Grid>
             <Grid item xs={12} ><Divider variant="fullWidth" ></Divider></Grid>
         </>

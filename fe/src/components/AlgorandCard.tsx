@@ -251,18 +251,6 @@ export const AlgorandCard: React.FC<AlgorandAccountCard> = ({
 											}
 										/>
 									</Typography>
-									<Typography
-										variant="body1"
-										align="left"
-										fontSize="12px"
-									>
-										Status:{" "}
-										<Chip
-											sx={{ backgroundColor: "#E2F2FF" }}
-											size="small"
-											label={account.balance?.status}
-										/>
-									</Typography>
 								</>
 							)}
 						</Grid>

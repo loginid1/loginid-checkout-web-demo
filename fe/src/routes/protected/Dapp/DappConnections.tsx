@@ -133,10 +133,10 @@ const DappConnections: React.FC = () => {
 											)}
 										</TableCell>
 										<TableCell align="right">
-											{account.dapp_origin}
+											<Typography noWrap>{account.dapp_origin}</Typography>
 										</TableCell>
 										<TableCell align="right">
-											{account.network}
+											{ParseUtil.removeNetworkPrefix(account.network)}
 										</TableCell>
 									</TableRow>
 								))}
