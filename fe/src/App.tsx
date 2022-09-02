@@ -31,6 +31,8 @@ import { RekeyAlgorand } from './routes/protected/Algorand/RekeyAlgorand';
 import { SendwyreSDK } from './lib/VaultSDK/sendwyre';
 import { SendWyreOrder } from './routes/protected/Algorand/SendWyreOrder';
 import { SendWyreCallback } from './routes/protected/Algorand/SendWyreCallback';
+import DIDHome from './routes/protected/DID/DIDHome';
+import Index from './routes/Index';
 
 
 
@@ -40,7 +42,7 @@ function App() {
   return (
     <div className="App">
       <Routes>
-        <Route path="/" element={<Navigate replace to="/login" />} />
+        <Route path="/" element={<Index />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/add_device" element={<AddDevice />} />
@@ -48,7 +50,7 @@ function App() {
         <Route path="/api/enable/:data" element={<WalletEnable />} />
         <Route path="/api/transaction" element={<WalletTxnConfirmation />} />
         <Route path="/" element={<ProtectedRoute />} >
-          <Route path="/home" element={<Credentials />} />
+          <Route path="/home" element={<AlgorandAccounts />} />
           <Route path="/add_credential" element={<AddCredential />} />
           <Route path="/complete_credential" element={<CompleteCredential />} />
           <Route path="/add_recovery" element={<AddRecovery />} />
@@ -64,6 +66,7 @@ function App() {
           <Route path="/dapp_connections" element={<DappConnections />} />
 
           <Route path="/oldhome" element={<Home />} /> 
+          <Route path="/did" element={<DIDHome />} /> 
           <Route path="/manage_credential" element={<ManageCredential />} />
           <Route path="/manage_algorand" element={<ManageAlgorand />} />
           <Route path="/credential" element={<Credentials />} />
