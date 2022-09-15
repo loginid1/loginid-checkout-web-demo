@@ -13,6 +13,7 @@ import {
 	Divider,
 	Grid,
 	IconButton,
+	Link,
 	Menu,
 	MenuItem,
 	Paper,
@@ -32,6 +33,7 @@ import {
 	ArrowDropDown,
 	ContentCopy,
 	ExpandMore,
+	InfoOutlined,
 	NavigateNextTwoTone,
 } from "@mui/icons-material";
 import { ReactComponent as SendWyreLogo } from "../assets/partners/sendwyre_logo_icon.svg";
@@ -49,6 +51,7 @@ import { DisplayAssets, DisplayShortAsset } from "./AssetSummary";
 import styles from "../styles/common.module.css";
 import { DisplayDapps } from "./DappSummary";
 import wyreSDK from "../lib/VaultSDK/sendwyre";
+import { HtmlTooltip } from "./HtmlTooltip";
 
 interface AlgorandAccountCard {
 	account: Account;
@@ -261,14 +264,37 @@ export const AlgorandCard: React.FC<AlgorandAccountCard> = ({
 							md={6}
 							sx={{ mt: 1, mb: 1 }}
 						>
-							<Button
-								variant="outlined"
-								startIcon={<SendWyreIcon />}
-								onClick={handlePurchaseAlgo}
-								sx={{width:"100%"}}
-							>
-								Buy ALGO via SendWyre
-							</Button>
+							<Stack direction="row" alignItems="center">
+								<Button
+									variant="outlined"
+									startIcon={<SendWyreIcon />}
+									onClick={handlePurchaseAlgo}
+									sx={{ width: "100%", height: "40px" }}
+								>
+									Buy ALGO via SendWyre
+								</Button>
+								<HtmlTooltip
+									title={
+										<Stack>
+											<Typography variant="body2">
+												In order to interact with some
+												DApps, you may need to add Algo
+												to the FIDO Vault.
+											</Typography>
+											<Link
+												variant="body2"
+												color="inherit"
+											>
+												Learn more about how you can buy
+												Algos.
+											</Link>
+										</Stack>
+									}
+									arrow
+								>
+									<InfoOutlined color="secondary"></InfoOutlined>
+								</HtmlTooltip>
+							</Stack>
 							<Typography variant="caption">
 								Purchase ALGO using your credit/debit card.
 							</Typography>

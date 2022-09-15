@@ -33,6 +33,7 @@ import { SendWyreOrder } from './routes/protected/Algorand/SendWyreOrder';
 import { SendWyreCallback } from './routes/protected/Algorand/SendWyreCallback';
 import DIDHome from './routes/protected/DID/DIDHome';
 import Index from './routes/Index';
+import { Faq } from './routes/Faq';
 
 
 
@@ -43,6 +44,7 @@ function App() {
     <div className="App">
       <Routes>
         <Route path="/" element={<Index />} />
+        <Route path="/faq" element={<Faq />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/add_device" element={<AddDevice />} />

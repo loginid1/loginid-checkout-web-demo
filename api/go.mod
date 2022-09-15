@@ -18,6 +18,12 @@ require (
 )
 
 require (
+	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
+)
+
+require (
 	github.com/algorand/go-algorand v0.0.0-20220525014918-3c4c8fb0bd7a // indirect
 	github.com/algorand/go-codec/codec v1.1.8 // indirect
 	github.com/aymerick/douceur v0.2.0 // indirect
@@ -38,6 +44,7 @@ require (
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/lib/pq v1.10.6 // indirect
 	github.com/microcosm-cc/bluemonday v1.0.18 // indirect
+	github.com/stretchr/testify v1.8.0
 	github.com/x448/float16 v0.8.4 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.8.0 // indirect
