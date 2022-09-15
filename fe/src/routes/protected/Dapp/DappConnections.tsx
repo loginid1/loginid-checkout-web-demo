@@ -1,4 +1,4 @@
-import { Add, ContentCopy } from "@mui/icons-material";
+import { Add, ContentCopy, InfoOutlined } from "@mui/icons-material";
 import {
 	Grid,
 	Stack,
@@ -12,10 +12,12 @@ import {
 	TableRow,
 	TableBody,
 	IconButton,
+	Link,
 } from "@mui/material";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import DappPartnerList from "../../../components/DappPartnerList";
+import { HtmlTooltip } from "../../../components/HtmlTooltip";
 import { VaultBase } from "../../../components/VaultBase";
 import ParseUtil from "../../../lib/util/parse";
 import vaultSDK from "../../../lib/VaultSDK";
@@ -70,17 +72,35 @@ const DappConnections: React.FC = () => {
 				}}
 			>
 				<Grid container spacing={{ md: 4, xs: 2 }} direction="column">
-					<Typography
-						variant="h2"
-						color="secondary"
-						align="left"
+					<Stack
+						direction="row"
+						spacing={1}
 						sx={{
 							pt: { md: 4, xs: 2 },
 							pl: { md: 4, xs: 2 },
 						}}
 					>
-						Dapp Connections
-					</Typography>
+						<Typography variant="h2" color="secondary">
+							Dapp Connections
+						</Typography>
+						<HtmlTooltip
+							title={
+								<Stack>
+									<Typography variant="body2">
+										DApps are short for decentralized
+										applications that are built on a
+										blockchain.
+									</Typography>
+									<Link variant="body2" color="inherit">
+										Learn more about DApps.
+									</Link>
+								</Stack>
+							}
+							arrow
+						>
+							<InfoOutlined color="secondary"></InfoOutlined>
+						</HtmlTooltip>
+					</Stack>
 					<TableContainer
 						sx={{
 							pl: { md: 4, xs: 2 },
@@ -133,10 +153,14 @@ const DappConnections: React.FC = () => {
 											)}
 										</TableCell>
 										<TableCell align="right">
-											<Typography noWrap>{account.dapp_origin}</Typography>
+											<Typography noWrap>
+												{account.dapp_origin}
+											</Typography>
 										</TableCell>
 										<TableCell align="right">
-											{ParseUtil.removeNetworkPrefix(account.network)}
+											{ParseUtil.removeNetworkPrefix(
+												account.network
+											)}
 										</TableCell>
 									</TableRow>
 								))}
@@ -167,7 +191,7 @@ const DappConnections: React.FC = () => {
 					>
 						Feature Partners
 					</Typography>
-          
+
 					<DappPartnerList></DappPartnerList>
 				</Grid>
 			</Paper>

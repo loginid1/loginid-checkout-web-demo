@@ -35,3 +35,7 @@
     max-width:100%;
     object-fit: "contain";
   }
+
+  .arrow {
+    color: #1E2898;
+  }

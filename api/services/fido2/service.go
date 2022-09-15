@@ -418,12 +418,12 @@ func (f *Fido2Service) AddCredentialComplete(username string, credential_uuid st
 func (f *Fido2Service) post(path string, body []byte, token string) (*http.Response, error) {
 
 	request, err := http.NewRequest("POST", fmt.Sprintf("%s/%s", f.baseURL, path), bytes.NewBuffer(body))
+	if err != nil {
+		return nil, err
+	}
 	request.Header.Set("Content-type", "application/json")
 	if token != "" {
 		request.Header.Set("Authorization", fmt.Sprintf("bearer %s", token))
-	}
-	if err != nil {
-		return nil, err
 	}
 	resp, err := f.client.Do(request)
 

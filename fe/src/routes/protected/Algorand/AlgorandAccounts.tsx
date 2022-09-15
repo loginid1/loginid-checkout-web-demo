@@ -3,9 +3,11 @@ import {
 	Button,
 	CssBaseline,
 	Grid,
+	Link,
 	Paper,
 	Stack,
 	ThemeProvider,
+	Tooltip,
 	Typography,
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
@@ -18,10 +20,11 @@ import VaultAppBar from "../../../components/VaultAppbar";
 import { CredentialsManage } from "../../../components/CredentialsManage";
 import { RecoveryManage } from "../../../components/RecoveryManage";
 import vaultSDK from "../../../lib/VaultSDK";
-import { Add, ArrowBack } from "@mui/icons-material";
+import { Add, ArrowBack, InfoOutlined } from "@mui/icons-material";
 import { AccountList } from "../../../lib/VaultSDK/vault/algo";
 import { AlgorandCard } from "../../../components/AlgorandCard";
 import { VaultBase } from "../../../components/VaultBase";
+import { HtmlTooltip } from "../../../components/HtmlTooltip";
 
 const AlgorandAccounts: React.FC = () => {
 	const navigate = useNavigate();
@@ -84,9 +87,33 @@ const AlgorandAccounts: React.FC = () => {
 								direction="row"
 								alignItems={"center"}
 							>
-								<Typography variant="h2" color="secondary">
-									Algorand Accounts
-								</Typography>
+								<Stack direction="row" spacing={1}>
+									<Typography variant="h2" color="secondary">
+										Algorand Accounts
+									</Typography>
+									<HtmlTooltip
+										title={
+											<Stack>
+												<Typography variant="body2">
+													Your Algorand account is a
+													blockchain account which is
+													used to interact with
+													Algorand Dapps.
+												</Typography>
+												<Link
+													variant="body2"
+													color="inherit"
+												>
+													Learn more about your
+													Algorand account
+												</Link>
+											</Stack>
+										}
+										arrow
+									>
+										<InfoOutlined color="secondary"></InfoOutlined>
+									</HtmlTooltip>
+								</Stack>
 								<Button
 									onClick={() =>
 										navigate("/add_algorand_account")
