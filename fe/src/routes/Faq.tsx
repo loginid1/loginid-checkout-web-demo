@@ -11,6 +11,7 @@ import IconFAQ from "../assets/marketing/m_faq.svg";
 import LoginIDLogo from "../assets/sidemenu/LoginIDLogo.svg";
 import VaultLogo from "../assets/logoContrast.svg";
 import FaqCard from "../components/FaqCard";
+import { useNavigate } from "react-router-dom";
 
 export const LoginID = createTheme({
   palette: {
@@ -112,6 +113,8 @@ User experiences in today’s wallets are complex and multi-stepped. With our Va
 ];
 
 export function Faq() {
+
+	const navigate = useNavigate();
 	return (
     <ThemeProvider theme={LoginID}>
 
@@ -159,10 +162,10 @@ export function Faq() {
 						recover your account.
 					</Typography>
 					<Stack direction="row" spacing={2} sx={{ m: 2 }}>
-						<Button variant="contained"  sx={{ borderRadius: 8  }}>
+						<Button variant="contained" onClick={()=>navigate("/register")} sx={{ borderRadius: 8  }}>
 							Register for free
 						</Button>
-						<Button variant="outlined" sx={{ borderRadius: 8 }}>
+						<Button variant="outlined" onClick={()=>navigate("/login")} sx={{ borderRadius: 8 }}>
 							Sign in
 						</Button>
 					</Stack>
