@@ -11,7 +11,7 @@ import {
 	Typography,
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { Profile } from "../../../lib/VaultSDK/vault/user";
 import { AuthService } from "../../../services/auth";
 import { LoginID } from "../../../theme/theme";
@@ -25,17 +25,31 @@ import { AccountList } from "../../../lib/VaultSDK/vault/algo";
 import { AlgorandCard } from "../../../components/AlgorandCard";
 import { VaultBase } from "../../../components/VaultBase";
 import { HtmlTooltip } from "../../../components/HtmlTooltip";
+import { GetStartedDialog } from "../../../components/dialogs/GetStartedDialog";
 
 const AlgorandAccounts: React.FC = () => {
 	const navigate = useNavigate();
+  	const location = useLocation();
 
+	const [searchParams, setSearchParams] = useSearchParams();
 	const [profile, setProfile] = useState<Profile | null>(null);
 	const [accountList, setAccountList] = useState<AccountList | null>(null);
 	const [username, setUsername] = useState(AuthService.getUsername());
 
 	const [errorMessage, setErrorMessage] = useState("");
 
+	const [started, setStarted] = useState(false);
+	const [newAddress, setNewAddress] = useState("");
+
 	useEffect(() => {
+  		const address = location.state as string;
+		//const address = searchParams.get("address");
+		if (address != null ) {
+			console.log("open first");
+			setStarted(true);
+			setNewAddress(address);
+
+		}
 		getAccountList();
 	}, []);
 
@@ -68,12 +82,15 @@ const AlgorandAccounts: React.FC = () => {
 					flexDirection: "column",
 				}}
 			>
+				<GetStartedDialog open={started} address={newAddress} handleClose={function (): void {
+					setStarted(false);
+				} }/>
 				<Grid container spacing={{ md: 4, xs: 2 }} direction="column">
 					<Grid item xs container direction="row" spacing={2}>
 						<Grid
 							item
 							xs={12}
-							md={6}
+							md={12}
 							sx={{
 								display: "flex",
 								justifyContent: {
@@ -128,6 +145,7 @@ const AlgorandAccounts: React.FC = () => {
 								</Button>
 							</Stack>
 						</Grid>
+						{/* 
 						<Grid
 							item
 							xs={12}
@@ -146,6 +164,7 @@ const AlgorandAccounts: React.FC = () => {
 								+ Create Algorand Account
 							</Button>
 						</Grid>
+						*/}
 						<Grid
 							item
 							xs={12}
@@ -182,6 +201,7 @@ const AlgorandAccounts: React.FC = () => {
 										refresh={getAccountList}
 									></AlgorandCard>
 								</Grid>
+
 							</>
 						))}
 					</Grid>

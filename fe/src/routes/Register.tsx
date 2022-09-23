@@ -57,7 +57,7 @@ export default function Register() {
 				if (redirect_url != null) {
 					navigate(redirect_url);
 				} else {
-					navigate("/complete_algorand_account", {
+					navigate("/algorand_accounts", {
 						state: response.address,
 					});
 				}

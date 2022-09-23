@@ -128,6 +128,7 @@ export const AlgorandCard: React.FC<AlgorandAccountCard> = ({
 				elevation={0}
 			>
 				<CardHeader
+					sx={{ textAlign: "left" }}
 					avatar={<AlgoIcon color="primary" />}
 					action={
 						<>
@@ -177,21 +178,53 @@ export const AlgorandCard: React.FC<AlgorandAccountCard> = ({
 					{/* <Alert severity="error">This is an error alert — check it out!</Alert> */}
 					<Grid container>
 						<Grid item xs={12} md={6}>
-							<Typography
-								variant="body1"
-								align="left"
-								fontSize="12px"
-							>
-								Address:{" "}
-								<Chip
-									sx={{ backgroundColor: "#E2F2FF" }}
-									size="small"
-									label={cutAddress}
-								/>
-								<IconButton size="small" onClick={copyAddress}>
-									<ContentCopy />
-								</IconButton>
-							</Typography>
+							<Stack direction="row">
+								<Typography
+									variant="body1"
+									align="left"
+									fontSize="12px"
+								>
+									Address:{" "}
+									<Chip
+										sx={{ backgroundColor: "#E2F2FF" }}
+										size="small"
+										label={cutAddress}
+									/>
+									<IconButton
+										size="small"
+										onClick={copyAddress}
+									>
+										<ContentCopy />
+									</IconButton>
+								</Typography>
+								{/*
+								<HtmlTooltip
+									title={
+										<Stack>
+											<Typography variant="body2">
+												Your Algorand account is a
+												blockchain account which is used
+												to interact with Algorand Dapps.
+											</Typography>
+											<Link
+												variant="body2"
+												color="inherit"
+											>
+												Next
+											</Link>
+										</Stack>
+									}
+									arrow
+								>
+									<Avatar
+										sx={{ bgcolor: red[500] }}
+										aria-label="first"
+									>
+										1
+									</Avatar>
+								</HtmlTooltip>
+								*/}
+							</Stack>
 							{account.recovery_address && (
 								<Typography
 									variant="body1"
@@ -220,7 +253,7 @@ export const AlgorandCard: React.FC<AlgorandAccountCard> = ({
 									/>
 								))}
 							</Typography>
-							{account.balance && (
+							{account.balance ? (
 								<>
 									<Typography
 										noWrap
@@ -255,6 +288,23 @@ export const AlgorandCard: React.FC<AlgorandAccountCard> = ({
 										/>
 									</Typography>
 								</>
+							) : (
+								<Typography
+									noWrap
+									variant="body1"
+									align="left"
+									fontSize="12px"
+								>
+									Balance:{" "}
+									<Chip
+										sx={{
+											backgroundColor: "#e57373",
+											color: "#fff",
+										}}
+										size="small"
+										label={"Not Available"}
+									/>
+								</Typography>
 							)}
 						</Grid>
 						<Grid
@@ -269,7 +319,7 @@ export const AlgorandCard: React.FC<AlgorandAccountCard> = ({
 									variant="outlined"
 									startIcon={<SendWyreIcon />}
 									onClick={handlePurchaseAlgo}
-									sx={{ width: "100%", height: "40px" }}
+									sx={{ width: "100%", height: "40px", fontSize:"8pt" }}
 								>
 									Buy ALGO via SendWyre
 								</Button>
