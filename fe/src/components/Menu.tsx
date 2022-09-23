@@ -21,9 +21,10 @@ const menuItems = [
   "Algorand",
   "Dapps",
   "DIDs",
+  "Learn"
 ];
 
-const navigateMenu = ["/credential", "/algorand_accounts", "/dapp_connections", "/did"];
+const navigateMenu = ["/credential", "/algorand_accounts", "/dapp_connections", "/did","/help"];
 
 interface MenuInterface {
   focus: number;

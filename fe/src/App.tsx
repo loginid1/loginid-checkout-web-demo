@@ -34,6 +34,7 @@ import { SendWyreCallback } from './routes/protected/Algorand/SendWyreCallback';
 import DIDHome from './routes/protected/DID/DIDHome';
 import Index from './routes/Index';
 import { Faq } from './routes/Faq';
+import { Help } from './routes/protected/Help';
 
 
 
@@ -52,6 +53,7 @@ function App() {
         <Route path="/api/enable/:data" element={<WalletEnable />} />
         <Route path="/api/transaction" element={<WalletTxnConfirmation />} />
         <Route path="/" element={<ProtectedRoute />} >
+          <Route path="/help" element={<Help />} />
           <Route path="/home" element={<AlgorandAccounts />} />
           <Route path="/add_credential" element={<AddCredential />} />
           <Route path="/complete_credential" element={<CompleteCredential />} />

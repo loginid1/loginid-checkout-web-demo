@@ -47,7 +47,7 @@ const itemData = [
   },
   {
     img: 'folk_finance.svg',
-    title: 'Folk Finance',
+    title: 'Folks Finance',
     desc: 'DeFi Lending Platform',
   },
 ];

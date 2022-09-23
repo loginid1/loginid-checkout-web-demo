@@ -27,6 +27,11 @@ export const KeyDisplay: React.FC<keyDisplayProps> = ({
   color = "",
   onClick,
 }) => {
+
+
+    function copy(text:string){
+		navigator.clipboard.writeText(text);
+}
   return (
     <Card
       variant="outlined"
@@ -38,28 +43,22 @@ export const KeyDisplay: React.FC<keyDisplayProps> = ({
       elevation={0}
     >
       <CardContent
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-        }}
       >
         <Stack
-          spacing={2}
           direction="row"
-          justifyContent="center"
           alignItems="center"
         >
           <Typography
-            maxWidth="50vw"
-            noWrap
             variant="body1"
-            textOverflow="ellipsis"
+            textOverflow="ellipse"
             color={color}
+            fontSize={12}
+            noWrap
+            maxWidth="70%"
           >
             {value}
           </Typography>
-          <IconButton size="small" onClick={onClick}>
+          <IconButton size="small" onClick={()=>copy(value)}>
             <ContentCopy />
           </IconButton>
         </Stack>
