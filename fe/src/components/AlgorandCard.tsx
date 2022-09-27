@@ -151,7 +151,7 @@ export const AlgorandCard: React.FC<AlgorandAccountCard> = ({
 									onClick={handleClickRenameAccount}
 									color="primary"
 								>
-									Change Alias
+									Change Account Alias
 								</MenuItem>
 								<MenuItem
 									onClick={() =>
@@ -159,7 +159,7 @@ export const AlgorandCard: React.FC<AlgorandAccountCard> = ({
 									}
 									color="primary"
 								>
-									Rekey
+									Update Signing Credentials
 								</MenuItem>
 							</Menu>
 						</>
@@ -302,7 +302,8 @@ export const AlgorandCard: React.FC<AlgorandAccountCard> = ({
 											color: "#fff",
 										}}
 										size="small"
-										label={"Not Available"}
+										label={"Not Funded"}
+
 									/>
 								</Typography>
 							)}

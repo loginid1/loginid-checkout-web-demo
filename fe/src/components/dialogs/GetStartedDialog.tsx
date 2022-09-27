@@ -92,7 +92,7 @@ export function GetStartedDialog(props: GetStartedProps) {
 					</Typography>
 					<Typography align="center" variant="body1" sx={{ p: 2 }}>
 						An Algorand address is the identifier for an Algorand
-						account that hold specific onchain data, like your Algo
+						account that holds specific onchain data, like your Algo
 						balance and assets.
 					</Typography>
 					<Box
@@ -102,7 +102,7 @@ export function GetStartedDialog(props: GetStartedProps) {
 						sx={{ width: "90%" }}
 					/>
 					<Typography align="left" variant="body1" sx={{ p: 2 }}>
-						1. When sharing your address with other user and Dapps.
+						1. When sharing your address with other users and DApps.
 						Use the <ContentCopy fontSize="small" /> icon to copy
 						the full address. The address is 58 characters long.
 					</Typography>
@@ -126,7 +126,7 @@ export function GetStartedDialog(props: GetStartedProps) {
 					<Typography align="center" variant="body1" sx={{ p: 2 }}>
 						Your Algorand account is secured by <b>FIDO</b>{" "}
 						biometric authenticaton from your device. You can setup
-						multiple FIDO credentials for convenience and recovery.
+						multiple FIDO credentials for your convenience and recovery.
 						It is the safest way to secure your account.
 					</Typography>
 					<Box
@@ -136,9 +136,9 @@ export function GetStartedDialog(props: GetStartedProps) {
 						sx={{ width: "90%" }}
 					/>
 					<Typography align="left" variant="body1" sx={{ p: 2 }}>
-						2. Indicated which credential(s) can authorized this
+						2. Indicates which credential(s) can authorize this
 						algorand account. You can go to "Manage Credential" and
-						register additional devices at any time. Afterward, you
+						register additional devices at any time. Afterwards, you
 						can update your Algorand account to use any of the
 						registered devices.
 					</Typography>
@@ -165,9 +165,9 @@ export function GetStartedDialog(props: GetStartedProps) {
 					</Typography>
 					<Typography align="center" variant="body1" sx={{ p: 2 }}>
 						ALGO is a the standard currency for Algorand network.
-						Account requires a minimum amount of ALGOs to perform
+						The account requires a minimum amount of ALGOs to perform
 						any transactions and hold assets. Signing transactions with ALGO is cheap thanks
-						to Algorand fast and scalable design.
+						to Algorand's fast and scalable design.
 					</Typography>
 					<Box
 						component="img"
@@ -176,10 +176,10 @@ export function GetStartedDialog(props: GetStartedProps) {
 						sx={{ width: "90%" }}
 					/>
 					<Typography align="left" variant="body1" sx={{ p: 2 }}>
-						3. Indicated your current Algos balance which is "not
-						available" for starting account. You can buy Algos from
-						your credit/debit card with "SendWyre" to activate it.
-						You can also fund your algo from other's account by
+						3. Indicates your current Algos balance which is "not
+						funded" for newly created account. You can buy Algos from
+						your credit/debit card with "SendWyre" to activate your account.
+						You can also fund your account from other's account by
 						request payment transaction to your account address.
 					</Typography>
 				</DialogContent>
