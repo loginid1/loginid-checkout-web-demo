@@ -14,7 +14,7 @@ export default function DappPartnerList() {
             component={"img"}
             className={styles.partnerMedia}
             src={images.get(`${item.img}`)}
-            sx={{p:2}}
+            sx={{p:2,width:"100%",height:"75%",objectFit:"contain"}}
           />
           <Stack className={styles.partnerText} sx={{ml:1,mr:1}}>
 

@@ -157,10 +157,11 @@ export function RekeyAlgorand() {
 			});
 			return;
 		}
+		/*
 		if (formRecovery.length <= 0) {
 			setDisplayMessage({ text: "Recovery is required", type: "error" });
 			return;
-		}
+		}*/
 
 		const token = AuthService.getToken();
 		if (token) {
