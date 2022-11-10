@@ -1466,6 +1466,11 @@
     "@jridgewell/resolve-uri" "^3.0.3"
     "@jridgewell/sourcemap-codec" "^1.4.10"
 
+"@loginid/vault-sdk@^0.30.0":
+  "integrity" "sha512-VnH05UwQw6YRmprFobBSucMCtCEYNMwW3E+Q1pASMeTidBPqm+SHeQC7YhYh+698yTrU3d6paVo4srwY+mRsUw=="
+  "resolved" "https://registry.npmjs.org/@loginid/vault-sdk/-/vault-sdk-0.30.0.tgz"
+  "version" "0.30.0"
+
 "@mui/base@5.0.0-alpha.79":
   "integrity" "sha512-/lZLF027BkiEjM8MIYoeS/FEhTKf+41ePU9SOijMGrCin1Y0Igucw+IHa1fF8HXD7wDbFKqHuso3J1jMG8wyNw=="
   "resolved" "https://registry.npmjs.org/@mui/base/-/base-5.0.0-alpha.79.tgz"

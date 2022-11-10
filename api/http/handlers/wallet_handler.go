@@ -181,6 +181,13 @@ func validateRequestTransaction(requestTxn WalletTransaction, origin string, alg
 	}
 	// filtering
 	if txn.Type == types.PaymentTx {
+		if txn.Amount == 0 {
+			return "", "", false, services.CreateError("error zero amount")
+		}
+		// prevent rekey
+		if !txn.RekeyTo.IsZero() {
+			return "", "", false, services.CreateError("rekeying is forbidden")
+		}
 		pTxn := PaymentTransaction{
 			Base:   base,
 			To:     txn.Receiver.String(),

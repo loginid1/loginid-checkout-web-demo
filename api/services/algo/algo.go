@@ -18,6 +18,7 @@ var ALGO_NETWORK = map[string]string{
 var ALGO_NETWORK_GENESIS = map[string]Genesis{
 	//"sandnet": {ID: "sandnet-v1", Hash: "kRzYkNRKXtnl6TyFvtrkAYO5wm17eMd0aXtDBRytVnQ="},
 	"sandnet": {ID: "sandnet-v1", Hash: goutil.GetEnv("SANDNET_GENESIS_HASH", "")},
+	"testnet": {ID: "testnet-v1", Hash: "SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI="},
 }
 
 type Genesis struct {

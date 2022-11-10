@@ -7,9 +7,11 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/algorand/go-algorand-sdk/client/v2/common"
 	"github.com/algorand/go-algorand-sdk/client/v2/common/models"
 	"github.com/algorand/go-algorand-sdk/client/v2/indexer"
 	"github.com/allegro/bigcache"
+	"gitlab.com/loginid/software/libraries/goutil.git"
 )
 
 type AlgorandIndexerService struct {
@@ -18,12 +20,15 @@ type AlgorandIndexerService struct {
 }
 
 func NewAlgorandIndexerService() (*AlgorandIndexerService, error) {
-	const indexerAddress = "http://localhost:8980"
-	const indexerToken = ""
-	indexerClient, err := indexer.MakeClient(indexerAddress, indexerToken)
+	//const indexerAddress = "http://localhost:8980"
+	indexerAddress := goutil.GetEnv("INDEXER_URL", "http://localhost:8980")
+	indexerToken := goutil.GetEnv("INDEXER_TOKEN", "")
+	//indexerClient, err := indexer.MakeClient(indexerAddress, indexerToken)
+	commonClient, err := common.MakeClient(indexerAddress, "X-API-Key", indexerToken)
 	if err != nil {
 		return nil, err
 	}
+	indexerClient := (*indexer.Client)(commonClient)
 	assetCache, err := bigcache.NewBigCache(bigcache.DefaultConfig(60 * time.Minute))
 	if err != nil {
 		return nil, errors.New("fail to initialize big cache ")

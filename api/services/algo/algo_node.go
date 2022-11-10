@@ -44,13 +44,15 @@ type AlgorandNetworkService struct {
 
 func NewAlgorandNeworkService() (*AlgorandNetworkService, error) {
 	// Create an algod client
-	algodAddress := "http://localhost:4001"
+	algodAddress := goutil.GetEnv("ALGONODE_URL", "http://localhost:4001")
 	//algodToken := "cd2d8c9f6ef7a1700951e1253fc8d4e67674894aa6cebf51d34cf6d0b5b15a32" // contents of algod.token
-	algodToken := "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" // contents of algod.token
+	algodToken := goutil.GetEnv("ALGONODE_TOKEN", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa") // contents of algod.token
 	algodClient, err := algod.MakeClient(algodAddress, algodToken)
+	//commonClient, err := common.MakeClient(algodAddress, "X-API-Key", algodToken)
 	if err != nil {
 		return nil, err
 	}
+	//algodClient := (*algod.Client)(commonClient)
 	//genesis, err := algodClient.GetGenesis().Do(context.Background())
 
 	return &AlgorandNetworkService{client: algodClient}, nil

@@ -37,7 +37,6 @@ export const KeyDisplay: React.FC<keyDisplayProps> = ({
       variant="outlined"
       sx={{
         display: "flex",
-        maxWidth: "100%",
         backgroundColor: alpha("#F2F2F2", 0.2),
       }}
       elevation={0}
@@ -48,19 +47,17 @@ export const KeyDisplay: React.FC<keyDisplayProps> = ({
           direction="row"
           alignItems="center"
         >
+          <IconButton size="small" onClick={()=>copy(value)}>
+            <ContentCopy />
+          </IconButton>
           <Typography
             variant="body1"
             textOverflow="ellipse"
             color={color}
             fontSize={12}
-            noWrap
-            maxWidth="70%"
           >
             {value}
           </Typography>
-          <IconButton size="small" onClick={()=>copy(value)}>
-            <ContentCopy />
-          </IconButton>
         </Stack>
       </CardContent>
     </Card>

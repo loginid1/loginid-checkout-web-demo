@@ -1,20 +1,5 @@
 
-import { WINDOW_NOT_OPENED } from "./errors";
 
-/**
- * @description Popup configuration
- * @typedef {Object} PopupOptions
- * @property {string} [name]
- * @property {number} [width]
- * @property {number} [height]
- * @property {number} [top]
- * @property {number} [left]
- * @property {0|1} [status]
- * @property {0|1} [resizable]
- * @property {0|1} [toolbar]
- * @property {0|1} [menubar]
- * @property {0|1} [scrollbars]
- */
 
 export interface PopupOptions {
 	width: number;
@@ -29,11 +14,10 @@ export interface PopupOptions {
 }
 
 /**
- * @type {PopupOptions}
  */
 export const defaultOptions = <PopupOptions>{
 	width: 400,
-	height: 600,
+	height: 640,
 	left: 0,
 	top: 0,
 	status: 1,
@@ -44,20 +28,10 @@ export const defaultOptions = <PopupOptions>{
 };
 
 /**
- * @description Open a new browser window
- * @param {string} url
- * @param {PopupOptions} options
- * @returns {Window}
- * @file Open new popup
- * @author The kraken.js team
- * @copyright This file is part of the project BelterJS which is released under Apache-2.0 License.
- * Go to https://github.com/krakenjs/belter for full license details.
- */
+ **/
 
 export function openPopup(url: string, name: string, options: PopupOptions = defaultOptions): Window {
 
-	//let options = { name : ""; width: 0; height:0; top : 0; left : 0 } ;
-	//let name = "";
 	let left = 0;
 	let top = 0;
 	let width = options.width;
@@ -100,11 +74,11 @@ export function openPopup(url: string, name: string, options: PopupOptions = def
 		win = window.open(url, name, params);
 	}
 	catch (err) {
-		throw new Error(`${WINDOW_NOT_OPENED} - ${err}`);
+		throw new Error(`window loading error - ${err}`);
 	}
 
 	if (!win || window.closed) {
-		throw new Error(`${WINDOW_NOT_OPENED} - blocked`);
+		throw new Error(`window loading error - blocked`);
 	}
 
 	return win;

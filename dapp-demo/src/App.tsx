@@ -5,7 +5,7 @@ import {
 	FidoVaultSDK,
 	TxnsResult,
 	WalletTransaction,
-} from "./lib/LoginidVaultSDK";
+} from "@loginid/vault-sdk";
 import algosdk, { SuggestedParams } from "algosdk";
 import NFTImage from "./assets/Onboarding-3.png";
 import ExchangeImage from "./assets/AddAlgorandAccount.png";
@@ -52,7 +52,8 @@ function App() {
 	const wallet = new FidoVaultSDK(process.env.REACT_APP_VAULT_URL || "");
 	async function handleEnableClick() {
 		try {
-			const result = await wallet.enable({ network: "sandnet" });
+			const algo_network = process.env.REACT_APP_ALGORAND_NETWORK || "sandnet";
+			const result = await wallet.enable({ network: algo_network });
 			if (result != null) {
 				localStorage.setItem("enable_account", result.accounts[0]);
 				setEnableAccount(result.accounts[0] || "");
@@ -86,9 +87,9 @@ function App() {
 	}
 
 	async function generateSuggestedParams(): Promise<SuggestedParams> {
-		const token =
-			process.env.REACT_APP_ALGO_CLIENT_TOKEN ||
-			"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+		const token = process.env.REACT_APP_ALGO_CLIENT_TOKEN || "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+		//const token = { 'X-API-Key': process.env.REACT_APP_ALGO_CLIENT_TOKEN || "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" };
+		//const token = { 'X-API-Key':  process.env.REACT_APP_ALGO_CLIENT_TOKEN || "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", };
 		const server =
 			process.env.REACT_APP_ALGO_CLIENT_SERVER || "http://localhost";
 		const port = process.env.REACT_APP_ALGO_CLIENT_PORT || 4001;
@@ -96,13 +97,17 @@ function App() {
 		const suggestedParams = await algodv2.getTransactionParams().do();
 		setParams(suggestedParams);
 		console.log(suggestedParams);
+		const version = await algodv2.versionsCheck().do();
+		console.log(version);
+		
 		return Promise.resolve(suggestedParams);
 	}
 
 	async function postTransaction(signTxns: string[]): Promise<boolean> {
-		const token =
-			process.env.REACT_APP_ALGO_CLIENT_TOKEN ||
-			"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+		const token = process.env.REACT_APP_ALGO_CLIENT_TOKEN || "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+
+	//	const token = { 'X-API-Key':  process.env.REACT_APP_ALGO_CLIENT_TOKEN || "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" };
+				
 		const server =
 			process.env.REACT_APP_ALGO_CLIENT_SERVER || "http://localhost";
 		const port = process.env.REACT_APP_ALGO_CLIENT_PORT || 4001;
@@ -157,7 +162,7 @@ function App() {
 			const txn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
 				from: addr,
 				to: receiver,
-				amount: 1000000,
+				amount: 200000,
 				note,
 				suggestedParams: params,
 				// try adding another option to the list above by using TypeScript autocomplete (ctrl + space in VSCode)
@@ -484,7 +489,7 @@ function App() {
 			const txn2 = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
 				from: addr,
 				to: dapp_addr,
-				amount: 1000000,
+				amount: 100000,
 				note: note2,
 				suggestedParams: params,
 				// try adding another option to the list above by using TypeScript autocomplete (ctrl + space in VSCode)

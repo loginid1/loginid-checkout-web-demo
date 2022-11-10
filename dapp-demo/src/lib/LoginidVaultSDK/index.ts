@@ -104,14 +104,12 @@ export class FidoVaultSDK {
             return Promise.reject({ message: "communication timeout" });
         }
 
-        console.log("postmessage " + window.origin);
         let message: Message = {
             channel: "wallet-communication-channel",
             message: JSON.stringify(network)
         };
         let response = await this.mMessage.sendMessageText(this.w, JSON.stringify(network));
 
-        console.log("message: " + response);
         let enable: EnableResult = JSON.parse(response);
         return Promise.resolve(enable);
     }
@@ -129,13 +127,11 @@ export class FidoVaultSDK {
         if (!isLoad) {
             return Promise.reject({ message: "communication timeout" });
         }
-        console.log("postmessage " + window.origin);
         let message: Message = {
             channel: "wallet-communication-channel",
             message: JSON.stringify(txns)
         };
         let response = await this.mMessage.sendMessageText(this.w, JSON.stringify(txns));
-        console.log("message: " + response);
         let result: TxnsResult = JSON.parse(response);
         return Promise.resolve(result);
     }
@@ -149,18 +145,15 @@ export class FidoVaultSDK {
     **/
     async signAndPostTxns(txns: WalletTransaction[], opts?: SignTxnsOpts): Promise<TxnsResult> {
         this.w = openPopup(this.baseURL + "/fe/api/transaction", "signpost", defaultOptions);
-        //w.postMessage(JSON.stringify(network),FidoVaultSDK.baseURL);
         let isLoad = await this.mMessage.pingForResponse(this.w, 30000);
         if (!isLoad) {
             return Promise.reject({ message: "communication timeout" });
         }
-        console.log("postmessage " + window.origin);
         let message: Message = {
             channel: "wallet-communication-channel",
             message: JSON.stringify(txns)
         };
         let response = await this.mMessage.sendMessageText(this.w, JSON.stringify(txns));
-        console.log("message: " + response);
         let result: TxnsResult = JSON.parse(response);
         return Promise.resolve(result);
     }
