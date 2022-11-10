@@ -41,7 +41,7 @@ func main() {
 	apiPem := goutil.GetEnv("API_PRIVATE_KEY", "LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JR0hBZ0VBTUJNR0J5cUdTTTQ5QWdFR0NDcUdTTTQ5QXdFSEJHMHdhd0lCQVFRZ0RDNHNHSnZNSjFUcjJtY0IKT05sUmJTRG9CWFRiak1ZdE1DTXNXRER6YURxaFJBTkNBQVRkV29qVEhCejZMVTlOMGhHYUhlTU9MZkdVZ0ZxUgpDOGRvMU1SL3pZL3YwSzVzYTJROXpmNUIxMUZNTm9UWXZwVCtqQmFVNTB5SkFwblN1VVhkVmJiUAotLS0tLUVORCBQUklWQVRFIEtFWS0tLS0t")
 	clientID := goutil.GetEnv("FIDO_CLIENT_ID", "3Tn8S4chICTf2cy6TdciBJXJFZgpcVJcFiRAIb0zuo21jaA_4W2BCnVrqBIoY04dr12W47bYGrZRlPlzyVD30Q")
 	baseURL := goutil.GetEnv("FIDO_BASEURL", "https://directweb.qa.loginid.io")
-	jwtURL := "https://directweb.qa.loginid.io"
+	jwtURL := baseURL
 	fidoService, err := fido2.NewFido2Service(clientID, baseURL, apiClientID, apiPem)
 	if err != nil {
 		logger.Global.Fatal(err.Error())
