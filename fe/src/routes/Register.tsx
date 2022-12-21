@@ -21,6 +21,7 @@ import { ReactComponent as VaultLogo } from "../assets/logo.svg";
 import vaultSDK from "../lib/VaultSDK";
 import { AuthService } from "../services/auth";
 import { CodeInput } from "../components/CodeInput";
+import { TermDialog } from "../components/dialogs/TermOfServiceDialog";
 
 //export const Register: React.FC = () => {
 export default function Register() {
@@ -31,6 +32,7 @@ export default function Register() {
 	const [username, setUsername] = useState("");
 
 	const [errorMessage, setErrorMessage] = useState("");
+	const [termOpen, setTermOpen] = useState<boolean>(false);
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -121,6 +123,11 @@ export default function Register() {
 							focused
 							onChange={(e) => setUsername(e.target.value)}
 						/>
+						<Typography variant="body1">
+						By clicking 'Create Account', I agree to the{" "} 
+							<Link onClick={()=>setTermOpen(true)} >terms of service</Link>
+							<TermDialog open={termOpen} handleClose={()=>setTermOpen(false)}/>
+						</Typography>
 						<Button
 							type="submit"
 							variant="contained"

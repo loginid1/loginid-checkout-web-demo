@@ -120,6 +120,7 @@ func main() {
 
 	// algo internal transaction
 	protected.HandleFunc("/algo/createAssetOptin", algoHandler.AssetOptinHandler)
+	protected.HandleFunc("/algo/createSendPayment", algoHandler.SendPaymentHandler)
 
 	// algo purchase handler
 	protected.HandleFunc("/algo/algoPurchaseInit", algoHandler.AlgoPurchaseRequestHandler)

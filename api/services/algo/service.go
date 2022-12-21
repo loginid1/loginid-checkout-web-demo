@@ -231,6 +231,30 @@ func (s *AlgoService) CreateAssetOptionTxn(username string, address string, asse
 	return &txn, asset, nil
 }
 
+func (s *AlgoService) CreateSendPaymentTxn(username string, fromAddress string, toAddress string, amount uint64) (*types.Transaction, *services.ServiceError) {
+
+	// validate
+	// make transaction
+	// Send payment
+	txParams, err := s.AlgoNet.client.SuggestedParams().Do(context.Background())
+	if err != nil {
+		fmt.Printf("Error getting suggested tx params: %s\n", err)
+		return nil, services.CreateError("Error getting suggested tx params")
+	}
+	note := []byte(fmt.Sprintf("Send %d", amount))
+	// comment out the next two (2) lines to use suggested fees
+	// txParams.FlatFee = true
+	// txParams.Fee = 1000
+	// genesisHash := base64.StdEncoding.EncodeToString(txParams.GenesisHash)
+
+	txn, err := transaction.MakePaymentTxnWithFlatFee(fromAddress, toAddress, uint64(txParams.Fee), uint64(amount), uint64(txParams.FirstRoundValid), uint64(txParams.LastRoundValid), note, "", txParams.GenesisID, txParams.GenesisHash)
+	if err != nil {
+		fmt.Printf("Failed to maketransaction MakePaymentTxnWithFlatFee: %s\n", err)
+		return nil, services.CreateError("Error creating send payment transaction")
+	}
+	return &txn, nil
+}
+
 // END INTERNAL TRANSACTIONS
 
 func (algo *AlgoService) GetAccount(username string, address string, includeBalance bool) (*AlgoAccount, *services.ServiceError) {

@@ -17,7 +17,7 @@ import LoginIDLogo from "../assets/sidemenu/LoginIDLogo.svg";
 import { useNavigate } from "react-router-dom";
 
 const menuItems = [
-  "Credential",
+  "My Credential",
   "Algorand",
   "Dapps",
   "DIDs",
