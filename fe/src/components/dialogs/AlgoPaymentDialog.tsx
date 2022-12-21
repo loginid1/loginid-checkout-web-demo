@@ -24,9 +24,11 @@ import VaultLogo from "../../assets/logo_dark.svg";
 import { WalletTransaction } from "../../lib/common/api";
 import { DisplayMessage } from "../../lib/common/message";
 import ParseUtil from "../../lib/util/parse";
+import ValidateUtil from "../../lib/util/validate";
 import vaultSDK from "../../lib/VaultSDK";
 import {
 	AssetOptin,
+	PaymentTransaction,
 	SignedTxn
 } from "../../lib/VaultSDK/vault/algo";
 import { AuthService } from "../../services/auth";
@@ -41,13 +43,14 @@ const theme = createTheme({
 });
 let transactions: WalletTransaction[] = [];
 
-interface AddAssetDialog extends DialogProps {
+interface PaymentDialogProps extends DialogProps {
 	address: string;
+	amount: string;
 	handleClose: () => void;
 	handleSuccess?: () => void;
 	handleRefresh?: () => void;
 }
-export default function AssetOptionDialog(props: AddAssetDialog) {
+export default function AlgoPaymentDialog(props: PaymentDialogProps) {
 	const navigate = useNavigate();
 	//   const [transactions, setTransactions] = useState<WalletTransaction[]>([]);
 	const [displayMessage, setDisplayMessage] = useState<DisplayMessage | null>(
@@ -59,44 +62,44 @@ export default function AssetOptionDialog(props: AddAssetDialog) {
 	const [txSignCount, setTxSignCount] = useState<number>(0);
 	const [txIndex, setTxIndex] = useState<number>(0);
 	const [txLength, setTxLength] = useState<number>(1);
-	const [assetId, setAssetId] = useState<number | null>(null);
-	const [assetTxn, setAssetTxn] = useState<AssetOptin | null>(null);
+	const [toAddress, setToAddress] = useState<string>("");
+	const [amount, setAmount] = useState<number>(0);
+	const [txn, setTxn] = useState<PaymentTransaction | null>(null);
 
 	//useEffect(() => {setOpen(props.open)} );
 
-	const handleAssetChange = async (
+	const handleAddressChange = async (
 		event: React.ChangeEvent<HTMLInputElement>
 	) => {
 		const origin = window.location.origin;
 		const token = AuthService.getToken();
-		let asset_id = parseInt(event.target.value);
-		if (Number.isNaN(asset_id)) {
-			setAssetId(null);
-			setAssetTxn(null);
-		} else {
-			setAssetId(asset_id);
+		let address = event.target.value;
+		if (ValidateUtil.isAlgorandAddress(address)  && amount > 1000) {
+			setToAddress(address);
 
 			try {
 				if (token) {
-					const myTxn = await vaultSDK.addAsset(
+					const myTxn = await vaultSDK
+					.createSendPayment(
 						token,
-						asset_id,
 						props.address,
+						address,
+						amount,
 						origin
 					);
-					let assetOptin: AssetOptin = JSON.parse(myTxn.txn_data[0]);
-					setAssetTxn(assetOptin);
+					let assetOptin: PaymentTransaction = JSON.parse(myTxn.txn_data[0]);
+					setTxn(assetOptin);
 					setDisplayMessage(null);
 				} else {
 					setDisplayMessage({ type: "error", text: "no authorized" });
-					setAssetTxn(null);
+					setTxn(null);
 				}
 			} catch (error) {
 				setDisplayMessage({
 					text: (error as Error).message,
 					type: "error",
 				});
-				setAssetTxn(null);
+				setTxn(null);
 			}
 		}
 	};
@@ -104,10 +107,10 @@ export default function AssetOptionDialog(props: AddAssetDialog) {
 	async function handleTxConfirm() {
 		try {
 			let result: SignedTxn = await vaultSDK.txConfirmation(
-				assetTxn!.base.username,
-				assetTxn!.base.sign_payload,
-				assetTxn!.base.sign_nonce,
-				assetTxn!.base.raw_data,
+				txn!.base.username,
+				txn!.base.sign_payload,
+				txn!.base.sign_nonce,
+				txn!.base.raw_data,
 				true
 			);
 			// clear old error message
@@ -201,53 +204,44 @@ export default function AssetOptionDialog(props: AddAssetDialog) {
 							autoFocus
 							margin="dense"
 							id="name"
-							label="Enter Asset ID to add to your account"
-							type="number"
+							label="Enter reciever address  "
 							fullWidth
 							variant="outlined"
-							value={assetId}
-							onChange={handleAssetChange}
+							value={toAddress}
+							onChange={handleAddressChange}
+							sx={{ ml: 2, mr: 2 }}
+						/>
+					</Grid>
+					<Grid item container xs={12}>
+						<TextField
+							autoFocus
+							margin="dense"
+							id="name"
+							label="Enter amount in micro Algo"
+							type="number"
+							variant="outlined"
+							value={amount}
 							sx={{ ml: 2, mr: 2 }}
 						/>
 					</Grid>
 					<Grid item xs={12} sx={{ m: 2 }}>
 						<Divider variant="fullWidth"></Divider>
 					</Grid>
-					{assetTxn && DisplayAssetOptin(assetTxn)}
 				</Grid>
 			</DialogContent>
 			<DialogActions sx={{ justifyContent: "center", mb: 2 }}>
 				<Button onClick={handleCancel} variant="outlined">
 					Cancel
 				</Button>
-				{assetTxn && (
+				{txn && (
 					<Button variant="contained" onClick={handleTxConfirm}>
-						Add Asset
+						Confirm Payment
 					</Button>
 				)}
 			</DialogActions>
 		</Dialog>
 	);
 
-	function DisplayAddAssetInput() {
-		return (
-			<>
-				<Typography>Enter asset ID to add to your wallet</Typography>
-				<FormControl error variant="standard">
-					<InputLabel htmlFor="component-error">Name</InputLabel>
-					<Input
-						id="component-error"
-						value={assetId}
-						onChange={handleAssetChange}
-						aria-describedby="component-error-text"
-					/>
-					<FormHelperText id="component-error-text">
-						Error
-					</FormHelperText>
-				</FormControl>
-			</>
-		);
-	}
 }
 
 function DisplayAssetOptin(txn: AssetOptin) {

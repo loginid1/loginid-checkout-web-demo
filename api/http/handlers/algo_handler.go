@@ -576,6 +576,67 @@ func (h *AlgoHandler) AssetOptinHandler(w http.ResponseWriter, r *http.Request) 
 // Send Asset
 // Send Payment
 
+type SendPaymentRequest struct {
+	Amount      uint64 `json:"amount"`
+	FromAddress string `json:"from_address"`
+	ToAddress   string `json:"to_address"`
+	Origin      string `json:"origin"`
+}
+
+/**
+SendPaymentHandler "/algo/sendPayment"
+*/
+func (h *AlgoHandler) SendPaymentHandler(w http.ResponseWriter, r *http.Request) {
+
+	var request SendPaymentRequest
+	defer r.Body.Close()
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		http_common.SendErrorResponse(w, services.NewError("failed to parse request"))
+		return
+	}
+	session := r.Context().Value("session").(services.UserSession)
+
+	txn, sErr := h.AlgoService.CreateSendPaymentTxn(session.Username, request.FromAddress, request.ToAddress, request.Amount)
+
+	if sErr != nil {
+		http_common.SendErrorResponse(w, *sErr)
+		return
+	}
+
+	nonce, _ := utils.GenerateRandomString(16)
+	id := algo.TxIDFromTransactionB64(*txn)
+	rawData := algo.EncodeTransactionB64(*txn)
+
+	base := BaseTransaction{
+		From:        txn.Sender.String(),
+		Fee:         uint64(txn.Fee),
+		Note:        string(txn.Note),
+		RawData:     rawData,
+		SignPayload: id,
+		SignNonce:   nonce,
+		Username:    session.Username,
+		Alias:       "",
+		Require:     true,
+	}
+	aTxn := PaymentTransaction{
+		Base:   base,
+		Amount: uint64(txn.Amount),
+		To:     txn.Receiver.String(),
+	}
+	data, err := json.Marshal(aTxn)
+	if err != nil {
+		http_common.SendErrorResponse(w, services.NewError("failed to parse request"))
+		return
+	}
+
+	response := TxValidationResponse{
+		TxnData: []string{string(data)},
+		TxnType: []string{"payment"},
+		Origin:  request.Origin,
+	}
+	http_common.SendSuccessResponse(w, response)
+}
+
 // AlgoPurchaseRequestHandler
 type AlgoPurchaseRequest struct {
 	Address     string `json:"address"`

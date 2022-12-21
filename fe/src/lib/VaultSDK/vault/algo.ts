@@ -283,6 +283,16 @@ export class VaultAlgo extends Base {
         );
     }
 
+    async createSendPayment(token: string, fromAddress: string, toAddress: string, amount: number, origin: string): Promise<TxnValidationResponse> {
+        const header = { "x-session-token": token };
+        return await utils.http.post(
+            this._baseURL,
+            "/api/protected/algo/createSendPayment",
+            { from_address: fromAddress, to_address: toAddress, amount: amount, origin: origin },
+            header
+        );
+    }
+
     async txnValidation(transactions: WalletTransaction[], origin: string): Promise<TxnValidationResponse> {
         //const header = { "x-session-token": token };
         return await utils.http.post(
