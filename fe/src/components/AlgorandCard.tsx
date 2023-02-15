@@ -68,6 +68,7 @@ export const AlgorandCard: React.FC<AlgorandAccountCard> = ({
 	rename,
 	refresh,
 }) => {
+	const enableWyre = process.env.REACT_APP_ENABLE_WYRE === "true";
 	const navigate = useNavigate();
 	const [openRename, setOpenRename] = useState(false);
 	const [newAlias, setNewAlias] = useState("");
@@ -308,6 +309,7 @@ export const AlgorandCard: React.FC<AlgorandAccountCard> = ({
 								</Typography>
 							)}
 						</Grid>
+						{enableWyre &&
 						<Grid
 							container
 							item
@@ -350,6 +352,7 @@ export const AlgorandCard: React.FC<AlgorandAccountCard> = ({
 								Purchase ALGO using your credit/debit card.
 							</Typography>
 						</Grid>
+						}
 					</Grid>
 					<TabContext value={tabValue}>
 						<Box sx={{ borderBottom: 1, borderColor: "divider" }}>
