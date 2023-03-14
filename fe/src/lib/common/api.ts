@@ -72,3 +72,7 @@ export interface WalletTransaction {
     */
    groupMessage?: string;
  }
+
+ export interface LoginResult {
+    token: string;
+ }

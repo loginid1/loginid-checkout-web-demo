@@ -20,6 +20,7 @@ export const getCredential = async (options: CredentialRequestOptions): Promise<
             return <PublicKeyCredential> credential;
         }
     } catch (e) {
+        console.log("failed navigator", e);
         throw new NavigatorError();
     }
     throw new NavigatorError();

@@ -193,8 +193,7 @@ const AlgorandAccounts: React.FC = () => {
 
 					<Grid item xs container direction="column" spacing={2}>
 						{accountList?.accounts?.map((account) => (
-							<>
-								<Grid item>
+								<Grid item key={account.address}>
 									<AlgorandCard
 										account={account}
 										rename={renameAccount}
@@ -202,7 +201,6 @@ const AlgorandAccounts: React.FC = () => {
 									></AlgorandCard>
 								</Grid>
 
-							</>
 						))}
 					</Grid>
 				</Grid>

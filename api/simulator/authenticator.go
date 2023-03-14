@@ -12,8 +12,8 @@ import (
 	"fmt"
 
 	"github.com/fxamacker/cbor/v2"
-	"github.com/loginid1/authn-service/util"
 	"gitlab.com/loginid/software/services/loginid-vault/services/fido2"
+	"gitlab.com/loginid/software/services/loginid-vault/utils"
 )
 
 type Authenticator struct {
@@ -46,7 +46,8 @@ type ClientData struct {
 func NewAuthenticator(username string) *Authenticator {
 	// generate key pair
 	key, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
-	return &Authenticator{Username: username, KeyHandle: util.GenerateRandomString(16), PrivateKey: key, PublicKey: &key.PublicKey, KeyCounter: 0}
+	keyHandle, _ := utils.GenerateRandomString(16)
+	return &Authenticator{Username: username, KeyHandle: keyHandle, PrivateKey: key, PublicKey: &key.PublicKey, KeyCounter: 0}
 }
 
 func (a *Authenticator) Register(challenge string, rpid string, origin string) *RegisterOption {

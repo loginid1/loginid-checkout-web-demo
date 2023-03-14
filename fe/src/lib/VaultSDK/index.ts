@@ -4,6 +4,7 @@ import Base from "./base";
 import { applyMixins } from "./utils/encoding";
 import { VaultUser } from "./vault/user";
 import { VaultAlgo } from "./vault/algo";
+import { VaultFederated } from "./vault/federated";
 
 /**
  * Define the base class
@@ -19,12 +20,12 @@ export class VaultSDK {
 /**
  * Define the interface which merges the expected mixins with the same name as your base
  * */
-export interface VaultSDK extends Base, Browser,  VaultAuth, VaultUser, VaultAlgo {}
+export interface VaultSDK extends Base, Browser,  VaultAuth, VaultUser, VaultFederated, VaultAlgo {}
 
 /**
  * Apply the mixins into the base class via the JS at runtime
  * */
-applyMixins(VaultSDK, [Base, Browser,  VaultAuth, VaultUser, VaultAlgo]);
+applyMixins(VaultSDK, [Base, Browser,  VaultAuth, VaultUser, VaultFederated, VaultAlgo]);
 
 
 const BASE_URL = process.env.REACT_APP_VAULT_API_URL || "http://localhost:3001";

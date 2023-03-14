@@ -7,7 +7,7 @@ export default function DappPartnerList() {
   return (
     <Grid container spacing={1}>
       {itemData.map((item) => (
-        <Grid container item xs={6} sm={6} md={4} className={styles.parnterRoot}>
+        <Grid container item xs={6} sm={6} md={4} key={item.key} className={styles.parnterRoot}>
           <Box className={styles.partnerBox} sx={{m:1}}>
 
           <CardMedia
@@ -41,11 +41,13 @@ export default function DappPartnerList() {
 const images = importAll(require.context('./../assets/partners/', false, /\.svg$/));
 const itemData = [
   {
+    key: 'algorand',
     img: 'AlgorandLogo.svg',
     title: 'Algorand Foundation',
     desc: 'Powerful and sustainable blockchain',
   },
   {
+    key: 'folk',
     img: 'folk_finance.svg',
     title: 'Folks Finance',
     desc: 'DeFi Lending Platform',

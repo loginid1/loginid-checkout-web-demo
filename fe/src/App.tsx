@@ -35,6 +35,10 @@ import DIDHome from './routes/protected/DID/DIDHome';
 import Index from './routes/Index';
 import { Faq } from './routes/Faq';
 import { Help } from './routes/protected/Help';
+import WalletLogin from './routes/api/FederatedLogin';
+import FederatedLogin from './routes/api/FederatedLogin';
+import FederatedRegister from './routes/api/FederatedRegister';
+import EmailValidation from './routes/api/EmailValidation';
 
 
 
@@ -48,6 +52,9 @@ function App() {
         <Route path="/faq" element={<Faq />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/api/auth" element={<FederatedLogin />} />
+        <Route path="/api/register" element={<FederatedRegister />} />
+        <Route path="/api/email" element={<EmailValidation />} />
         <Route path="/add_device" element={<AddDevice />} />
         <Route path="/api/enable" element={<WalletEnable />} />
         <Route path="/api/enable/:data" element={<WalletEnable />} />

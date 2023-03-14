@@ -246,8 +246,9 @@ export const AlgorandCard: React.FC<AlgorandAccountCard> = ({
 								fontSize="12px"
 							>
 								Credentials:{" "}
-								{account.credentials_name.map((name) => (
+								{account.credentials_name.map((name,index) => (
 									<Chip
+										key={name+""+index}
 										sx={{ backgroundColor: "#E2F2FF" }}
 										size="small"
 										label={name}
@@ -311,6 +312,7 @@ export const AlgorandCard: React.FC<AlgorandAccountCard> = ({
 						</Grid>
 						{enableWyre &&
 						<Grid
+							key="sendwyre-btn"
 							container
 							item
 							xs={12}

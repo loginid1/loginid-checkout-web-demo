@@ -135,3 +135,12 @@ func (u *UserService) GetRecoveryList(username string) ([]UserRecovery, *service
 
 	return recoveryList, nil
 }
+
+func (u *UserService) GetUser(username string) (*User, *services.ServiceError) {
+	user, err := u.UserRepository.GetUserByUsername(username)
+	if err != nil {
+		return nil, services.CreateError("failed to retrieve user - try again")
+	}
+
+	return user, nil
+}

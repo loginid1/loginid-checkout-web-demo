@@ -1,3 +1,4 @@
+
 import Base, { Result } from "../base";
 import utils from "../utils";
 import {UAParser} from "ua-parser-js"
@@ -14,8 +15,9 @@ export interface AddCredentialOptions extends RegistrationOptions {
     roaming_authenticator?: boolean;
 }
 
-export class VaultAuth extends Base {
+export class VaultFederated extends Base {
 
+    /*
     async checkUser(username: string): Promise<boolean>{
         try {
 
@@ -45,12 +47,30 @@ export class VaultAuth extends Base {
         }
 
     }
+    */
+
+
+    async federated_validate_email(token: string): Promise<boolean>{
+
+        try {
+
+        await utils.http.post(
+            this._baseURL,
+            "/api/federated/email/validation",
+            { token: token },
+        );
+            return true; 
+        } catch (err ) {
+            return false;
+        }
+
+    }
 
     /**
      * Sign up a user for FIDO2 authentication.
      * @returns {Promise<Result>}
      * */
-    async register(username: string): Promise<Result> {
+    async federated_register(username: string): Promise<Result> {
         const session = localStorage.getItem("register_session");
 
         ;
@@ -72,7 +92,7 @@ export class VaultAuth extends Base {
 
         let initResponse = await utils.http.post(
             this._baseURL,
-            "/api/register/init",
+            "/api/federated/register/init",
             initPayload,
         );
 
@@ -124,7 +144,7 @@ export class VaultAuth extends Base {
         // TODO: Check for backward compatibility
         return await utils.http.post(
             this._baseURL,
-            "/api/register/complete",
+            "/api/federated/register/complete",
             completePayload,
         );
     }
@@ -134,7 +154,7 @@ export class VaultAuth extends Base {
      * Authenticate a previously registered user through FIDO2.
      * @returns {Promise<Result>}
      * */
-    async authenticate(username: string): Promise<Result> {
+    async federated_authenticate(username: string): Promise<Result> {
         let headers;
 
         // Init the authentication flow
@@ -147,7 +167,7 @@ export class VaultAuth extends Base {
 
         let initResponse = await utils.http.post(
             this._baseURL,
-            "/api/authenticate/init",
+            "/api/federated/authenticate/init",
             initPayload,
             headers
         );
@@ -187,79 +207,7 @@ export class VaultAuth extends Base {
 
         return await utils.http.post(
             this._baseURL,
-            "/api/authenticate/complete",
-            completePayload,
-        );
-    }
-
-    /**
-     * Sign up a user for FIDO2 authentication.
-     * @returns {Promise<Result>}
-     * */
-    async addCredential(username: string, code: string): Promise<Result> {
-
-        // Init the registration flow
-        const initPayload = <{
-            username: string;
-            code: string;
-        }> {
-            username,
-            code
-        };
-
-        let initResponse = await utils.http.post(
-            this._baseURL,
-            "/api/addCredential/init",
-            initPayload,
-        );
-
-        // Process the register init response and request the credential creation from the browser
-        const {  
-            attestation_payload: attestationPayload
-        } = initResponse;
-
-        const { credential_uuid: credentialUUID, ...publicKey } = attestationPayload;
-
-        const { challenge } = publicKey;
-        publicKey.challenge = utils.encoding.base64ToBuffer(publicKey.challenge);
-        publicKey.user.id = utils.encoding.base64ToBuffer(publicKey.user.id);
-        if (publicKey.excludeCredentials) {
-            publicKey.excludeCredentials = publicKey.excludeCredentials.map(utils.navigator.convertCredentialDescriptor);
-        }
-
-        const credential = await utils.navigator.createCredential({ publicKey });
-        const response = <AuthenticatorAttestationResponse>credential.response
-
-        const deviceName = this.getDeviceNameFromAgent()
-        // Complete the registration flow
-        const completePayload = <{
-            client_id: string;
-            device_name: string,
-            username: string;
-            challenge: string;
-            credential_uuid: string;
-            credential_id: string;
-            client_data: string;
-            attestation_data: string;
-            options?: { 
-                credential_name?: string; 
-            };
-        }> {
-            client_id: this._clientID,
-            username: username,
-            device_name: deviceName,
-                challenge: challenge,
-                credential_uuid: credentialUUID,
-                credential_id: utils.encoding.bufferToBase64(credential.rawId),
-                client_data: utils.encoding.bufferToBase64(response.clientDataJSON),
-                attestation_data: utils.encoding.bufferToBase64(response.attestationObject),
-        };
-
-
-        // TODO: Check for backward compatibility
-        return await utils.http.post(
-            this._baseURL,
-            "/api/addCredential/complete",
+            "/api/federated/authenticate/complete",
             completePayload,
         );
     }
@@ -290,5 +238,3 @@ export class VaultAuth extends Base {
         return deviceName;
    }
 }
-
-export default VaultAuth;

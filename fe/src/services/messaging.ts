@@ -48,7 +48,7 @@ export class MessagingService {
 
                     try{
                         let message : Message = JSON.parse(event.data)
-                        //console.log("message: " + event.data);
+                        console.log("message: " + event.data);
                         if(message.type === MessageType.ping.toString()) {
                             console.log(message.id);
                             this.target.postMessage(JSON.stringify(message), event.origin);

@@ -382,7 +382,6 @@ function DisplayGroupStep(props: DisplayGroupStepProps) {
 	if (props.max == 1) {
 		return <></>;
 	} else if (props.max < 4) {
-		console.log("here " + props.steps.length);
 		return (
 			<Stepper sx={{ mb: 2 }} activeStep={props.current} alternativeLabel>
 				{props.steps.map((label) => (
