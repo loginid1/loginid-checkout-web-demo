@@ -157,7 +157,7 @@ func (s *KeystoreService) LoadKeystore(kid string) *Keystore {
 	return dbks
 }
 
-func (s *KeystoreService) GenerateEmailValidationJWT(email string) (string, *services.ServiceError) {
+func (s *KeystoreService) GenerateEmailValidationJWT(email string, request_type string, session string) (string, *services.ServiceError) {
 
 	keystore := s.LoadKeystore(ksSessionID)
 	if keystore == nil {
@@ -169,7 +169,7 @@ func (s *KeystoreService) GenerateEmailValidationJWT(email string) (string, *ser
 		return "", services.CreateError("fail to load key in pem format")
 	}
 
-	claims := &EmailClaims{Email: email, Type: "register", IssuedAt: time.Now().Unix()}
+	claims := &EmailClaims{Email: email, Type: request_type, Session: session, IssuedAt: time.Now().Unix()}
 	token, err := utils.GenerateJWT(privateKey, keystore.ID, claims)
 	if err != nil {
 		return "", services.CreateError("fail to generate token")

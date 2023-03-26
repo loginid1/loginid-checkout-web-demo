@@ -32,11 +32,11 @@ func InitCacheClient() {
 	ctx := context.Background()
 	rdb = redis.NewClient(options)
 	pong, err := rdb.Ping(ctx).Result()
-	fmt.Println(pong, err)
 	if err != nil {
 		logger.Global.Error(fmt.Sprintf("failed to load redis: %s", err.Error()))
 		os.Exit(1)
 	}
+	fmt.Printf("ping redis: %s ", pong)
 }
 
 func GetCacheClient() *redis.Client {

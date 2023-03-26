@@ -5,6 +5,7 @@ import (
 
 	"github.com/algorand/go-algorand-sdk/crypto"
 	"github.com/algorand/go-algorand-sdk/mnemonic"
+	"github.com/google/uuid"
 	"gitlab.com/loginid/software/services/loginid-vault/services"
 	"gorm.io/gorm"
 )
@@ -21,8 +22,9 @@ func NewUserService(db *gorm.DB) (*UserService, error) {
 	return &userService, nil
 }
 
-func (u *UserService) CreateUserAccount(username string, device_name string, public_key string, key_alg string) *services.ServiceError {
+func (u *UserService) CreateUserAccount(username string, device_name string, public_key string, key_alg string) (string, *services.ServiceError) {
 	user := User{
+		ID:       uuid.New().String(),
 		Username: username,
 	}
 	credential := UserCredential{
@@ -32,9 +34,9 @@ func (u *UserService) CreateUserAccount(username string, device_name string, pub
 	}
 	err := u.UserRepository.CreateAccount(user, credential)
 	if err != nil {
-		return services.CreateError("failed to create account")
+		return "", services.CreateError("failed to create account")
 	}
-	return nil
+	return user.ID, nil
 }
 
 func (u *UserService) AddUserCredential(username string, device_name string, public_key string, key_alg string) *services.ServiceError {

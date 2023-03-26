@@ -1,9 +1,15 @@
 package keystore
 
+const (
+	KEmailClaimsRegister = "register"
+	KEmailClaimsLogin    = "login"
+)
+
 type EmailClaims struct {
 	Email    string `json:"email,omitempty"`
 	Type     string `json:"type"`
 	IssuedAt int64  `json:"iat,omitempty"`
+	Session  string `json:"session"`
 }
 
 type EmailLoginClaims struct {

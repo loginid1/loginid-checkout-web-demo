@@ -6,10 +6,11 @@ require (
 	github.com/algorand/go-algorand-sdk v1.15.0
 	github.com/allegro/bigcache v1.2.1
 	github.com/fxamacker/cbor/v2 v2.4.0
-	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/golang-migrate/migrate/v4 v4.15.3-0.20220513225907-acc11eda6d26
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/mux v1.8.0
+	github.com/gorilla/websocket v1.5.0
+	github.com/redis/go-redis/v9 v9.0.2
 	github.com/rs/cors v1.8.2
 	gitlab.com/loginid/software/libraries/goutil.git v1.14.1
 	gopkg.in/square/go-jose.v2 v2.6.0
@@ -21,10 +22,8 @@ require (
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
-	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/redis/go-redis/v9 v9.0.2 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
@@ -34,7 +33,6 @@ require (
 	github.com/aws/aws-sdk-go v1.44.215
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/cockroachdb/cockroach-go/v2 v2.2.11 // indirect
-	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/gorilla/css v1.0.0 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect

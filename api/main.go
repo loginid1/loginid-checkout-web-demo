@@ -15,6 +15,7 @@ import (
 	"gitlab.com/loginid/software/services/loginid-vault/http/handlers"
 	"gitlab.com/loginid/software/services/loginid-vault/http/middlewares"
 	"gitlab.com/loginid/software/services/loginid-vault/services/algo"
+	"gitlab.com/loginid/software/services/loginid-vault/services/app"
 	"gitlab.com/loginid/software/services/loginid-vault/services/fido2"
 	"gitlab.com/loginid/software/services/loginid-vault/services/keystore"
 	"gitlab.com/loginid/software/services/loginid-vault/services/sendwyre"
@@ -86,6 +87,8 @@ func main() {
 		os.Exit(0)
 	}
 
+	appService := app.NewAppService(db.GetConnection(), db.GetCacheClient())
+
 	// init http handlers & server
 	r := mux.NewRouter()
 
@@ -107,15 +110,18 @@ func main() {
 	api.HandleFunc("/addCredential/complete", authHandler.AddCredentialCompleteHandler)
 
 	//federated auth handler
-	federatedHandler := handlers.FederatedAuthHandler{UserService: userService, Fido2Service: fidoService, KeystoreService: keystoreService, RedisClient: db.GetCacheClient()}
+	federatedHandler := handlers.FederatedAuthHandler{UserService: userService, Fido2Service: fidoService, KeystoreService: keystoreService, RedisClient: db.GetCacheClient(), AppService: appService}
 	api.HandleFunc("/federated/checkuser", federatedHandler.CheckUserHandler)
+	api.HandleFunc("/federated/sessionInit", federatedHandler.SessionInitHandler)
 	api.HandleFunc("/federated/register/init", federatedHandler.FederatedRegisterInitHandler)
 	api.HandleFunc("/federated/register/complete", federatedHandler.FederatedRegisterCompleteHandler)
 	api.HandleFunc("/federated/authenticate/init", federatedHandler.FederatedAuthInitHandler)
 	api.HandleFunc("/federated/authenticate/complete", federatedHandler.FederatedAuthCompleteHandler)
-	api.HandleFunc("/federated/sendcode", federatedHandler.FederatedSendCodeHandler)
+	api.HandleFunc("/federated/sendEmailSession", federatedHandler.FederatedSendEmailSessionHandler)
 	api.HandleFunc("/federated/email/validation", federatedHandler.FederatedEmailValidationHandler)
-	api.HandleFunc("/federated/email/ws", federatedHandler.FederatedEmailWSHandler)
+	api.HandleFunc("/federated/email/ws/{session}", federatedHandler.FederatedEmailWSHandler)
+	api.HandleFunc("/federated/checkConsent", federatedHandler.CheckConsentHandler)
+	api.HandleFunc("/federated/saveConsent", federatedHandler.SaveConsentHandler)
 
 	// protected usesr handler
 
