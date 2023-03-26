@@ -65,10 +65,9 @@ func MigrateUp() {
 		}*/
 	// force previous version
 	/*
-		err = m.Force(2022042001)
+		err = m.Force(2023030303)
 		if err != nil {
 			logger.Global.Error(fmt.Sprintf("failed to force version: %s", err.Error()))
-		}
-	*/
+		}*/
 
 }

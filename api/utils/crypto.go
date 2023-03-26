@@ -150,6 +150,48 @@ func GenerateLoginApiTokenByUserID(key *ecdsa.PrivateKey, tokenType string, user
 
 }
 
+func GenerateTokenByUsername(key *ecdsa.PrivateKey, tokenType string, username string, payload string) (string, error) {
+	nonce := uuid.New().String()
+	claim := ApiClaims{
+		Type:     tokenType,
+		Nonce:    nonce,
+		Username: username,
+		IssuedAt: time.Now().Unix(),
+	}
+	if payload != "" {
+		h := sha256.Sum256([]byte(payload))
+		hash := base64.RawURLEncoding.EncodeToString(h[:])
+		claim.PayloadHash = hash
+	}
+
+	sig, err := jose.NewSigner(jose.SigningKey{Algorithm: jose.ES256, Key: key}, (&jose.SignerOptions{}).WithType("JWT"))
+	if err != nil {
+		return "", errors.New("failed to generate JWT")
+	}
+
+	raw, err := jwt.Signed(sig).Claims(claim).CompactSerialize()
+	if err != nil {
+		return "", errors.New("failed to generate JWT")
+	}
+	return raw, nil
+
+}
+
+func GenerateJWT(key *ecdsa.PrivateKey, kid string, claims interface{}) (string, error) {
+
+	sig, err := jose.NewSigner(jose.SigningKey{Algorithm: jose.ES256, Key: key}, (&jose.SignerOptions{}).WithType("JWT").WithHeader("kid", kid))
+	if err != nil {
+		return "", errors.New("failed to generate JWT")
+	}
+
+	raw, err := jwt.Signed(sig).Claims(claims).CompactSerialize()
+	if err != nil {
+		return "", errors.New("failed to generate JWT")
+	}
+	return raw, nil
+
+}
+
 type ECDSASig struct {
 	R, S *big.Int
 }
@@ -188,4 +230,31 @@ func ConvertSignatureRS(signature string) ([]byte, []byte, error) {
 	}
 
 	return sig.R.Bytes(), sig.S.Bytes(), nil
+}
+
+// Parse PEM encoded Elliptic Curve Private Key Structure
+func ParseECPrivateKeyFromPEM(key []byte) (*ecdsa.PrivateKey, error) {
+	var err error
+
+	// Parse PEM block
+	var block *pem.Block
+	if block, _ = pem.Decode(key); block == nil {
+		return nil, errors.New("not pem encoded")
+	}
+
+	// Parse the key
+	var parsedKey interface{}
+	if parsedKey, err = x509.ParseECPrivateKey(block.Bytes); err != nil {
+		if parsedKey, err = x509.ParsePKCS8PrivateKey(block.Bytes); err != nil {
+			return nil, err
+		}
+	}
+
+	var pkey *ecdsa.PrivateKey
+	var ok bool
+	if pkey, ok = parsedKey.(*ecdsa.PrivateKey); !ok {
+		return nil, errors.New("not private key")
+	}
+
+	return pkey, nil
 }

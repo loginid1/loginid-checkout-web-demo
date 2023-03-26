@@ -1,11 +1,12 @@
 package db
 
 import (
+	"context"
 	"crypto/tls"
 	"fmt"
 	"os"
 
-	"github.com/go-redis/redis"
+	"github.com/redis/go-redis/v9"
 	goutil "gitlab.com/loginid/software/libraries/goutil.git"
 	logger "gitlab.com/loginid/software/libraries/goutil.git/logger"
 )
@@ -28,13 +29,14 @@ func InitCacheClient() {
 		}
 	}
 
+	ctx := context.Background()
 	rdb = redis.NewClient(options)
-	pong, err := rdb.Ping().Result()
-	fmt.Println(pong, err)
+	pong, err := rdb.Ping(ctx).Result()
 	if err != nil {
 		logger.Global.Error(fmt.Sprintf("failed to load redis: %s", err.Error()))
 		os.Exit(1)
 	}
+	fmt.Printf("ping redis: %s ", pong)
 }
 
 func GetCacheClient() *redis.Client {

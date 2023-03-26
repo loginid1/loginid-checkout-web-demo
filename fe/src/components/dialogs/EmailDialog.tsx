@@ -1,0 +1,82 @@
+import { ContentCopy } from "@mui/icons-material";
+import {
+	Box,
+	Button,
+	Chip,
+	Dialog,
+	DialogActions,
+	DialogContent,
+	DialogProps,
+	Stack,
+	Typography,
+} from "@mui/material";
+import { useState } from "react";
+import ParseUtil from "../../lib/util/parse";
+import { KeyDisplay } from "../KeyDisplay";
+import EmailIcon from '@mui/icons-material/Email';
+
+interface EmailProps extends DialogProps {
+	email: string;
+	session: string;
+	type: string;
+	handleClose: () => void;
+}
+
+export function EmailDialog(props: EmailProps) {
+	function handleClose() {
+		props.handleClose();
+	}
+
+	return (
+		<Dialog open={props.open} fullWidth>
+			{props.type === "register" ?
+				<Register></Register> : <Login></Login>
+			}
+		</Dialog>
+	);
+
+
+	function Register(){
+		return (
+			<>
+				<DialogContent>
+
+					<Typography  variant="body2" >
+						Please check your email <b>{props.email}</b> to register to this session: 
+					</Typography>
+					<Typography align="center" variant="h2" color="secondary" sx={{m:2}}>
+						{ParseUtil.displaySessionSF(props.session)}
+					</Typography>
+				</DialogContent>
+				<DialogActions >
+					<Button variant="text" onClick={() => handleClose()}>
+						cancel	
+					</Button>
+				</DialogActions>
+
+			</>
+		);
+	}
+	function Login(){
+		return (
+
+			<>
+				<DialogContent>
+
+					<Typography  variant="body2" >
+						Please check your email <b>{props.email}</b> to login to this session: 
+					</Typography>
+					<Typography align="center" variant="h2" color="secondary" sx={{m:2}}>
+						{ParseUtil.displaySessionSF(props.session)}
+					</Typography>
+				</DialogContent>
+				<DialogActions >
+					<Button variant="text" onClick={() => handleClose()}>
+						cancel	
+					</Button>
+				</DialogActions>
+			</>
+
+		);
+	}
+}

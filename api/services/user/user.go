@@ -10,10 +10,12 @@ type PendingUser struct {
 }
 
 type User struct {
-	ID            string    `json:"id" gorm:"primary_key"`
-	Username      string    `json:"username" gorm:"not null"`
-	UsernameLower string    `json:"username_lower" gorm:"->;type:varchar GENERATED ALWAYS AS (lower(username)) STORED;default:(-)"`
-	Iat           time.Time `json:"iat" gorm:"DEFAULT:current_timestamp"`
+	ID             string    `json:"id" gorm:"primary_key"`
+	Username       string    `json:"username" gorm:"not null"`
+	UsernameLower  string    `json:"username_lower" gorm:"->;type:varchar GENERATED ALWAYS AS (lower(username)) STORED;default:(-)"`
+	Email          string    `json:"email" `
+	EmailValidated bool      `json:"email_validated" `
+	Iat            time.Time `json:"iat" gorm:"DEFAULT:current_timestamp"`
 }
 
 // public key format x509

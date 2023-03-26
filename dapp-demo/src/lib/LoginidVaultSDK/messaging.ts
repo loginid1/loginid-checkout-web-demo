@@ -5,7 +5,7 @@ export interface Message{
     type: string;
 }
 
-enum MessageType {
+export enum MessageType {
     data="data", ping="ping", error="error"
 }
 

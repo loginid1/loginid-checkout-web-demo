@@ -15,13 +15,13 @@ export const CodeInput: React.FC<CodeInputProps> = ({
   const props = {
     inputStyle: {
       fontFamily: LoginID.typography.fontFamily,
-      margin: "2px",
-      borderRadius: "6px",
+      margin: "1px",
+      borderRadius: "4px",
       fontSize: "14px",
-      paddingLeft: "8px",
+      paddingLeft: "4px",
       paddingRight: 0,
-      width: "37px",
-      height: "40px",
+      width: "32px",
+      height: "32px",
       border: `1px solid ${LoginID.palette.primary.main}`,
       justifyContent: "center",
     },

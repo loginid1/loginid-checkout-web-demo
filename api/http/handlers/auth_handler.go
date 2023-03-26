@@ -105,7 +105,7 @@ func (u *AuthHandler) RegisterCompleteHandler(w http.ResponseWriter, r *http.Req
 	}
 
 	// save user to database
-	err = u.UserService.CreateUserAccount(request.Username, request.DeviceName, public_key, key_alg)
+	_, err = u.UserService.CreateUserAccount(request.Username, request.DeviceName, public_key, key_alg)
 	if err != nil {
 		http_common.SendErrorResponse(w, *err)
 		return

@@ -15,7 +15,9 @@ import (
 	"gitlab.com/loginid/software/services/loginid-vault/http/handlers"
 	"gitlab.com/loginid/software/services/loginid-vault/http/middlewares"
 	"gitlab.com/loginid/software/services/loginid-vault/services/algo"
+	"gitlab.com/loginid/software/services/loginid-vault/services/app"
 	"gitlab.com/loginid/software/services/loginid-vault/services/fido2"
+	"gitlab.com/loginid/software/services/loginid-vault/services/keystore"
 	"gitlab.com/loginid/software/services/loginid-vault/services/sendwyre"
 	"gitlab.com/loginid/software/services/loginid-vault/services/user"
 )
@@ -30,7 +32,21 @@ func main() {
 		db.MigrateUp()
 	}
 
+	db.InitCacheClient()
+
 	// init services
+
+	keystoreService, err := keystore.NewKeystoreService(db.GetConnection())
+	if err != nil {
+		logger.Global.Fatal(err.Error())
+		os.Exit(0)
+	}
+	err = keystoreService.InitKeystore()
+	if err != nil {
+		logger.Global.Fatal(err.Error())
+		os.Exit(0)
+	}
+
 	userService, err := user.NewUserService(db.GetConnection())
 	if err != nil {
 		logger.Global.Fatal(err.Error())
@@ -71,6 +87,8 @@ func main() {
 		os.Exit(0)
 	}
 
+	appService := app.NewAppService(db.GetConnection(), db.GetCacheClient())
+
 	// init http handlers & server
 	r := mux.NewRouter()
 
@@ -90,6 +108,20 @@ func main() {
 	api.HandleFunc("/authenticate/complete", authHandler.AuthenticateCompleteHandler)
 	api.HandleFunc("/addCredential/init", authHandler.AddCredentialInitHandler)
 	api.HandleFunc("/addCredential/complete", authHandler.AddCredentialCompleteHandler)
+
+	//federated auth handler
+	federatedHandler := handlers.FederatedAuthHandler{UserService: userService, Fido2Service: fidoService, KeystoreService: keystoreService, RedisClient: db.GetCacheClient(), AppService: appService}
+	api.HandleFunc("/federated/checkuser", federatedHandler.CheckUserHandler)
+	api.HandleFunc("/federated/sessionInit", federatedHandler.SessionInitHandler)
+	api.HandleFunc("/federated/register/init", federatedHandler.FederatedRegisterInitHandler)
+	api.HandleFunc("/federated/register/complete", federatedHandler.FederatedRegisterCompleteHandler)
+	api.HandleFunc("/federated/authenticate/init", federatedHandler.FederatedAuthInitHandler)
+	api.HandleFunc("/federated/authenticate/complete", federatedHandler.FederatedAuthCompleteHandler)
+	api.HandleFunc("/federated/sendEmailSession", federatedHandler.FederatedSendEmailSessionHandler)
+	api.HandleFunc("/federated/email/validation", federatedHandler.FederatedEmailValidationHandler)
+	api.HandleFunc("/federated/email/ws/{session}", federatedHandler.FederatedEmailWSHandler)
+	api.HandleFunc("/federated/checkConsent", federatedHandler.CheckConsentHandler)
+	api.HandleFunc("/federated/saveConsent", federatedHandler.SaveConsentHandler)
 
 	// protected usesr handler
 

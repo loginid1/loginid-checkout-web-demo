@@ -1,6 +1,7 @@
 import Base, { Result } from "../base";
 import utils from "../utils";
 import {UAParser} from "ua-parser-js"
+import { SDKError } from "../utils/errors";
 
 
 /**
@@ -14,6 +15,36 @@ export interface AddCredentialOptions extends RegistrationOptions {
 }
 
 export class VaultAuth extends Base {
+
+    async checkUser(username: string): Promise<boolean>{
+        try {
+
+        await utils.http.post(
+            this._baseURL,
+            "/api/federated/checkuser",
+            { username: username },
+        );
+        console.log("user found");
+            return true; 
+        } catch (err ) {
+            return false;
+        }
+    }
+
+    async sendCode(username: string): Promise<boolean>{
+        try {
+
+        await utils.http.post(
+            this._baseURL,
+            "/api/federated/sendcode",
+            { email: username },
+        );
+            return true; 
+        } catch (err ) {
+            return false;
+        }
+
+    }
 
     /**
      * Sign up a user for FIDO2 authentication.
