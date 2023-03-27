@@ -100,13 +100,13 @@ function ManageCredential() {
 		}
 	}
 
-	async function generateCredentialCode() : Promise<string | null> {
+	async function generateCredentialCode(): Promise<string | null> {
 		const token = AuthService.getToken();
 		if (token) {
 			const response = await vaultSDK.generateCredentialCode(token);
-			return response.code
+			return response.code;
 		}
-		return null 
+		return null;
 	}
 
 	const [openCredential, setOpenCredential] = React.useState(false);
@@ -125,7 +125,7 @@ function ManageCredential() {
 	};
 
 	const handleClickOpenRecovery = async () => {
-		await createRecovery()
+		await createRecovery();
 		setOpenRecovery(true);
 	};
 
@@ -281,8 +281,14 @@ function ManageCredential() {
 						>
 							Public Key: <strong>{recovery?.public_key} </strong>
 						</Typography>
-						<Alert severity="warning">Mnemonic phrases below will only display within this dialog - please securely store them!</Alert>
-						<DialogContentText id="alert-dialog-description" color="primary">
+						<Alert severity="warning">
+							Mnemonic phrases below will only display within this
+							dialog - please securely store them!
+						</Alert>
+						<DialogContentText
+							id="alert-dialog-description"
+							color="primary"
+						>
 							{recovery?.private_key}
 						</DialogContentText>
 					</DialogContent>

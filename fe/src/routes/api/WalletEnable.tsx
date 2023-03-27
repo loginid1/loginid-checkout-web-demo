@@ -37,7 +37,7 @@ interface WalletEnableSession {
 const theme = createTheme();
 const mService = new MessagingService(window.opener);
 let input: boolean = false;
-let wSession : WalletEnableSession | null = null;
+let wSession: WalletEnableSession | null = null;
 
 export default function WalletEnable() {
 	const params = useParams();
@@ -51,7 +51,6 @@ export default function WalletEnable() {
 		null
 	);
 	useEffect(() => {
-
 		let target = window.opener;
 		if (target != null) {
 			mService.onMessage((msg, origin) => onMessageHandle(msg, origin));
@@ -84,12 +83,17 @@ export default function WalletEnable() {
 		}
 		const auth = AuthService.isLoggedIn();
 		if (!auth) {
-
-			let sessionString =JSON.stringify(wSession);
-			// create session 
-			let redirect_url = "/login?redirect_url=" + encodeURIComponent("/api/enable/")+EncodingUtil.encodeString(sessionString);
-			if (!AuthService.hasAccount()){
-				redirect_url = "/register?redirect_url=" + encodeURIComponent("/api/enable/")+EncodingUtil.encodeString(sessionString);
+			let sessionString = JSON.stringify(wSession);
+			// create session
+			let redirect_url =
+				"/login?redirect_url=" +
+				encodeURIComponent("/api/enable/") +
+				EncodingUtil.encodeString(sessionString);
+			if (!AuthService.hasAccount()) {
+				redirect_url =
+					"/register?redirect_url=" +
+					encodeURIComponent("/api/enable/") +
+					EncodingUtil.encodeString(sessionString);
 			}
 			navigate(redirect_url);
 		}

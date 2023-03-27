@@ -162,7 +162,10 @@ export default function FederatedLogin() {
 				// need to popup register page
 				return;
 			}
-			const response = await vaultSDK.federated_authenticate(username,sessionId);
+			const response = await vaultSDK.federated_authenticate(
+				username,
+				sessionId
+			);
 			AuthService.storeSession({
 				username: username,
 				token: response.jwt,
@@ -320,18 +323,17 @@ export default function FederatedLogin() {
 					You have successfully login as:
 				</Typography>
 				<Chip icon={<EmailIcon />} label={username}></Chip>
-				{ consent &&
-
-				<Button
-					fullWidth
-					variant="contained"
-					onClick={saveConsent}
-					size="small"
-					sx={{ mt: 1, mb: 1 }}
-				>
-					Allow
-				</Button>
-				}
+				{consent && (
+					<Button
+						fullWidth
+						variant="contained"
+						onClick={saveConsent}
+						size="small"
+						sx={{ mt: 1, mb: 1 }}
+					>
+						Allow
+					</Button>
+				)}
 			</>
 		);
 	}
