@@ -52,7 +52,10 @@ import {
 	RecoveryList,
 	RecoveryPhrase,
 } from "../../lib/VaultSDK/vault/user";
-import { AlgoAccountCreationRequest,  ContractAccount } from "../../lib/VaultSDK/vault/algo";
+import {
+	AlgoAccountCreationRequest,
+	ContractAccount,
+} from "../../lib/VaultSDK/vault/algo";
 import { DisplayMessage } from "../../lib/common/message";
 
 const theme = createTheme();
@@ -66,7 +69,9 @@ function CreateAlgorand() {
 	const [formRecovery, setFormRecovery] = useState<string>("");
 	const [formCredentialList, setFormCredentialList] = useState<string[]>([]);
 	const [formCredIDList, setFormCredIDList] = useState<string[]>([]);
-	const [displayMessage, setDisplayMessage] = useState<DisplayMessage | null>(null);
+	const [displayMessage, setDisplayMessage] = useState<DisplayMessage | null>(
+		null
+	);
 	const [aliasName, setAliasName] = useState("");
 	useEffect(() => {
 		retrieveCredentials();
@@ -91,34 +96,39 @@ function CreateAlgorand() {
 		}
 	}
 
-
 	async function handleAccountCreation() {
-		if(aliasName.length <=0 ){
-			setDisplayMessage({text:"Alias is empty",type:"error"});
+		if (aliasName.length <= 0) {
+			setDisplayMessage({ text: "Alias is empty", type: "error" });
 			return;
 		}
-		if(formCredentialList.length <=0 ){
-			setDisplayMessage({text:"Must have atleast one credential", type:"error"});
+		if (formCredentialList.length <= 0) {
+			setDisplayMessage({
+				text: "Must have atleast one credential",
+				type: "error",
+			});
 			return;
 		}
-		if(formRecovery.length <=0) {
-			setDisplayMessage({text:"Recovery is required", type:"error"});
+		if (formRecovery.length <= 0) {
+			setDisplayMessage({ text: "Recovery is required", type: "error" });
 			return;
 		}
 
-		if(script?.address == null) {
-			setDisplayMessage({text:"Missing address for preview script", type:"error"});
+		if (script?.address == null) {
+			setDisplayMessage({
+				text: "Missing address for preview script",
+				type: "error",
+			});
 			return;
 		}
 
 		console.log("credID: ", formCredIDList);
 
-		let request : AlgoAccountCreationRequest = {
+		let request: AlgoAccountCreationRequest = {
 			alias: aliasName,
-			verify_address: script?.address ,
+			verify_address: script?.address,
 			cred_id_list: formCredIDList,
 			recovery: formRecovery,
-		}
+		};
 
 		const token = AuthService.getToken();
 		if (token) {
@@ -126,15 +136,23 @@ function CreateAlgorand() {
 				const response = await vaultSDK.createAccount(token, request);
 
 				// clear old error message
-				setDisplayMessage({text:"Account creation successful!!",type:"info"})
-			} catch (error){
-				setDisplayMessage({text:(error as Error).message,type:"error"});
+				setDisplayMessage({
+					text: "Account creation successful!!",
+					type: "info",
+				});
+			} catch (error) {
+				setDisplayMessage({
+					text: (error as Error).message,
+					type: "error",
+				});
 			}
 		} else {
-			setDisplayMessage({text:"missing auth token - retry login", type:"error"});
+			setDisplayMessage({
+				text: "missing auth token - retry login",
+				type: "error",
+			});
 			return;
 		}
-
 	}
 
 	const handleRecoveryChange = (event: SelectChangeEvent) => {
@@ -160,12 +178,18 @@ function CreateAlgorand() {
 	};
 
 	async function generateScript(credentialList: string[], recovery: string) {
-		if(credentialList.length <=0 ){
-			setDisplayMessage({text:"To preview account - must have atleast one credential", type:"error"});
+		if (credentialList.length <= 0) {
+			setDisplayMessage({
+				text: "To preview account - must have atleast one credential",
+				type: "error",
+			});
 			return;
 		}
-		if(recovery.length <=0) {
-			setDisplayMessage({text:"To preview account - choose a recovery", type:"error"});
+		if (recovery.length <= 0) {
+			setDisplayMessage({
+				text: "To preview account - choose a recovery",
+				type: "error",
+			});
 			return;
 		}
 		const token = AuthService.getToken();
@@ -178,8 +202,11 @@ function CreateAlgorand() {
 				);
 				setScript(script);
 				setDisplayMessage(null);
-			} catch (error){
-				setDisplayMessage({text:(error as Error).message,type:"error"});
+			} catch (error) {
+				setDisplayMessage({
+					text: (error as Error).message,
+					type: "error",
+				});
 			}
 		} else {
 		}
@@ -213,15 +240,22 @@ function CreateAlgorand() {
 						</Typography>
 					</Toolbar>
 				</AppBar>
-				{displayMessage &&
-				<Alert severity={displayMessage?.type as AlertColor || 'info'} sx={{mt: 4}}>{displayMessage.text}</Alert>
-				}
+				{displayMessage && (
+					<Alert
+						severity={
+							(displayMessage?.type as AlertColor) || "info"
+						}
+						sx={{ mt: 4 }}
+					>
+						{displayMessage.text}
+					</Alert>
+				)}
 				<TextField
 					id="outlined-name"
 					label="Account Alias"
 					name="alias"
 					sx={{ mt: 4 }}
-					onChange={e => setAliasName(e.target.value)}
+					onChange={(e) => setAliasName(e.target.value)}
 					fullWidth
 				/>
 				<FormControl fullWidth sx={{ mt: 2 }}>
@@ -231,7 +265,6 @@ function CreateAlgorand() {
 					<Select
 						multiple
 						native
-
 						value={formCredentialList}
 						// @ts-ignore Typings are not considering `native`
 						onChange={handleCredentialChangleMultiple}

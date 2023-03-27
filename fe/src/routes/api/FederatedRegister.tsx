@@ -16,7 +16,7 @@ import {
 	Typography,
 } from "@mui/material";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import React, { useState , useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import { LoginID } from "../../theme/theme";
 import background from "../../assets/background.svg";
 import { ReactComponent as VaultLogo } from "../../assets/logo.svg";
@@ -25,14 +25,14 @@ import { AuthService } from "../../services/auth";
 import { CodeInput } from "../../components/CodeInput";
 import { TermDialog } from "../../components/dialogs/TermOfServiceDialog";
 import { Message, MessagingService } from "../../services/messaging";
-import EmailIcon from '@mui/icons-material/Email';
+import EmailIcon from "@mui/icons-material/Email";
 
 import jwt_decode from "jwt-decode";
 import { DisplayMessage } from "../../lib/common/message";
 import { EmailDialog } from "../../components/dialogs/EmailDialog";
 const mService = new MessagingService(window.opener);
-let wsurl = process.env.REACT_APP_WS_URL || "ws://localhost:3001"
-let ws : WebSocket | null = null;
+let wsurl = process.env.REACT_APP_WS_URL || "ws://localhost:3001";
+let ws: WebSocket | null = null;
 export default function FederatedRegister() {
 	const navigate = useNavigate();
 	const [searchParams, setSearchParams] = useSearchParams();
@@ -49,13 +49,13 @@ export default function FederatedRegister() {
 	const [errorMessage, setErrorMessage] = useState("");
 	const [termOpen, setTermOpen] = useState<boolean>(false);
 	const [openEmailDialog, setOpenEmailDialog] = useState<boolean>(false);
-	const [displayMessage, setDisplayMessage] = useState<DisplayMessage | null>( null);
+	const [displayMessage, setDisplayMessage] = useState<DisplayMessage | null>(
+		null
+	);
 
 	useEffect(() => {
-
 		let aSession = searchParams.get("session");
-		if (aSession != null ){
-
+		if (aSession != null) {
 			setSessionId(aSession);
 		}
 
@@ -79,56 +79,58 @@ export default function FederatedRegister() {
 		}
 	}, []);
 
-
 	function onMessageHandle(msg: Message, origin: string) {
 		try {
 			mService.origin = origin;
 			mService.id = msg.id;
 			// validate enable
-			if(msg.type == "register_init") {
-				
+			if (msg.type == "register_init") {
 			}
-		
 		} catch (error) {
 			console.log(error);
 		}
 	}
 	async function registerFido() {
-
 		try {
-
-			const response = await vaultSDK.federated_register(username, token, sessionId);
+			const response = await vaultSDK.federated_register(
+				username,
+				token,
+				sessionId
+			);
 			AuthService.storeSession({
 				username: username,
 				token: response.jwt,
 			});
-			let message = {type:"register_complete", channel:"register", data:response.jwt, id: mService.id}
+			let message = {
+				type: "register_complete",
+				channel: "register",
+				data: response.jwt,
+				id: mService.id,
+			};
 			mService.sendMessage(message);
 			window.close();
 			//navigate("/quick_add_algorand");
 			//handleAccountCreation();
-      AuthService.storePref({username:username});
+			AuthService.storePref({ username: username });
 		} catch (error) {
 			setErrorMessage((error as Error).message);
 		}
-	}	
+	}
 
-
-  async function emailRegister(){
-
-	console.log(sessionId);
-	await vaultSDK.sendEmailSession(sessionId, username,"register");
+	async function emailRegister() {
+		console.log(sessionId);
+		await vaultSDK.sendEmailSession(sessionId, username, "register");
 		//setWaitingMessage("Check email for login session")
 		setWaitingIndicator(true);
-		setOpenEmailDialog(true);	
-	ws = new WebSocket(wsurl + "/api/federated/email/ws/" + sessionId);
+		setOpenEmailDialog(true);
+		ws = new WebSocket(wsurl + "/api/federated/email/ws/" + sessionId);
 		ws.onopen = () => {
-			ws?.send(JSON.stringify({email: username, type:"register"}));
-		}
-		ws.onmessage = (event) =>{
+			ws?.send(JSON.stringify({ email: username, type: "register" }));
+		};
+		ws.onmessage = (event) => {
 			let token = event.data;
 			let decoded = jwt_decode(token);
-			if (decoded != null ){
+			if (decoded != null) {
 				closeEmailDialog();
 				//registerFido(token);
 				setToken(token);
@@ -136,35 +138,37 @@ export default function FederatedRegister() {
 				//ws?.close();
 				// register fido
 			}
-		}
+		};
 		ws.onclose = () => {
 			// close websocket
-				setDisplayMessage({
-					text: "email session timeout or cancel!",
-					type: "error",
-				});
-		}
-
-  }
-
-  function closeEmailDialog(){
-	setWaitingIndicator(false);
-	setOpenEmailDialog(false);
-	if (ws != null){
-		ws.close();
+			setDisplayMessage({
+				text: "email session timeout or cancel!",
+				type: "error",
+			});
+		};
 	}
-  }
-	async function handleCancel(){
-		let message = {type:"register_cancel", channel:"register", data:"user cancel", id: mService.id}
-		mService.sendMessage(message)
+
+	function closeEmailDialog() {
+		setWaitingIndicator(false);
+		setOpenEmailDialog(false);
+		if (ws != null) {
+			ws.close();
+		}
+	}
+	async function handleCancel() {
+		let message = {
+			type: "register_cancel",
+			channel: "register",
+			data: "user cancel",
+			id: mService.id,
+		};
+		mService.sendMessage(message);
 		window.close();
 	}
 
 	return (
 		<ThemeProvider theme={LoginID}>
-				{ waitingIndicator &&
-				<LinearProgress/>
-				}
+			{waitingIndicator && <LinearProgress />}
 			<CssBaseline />
 			<Container
 				component="main"
@@ -195,30 +199,27 @@ export default function FederatedRegister() {
 					>
 						<VaultLogo />
 
-						{page === "email" &&
-							<Email></Email>
-						}
-						{page === "fido" &&
-							<Fido></Fido>
-						}
-
+						{page === "email" && <Email></Email>}
+						{page === "fido" && <Fido></Fido>}
 					</Stack>
 				</Paper>
 
-				<EmailDialog type="register" email={username} session={sessionId} open={openEmailDialog} handleClose={closeEmailDialog}></EmailDialog>
+				<EmailDialog
+					type="register"
+					email={username}
+					session={sessionId}
+					open={openEmailDialog}
+					handleClose={closeEmailDialog}
+				></EmailDialog>
 			</Container>
 		</ThemeProvider>
 	);
 
-	function Email(){
+	function Email() {
 		return (
 			<>
-				<Typography
-					variant="body1"
-					marginTop={2}
-					maxWidth="400px"
-				>
-					Create a new account to login to XYZ app. 
+				<Typography variant="body1" marginTop={2} maxWidth="400px">
+					Create a new account to login to XYZ app.
 				</Typography>
 				{errorMessage.length > 0 && (
 					<Alert severity="error">{errorMessage}</Alert>
@@ -231,16 +232,20 @@ export default function FederatedRegister() {
 					onChange={(e) => setUsername(e.target.value)}
 				/>
 				<Typography variant="body1">
-				By clicking 'Create Account', I agree to the{" "} 
-					<Link onClick={()=>setTermOpen(true)} >terms of service</Link>
-					<TermDialog open={termOpen} handleClose={()=>setTermOpen(false)}/>
+					By clicking 'Create Account', I agree to the{" "}
+					<Link onClick={() => setTermOpen(true)}>
+						terms of service
+					</Link>
+					<TermDialog
+						open={termOpen}
+						handleClose={() => setTermOpen(false)}
+					/>
 				</Typography>
 				<Button
 					variant="contained"
 					size="small"
 					sx={{ mt: 3, mb: 0 }}
 					onClick={emailRegister}
-
 				>
 					Create Account
 				</Button>
@@ -253,13 +258,11 @@ export default function FederatedRegister() {
 					Cancel
 				</Button>
 			</>
-		)
-
+		);
 	}
 
-	function Fido(){
+	function Fido() {
 		return (
-
 			<>
 				{errorMessage.length > 0 && (
 					<Alert severity="error">{errorMessage}</Alert>
@@ -269,18 +272,18 @@ export default function FederatedRegister() {
 					variant="body2"
 					color="text.secondary"
 				>
-					You have successfully confirmed your email.  Press "Add my passkey" to complete this registration:	
+					You have successfully confirmed your email. Press "Add my
+					passkey" to complete this registration:
 				</Typography>
-				<Chip icon={<EmailIcon/>} label={username}></Chip>
-						<Button
-							variant="contained"
-							size="small"
-							sx={{ mt: 3, mb: 0 }}
-							onClick={registerFido}
-
-						>
-							Add My Passkey
-						</Button>
+				<Chip icon={<EmailIcon />} label={username}></Chip>
+				<Button
+					variant="contained"
+					size="small"
+					sx={{ mt: 3, mb: 0 }}
+					onClick={registerFido}
+				>
+					Add My Passkey
+				</Button>
 				<Button
 					variant="text"
 					size="small"

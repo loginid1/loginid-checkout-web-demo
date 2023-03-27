@@ -124,21 +124,16 @@ function ManageAlgorand() {
 								align="left"
 							>
 								Credentials:
-
 							</Typography>
-							{
-								account?.credentials_name?.map((cred_name) =>
-									<Chip label={cred_name} />
-								)
-
-							}
+							{account?.credentials_name?.map((cred_name) => (
+								<Chip label={cred_name} />
+							))}
 							<Typography
 								variant="body2"
 								color="text.primary"
 								align="left"
 							>
 								Recovery:
-
 							</Typography>
 							<Chip label={account?.recovery_address} />
 						</CardContent>
@@ -164,18 +159,9 @@ function ManageAlgorand() {
 				<Button onClick={() => navigate("/create_algorand")}>
 					Create New Account
 				</Button>
-
-
-
 			</Container>
-
-
 		</ThemeProvider>
 	);
 }
 
-
 export default ManageAlgorand;
-
-
-
