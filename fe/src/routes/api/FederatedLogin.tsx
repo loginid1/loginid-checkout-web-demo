@@ -47,7 +47,7 @@ interface WalletLoginSession {
 	requestId: number;
 }
 
-let wsurl = process.env.REACT_APP_WS_URL || "ws://localhost:3001";
+let wsurl = process.env.REACT_APP_VAULT_WS_URL || "ws://localhost:3001";
 const mService = new MessagingService(window.opener);
 let input: boolean = false;
 let wSession: WalletLoginSession | null = null;

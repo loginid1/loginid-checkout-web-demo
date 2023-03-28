@@ -31,7 +31,7 @@ import jwt_decode from "jwt-decode";
 import { DisplayMessage } from "../../lib/common/message";
 import { EmailDialog } from "../../components/dialogs/EmailDialog";
 const mService = new MessagingService(window.opener);
-let wsurl = process.env.REACT_APP_WS_URL || "ws://localhost:3001";
+let wsurl = process.env.REACT_APP_VAULT_WS_URL || "ws://localhost:3001";
 let ws: WebSocket | null = null;
 export default function FederatedRegister() {
 	const navigate = useNavigate();

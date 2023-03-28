@@ -1494,10 +1494,10 @@
     "@jridgewell/resolve-uri" "3.1.0"
     "@jridgewell/sourcemap-codec" "1.4.14"
 
-"@loginid/vault-sdk@^0.30.0":
-  "integrity" "sha512-VnH05UwQw6YRmprFobBSucMCtCEYNMwW3E+Q1pASMeTidBPqm+SHeQC7YhYh+698yTrU3d6paVo4srwY+mRsUw=="
-  "resolved" "https://registry.npmjs.org/@loginid/vault-sdk/-/vault-sdk-0.30.0.tgz"
-  "version" "0.30.0"
+"@loginid/vault-sdk@^0.31.5":
+  "integrity" "sha512-nHc3w4we20vcDiLsfVd40NZPF0qOIDbMWo+pD0sTm1tkCi05/0MEy4BdPCIaotxiAAa4autbiuu8ETueCSDsgg=="
+  "resolved" "https://registry.npmjs.org/@loginid/vault-sdk/-/vault-sdk-0.31.5.tgz"
+  "version" "0.31.5"
 
 "@mui/base@5.0.0-alpha.119":
   "integrity" "sha512-XA5zhlYfXi67u613eIF0xRmktkatx6ERy3h+PwrMN5IcWFbgiL1guz8VpdXON+GWb8+G7B8t5oqTFIaCqaSAeA=="

@@ -15,6 +15,7 @@ import Typography from '@mui/material/Typography';
 import Link from '@mui/material/Link';
 import GlobalStyles from '@mui/material/GlobalStyles';
 import Container from '@mui/material/Container';
+import { FederatedSDK } from './lib/FederatedSDK';
 
 function Copyright(props: any) {
   return (
@@ -93,7 +94,12 @@ const footers = [
   },
 ];
 
+
 function PricingContent() {
+  const wallet = new FederatedSDK(process.env.REACT_APP_VAULT_URL || "");
+  function signUp(){
+	  wallet.signUp();
+  }
   return (
     <React.Fragment>
       <GlobalStyles styles={{ ul: { margin: 0, padding: 0, listStyle: 'none' } }} />
@@ -134,7 +140,7 @@ function PricingContent() {
               Support
             </Link>
           </nav>
-          <Button href="#" variant="outlined" sx={{ my: 1, mx: 1.5 }}>
+          <Button href="#" variant="outlined" sx={{ my: 1, mx: 1.5 }} onClick={signUp}>
             Login
           </Button>
         </Toolbar>

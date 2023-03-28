@@ -6,21 +6,18 @@ export interface SignupResult {
 
 export class FederatedSDK {
 	baseURL = "http://localhost:3000";
-	mMessage: MessagingService;
-	w: Window | null;
+	//mMessage: MessagingService;
     mTarget: Window | null = null;
-
+    mMain: HTMLDivElement | null = null;
 	constructor(url: string) {
 		if (url !== "") {
 			this.baseURL = url;
 		}
 		//this.mMessage = new MessagingService(FidoVaultSDK.baseURL);
-		this.mMessage = new MessagingService("*");
-		this.w = null;
 	}
 
 	prepareIframe() : Window | null {
-		var link = this.baseURL + "/fe/api/auth";
+		var link = this.baseURL + "/sdk/auth";
 
 		var main = document.createElement("div");
 
@@ -45,7 +42,8 @@ export class FederatedSDK {
 		close.style.position = "relative";
 		close.style.padding = "4px";
         close.onclick = function() {
-            main.style.display="none";
+            //main.style.display="none";
+            main.remove();
         };
 
 		var iframe = document.createElement("iframe");
@@ -70,18 +68,25 @@ export class FederatedSDK {
 
 	async signUp(): Promise<SignupResult> {
 
+        /*
         if (this.mTarget == null) {
             this.mTarget = this.prepareIframe();
         }
+        if (this.mMain != null) {
+            this.mMain.style.display = "block";
+        }*/
+		let mMessage = new MessagingService("*");
+        this.mTarget = this.prepareIframe();
+
         if (this.mTarget == null ) {
             return Promise.reject({message:"no session"});
         }
-		let isLoad = await this.mMessage.pingForResponse(this.mTarget, 20000);
+		let isLoad = await mMessage.pingForResponse(this.mTarget, 20000);
 		if (!isLoad) {
 			return Promise.reject({ message: "communication timeout" });
 		}
 
-		let response = await this.mMessage.sendMessage(
+		let response = await mMessage.sendMessage(
 			this.mTarget,
 			JSON.stringify({ data: "hello" }),
 			"init"

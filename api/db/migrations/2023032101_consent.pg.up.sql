@@ -1,6 +1,8 @@
 BEGIN;
 
 
+BEGIN;
+
 CREATE TABLE IF NOT EXISTS app_consents (
     user_id uuid NOT NULL,
     app_id uuid NOT NULL,
@@ -12,5 +14,6 @@ CREATE TABLE IF NOT EXISTS app_consents (
 
 CREATE UNIQUE INDEX IF NOT EXISTS app_user_consents_idx on app_consents (app_id,user_id);
 CREATE UNIQUE INDEX IF NOT EXISTS app_consents_alias_idx on app_consents (app_id, alias);
+
 
 COMMIT;
