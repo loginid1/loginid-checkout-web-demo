@@ -33,7 +33,7 @@ export class MessagingService {
                 if (!event.data || typeof event.data !== 'string') {
                     return;
                 } else {
-                    console.log(event.data);
+                    //console.log(event.data);
                     try{
                         let message : Message = JSON.parse(event.data)
                         this.requestMap.set(message.id,message);
@@ -48,7 +48,9 @@ export class MessagingService {
         );
     }
 
-
+    async reset(){
+        this.requestId = 0;
+    }
     async sendMessageText( target: Window,  txt: string ) : Promise< string> {
 
         let nextId = this.getNextRequestId();

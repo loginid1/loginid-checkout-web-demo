@@ -3,6 +3,7 @@ package utils
 import (
 	"crypto/rand"
 	"encoding/hex"
+	"time"
 )
 
 func Contains[T comparable](s []T, e T) bool {
@@ -28,4 +29,10 @@ func GenerateRandomBytes(n int) ([]byte, error) {
 func GenerateRandomString(s int) (string, error) {
 	b, err := GenerateRandomBytes(s)
 	return hex.EncodeToString(b), err
+}
+
+func IsExpired(t int64, duration time.Duration) bool {
+	current := time.Now()
+	mt := time.Unix(t, 0).Add(duration)
+	return current.After(mt)
 }

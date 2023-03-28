@@ -52,13 +52,13 @@ function App() {
         <Route path="/faq" element={<Faq />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/api/auth" element={<FederatedLogin />} />
-        <Route path="/api/register" element={<FederatedRegister />} />
-        <Route path="/api/email" element={<EmailValidation />} />
+        <Route path="/sdk/auth" element={<FederatedLogin />} />
+        <Route path="/sdk/register" element={<FederatedRegister />} />
+        <Route path="/sdk/email" element={<EmailValidation />} />
         <Route path="/add_device" element={<AddDevice />} />
-        <Route path="/api/enable" element={<WalletEnable />} />
-        <Route path="/api/enable/:data" element={<WalletEnable />} />
-        <Route path="/api/transaction" element={<WalletTxnConfirmation />} />
+        <Route path="/sdk/enable" element={<WalletEnable />} />
+        <Route path="/sdk/enable/:data" element={<WalletEnable />} />
+        <Route path="/sdk/transaction" element={<WalletTxnConfirmation />} />
         <Route path="/" element={<ProtectedRoute />} >
           <Route path="/help" element={<Help />} />
           <Route path="/home" element={<AlgorandAccounts />} />

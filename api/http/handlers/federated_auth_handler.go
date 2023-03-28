@@ -28,6 +28,7 @@ import (
 	"gitlab.com/loginid/software/services/loginid-vault/services/fido2"
 	"gitlab.com/loginid/software/services/loginid-vault/services/keystore"
 	"gitlab.com/loginid/software/services/loginid-vault/services/user"
+	"gitlab.com/loginid/software/services/loginid-vault/utils"
 )
 
 type FederatedAuthHandler struct {
@@ -186,7 +187,7 @@ func (h *FederatedAuthHandler) FederatedRegisterCompleteHandler(w http.ResponseW
 		return
 	}
 
-	if claims.Email != request.Username || claims.Session != request.SessionID {
+	if claims.Email != request.Username || claims.Session != request.SessionID || utils.IsExpired(claims.IssuedAt, 5*time.Minute) {
 		http_common.SendErrorResponse(w, services.NewError("invalid email validation"))
 		return
 
@@ -512,8 +513,12 @@ func (h *FederatedAuthHandler) subscribeChannel(r *http.Request, ws *websocket.C
 			break
 		}
 		//logger.ForRequest(r).Info(fmt.Sprintf("%#v claims: %#v", request.Email, claims))
-		if claims.Email == request.Email && claims.Session == channel {
 
+		if claims.Email == request.Email && claims.Session == channel && !utils.IsExpired(claims.IssuedAt, 5*time.Minute) {
+			// update session
+			if request.Type == "login" {
+
+			}
 			err := ws.WriteMessage(websocket.TextMessage, []byte(msg.Payload))
 			if err != nil {
 				logger.ForRequest(r).Error(err.Error())

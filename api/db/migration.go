@@ -51,6 +51,7 @@ func MigrateUp() {
 		os.Exit(1)
 	}
 	// migrate to latest
+
 	err = m.Up()
 	if err != nil && err != migrate.ErrNoChange {
 		logger.Global.Panic(fmt.Sprintf("failed to migrate: %s", err.Error()))
@@ -65,9 +66,10 @@ func MigrateUp() {
 		}*/
 	// force previous version
 	/*
-		err = m.Force(2023030303)
+		err = m.Force(2023032101)
 		if err != nil {
 			logger.Global.Error(fmt.Sprintf("failed to force version: %s", err.Error()))
-		}*/
+		}
+	*/
 
 }
