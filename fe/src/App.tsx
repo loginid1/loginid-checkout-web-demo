@@ -67,14 +67,14 @@ function App() {
           <Route path="/add_recovery" element={<AddRecovery />} />
           <Route path="/complete_recovery" element={<CompleteRecovery />} />
 
-          <Route path="/algorand_accounts" element={<AlgorandAccounts />} />
+          <Route path="/algorand/accounts" element={<AlgorandAccounts />} />
           <Route path="/algorand_transactions" element={<AlgorandTransactions />} />
           <Route path="/add_algorand_account" element={<AddAlgorand />} />
           <Route path="/add_algorand_account_form" element={<AddAlgorandForm />} />
           <Route path="/complete_algorand_account" element={<CompleteAlgorand />} />
           <Route path="/algorand_account_success" element={<AlgorandSuccess />} />
 
-          <Route path="/dapp_connections" element={<DappConnections />} />
+          <Route path="/algorand/dapps" element={<DappConnections />} />
 
           <Route path="/oldhome" element={<Home />} /> 
           <Route path="/did" element={<DIDHome />} /> 

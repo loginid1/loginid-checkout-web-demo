@@ -95,7 +95,7 @@ export function AlgorandTransactions() {
 		navigator.clipboard.writeText(address);
 	};
 	return (
-		<VaultBase focus={1}>
+		<VaultBase focus={"algo_accounts"}>
 			<Paper
 				elevation={0}
 				sx={{

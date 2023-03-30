@@ -16,7 +16,7 @@ const CompleteAlgorand: React.FC = () => {
   const address = location.state as string;
 
   return (
-    <VaultBase focus={1}>
+    <VaultBase focus={"algo_accounts"}>
       <Paper
         elevation={0}
         sx={{

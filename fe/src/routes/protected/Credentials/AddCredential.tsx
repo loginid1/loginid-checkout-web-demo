@@ -60,7 +60,7 @@ const AddCredential: React.FC = () => {
 	};
 
 	return (
-		<VaultBase focus={0}>
+		<VaultBase focus={"passkeys"}>
 			<Paper
 				elevation={0}
 				sx={{

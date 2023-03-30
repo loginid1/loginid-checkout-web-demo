@@ -12,7 +12,7 @@ const CompleteCredential: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-    <VaultBase focus={0}>
+    <VaultBase focus={"passkeys"}>
       <Paper
         elevation={0}
         sx={{

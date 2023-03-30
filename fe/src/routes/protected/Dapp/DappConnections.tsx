@@ -61,7 +61,7 @@ const DappConnections: React.FC = () => {
 		navigator.clipboard.writeText(account.wallet_address);
 	};
 	return (
-		<VaultBase focus={2}>
+		<VaultBase focus={"algo_dapps"}>
 			<Paper
 				elevation={0}
 				sx={{
