@@ -35,7 +35,7 @@ export default function DIDHome(){
 
 
 	return (
-		<VaultBase focus={3}>
+		<VaultBase focus={"passes"}>
 
 			<Paper
 				elevation={0}

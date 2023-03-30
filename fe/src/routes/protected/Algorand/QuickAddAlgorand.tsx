@@ -59,7 +59,7 @@ export function QuickAddAlgorand() {
   };
 
   return (
-    <VaultBase focus={1}>
+    <VaultBase focus={"algo_accounts"}>
       <Paper
         elevation={0}
         sx={{

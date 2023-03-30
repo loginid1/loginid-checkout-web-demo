@@ -18,7 +18,7 @@ const components = {
 export function Help() {
 
 	return (
-		<VaultBase focus={4}>
+		<VaultBase focus={"help"}>
 			<Paper
 				elevation={0}
 				sx={{

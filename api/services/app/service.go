@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/google/uuid"
@@ -21,6 +22,48 @@ type AppService struct {
 
 func NewAppService(db *gorm.DB, redis *redis.Client) *AppService {
 	return &AppService{repo: &AppRepository{DB: db}, redis: redis}
+}
+
+// CreateApp
+func (s *AppService) CreateApp(userid string, name string, origin string, attributes []string) (*DevApp, *services.ServiceError) {
+	// convert attributes to int string array
+	var attrs string
+	for i, value := range attributes {
+		if i > 0 {
+			attrs = attrs + ","
+		}
+		switch value {
+		case "email":
+			attrs = attrs + strconv.Itoa(KEmailAttribute)
+		case "phone":
+			attrs = attrs + strconv.Itoa(KPhoneAttribute)
+		}
+	}
+
+	app := &DevApp{
+		AppName:    name,
+		Attributes: attrs,
+		Status:     kStatusActive,
+		OwnerID:    userid,
+		Origins:    origin,
+	}
+	err := s.repo.CreateApp(app)
+	if err != nil {
+
+		return nil, services.CreateError("fail to create app")
+	}
+	return app, nil
+}
+
+// GetAppByIdWithOwner
+func (s *AppService) GetAppByIdWithOwner(userid string, appid string) (*DevApp, *services.ServiceError) {
+	return nil, nil
+}
+
+// GetAppsByOwner
+func (s *AppService) GetAppsByOwner(userid string) ([]DevApp, *services.ServiceError) {
+	var apps []DevApp
+	return apps, nil
 }
 
 //TODO cache app to redis

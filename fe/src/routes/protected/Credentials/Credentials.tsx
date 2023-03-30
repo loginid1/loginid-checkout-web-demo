@@ -8,7 +8,7 @@ const Credentials: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState("");
 
   return (
-    <VaultBase focus={0}>
+    <VaultBase focus={"passkeys"}>
       <Paper
         elevation={0}
         sx={{
