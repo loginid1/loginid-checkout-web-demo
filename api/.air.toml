@@ -1,0 +1,26 @@
+root = "."
+tmp_dir = "tmp"
+
+[build]
+include_ext = ["go"]
+exclude_dir = []
+log = "air.log"
+delay = 600 # ms
+stop_on_error = false
+send_interrupt = false
+kill_delay = 500 # ms
+
+[log]
+# Show log time
+time = false
+
+[color]
+# Customize each part's color. If no color found, use the raw app log.
+main = "magenta"
+watcher = "cyan"
+build = "yellow"
+runner = "green"
+
+[misc]
+# Delete tmp directory on exit
+clean_on_exit = true

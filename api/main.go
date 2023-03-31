@@ -178,7 +178,7 @@ func main() {
 	dispenser.HandleFunc("/sign", dispenserHandler.DispenserSignHandler)
 	dispenser.HandleFunc("/post", dispenserHandler.DispenserPostHandler)
 
-	cor_origins := goutil.GetEnv("CORS_ORIGINS", "http://localhost:3000,http://localhost:3030")
+	cor_origins := goutil.GetEnv("CORS_ORIGINS", "http://localhost:3000,http://localhost:3010")
 	cor_array := strings.Split(cor_origins, ",")
 	//TODO: change CORS handling to middleware
 	c := cors.New(cors.Options{
