@@ -127,6 +127,7 @@ func main() {
 
 	userHandler := handlers.UserHandler{UserService: userService, Fido2Service: fidoService}
 	algoHandler := handlers.AlgoHandler{UserService: userService, AlgoService: algoService, FidoService: fidoService, SendWyreService: wyreService}
+	devHandler := handlers.DeveloperHandler{AppService: appService}
 	protected := api.PathPrefix("/protected").Subrouter()
 	protected.Use(authService.Middleware)
 	protected.HandleFunc("/user/profile", userHandler.GetUserProfileHandler)
@@ -161,6 +162,11 @@ func main() {
 	protected.HandleFunc("/algo/getAccountInfo", algoHandler.GetAccountInfoHandler)
 	protected.HandleFunc("/algo/getTransactions", algoHandler.GetTransactionHandler)
 	protected.HandleFunc("/algo/getAssets", algoHandler.GetAssetHandler)
+
+	// dev handlers
+	protected.HandleFunc("/dev/createApp", devHandler.CreateApp)
+	protected.HandleFunc("/dev/updateApp", devHandler.UpdateApp)
+	protected.HandleFunc("/dev/getApps", devHandler.GetAppList)
 
 	// open transaction api handlers
 

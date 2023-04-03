@@ -39,6 +39,7 @@ import WalletLogin from './routes/api/FederatedLogin';
 import FederatedLogin from './routes/api/FederatedLogin';
 import FederatedRegister from './routes/api/FederatedRegister';
 import EmailValidation from './routes/api/EmailValidation';
+import DeveloperConsole from './routes/protected/Developer/Console';
 
 
 
@@ -86,6 +87,7 @@ function App() {
           <Route path="/rekey_algorand/:address" element={<RekeyAlgorand />} />
           <Route path="/algo/order/:address" element={<SendWyreOrder />} />
           <Route path="/sendwyre/callback" element={<SendWyreCallback />} />
+          <Route path="/developer/console" element={<DeveloperConsole />} />
         </Route>
         <Route path="*" element={<Navigate replace to="/login" />} />
       </Routes>

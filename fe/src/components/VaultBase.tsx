@@ -53,6 +53,14 @@ const menuData: MenuData[] = [
 			},
 		],
 	},
+
+	{
+		id: "developer",
+		icon: <ProfileDefault />,
+		title: "Developer Console",
+		link: "/developer/console",
+		items: [],
+	},
 ];
 
 export const VaultBase: React.FC<VaultBaseInterface> = ({

@@ -56,14 +56,62 @@ func (s *AppService) CreateApp(userid string, name string, origin string, attrib
 }
 
 // GetAppByIdWithOwner
-func (s *AppService) GetAppByIdWithOwner(userid string, appid string) (*DevApp, *services.ServiceError) {
-	return nil, nil
+func (s *AppService) GetAppByIdWithOwner(ownerid string, appid string) (*DevApp, *services.ServiceError) {
+	app, err := s.repo.GetAppById(appid)
+	if err != nil {
+		return nil, services.CreateError("app not found")
+	}
+	if ownerid != app.OwnerID {
+		return nil, services.CreateError("permission denied")
+	}
+	return app, nil
 }
 
 // GetAppsByOwner
-func (s *AppService) GetAppsByOwner(userid string) ([]DevApp, *services.ServiceError) {
+func (s *AppService) GetAppsByOwner(ownerid string) ([]DevApp, *services.ServiceError) {
 	var apps []DevApp
+	apps, err := s.repo.GetAppsByOwner(ownerid)
+	if err != nil {
+		logger.Global.Error(err.Error())
+		return apps, services.CreateError("app not found")
+	}
 	return apps, nil
+}
+
+// Update app
+// TODO clear app cache
+func (s *AppService) UpdateApp(appid string, ownerid string, name string, origins string, attributes []string) *services.ServiceError {
+
+	app, err := s.repo.GetAppById(appid)
+	if err != nil {
+		return services.CreateError("app not found")
+	}
+	if ownerid != app.OwnerID {
+		return services.CreateError("permission denied")
+	}
+
+	// convert attributes to int string array
+	var attrs string
+	for i, value := range attributes {
+		if i > 0 {
+			attrs = attrs + ","
+		}
+		switch value {
+		case "email":
+			attrs = attrs + strconv.Itoa(KEmailAttribute)
+		case "phone":
+			attrs = attrs + strconv.Itoa(KPhoneAttribute)
+		}
+	}
+
+	app.AppName = name
+	app.Attributes = attrs
+	app.Origins = origins
+	err = s.repo.UpdateApp(app)
+	if err != nil {
+		return services.CreateError("update failed")
+	}
+	return nil
 }
 
 //TODO cache app to redis

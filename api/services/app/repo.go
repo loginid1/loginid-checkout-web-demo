@@ -35,6 +35,28 @@ func (repo *AppRepository) CreateApp(a *DevApp) error {
 	return tx.Commit().Error
 }
 
+func (repo *AppRepository) UpdateApp(a *DevApp) error {
+
+	tx := repo.DB.Begin()
+
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	if err := tx.Error; err != nil {
+		return err
+	}
+
+	if err := tx.Save(&a).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	return tx.Commit().Error
+}
+
 func (repo *AppRepository) CreateConsent(consent *AppConsent) error {
 
 	tx := repo.DB.Begin()
@@ -73,6 +95,15 @@ func (repo *AppRepository) GetAppById(id string) (*DevApp, error) {
 		return nil, err
 	}
 	return &app, nil
+}
+
+func (repo *AppRepository) GetAppsByOwner(userid string) ([]DevApp, error) {
+	var apps []DevApp
+	err := repo.DB.Where("owner_id = ?", userid).Find(&apps).Error
+	if err != nil {
+		return apps, err
+	}
+	return apps, nil
 }
 
 func (repo *AppRepository) GetConsent(appid string, userid string) (*AppConsent, error) {

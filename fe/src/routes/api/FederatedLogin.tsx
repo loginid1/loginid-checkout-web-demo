@@ -40,6 +40,7 @@ import { openPopup } from "../../lib/VaultSDK/sendwyre/popup";
 import { defaultOptions } from "../../lib/popup/popup";
 import { CodeInput } from "../../components/CodeInput";
 import { EmailDialog } from "../../components/dialogs/EmailDialog";
+import LoginIDLogo from "../../assets/sidemenu/LoginIDLogo.svg";
 
 interface WalletLoginSession {
 	network: string;
@@ -56,6 +57,7 @@ export default function FederatedLogin() {
 	const [searchParams, setSearchParams] = useSearchParams();
 
 	const [waitingIndicator, setWaitingIndicator] = useState<boolean>(true);
+	const [showRegister, setShowRegister] = useState<boolean>(false);
 	const [username, setUsername] = useState("");
 	const [waitingMessage, setWaitingMessage] = useState<string | null>(null);
 	const [codeInput, setCodeInput] = useState<boolean>(false);
@@ -153,14 +155,25 @@ export default function FederatedLogin() {
 	async function handleLogin() {
 		try {
 			if (!(await vaultSDK.checkUser(username))) {
-				openPopup(
-					`/fe/api/register?username=${username}&session=${sessionId}`,
-					"regiser",
-					defaultOptions
-				);
-				setWaitingMessage("Waiting for new passkeys registration ...");
-				// need to popup register page
-				return;
+				// need to handle safari blocking popup in async
+				try {
+
+					openPopup(
+						`/sdk/register?username=${username}&session=${sessionId}`,
+						"regiser",
+						defaultOptions
+					);
+					setWaitingMessage("Waiting for new passkey registration ...");
+					return;
+				} catch (error) {
+
+					setDisplayMessage({
+						text: "user not found - use sign up for new account",
+						type: "error",
+					});
+					setShowRegister(true);
+					return;
+				}
 			}
 			const response = await vaultSDK.federated_authenticate(
 				username,
@@ -182,9 +195,26 @@ export default function FederatedLogin() {
 		}
 	}
 
+	async function handleSignup() {
+		try {
+			openPopup(
+				`/sdk/register?username=${username}&session=${sessionId}`,
+				"regiser",
+				defaultOptions
+			);
+			setWaitingMessage("Waiting for new passkey registration ...");
+			return;
+		} catch (error) {
+
+			setDisplayMessage({
+				text: (error as Error).message,
+				type: "error",
+			});
+		}
+	}
+
 	async function emailLogin(email: string) {
 		await vaultSDK.sendEmailSession(sessionId, email, "login");
-		//setWaitingMessage("Check email for login session")
 		setWaitingIndicator(true);
 		setOpenEmailDialog(true);
 		ws = new WebSocket(wsurl + "/api/federated/email/ws/" + sessionId);
@@ -233,9 +263,14 @@ export default function FederatedLogin() {
 		<ThemeProvider theme={LoginID}>
 			{waitingIndicator && <LinearProgress />}
 			<Container component="main">
+				{/* 
 				<Box sx={{ m: 2 }}>
 					<img src={VaultLogo} width="160" height="30" />
 				</Box>
+				*/}
+				{displayMessage == null && (
+					<Box sx={{ m: 2, height: "48px" }}></Box>
+				)}
 
 				{page === "login" && Login()}
 				{page === "consent" && Consent()}
@@ -246,6 +281,21 @@ export default function FederatedLogin() {
 					open={openEmailDialog}
 					handleClose={closeEmailDialog}
 				></EmailDialog>
+
+				<Typography
+					variant="caption"
+					color="#1E2898"
+					sx={{
+						m: 1,
+						position: "relative",
+						display: "flex",
+						alignItems: "center",
+						justifyContent: "center",
+					}}
+				>
+					powered by&nbsp;
+					<img src={LoginIDLogo} alt="something" />
+				</Typography>
 			</Container>
 		</ThemeProvider>
 	);
@@ -286,8 +336,26 @@ export default function FederatedLogin() {
 					size="small"
 					sx={{ mt: 1, mb: 1 }}
 				>
-					Continue with Passkeys
+					Continue
 				</Button>
+				{showRegister &&
+				<Button
+					fullWidth
+					variant="text"
+					onClick={handleSignup}
+					size="small"
+					sx={{ mt: 1, mb: 1 }}
+				>
+					Signup
+				</Button>
+				}
+				<Typography
+					sx={{ m: 1 }}
+					variant="caption"
+					color="text.secondary"
+				>
+					Simple passwordless login with passkey or email
+				</Typography>
 				{codeInput && (
 					<Stack spacing={2}>
 						<Typography variant="caption" maxWidth="400px">
