@@ -16,6 +16,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"gitlab.com/loginid/software/libraries/goutil.git/logger"
 	http_common "gitlab.com/loginid/software/services/loginid-vault/http/common"
@@ -47,6 +48,12 @@ func (u *AuthHandler) RegisterInitHandler(w http.ResponseWriter, r *http.Request
 	defer r.Body.Close()
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 		http_common.SendErrorResponse(w, services.NewError("failed to parse request"))
+		return
+	}
+
+	// make sure to prevent email "@" in username
+	if strings.Contains(request.Username, "@") {
+		http_common.SendErrorResponse(w, services.NewError(`username contains reserved symbol '@'`))
 		return
 	}
 
@@ -105,7 +112,7 @@ func (u *AuthHandler) RegisterCompleteHandler(w http.ResponseWriter, r *http.Req
 	}
 
 	// save user to database
-	_, err = u.UserService.CreateUserAccount(request.Username, request.DeviceName, public_key, key_alg)
+	_, err = u.UserService.CreateUserAccount(request.Username, request.DeviceName, public_key, key_alg, false)
 	if err != nil {
 		http_common.SendErrorResponse(w, *err)
 		return
