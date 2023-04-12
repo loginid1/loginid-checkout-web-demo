@@ -8,8 +8,8 @@ const (
 )
 
 const (
-	KEmailAttribute = 1
-	KPhoneAttribute = 2
+	KEmailAttribute = "email"
+	KPhoneAttribute = "phone"
 )
 
 type AppSession struct {

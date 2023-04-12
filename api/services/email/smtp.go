@@ -43,7 +43,7 @@ func SendEmailValidation(email string, url string, jwt string) error {
 	msg := []byte(fmt.Sprintf("To: %s\r\n"+
 		"Subject: Email confirmation !\r\n"+
 		"\r\n"+
-		"Click here to confirm your email: %s/fe/api/email?token=%s\r\n", email, url, jwt))
+		"Click here to confirm your email: %s/sdk/email?token=%s\r\n", email, url, jwt))
 	err := smtp.SendMail(fmt.Sprintf("%s:587", email_url), auth, "vault-no-reply@loginid.io", to, msg)
 	if err != nil {
 		logger.Global.Error(err.Error())
