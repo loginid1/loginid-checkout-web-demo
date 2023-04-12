@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"strconv"
 	"time"
 
 	"github.com/google/uuid"
@@ -25,24 +24,11 @@ func NewAppService(db *gorm.DB, redis *redis.Client) *AppService {
 }
 
 // CreateApp
-func (s *AppService) CreateApp(userid string, name string, origin string, attributes []string) (*DevApp, *services.ServiceError) {
-	// convert attributes to int string array
-	var attrs string
-	for i, value := range attributes {
-		if i > 0 {
-			attrs = attrs + ","
-		}
-		switch value {
-		case "email":
-			attrs = attrs + strconv.Itoa(KEmailAttribute)
-		case "phone":
-			attrs = attrs + strconv.Itoa(KPhoneAttribute)
-		}
-	}
+func (s *AppService) CreateApp(userid string, name string, origin string, attributes string) (*DevApp, *services.ServiceError) {
 
 	app := &DevApp{
 		AppName:    name,
-		Attributes: attrs,
+		Attributes: attributes,
 		Status:     kStatusActive,
 		OwnerID:    userid,
 		Origins:    origin,
@@ -80,7 +66,7 @@ func (s *AppService) GetAppsByOwner(ownerid string) ([]DevApp, *services.Service
 
 // Update app
 // TODO clear app cache
-func (s *AppService) UpdateApp(appid string, ownerid string, name string, origins string, attributes []string) *services.ServiceError {
+func (s *AppService) UpdateApp(appid string, ownerid string, name string, origins string, attributes string) *services.ServiceError {
 
 	app, err := s.repo.GetAppById(appid)
 	if err != nil {
@@ -90,22 +76,8 @@ func (s *AppService) UpdateApp(appid string, ownerid string, name string, origin
 		return services.CreateError("permission denied")
 	}
 
-	// convert attributes to int string array
-	var attrs string
-	for i, value := range attributes {
-		if i > 0 {
-			attrs = attrs + ","
-		}
-		switch value {
-		case "email":
-			attrs = attrs + strconv.Itoa(KEmailAttribute)
-		case "phone":
-			attrs = attrs + strconv.Itoa(KPhoneAttribute)
-		}
-	}
-
 	app.AppName = name
-	app.Attributes = attrs
+	app.Attributes = attributes
 	app.Origins = origins
 	err = s.repo.UpdateApp(app)
 	if err != nil {

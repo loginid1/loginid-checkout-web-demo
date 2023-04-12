@@ -14,16 +14,20 @@ type DeveloperHandler struct {
 }
 
 type CreateAppRequest struct {
-	Name       string   `json:"name"`
-	Origins    string   `json:"origins"`
-	Attributes []string `json:"attributes"`
+	Name       string `json:"name"`
+	Origins    string `json:"origins"`
+	Attributes string `json:"attributes"`
 }
 
 type UpdateAppRequest struct {
-	ID         string   `json:"id"`
-	Name       string   `json:"name"`
-	Origins    string   `json:"origins"`
-	Attributes []string `json:"attributes"`
+	ID         string `json:"id"`
+	Name       string `json:"name"`
+	Origins    string `json:"origins"`
+	Attributes string `json:"attributes"`
+}
+
+type AppListResponse struct {
+	Apps []app.DevApp `json:"apps"`
 }
 
 func (h *DeveloperHandler) CreateApp(w http.ResponseWriter, r *http.Request) {
@@ -71,5 +75,8 @@ func (h *DeveloperHandler) GetAppList(w http.ResponseWriter, r *http.Request) {
 		http_common.SendErrorResponse(w, *serr)
 		return
 	}
-	http_common.SendSuccessResponse(w, apps)
+	appList := AppListResponse{
+		Apps: apps,
+	}
+	http_common.SendSuccessResponse(w, appList)
 }

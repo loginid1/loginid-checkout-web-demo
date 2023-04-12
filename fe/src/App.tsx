@@ -40,6 +40,8 @@ import FederatedLogin from './routes/api/FederatedLogin';
 import FederatedRegister from './routes/api/FederatedRegister';
 import EmailValidation from './routes/api/EmailValidation';
 import DeveloperConsole from './routes/protected/Developer/Console';
+import CreateApp from './routes/protected/Developer/CreateApp';
+import UpdateApp from './routes/protected/Developer/UpdateApp';
 
 
 
@@ -88,6 +90,8 @@ function App() {
           <Route path="/algo/order/:address" element={<SendWyreOrder />} />
           <Route path="/sendwyre/callback" element={<SendWyreCallback />} />
           <Route path="/developer/console" element={<DeveloperConsole />} />
+          <Route path="/developer/createApp" element={<CreateApp />} />
+          <Route path="/developer/updateApp" element={<UpdateApp />} />
         </Route>
         <Route path="*" element={<Navigate replace to="/login" />} />
       </Routes>

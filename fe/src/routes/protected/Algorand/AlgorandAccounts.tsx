@@ -57,7 +57,6 @@ const AlgorandAccounts: React.FC = () => {
 		const token = AuthService.getToken();
 		if (token) {
 			const accountList = await vaultSDK.getAccountList(token, true);
-			console.log(accountList);
 			setAccountList(accountList);
 		} else {
 		}

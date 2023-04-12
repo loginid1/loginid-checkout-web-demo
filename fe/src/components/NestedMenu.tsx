@@ -77,7 +77,7 @@ function ExpandableMenuItem(props: { item: MenuData; focus: string }) {
 	}, []);
 
 	return (
-		<List component="nav">
+		<List component="nav" key={props.item.id + "list"}>
 			<ListItemButton key={props.item.id} onClick={handleClick}>
 				<ListItemBody {...props.item} />
 				{open ? <ExpandLess /> : <ExpandMore />}
@@ -95,10 +95,10 @@ function NestedMenuItem(props: { items: MenuData[]; focus: string }) {
 		props.items.map((menuItem) => {
 			if (Array.isArray(menuItem.items) && menuItem.items.length > 0) {
 				menu.push(
-					<ExpandableMenuItem item={menuItem} focus={props.focus} />
+					<ExpandableMenuItem  item={menuItem} focus={props.focus} />
 				);
 			} else {
-				menu.push(<LinkMenuItem item={menuItem} focus={props.focus} />);
+				menu.push(<LinkMenuItem  item={menuItem} focus={props.focus} />);
 			}
 		});
 		return menu.concat();

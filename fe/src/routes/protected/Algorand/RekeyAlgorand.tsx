@@ -81,8 +81,12 @@ export function RekeyAlgorand() {
 	const [formRecovery, setFormRecovery] = useState<string>("");
 	const [formCredentialList, setFormCredentialList] = useState<string[]>([]);
 	const [formCredIDList, setFormCredIDList] = useState<string[]>([]);
-	const [credentialColors, setCredentialColors] = useState<Map<string,string>>(new Map<string,string>());
-	const [recoveryColors, setRecoveryColors] = useState<Map<string,string>>(new Map<string,string>());
+	const [credentialColors, setCredentialColors] = useState<
+		Map<string, string>
+	>(new Map<string, string>());
+	const [recoveryColors, setRecoveryColors] = useState<Map<string, string>>(
+		new Map<string, string>()
+	);
 	const [displayMessage, setDisplayMessage] = useState<DisplayMessage | null>(null);
 	useEffect(() => {
 		const fetchData = async () => {
@@ -115,7 +119,7 @@ export function RekeyAlgorand() {
 			setCredentials(myCredentials);
 
 			let defaultCredential: string[] = [];
-			let credColors = new Map<string,string>();
+			let credColors = new Map<string, string>();
 			// set default
 			for (let cred of myCredentials.credentials) {
 				/*
@@ -127,7 +131,7 @@ export function RekeyAlgorand() {
 				if (myAccount.credentials_id.includes(cred.id)) {
 					defaultCredential.push(cred.id);
 				}
-				credColors.set(cred.id,normalColor);
+				credColors.set(cred.id, normalColor);
 			}
 			setCredentialColors(credColors);
 			setFormCredIDList(defaultCredential);
@@ -139,9 +143,9 @@ export function RekeyAlgorand() {
 		const token = AuthService.getToken();
 		if (token) {
 			const recoveryList = await vaultSDK.getRecoveryList(token);
-			let reColors = new Map<string,string>();
+			let reColors = new Map<string, string>();
 			setRecoveryList(recoveryList);
-			for (let recovery of recoveryList.recovery){
+			for (let recovery of recoveryList.recovery) {
 				reColors.set(recovery.public_key, normalColor);
 			}
 			setRecoveryColors(reColors);
@@ -193,7 +197,6 @@ export function RekeyAlgorand() {
 		}
 	}
 
-
 	const handleChangeCredential = (
 		id: string,
 		key: string,
@@ -216,23 +219,23 @@ export function RekeyAlgorand() {
 
 		let newColors = credentialColors;
 
-		newColors.forEach((value:string, key: string)=> {
+		newColors.forEach((value: string, key: string) => {
 			let ccolor = false;
 			let dcolor = false;
-			newColors.set(key,normalColor);
-			if(oldList.includes(key)) {
+			newColors.set(key, normalColor);
+			if (oldList.includes(key)) {
 				ccolor = true;
 			}
-			if(account?.credentials_id.includes(key)) {
+			if (account?.credentials_id.includes(key)) {
 				dcolor = true;
 			}
-			if(dcolor === true && ccolor === false) {
+			if (dcolor === true && ccolor === false) {
 				newColors.set(key, removeColor);
 			}
 
-			if(dcolor === false && ccolor === true) {
+			if (dcolor === false && ccolor === true) {
 				newColors.set(key, addColor);
-			}	
+			}
 		});
 		setCredentialColors(newColors);
 	};
@@ -240,15 +243,14 @@ export function RekeyAlgorand() {
 	const handleChangeRecovery = (recoveryPK: string) => {
 		setFormRecovery(recoveryPK);
 		let newColors = recoveryColors;
-		newColors.forEach((value: string, key: string)=> {
-			newColors.set(key,normalColor);	
+		newColors.forEach((value: string, key: string) => {
+			newColors.set(key, normalColor);
 		});
-		if (recoveryPK !== account?.recovery_address){
+		if (recoveryPK !== account?.recovery_address) {
 			newColors.set(recoveryPK, addColor);
 			newColors.set(account!.recovery_address, removeColor);
 		}
 		setRecoveryColors(newColors);
-		
 	};
 
 	/*
@@ -320,10 +322,7 @@ export function RekeyAlgorand() {
 					{account && (
 						<>
 							<Stack spacing={2} alignItems="center">
-								<Typography
-									variant="subtitle2"
-									color="primary"
-								>
+								<Typography variant="subtitle2" color="primary">
 									{account.alias} -{" "}
 									{ParseUtil.displayLongAddress(
 										account.address
@@ -351,7 +350,10 @@ export function RekeyAlgorand() {
 											key={credential.id}
 											variant="outlined"
 											sx={{
-												backgroundColor: credentialColors.get(credential.id)
+												backgroundColor:
+													credentialColors.get(
+														credential.id
+													),
 											}}
 											elevation={0}
 										>
@@ -408,7 +410,10 @@ export function RekeyAlgorand() {
 												display: "flex",
 												justifyContent: "flex-start",
 												alignItems: "center",
-												backgroundColor: recoveryColors.get(recovery.public_key),
+												backgroundColor:
+													recoveryColors.get(
+														recovery.public_key
+													),
 											}}
 											elevation={0}
 										>
@@ -428,8 +433,9 @@ export function RekeyAlgorand() {
 																recovery.public_key
 															}
 															onChange={() =>
-																handleChangeRecovery( recovery.public_key)
-
+																handleChangeRecovery(
+																	recovery.public_key
+																)
 															}
 														/>
 														<RecoveryCard
