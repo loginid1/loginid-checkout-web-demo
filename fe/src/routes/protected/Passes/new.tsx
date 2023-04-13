@@ -1,4 +1,4 @@
-import { ArrowBack } from "@mui/icons-material";
+import { ArrowBack, Refresh } from "@mui/icons-material";
 import {
 	Stack,
 	Button,
@@ -104,6 +104,12 @@ interface NewPassVerificationProps {
 const NewPassVerification = (props: NewPassVerificationProps) => {
     const [code, setCode] = useState('');
     const [verifyInit, setVerifyInit] = useState(false);
+    const [timer, setTimer] = useState(45);
+
+
+    useEffect(() => {
+        timer > 0 && verifyInit && setTimeout(() => setTimer(timer - 1), 1000);
+    }, [timer, verifyInit]);
 
     return (
         <>
@@ -124,6 +130,32 @@ const NewPassVerification = (props: NewPassVerificationProps) => {
                     onChange={e => e.target.value.length <= 6 && setCode(e.target.value.toUpperCase())}
                     sx={{mb: 2, visibility: verifyInit ? "visible" : "hidden"}}
                 />
+                <Typography
+                    variant="subtitle2"
+                    color="rgba(0,0,0,0.5)"
+                    sx={{mb: 2, visibility: verifyInit && timer !== 0 ? "visible" : "hidden"}}
+                >
+                    resend code in <strong>{ timer } seconds</strong>
+                </Typography>
+                <Button 
+                    variant="text" 
+                    size="small" 
+                    sx={{visibility: verifyInit && timer === 0 ? "visible" : "hidden"}}
+                    onClick={async () => {
+                    const token = AuthService.getToken();
+                    if (token) {
+                        try {
+                            setTimer(45);
+                            await vaultSDK.createPhonePassInit(token, props.value);
+                            setVerifyInit(true);
+                        } catch(err) {
+                            console.error(err)
+                        }
+                    }
+                }}>
+                    <Refresh/>
+                    Resend code
+                </Button>
             </FormControl>
             <Stack display={verifyInit ? "none" : ""} direction="row" spacing={2} justifyContent="center" alignItems="center">
                 <Button variant="text" onClick={() => { props.setActiveStep(1) }}>
@@ -187,7 +219,7 @@ export default function NewPass(){
                 setActiveStep={setActiveStep}/>
         },
         {
-            label: 'Verify it',
+            label: 'Create it',
             component: <NewPassVerification 
                 navigate={navigate} 
                 setActiveStep={setActiveStep}
