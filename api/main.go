@@ -18,6 +18,8 @@ import (
 	"gitlab.com/loginid/software/services/loginid-vault/services/app"
 	"gitlab.com/loginid/software/services/loginid-vault/services/fido2"
 	"gitlab.com/loginid/software/services/loginid-vault/services/keystore"
+	notification "gitlab.com/loginid/software/services/loginid-vault/services/notification/providers"
+	"gitlab.com/loginid/software/services/loginid-vault/services/pass"
 	"gitlab.com/loginid/software/services/loginid-vault/services/sendwyre"
 	"gitlab.com/loginid/software/services/loginid-vault/services/user"
 )
@@ -89,6 +91,9 @@ func main() {
 
 	appService := app.NewAppService(db.GetConnection(), db.GetCacheClient())
 
+	notificationService := notification.NewTwillioProvider()
+	passService := pass.NewPassService(db.GetConnection(), db.GetCacheClient(), notificationService)
+
 	// init http handlers & server
 	r := mux.NewRouter()
 
@@ -124,7 +129,6 @@ func main() {
 	api.HandleFunc("/federated/saveConsent", federatedHandler.SaveConsentHandler)
 
 	// protected usesr handler
-
 	userHandler := handlers.UserHandler{UserService: userService, Fido2Service: fidoService}
 	algoHandler := handlers.AlgoHandler{UserService: userService, AlgoService: algoService, FidoService: fidoService, SendWyreService: wyreService}
 	devHandler := handlers.DeveloperHandler{AppService: appService}
@@ -133,6 +137,7 @@ func main() {
 	protected.HandleFunc("/user/profile", userHandler.GetUserProfileHandler)
 	protected.HandleFunc("/user/getCredentialList", userHandler.GetCredentialListHandler)
 	protected.HandleFunc("/user/renameCredential", userHandler.RenameCredentialHandler)
+
 	// deprecated in favour of generateRecoveryInit && generateRecoveryComplete flow
 	protected.HandleFunc("/user/createRecovery", userHandler.CreateRecoveryHandler)
 	protected.HandleFunc("/user/generateRecoveryInit", userHandler.GenerateRecoveryInitHandler)
@@ -169,13 +174,19 @@ func main() {
 	protected.HandleFunc("/dev/getAppList", devHandler.GetAppList)
 
 	// open transaction api handlers
-
 	walletHandler := handlers.WalletHandler{UserService: userService, Fido2Service: fidoService, AlgoService: algoService, AuthService: authService}
 	wallet := api.PathPrefix("/wallet").Subrouter()
 	wallet.HandleFunc("/enable", walletHandler.EnableHandler)
 	wallet.HandleFunc("/txValidation", walletHandler.TxValidationHandler)
 	wallet.HandleFunc("/txInit", walletHandler.TxInitHandler)
 	wallet.HandleFunc("/txComplete", walletHandler.TxCompleteHandler)
+
+	// passes handlers
+	passesHandler := handlers.PassesHandler{PassService: passService}
+	passes := protected.PathPrefix("/passes").Subrouter()
+	passes.HandleFunc("", passesHandler.List).Methods("GET")
+	passes.HandleFunc("/phone/init", passesHandler.PhoneInit).Methods("POST")
+	passes.HandleFunc("/phone/complete", passesHandler.PhoneComplete).Methods("POST")
 
 	// dispenser handler
 	dispenserHandler := handlers.DispenserHandler{AlgoService: algoService}

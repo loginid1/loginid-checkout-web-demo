@@ -10,6 +10,7 @@ import { MenuData, NestedMenu } from "./NestedMenu";
 import VaultAppBar from "./VaultAppbar";
 import { MenuIcon } from "../theme/icons";
 import { ReactComponent as CredentialDefault } from "../assets/sidemenu/Credential/Default.svg";
+import { ReactComponent as PassesDefault } from "../assets/sidemenu/DIDs/Default.svg";
 import { ReactComponent as AlgorandDefault } from "../assets/sidemenu/Algorand/Default.svg";
 import { ReactComponent as ProfileDefault } from "../assets/sidemenu/Profile/Default.svg";
 
@@ -27,9 +28,9 @@ const menuData: MenuData[] = [
 	},
 	{
 		id: "passes",
-		icon: <ProfileDefault />,
-		title: "My Passes",
-		link: "/did",
+		icon: <PassesDefault />,
+		title: "Passes",
+		link: "/passes",
 		items: [],
 	},
 
