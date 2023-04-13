@@ -31,7 +31,7 @@ import { RekeyAlgorand } from './routes/protected/Algorand/RekeyAlgorand';
 import { SendwyreSDK } from './lib/VaultSDK/sendwyre';
 import { SendWyreOrder } from './routes/protected/Algorand/SendWyreOrder';
 import { SendWyreCallback } from './routes/protected/Algorand/SendWyreCallback';
-import DIDHome from './routes/protected/DID/DIDHome';
+import Passes, { NewPass } from './routes/protected/Passes';
 import Index from './routes/Index';
 import { Faq } from './routes/Faq';
 import { Help } from './routes/protected/Help';
@@ -80,7 +80,8 @@ function App() {
           <Route path="/algorand/dapps" element={<DappConnections />} />
 
           <Route path="/oldhome" element={<Home />} /> 
-          <Route path="/did" element={<DIDHome />} /> 
+          <Route path="/passes" element={<Passes />} /> 
+          <Route path="/passes/new" element={<NewPass />} /> 
           <Route path="/manage_credential" element={<ManageCredential />} />
           <Route path="/manage_algorand" element={<ManageAlgorand />} />
           <Route path="/credential" element={<Credentials />} />
