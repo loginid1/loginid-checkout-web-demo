@@ -215,7 +215,7 @@ func (h *FederatedAuthHandler) FederatedRegisterCompleteHandler(w http.ResponseW
 	}
 
 	// save user to database
-	userid, err := h.UserService.CreateUserAccount(request.Username, request.DeviceName, public_key, key_alg)
+	userid, err := h.UserService.CreateUserAccount(request.Username, request.DeviceName, public_key, key_alg, true)
 	if err != nil {
 		http_common.SendErrorResponse(w, *err)
 		return

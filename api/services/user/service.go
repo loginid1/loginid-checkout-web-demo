@@ -22,10 +22,15 @@ func NewUserService(db *gorm.DB) (*UserService, error) {
 	return &userService, nil
 }
 
-func (u *UserService) CreateUserAccount(username string, device_name string, public_key string, key_alg string) (string, *services.ServiceError) {
+func (u *UserService) CreateUserAccount(username string, device_name string, public_key string, key_alg string, validatedEmail bool) (string, *services.ServiceError) {
 	user := User{
-		ID:       uuid.New().String(),
-		Username: username,
+		ID:             uuid.New().String(),
+		Username:       username,
+		EmailValidated: validatedEmail,
+	}
+
+	if validatedEmail {
+		user.Email = username
 	}
 	credential := UserCredential{
 		Name:      device_name,
