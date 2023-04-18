@@ -33,18 +33,14 @@ export class VaultFederated extends Base {
 	async sendEmailSession(
 		session: string,
 		email: string,
-		type: string
-	): Promise<boolean> {
-		try {
-			await utils.http.post(
+		type: string,
+        origin: string,
+	): Promise<void> {
+			return await utils.http.post(
 				this._baseURL,
 				"/api/federated/sendEmailSession",
-				{ email: email, session: session, type: type }
+				{ email: email, session: session, type: type, origin: origin }
 			);
-			return true;
-		} catch (error) {
-			return false;
-		}
 	}
 
 	async checkConsent(session: string): Promise<boolean> {

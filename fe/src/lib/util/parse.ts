@@ -18,7 +18,7 @@ const MICRO_UNIT = new Big(1000000);
 export default class ParseUtil {
 
     static displaySessionSF(session: string): string {
-        return session.substring(0, 8) ;
+        return session.substring(0, 6) ;
     }
     static displayLongAddress(address: string): string {
         let dAddress = address.substring(0, 8) + "...." + address.substring(address.length - 4);

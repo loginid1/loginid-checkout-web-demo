@@ -1,5 +1,6 @@
 import {
 	Alert,
+	AlertColor,
 	Box,
 	Button,
 	Checkbox,
@@ -39,8 +40,7 @@ export default function FederatedRegister() {
 	const [waitingIndicator, setWaitingIndicator] = useState<boolean>(false);
 	let redirect_url = searchParams.get("redirect_url");
 
-	let aUsername = searchParams.get("username");
-	const [username, setUsername] = useState(aUsername || "");
+	const [username, setUsername] = useState<string>("");
 
 	const [sessionId, setSessionId] = useState("");
 	const [token, setToken] = useState("");
@@ -53,10 +53,19 @@ export default function FederatedRegister() {
 		null
 	);
 
+	const [appOrigin, setAppOrigin] = useState<string>("");
 	useEffect(() => {
+		let aUsername = searchParams.get("username");
+		if (aUsername != null) {
+			setUsername(aUsername);
+		}
 		let aSession = searchParams.get("session");
 		if (aSession != null) {
 			setSessionId(aSession);
+		}
+		let aOrigin = searchParams.get("appOrigin");
+		if (aOrigin != null) {
+			setAppOrigin(aOrigin);
 		}
 
 		let target = window.parent;
@@ -97,10 +106,12 @@ export default function FederatedRegister() {
 				token,
 				sessionId
 			);
+			/*
 			AuthService.storeSession({
 				username: username,
 				token: response.jwt,
 			});
+			*/
 			let message = {
 				type: "register_complete",
 				channel: "register",
@@ -119,33 +130,39 @@ export default function FederatedRegister() {
 
 	async function emailRegister() {
 		console.log(sessionId);
-		await vaultSDK.sendEmailSession(sessionId, username, "register");
-		//setWaitingMessage("Check email for login session")
-		setWaitingIndicator(true);
-		setOpenEmailDialog(true);
-		ws = new WebSocket(wsurl + "/api/federated/email/ws/" + sessionId);
-		ws.onopen = () => {
-			ws?.send(JSON.stringify({ email: username, type: "register" }));
-		};
-		ws.onmessage = (event) => {
-			let token = event.data;
-			let decoded = jwt_decode(token);
-			if (decoded != null) {
-				closeEmailDialog();
-				//registerFido(token);
-				setToken(token);
-				setPage("fido");
-				//ws?.close();
-				// register fido
-			}
-		};
-		ws.onclose = () => {
-			// close websocket
-			setDisplayMessage({
-				text: "email session timeout or cancel!",
-				type: "error",
-			});
-		};
+		try {
+			await vaultSDK.sendEmailSession(sessionId, username, "register", appOrigin);
+			//setWaitingMessage("Check email for login session")
+			setWaitingIndicator(true);
+			setOpenEmailDialog(true);
+			ws = new WebSocket(wsurl + "/api/federated/email/ws/" + sessionId);
+			ws.onopen = () => {
+				ws?.send(JSON.stringify({ email: username, type: "register" }));
+			};
+			ws.onmessage = (event) => {
+				let token = event.data;
+				let decoded = jwt_decode(token);
+				if (decoded != null) {
+					closeEmailDialog();
+					//registerFido(token);
+					setToken(token);
+					setPage("fido");
+					//ws?.close();
+					// register fido
+				}
+			};
+			ws.onclose = () => {
+				// close websocket
+				/*
+				setDisplayMessage({
+					text: "email session timeout or cancel!",
+					type: "error",
+				});
+				*/
+			};
+		} catch (error) {
+			setDisplayMessage({type:"error", text:(error as Error).message})
+		}
 	}
 
 	function closeEmailDialog() {
@@ -199,8 +216,18 @@ export default function FederatedRegister() {
 					>
 						<VaultLogo />
 
-						{page === "email" && <Email></Email>}
-						{page === "fido" && <Fido></Fido>}
+				{displayMessage && (
+					<Alert
+						severity={
+							(displayMessage?.type as AlertColor) || "info"
+						}
+						sx={{ mt: 2 }}
+					>
+						{displayMessage.text}
+					</Alert>
+				)}
+						{page === "email" && Email()}
+						{page === "fido" && Fido()}
 					</Stack>
 				</Paper>
 
@@ -219,7 +246,7 @@ export default function FederatedRegister() {
 		return (
 			<>
 				<Typography variant="body1" marginTop={2} maxWidth="400px">
-					Create a new account to login to XYZ app.
+					Create a new account to login to {appOrigin}.
 				</Typography>
 				{errorMessage.length > 0 && (
 					<Alert severity="error">{errorMessage}</Alert>
@@ -227,8 +254,8 @@ export default function FederatedRegister() {
 				<TextField
 					fullWidth
 					label="Email"
+					name="email"
 					value={username}
-					focused
 					onChange={(e) => setUsername(e.target.value)}
 				/>
 				<Typography variant="body1">

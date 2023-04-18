@@ -177,6 +177,25 @@ func (s *KeystoreService) GenerateEmailValidationJWT(email string, request_type 
 	return token, nil
 }
 
+func (s *KeystoreService) GenerateIDTokenJWT(claims IDTokenClains) (string, *services.ServiceError) {
+
+	keystore := s.LoadKeystore(ksSignID)
+	if keystore == nil {
+		return "", services.CreateError("fail to load key")
+	}
+
+	privateKey, err := utils.ParseECPrivateKeyFromPEM([]byte(keystore.PrivateKey))
+	if err != nil {
+		return "", services.CreateError("fail to load key in pem format")
+	}
+
+	token, err := utils.GenerateJWT(privateKey, keystore.ID, claims)
+	if err != nil {
+		return "", services.CreateError("fail to generate token")
+	}
+	return token, nil
+}
+
 func (s *KeystoreService) VerifyEmailJWT(token string) (*EmailClaims, *services.ServiceError) {
 	keystore := s.LoadKeystore(ksSessionID)
 	if keystore == nil {

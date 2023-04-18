@@ -70,6 +70,7 @@ export default function FederatedLogin() {
 	const [displayMessage, setDisplayMessage] = useState<DisplayMessage | null>(
 		null
 	);
+	const [appOrigin, setAppOrigin] = useState<string>("");
 	const [consent, setConsent] = useState<boolean>(false);
 
 	useEffect(() => {
@@ -111,6 +112,7 @@ export default function FederatedLogin() {
 			} else if (msg.type === "init") {
 				vaultSDK.sessionInit(origin).then((response) => {
 					setPage("login");
+					setAppOrigin(origin);
 					clearAlert();
 					setSessionId(response.id);
 					console.log("session ", response.id);
@@ -159,7 +161,7 @@ export default function FederatedLogin() {
 				try {
 
 					openPopup(
-						`/sdk/register?username=${username}&session=${sessionId}`,
+						`/sdk/register?username=${username}&session=${sessionId}&appOrigin=${appOrigin}`,
 						"regiser",
 						defaultOptions
 					);
@@ -179,10 +181,12 @@ export default function FederatedLogin() {
 				username,
 				sessionId
 			);
+			/*
 			AuthService.storeSession({
 				username: username,
 				token: response.jwt,
 			});
+			*/
 			setPage("consent");
 		} catch (error) {
 			setDisplayMessage({
@@ -198,7 +202,7 @@ export default function FederatedLogin() {
 	async function handleSignup() {
 		try {
 			openPopup(
-				`/sdk/register?username=${username}&session=${sessionId}`,
+				`/sdk/register?username=${username}&session=${sessionId}&appOrigin=${appOrigin}`,
 				"regiser",
 				defaultOptions
 			);
@@ -214,7 +218,7 @@ export default function FederatedLogin() {
 	}
 
 	async function emailLogin(email: string) {
-		await vaultSDK.sendEmailSession(sessionId, email, "login");
+		await vaultSDK.sendEmailSession(sessionId, email, "login", appOrigin);
 		setWaitingIndicator(true);
 		setOpenEmailDialog(true);
 		ws = new WebSocket(wsurl + "/api/federated/email/ws/" + sessionId);

@@ -25,3 +25,21 @@ type AuthSessionClaims struct {
 	Client    string `json:"client"`
 	UpdatedAt int64  `json:"uat,omitempty"`
 }
+
+type IDTokenClains struct {
+	Client string       `json:"client"`
+	Nonce  string       `json:"email,omitempty"`
+	Sub    string       `json:"sub"`
+	Iat    int64        `json:"iat"`
+	Passes []PassClaims `json:"passes,omitempty"`
+}
+
+type PassClaims struct {
+	PassType string `json:"type"`
+	Issuer   string `json:"issuer"`
+}
+
+type IDTokenPhonePass struct {
+	PassClaims
+	Phone string `json:"phone"`
+}

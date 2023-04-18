@@ -122,6 +122,10 @@ export interface AppCall extends BaseTransaction{
     appid: number;
 }
 
+export interface Rekey extends BaseTransaction{
+    rekey: string;
+}
+
 
 // Transaction Report
 export interface TxRecord {
