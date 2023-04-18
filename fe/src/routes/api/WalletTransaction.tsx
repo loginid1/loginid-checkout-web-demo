@@ -4,11 +4,13 @@ import {
 	AppBar,
 	Box,
 	Button,
+	Chip,
 	Container,
 	createTheme,
 	Divider,
 	Grid,
 	Icon,
+	Stack,
 	Step,
 	StepLabel,
 	Stepper,
@@ -394,16 +396,16 @@ function DisplayGroupStep(props: DisplayGroupStepProps) {
 		return <></>;
 	} else if (props.max < 4) {
 		return (
-			<Stepper sx={{ mb: 2 }} activeStep={props.current} alternativeLabel>
+			<Stepper sx={{ mb: 2 }}  activeStep={props.current} alternativeLabel>
 				{props.steps.map((label) => (
-					<Step key={label}>
-						<StepLabel>{label}</StepLabel>
+					<Step key={label} >
+						<StepLabel >{label}</StepLabel>
 					</Step>
 				))}
 			</Stepper>
 		);
 	} else {
-		return <p>{props.current + 1 / props.max}</p>;
+		return <Stack direction="row" alignItems="center" justifyContent="center" ><Chip color="secondary" label={ `${props.current + 1} / ${props.max}`}> </Chip> <Typography variant="title" sx={{ml:1}}>{props.steps[props.current]}</Typography></Stack>;
 	}
 }
 
