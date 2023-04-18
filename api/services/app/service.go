@@ -94,7 +94,7 @@ func (s *AppService) GetAppByOrigin(origin string) (*DevApp, *services.ServiceEr
 			// create new record
 			app := &DevApp{
 				AppName:    origin,
-				Attributes: fmt.Sprintf("%d", KEmailAttribute),
+				Attributes: fmt.Sprintf("%s", KEmailAttribute),
 				Status:     kStatusActive,
 				OwnerID:    "system",
 				Origins:    origin,
@@ -204,21 +204,21 @@ func (s *AppService) SetupSession(appid string, origin string, ip string) (strin
 	return id, nil
 }
 
-func (s *AppService) UpdateSession(sessionid string, userid string) *services.ServiceError {
+func (s *AppService) UpdateSession(sessionid string, userid string) (*AppSession, *services.ServiceError) {
 
 	logger.Global.Info(fmt.Sprintf("update session %s", sessionid))
 	session, err := s.getSession(sessionid)
 	if err != nil {
 		logger.Global.Error(err.Error())
-		return services.CreateError("session update error")
+		return nil, services.CreateError("session update error")
 	}
 	session.UserID = userid
 	err = s.storeSession(*session)
 	if err != nil {
 		logger.Global.Error(err.Error())
-		return services.CreateError("session update error")
+		return nil, services.CreateError("session update error")
 	}
-	return nil
+	return session, nil
 }
 
 func (s *AppService) CheckSessionConsent(id string) (bool, *services.ServiceError) {

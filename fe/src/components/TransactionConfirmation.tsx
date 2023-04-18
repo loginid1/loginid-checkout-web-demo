@@ -1,7 +1,7 @@
 import { Grid, Typography, Divider } from "@mui/material";
 import { AlgoIcon } from "../icons/Common";
 import ParseUtil from "../lib/util/parse";
-import { PaymentTransaction, AssetOptin, AssetTransfer, AppOptin, AppCall, BaseTransaction } from "../lib/VaultSDK/vault/algo";
+import { PaymentTransaction, AssetOptin, AssetTransfer, AppOptin, AppCall, BaseTransaction, Rekey } from "../lib/VaultSDK/vault/algo";
 
 function DisplayPayment(txn: PaymentTransaction) {
 	return (
@@ -261,6 +261,59 @@ function DisplayAppCall(txn: AppCall) {
 	);
 }
 
+function DisplayRekey(txn: Rekey) {
+	return (
+		<Grid container spacing={1}>
+			<Grid item xs={12}>
+				<Typography variant="h6">Transaction Details</Typography>
+			</Grid>
+			<Grid item xs={12}>
+				<Typography variant="subtitle2">{txn.iat}</Typography>
+			</Grid>
+			<Grid item xs={12}>
+				<Divider variant="fullWidth" />
+			</Grid>
+			<Grid item xs={6} sx={{ "text-align": "left" }}>
+				<Typography variant="subtitle1">Rekey:</Typography>
+			</Grid>
+			<Grid item xs={6} sx={{ "text-align": "left" }}>
+				<Typography variant="subtitle1">From:</Typography>
+			</Grid>
+			<Grid item xs={6} sx={{ "text-align": "left" }}>
+				<Typography variant="body1">
+					{ParseUtil.displayAddress(txn.base.from)}
+				</Typography>
+			</Grid>
+			<Grid item xs={6} sx={{ "text-align": "left" }}>
+				<Typography variant="subtitle1">RekeyTo:</Typography>
+			</Grid>
+			<Grid item xs={6} sx={{ "text-align": "left" }}>
+				<Typography variant="body1">
+					{ParseUtil.displayAddress(txn.rekey)}
+				</Typography>
+			</Grid>
+			<Grid item xs={6} sx={{ "text-align": "left" }}>
+				<Typography variant="subtitle1">Fee:</Typography>
+			</Grid>
+			<Grid item xs={6} sx={{ "text-align": "left" }}>
+				<Typography variant="body1">
+					{ParseUtil.convertAlgo(txn.base.fee)} <AlgoIcon color="primary" sx={{fontSize: 14}}/>
+				</Typography>
+			</Grid>
+			{txn.base.note.length > 0 &&
+			<>
+			<Grid item xs={6} sx={{ "text-align": "left" }}>
+				<Typography variant="subtitle1">Note:</Typography>
+			</Grid>
+			<Grid item xs={6} sx={{ "text-align": "left" }}>
+				<Typography variant="body1">{txn.base.note}</Typography>
+			</Grid>
+			</>
+			}
+		</Grid>
+	);
+}
+
 export function DisplayTransaction(txn: BaseTransaction) {
 	if (txn.type === "payment") {
 		return DisplayPayment(txn as PaymentTransaction);
@@ -272,6 +325,8 @@ export function DisplayTransaction(txn: BaseTransaction) {
 		return DisplayAppOptin(txn as AppOptin);
 	} else if (txn.type === "app-call") {
 		return DisplayAppCall(txn as AppCall);
+	} else if (txn.type === "rekey") {
+		return DisplayRekey(txn as Rekey);
 	} else {
 		return <></>;
 	}

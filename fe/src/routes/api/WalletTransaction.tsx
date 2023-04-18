@@ -35,6 +35,7 @@ import {
 	AssetTransfer,
 	BaseTransaction,
 	PaymentTransaction,
+	Rekey,
 	SignedTxn,
 	TxnValidationResponse,
 } from "../../lib/VaultSDK/vault/algo";
@@ -153,6 +154,16 @@ export default function WalletTxnConfirmation() {
 						if (aTx.base.require) {
 							sign_count++;
 						}
+					} else if (txnValidation.txn_type[i] === "rekey") {
+						let aTx: Rekey = JSON.parse( txnValidation.txn_data[i]);
+						aTx.type = "rekey";
+						aTx.iat = new Date().toISOString();
+						itxns.push(aTx);
+						isteps.push("Rekey");
+						if (aTx.base.require) {
+							sign_count++;
+						}
+
 					}
 				}
 

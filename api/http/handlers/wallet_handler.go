@@ -59,6 +59,11 @@ type PaymentTransaction struct {
 	RekeyTo string          `json:"rekey"`
 }
 
+type RekeyTransaction struct {
+	Base    BaseTransaction `json:"base"`
+	RekeyTo string          `json:"rekey"`
+}
+
 type AssetOptin struct {
 	Base      BaseTransaction `json:"base"`
 	Assetid   uint64          `json:"assetid"`
@@ -187,17 +192,28 @@ func validateRequestTransaction(requestTxn WalletTransaction, origin string, alg
 				return "", "", false, services.CreateError("error zero amount")
 			}
 		*/
-		pTxn := PaymentTransaction{
-			Base:   base,
-			To:     txn.Receiver.String(),
-			Amount: uint64(txn.Amount),
-		}
+
 		// prevent rekey and if vault user signing is required
 		if !txn.RekeyTo.IsZero() && require_sign {
 			if require_sign {
 				return "", "", false, services.CreateError("rekeying is forbidden")
 			}
-			pTxn.RekeyTo = txn.RekeyTo.String()
+
+			// create rekey transaction
+			pTxn := RekeyTransaction{
+				Base:    base,
+				RekeyTo: txn.RekeyTo.String(),
+			}
+			data, err := json.Marshal(pTxn)
+			if err != nil {
+				return "", "", false, services.CreateError("transaction serialization error")
+			}
+			return string(data), "rekey", require_sign, nil
+		}
+		pTxn := PaymentTransaction{
+			Base:   base,
+			To:     txn.Receiver.String(),
+			Amount: uint64(txn.Amount),
 		}
 
 		data, err := json.Marshal(pTxn)

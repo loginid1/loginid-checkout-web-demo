@@ -3,8 +3,15 @@ package utils
 import (
 	"crypto/rand"
 	"encoding/hex"
+	"regexp"
 	"time"
 )
+
+var email_regex = regexp.MustCompile(`^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$`)
+
+func IsEmail(value string) bool {
+	return email_regex.MatchString(value)
+}
 
 func Contains[T comparable](s []T, e T) bool {
 	for _, v := range s {

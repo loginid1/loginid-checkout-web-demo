@@ -122,6 +122,11 @@ func (h *FederatedAuthHandler) FederatedRegisterInitHandler(w http.ResponseWrite
 		return
 	}
 
+	if !utils.IsEmail(request.Username) {
+		http_common.SendErrorResponse(w, services.NewError("invalid email format"))
+		return
+	}
+
 	/*
 		email_url := goutil.GetEnv("EMAIL_BASEURL", "http://localhost:3000")
 		token, serr := h.KeystoreService.GenerateEmailValidationJWT(request.Username)
@@ -161,9 +166,8 @@ type FederatedRegisterCompleteRequest struct {
 	EmailToken      string `json:"token"`
 }
 
-type FederatedRegisterCompleteResponse struct {
-	Token  string `json:"token"`
-	UserID string `json:"user_id"`
+type AuthCompleteResponse struct {
+	Jwt string `json:"jwt"`
 }
 
 /**
@@ -208,7 +212,7 @@ func (h *FederatedAuthHandler) FederatedRegisterCompleteHandler(w http.ResponseW
 
 	// send to fido2 server
 	// proxy register request to fido2 service
-	response, err := h.Fido2Service.RegisterComplete(request.Username, request.CredentialUuid, request.CredentialID, request.Challenge, request.AttestationData, request.ClientData)
+	_, err = h.Fido2Service.RegisterComplete(request.Username, request.CredentialUuid, request.CredentialID, request.Challenge, request.AttestationData, request.ClientData)
 	if err != nil {
 		http_common.SendErrorResponse(w, *err)
 		return
@@ -222,13 +226,31 @@ func (h *FederatedAuthHandler) FederatedRegisterCompleteHandler(w http.ResponseW
 	}
 
 	// update session
-	err = h.AppService.UpdateSession(request.SessionID, userid)
+	sess, err := h.AppService.UpdateSession(request.SessionID, userid)
 	if err != nil {
 		http_common.SendErrorResponse(w, *err)
 		return
 	}
 
-	http_common.SendSuccessResponseRaw(w, response)
+	// send ID token
+	token := keystore.IDTokenClains{
+		Client: sess.AppID,
+		Sub:    request.Username,
+		Iat:    time.Now().Unix(),
+		Nonce:  "",
+		Passes: []keystore.PassClaims{},
+	}
+	jwt, err := h.KeystoreService.GenerateIDTokenJWT(token)
+	if err != nil {
+		logger.ForRequest(r).Error(err.Message)
+		http_common.SendErrorResponse(w, *err)
+		return
+	}
+	resp := AuthCompleteResponse{
+		Jwt: jwt,
+	}
+
+	http_common.SendSuccessResponse(w, resp)
 }
 
 type FederatedAuthInitRequest struct {
@@ -271,7 +293,7 @@ func (h *FederatedAuthHandler) FederatedAuthCompleteHandler(w http.ResponseWrite
 		return
 	}
 
-	response, err := h.Fido2Service.AuthenticateComplete(request.Username, request.CredentialID, request.Challenge, request.AuthenticatorData, request.ClientData, request.Signature)
+	_, err := h.Fido2Service.AuthenticateComplete(request.Username, request.CredentialID, request.Challenge, request.AuthenticatorData, request.ClientData, request.Signature)
 	if err != nil {
 		http_common.SendErrorResponse(w, *err)
 		return
@@ -283,13 +305,31 @@ func (h *FederatedAuthHandler) FederatedAuthCompleteHandler(w http.ResponseWrite
 		return
 	}
 	// update session
-	err = h.AppService.UpdateSession(request.SessionID, user.ID)
+	sess, err := h.AppService.UpdateSession(request.SessionID, user.ID)
 	if err != nil {
 		http_common.SendErrorResponse(w, *err)
 		return
 	}
 
-	http_common.SendSuccessResponseRaw(w, response)
+	// send ID token
+	token := keystore.IDTokenClains{
+		Client: sess.AppID,
+		Sub:    request.Username,
+		Iat:    time.Now().Unix(),
+		Nonce:  "",
+		Passes: []keystore.PassClaims{},
+	}
+	jwt, err := h.KeystoreService.GenerateIDTokenJWT(token)
+	if err != nil {
+		logger.ForRequest(r).Error(err.Message)
+		http_common.SendErrorResponse(w, *err)
+		return
+	}
+	resp := AuthCompleteResponse{
+		Jwt: jwt,
+	}
+
+	http_common.SendSuccessResponse(w, resp)
 }
 
 type CheckConsentRequest struct {
@@ -348,6 +388,7 @@ func (h *FederatedAuthHandler) SaveConsentHandler(w http.ResponseWriter, r *http
 type FederatedEmailSessionRequest struct {
 	Email   string
 	Session string
+	Origin  string
 	Type    string
 }
 
@@ -361,10 +402,15 @@ func (h *FederatedAuthHandler) FederatedSendEmailSessionHandler(w http.ResponseW
 		return
 	}
 
+	if !utils.IsEmail(request.Email) {
+		http_common.SendErrorResponse(w, services.NewError("invalid email format"))
+		return
+	}
+
 	//* send out email here
 
 	request_type := keystore.KEmailClaimsLogin
-	if request.Type == "regiseter" {
+	if request.Type == "register" {
 		request_type = keystore.KEmailClaimsRegister
 	}
 
@@ -376,7 +422,7 @@ func (h *FederatedAuthHandler) FederatedSendEmailSessionHandler(w http.ResponseW
 		return
 	}
 	// send email confirmation first
-	mail_err := email.SendEmailValidation(request.Email, email_url, token)
+	mail_err := email.SendHtmlEmailValidation(request.Email, request.Type, email_url, request.Origin, token)
 	if mail_err != nil {
 
 		logger.ForRequest(r).Error(mail_err.Error())
@@ -518,11 +564,44 @@ func (h *FederatedAuthHandler) subscribeChannel(r *http.Request, ws *websocket.C
 			// update session
 			if request.Type == "login" {
 
-			}
-			err := ws.WriteMessage(websocket.TextMessage, []byte(msg.Payload))
-			if err != nil {
-				logger.ForRequest(r).Error(err.Error())
-				break
+				user, serr := h.UserService.GetUser(request.Email)
+				if serr != nil {
+					logger.ForRequest(r).Error(serr.Message)
+					break
+				}
+				// update session
+				sess, serr := h.AppService.UpdateSession(claims.Session, user.ID)
+				if serr != nil {
+					logger.ForRequest(r).Error(serr.Message)
+					break
+				}
+
+				// send ID token
+				token := keystore.IDTokenClains{
+					Client: sess.AppID,
+					Sub:    request.Email,
+					Iat:    time.Now().Unix(),
+					Nonce:  "",
+					Passes: []keystore.PassClaims{},
+				}
+				jwt, serr := h.KeystoreService.GenerateIDTokenJWT(token)
+				if serr != nil {
+					logger.ForRequest(r).Error(serr.Message)
+					break
+				}
+
+				err := ws.WriteMessage(websocket.TextMessage, []byte(jwt))
+				if err != nil {
+					logger.ForRequest(r).Error(err.Error())
+					break
+				}
+			} else {
+
+				err := ws.WriteMessage(websocket.TextMessage, []byte(msg.Payload))
+				if err != nil {
+					logger.ForRequest(r).Error(err.Error())
+					break
+				}
 			}
 		}
 	}
