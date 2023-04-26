@@ -2,12 +2,13 @@ package pass
 
 import (
 	"context"
-	"crypto/md5"
+	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
 	"gitlab.com/loginid/software/services/loginid-vault/services"
 	notification "gitlab.com/loginid/software/services/loginid-vault/services/notification/providers"
@@ -23,6 +24,7 @@ type PassService struct {
 
 type PassResponse[A any] struct {
 	UserID     string         `json:"user_id"`
+	Name       string         `json:"name"`
 	Attributes string         `json:"attributes"`
 	SchemaType PassSchemaType `json:"schema"`
 	Issuer     string         `json:"issuer"`
@@ -39,7 +41,7 @@ func NewPassService(db *gorm.DB, redis *redis.Client, notification_service notif
 }
 
 func (s *PassService) List(ctx context.Context, session services.UserSession) ([]interface{}, *services.ServiceError) {
-	passes, err := s.Repository.List(session.UserID)
+	passes, err := s.Repository.ListByUserID(session.UserID)
 	if err != nil {
 		return nil, services.CreateError("failed to list user passes")
 	}
@@ -49,6 +51,7 @@ func (s *PassService) List(ctx context.Context, session services.UserSession) ([
 	for _, pass := range passes {
 		item := PassResponse[PhonePassSchema]{
 			UserID:     pass.UserID,
+			Name:       pass.Name,
 			Attributes: pass.Attributes,
 			SchemaType: pass.SchemaType,
 			Issuer:     pass.Issuer,
@@ -70,8 +73,7 @@ func (s *PassService) PhoneInit(ctx context.Context, session services.UserSessio
 	code = strings.ToUpper(code)
 
 	// Store the code in redis using the user session
-	key := fmt.Sprintf("passes::phone::%x::%s", md5.Sum([]byte(phone_number)), session.UserID)
-	s.RedisClient.Set(ctx, key, code, 90*time.Second)
+	s.RedisClient.Set(ctx, getCacheKey(phone_number, session.UserID), code, 90*time.Second)
 
 	// Send the code via SMS
 	msg := fmt.Sprintf("Your Pass verification code is: %s", code)
@@ -84,7 +86,7 @@ func (s *PassService) PhoneInit(ctx context.Context, session services.UserSessio
 
 func (s *PassService) PhoneComplete(ctx context.Context, session services.UserSession, name, phone_number, code string) *services.ServiceError {
 	// Retrive the code from redis using the user session
-	key := fmt.Sprintf("passes::phone::%x::%s", md5.Sum([]byte(phone_number)), session.UserID)
+	key := getCacheKey(phone_number, session.UserID)
 	redisData := s.RedisClient.Get(ctx, key)
 
 	// Check if we have a valid code
@@ -97,21 +99,24 @@ func (s *PassService) PhoneComplete(ctx context.Context, session services.UserSe
 	}
 
 	phoneData := PhonePassSchema{
-		Name:        name,
 		PhoneNumber: phone_number,
 	}
 	data, err := json.Marshal(&phoneData)
 	if err != nil {
 		return services.CreateError("failed to create a new phone pass")
 	}
+	dataHash := sha256.Sum256(data)
 
 	// Code verification check is complete, procede to create the phone pass
 	pass := UserPass{
+		ID:         uuid.NewString(),
 		UserID:     session.UserID,
-		Attributes: "name,phone_number",
+		Name:       name,
+		Attributes: "phone_number",
 		SchemaType: PhonePassSchemaType,
 		Issuer:     "LoginID Vault",
 		Data:       data,
+		DataHash:   dataHash[:],
 		CreatedAt:  time.Now(),
 		UpdatedAt:  time.Now(),
 		ExpiresAt:  nil,
@@ -124,4 +129,8 @@ func (s *PassService) PhoneComplete(ctx context.Context, session services.UserSe
 	s.RedisClient.Del(ctx, key)
 
 	return nil
+}
+
+func getCacheKey(phone_number, user_id string) string {
+	return fmt.Sprintf("passes::phone::%x::%s", sha256.Sum256([]byte(phone_number)), user_id)
 }
