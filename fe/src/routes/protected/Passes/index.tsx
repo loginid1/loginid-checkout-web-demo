@@ -73,7 +73,7 @@ const Passes = () => {
 										}
 										title={
 											<Typography align="left" fontSize={20} lineHeight={1.5} fontWeight="bold" textTransform="uppercase">
-												{pass.data.name}
+												{pass.name}
 											</Typography>
 										}
 										subheader={
