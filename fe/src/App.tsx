@@ -42,6 +42,7 @@ import EmailValidation from './routes/api/EmailValidation';
 import DeveloperConsole from './routes/protected/Developer/Console';
 import CreateApp from './routes/protected/Developer/CreateApp';
 import UpdateApp from './routes/protected/Developer/UpdateApp';
+import FederatedAuthPopup from './routes/api/FederatedAuthPopup';
 
 
 
@@ -55,6 +56,7 @@ function App() {
         <Route path="/faq" element={<Faq />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/sdk/auth_p" element={<FederatedAuthPopup />} />
         <Route path="/sdk/auth" element={<FederatedLogin />} />
         <Route path="/sdk/register" element={<FederatedRegister />} />
         <Route path="/sdk/email" element={<EmailValidation />} />

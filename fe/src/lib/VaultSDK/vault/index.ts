@@ -59,12 +59,14 @@ export class VaultAuth extends Base {
         const initPayload = <{
             username: string;
             device_name: string;
+            register_session: string;
             options: {
                 register_session?: string;
                 roaming_authenticator?: boolean;
             };
         }> {
             username,
+                register_session: session,
             options: { 
                 register_session: session
             },

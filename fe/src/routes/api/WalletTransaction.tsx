@@ -157,7 +157,7 @@ export default function WalletTxnConfirmation() {
 							sign_count++;
 						}
 					} else if (txnValidation.txn_type[i] === "rekey") {
-						let aTx: Rekey = JSON.parse( txnValidation.txn_data[i]);
+						let aTx: Rekey = JSON.parse(txnValidation.txn_data[i]);
 						aTx.type = "rekey";
 						aTx.iat = new Date().toISOString();
 						itxns.push(aTx);
@@ -165,7 +165,6 @@ export default function WalletTxnConfirmation() {
 						if (aTx.base.require) {
 							sign_count++;
 						}
-
 					}
 				}
 
@@ -396,16 +395,26 @@ function DisplayGroupStep(props: DisplayGroupStepProps) {
 		return <></>;
 	} else if (props.max < 4) {
 		return (
-			<Stepper sx={{ mb: 2 }}  activeStep={props.current} alternativeLabel>
+			<Stepper sx={{ mb: 2 }} activeStep={props.current} alternativeLabel>
 				{props.steps.map((label) => (
-					<Step key={label} >
-						<StepLabel >{label}</StepLabel>
+					<Step key={label}>
+						<StepLabel>{label}</StepLabel>
 					</Step>
 				))}
 			</Stepper>
 		);
 	} else {
-		return <Stack direction="row" alignItems="center" justifyContent="center" ><Chip color="secondary" label={ `${props.current + 1} / ${props.max}`}> </Chip> <Typography variant="title" sx={{ml:1}}>{props.steps[props.current]}</Typography></Stack>;
+		return (
+			<Stack direction="row" alignItems="center" justifyContent="center">
+				<Chip
+					color="secondary"
+					label={`${props.current + 1} / ${props.max}`}
+				/>
+				<Typography variant="title" sx={{ ml: 1 }}>
+					{props.steps[props.current]}
+				</Typography>
+			</Stack>
+		);
 	}
 }
 
