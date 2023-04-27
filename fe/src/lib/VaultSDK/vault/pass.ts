@@ -1,12 +1,18 @@
 import Base from "../base";
 import utils from "../utils";
 
+export interface PhonePass {
+    phone_number: string
+}
+
 export interface Pass {
+    id: string
     user_id: string;
+    name: string;
     attributes: string;
     schema: string;
     issuer: string;
-    data: any;
+    data: PhonePass;
     created_at: Date;
 }
 
