@@ -1,4 +1,12 @@
-import { Box, Button, createTheme, Paper, ThemeProvider, Typography, useMediaQuery } from "@mui/material";
+import {
+	Box,
+	Button,
+	createTheme,
+	Paper,
+	ThemeProvider,
+	Typography,
+	useMediaQuery,
+} from "@mui/material";
 import Grid from "@mui/material/Grid";
 import Stack from "@mui/material/Stack/Stack";
 import MainBackground from "../assets/marketing/m_background_1.png";
@@ -14,24 +22,24 @@ import FaqCard from "../components/FaqCard";
 import { useNavigate } from "react-router-dom";
 
 export const LoginID = createTheme({
-  palette: {
-    primary: {
-      main: "#1642DF",
-      contrastText: "#fff",
-    },
-    secondary: {
-      main: "#1E2898",
-    },
-    tertiary: {
-      main: "#E2F2FF",
-    },
-    background: {
-      default: "#E2EAF9",
-    },
-    backgroundCard: {
-      main: "#F2F2F2",
-    },
-  },
+	palette: {
+		primary: {
+			main: "#1642DF",
+			contrastText: "#fff",
+		},
+		secondary: {
+			main: "#1E2898",
+		},
+		tertiary: {
+			main: "#E2F2FF",
+		},
+		background: {
+			default: "#E2EAF9",
+		},
+		backgroundCard: {
+			main: "#F2F2F2",
+		},
+	},
 });
 const styles = {
 	main: {
@@ -82,12 +90,12 @@ const styles = {
 
 const faqData = [
 	{
-		question: "What is the FIDO Vault?",
-		answer: `FIDO Vault is a device hardware based, secure wallet that provides simple registration and transacting on blockchain.  There are no downloads of software, or plugins required on your device, FIDO biometric authentication is available on 5B+ devices globally today. `,
+		question: "What is the LoginID Wallet?",
+		answer: `LoginID Wallet is a device hardware based, secure wallet that provides simple registration and transacting on blockchain.  There are no downloads of software, or plugins required on your device, FIDO biometric authentication is available on 5B+ devices globally today. `,
 	},
 
 	{
-		question: `Why do I need a FIDO Vault?`,
+		question: `Why do I need a LoginID Wallet?`,
 		answer: `
         <b>Better Account Recovery</b><br/>
         You will be able to assign multiple devices to your account to access dApps and or perform transactions on dApps. This means, if you lose a device, you can still access dApps using your other devices without the need to remember any passphrases. 
@@ -97,7 +105,7 @@ const faqData = [
         `,
 	},
 	{
-		question: `Why do I need a FIDO Vault if I already have a crypto wallet?`,
+		question: `Why do I need a LoginID Wallet if I already have a crypto wallet?`,
 		answer: `<b>No more browser extensions, QR scanning etc </b><br/>
 User experiences in today’s wallets are complex and multi-stepped. With our Vault, you no longer need to install an app, sync, import, install browser extensions, etc. FIDO vault is developed across all platforms and devices.`,
 	},
@@ -113,148 +121,184 @@ User experiences in today’s wallets are complex and multi-stepped. With our Va
 ];
 
 export function Faq() {
-
 	const navigate = useNavigate();
 	return (
-    <ThemeProvider theme={LoginID}>
-
-		<Grid container>
-            <Grid item container sx={{p:2,pl:4}} style={styles.sectionHeader} xs={12} md={12} alignItems="left" >
-               <Box component="img" src={VaultLogo}/> 
-            </Grid>
-			<Grid item xs={12} md={6} style={styles.main}>
-				<Box
-					component="img"
-					sx={{
-						m: 8,
-						height: 316,
-						width: 529,
-						maxHeight: { xs: 250, md: 316 },
-						maxWidth: { xs: 420, md: 529 },
-					}}
-					src={MainScreen}
-				/>
-			</Grid>
-			<Grid item container xs={12} md={6}>
-				<Stack sx={{ m: 8 }} justifyContent="flex-start">
-					<Typography
-						style={styles.fontLogo}
+		<ThemeProvider theme={LoginID}>
+			<Grid container>
+				<Grid
+					item
+					container
+					sx={{ p: 2, pl: 4 }}
+					style={styles.sectionHeader}
+					xs={12}
+					md={12}
+					alignItems="left"
+				>
+					<Box component="img" src={VaultLogo} />
+				</Grid>
+				<Grid item xs={12} md={6} style={styles.main}>
+					<Box
+						component="img"
 						sx={{
-							display: "flex",
+							m: 8,
+							height: 316,
+							width: 529,
+							maxHeight: { xs: 250, md: 316 },
+							maxWidth: { xs: 420, md: 529 },
 						}}
-						align="left"
-					>
-						Powered by&nbsp;
-						<Box
-							component="img"
-							sx={{ height: "32px" }}
-							src={LoginIDLogo}
-							alt="something"
-						/>
-					</Typography>
-					<Typography style={styles.fontMain} align="left">
-						The easiest and most secure way to setup a blockchain
-						account
-					</Typography>
-					<Typography style={styles.fontDesc} align="left">
-						Utilize FIDO device based hardware security to secure
-						your information, transact easier and give you a way to
-						recover your account.
-					</Typography>
-					<Stack direction="row" spacing={2} sx={{ m: 2 }}>
-						<Button variant="contained" onClick={()=>navigate("/register")} sx={{ borderRadius: 8  }}>
-							Register for free
-						</Button>
-						<Button variant="outlined" onClick={()=>navigate("/login")} sx={{ borderRadius: 8 }}>
-							Sign in
-						</Button>
+						src={MainScreen}
+					/>
+				</Grid>
+				<Grid item container xs={12} md={6}>
+					<Stack sx={{ m: 8 }} justifyContent="flex-start">
+						<Typography
+							style={styles.fontLogo}
+							sx={{
+								display: "flex",
+							}}
+							align="left"
+						>
+							Powered by&nbsp;
+							<Box
+								component="img"
+								sx={{ height: "32px" }}
+								src={LoginIDLogo}
+								alt="something"
+							/>
+						</Typography>
+						<Typography style={styles.fontMain} align="left">
+							The easiest and most secure way to setup a
+							blockchain account
+						</Typography>
+						<Typography style={styles.fontDesc} align="left">
+							Utilize a FIDO or Passkeys based device’s hardware
+							security to provide a passwordless experience,
+							secure your information, transact easier and give
+							you a way to recover your account.
+						</Typography>
+						<Stack direction="row" spacing={2} sx={{ m: 2 }}>
+							<Button
+								variant="contained"
+								onClick={() => navigate("/register")}
+								sx={{ borderRadius: 8 }}
+							>
+								Register for free
+							</Button>
+							<Button
+								variant="outlined"
+								onClick={() => navigate("/login")}
+								sx={{ borderRadius: 8 }}
+							>
+								Sign in
+							</Button>
+						</Stack>
 					</Stack>
-				</Stack>
-			</Grid>
-			<Grid
-				container
-				item
-				xs={12}
-				md={12}
-				style={styles.sectionA}
-				sx={{ p: 4 }}
-				justifyContent="center"
-			>
+				</Grid>
 				<Grid
 					container
 					item
 					xs={12}
 					md={12}
-					sx={{ p: 2 }}
+					style={styles.sectionA}
+					sx={{ p: 4 }}
 					justifyContent="center"
 				>
-					<Box component="img" src={Icon30}></Box>
+					<Grid
+						container
+						item
+						xs={12}
+						md={12}
+						sx={{ p: 2 }}
+						justifyContent="center"
+					>
+						<Box component="img" src={Icon30}></Box>
+					</Grid>
+					<Grid container item xs={12} md={12} spacing={4}>
+						<Grid container item xs={12} md={4} sx={{ p: 2 }}>
+							<Paper style={styles.card}>
+								<Box component="img" src={Icon31} />
+								<Typography style={styles.fontCardTitle}>
+									Easy To Use
+								</Typography>
+								<Typography style={styles.fontCardDesc}>
+									There are no downloads of software, or
+									plugins required on your device. Your device
+									likely already supports FIDO and Passkeys.
+									Register accounts with one-touch of your
+									biometric.
+								</Typography>
+							</Paper>
+						</Grid>
+						<Grid container item xs={12} md={4} sx={{ p: 2 }}>
+							<Paper style={styles.card}>
+								<Box component="img" src={Icon32} />
+								<Typography style={styles.fontCardTitle}>
+									Secured By Hardware
+								</Typography>
+								<Typography style={styles.fontCardDesc}>
+									LoginID Wallet is a device hardware based,
+									secure wallet that provides simple
+									registration and transacting on blockchains.
+									FIDO and Passkeys biometric authentication
+									is available on 5B+ devices globally today.
+								</Typography>
+							</Paper>
+						</Grid>
+						<Grid container item xs={12} md={4} sx={{ p: 2 }}>
+							<Paper style={styles.card}>
+								<Box component="img" src={Icon33} />
+								<Typography style={styles.fontCardTitle}>
+									Recovered Accounts
+								</Typography>
+								<Typography style={styles.fontCardDesc}>
+									You will be able to assign multiple devices
+									to your account to access dApps and/or
+									perform transactions on dApps. If you lose a
+									device, you can still access dApps using
+									your other FIDO device or Passkey without
+									the need to remember any passphrases.
+								</Typography>
+							</Paper>
+						</Grid>
+					</Grid>
 				</Grid>
-				<Grid container item xs={12} md={12} spacing={4}>
-					<Grid container item xs={12} md={4} sx={{ p: 2 }}>
-						<Paper style={styles.card}>
-							<Box component="img" src={Icon31} />
-							<Typography style={styles.fontCardTitle}>
-								Easy To Use
-							</Typography>
-							<Typography style={styles.fontCardDesc}>
-								There are no downloads of software, or plugins
-								required on your device, Your device likely
-								already supports FIDO. Register accounts with
-								one-touch of your biometric!
-							</Typography>
-						</Paper>
-					</Grid>
-					<Grid container item xs={12} md={4} sx={{ p: 2 }}>
-						<Paper style={styles.card}>
-							<Box component="img" src={Icon32} />
-							<Typography style={styles.fontCardTitle}>
-								Secured By Hardware
-							</Typography>
-							<Typography style={styles.fontCardDesc}>
-								FIDO Vault is a device hardware based, secure
-								wallet that provides simple registration and
-								transacting on blockchains. FIDO biometric
-								authentication is available on 5B+ devices
-								globally today.
-							</Typography>
-						</Paper>
-					</Grid>
-					<Grid container item xs={12} md={4} sx={{ p: 2 }}>
-						<Paper style={styles.card}>
-							<Box component="img" src={Icon33} />
-							<Typography style={styles.fontCardTitle}>
-								Recovered Accounts
-							</Typography>
-							<Typography style={styles.fontCardDesc}>
-								You will be able to assign multiple devices to
-								your account to access dApps and/or perform
-								transactions on dApps. If you lose a device, you
-								can still access dApps using your other devices
-								without the need to remember any passphrases.
-							</Typography>
-						</Paper>
-					</Grid>
+				<Grid
+					container
+					item
+					xs={12}
+					md={12}
+					style={styles.sectionFAQ}
+					sx={{ p: 4 }}
+					direction="column"
+					justifyContent="center"
+				>
+					<Stack
+						direction="row"
+						justifyContent="center"
+						id="faq-section"
+					>
+						<Box component="img" src={IconFAQ} />
+						<Typography style={styles.fontFAQtitle} sx={{ m: 2 }}>
+							FAQ's
+						</Typography>
+					</Stack>
+					{faqData.map((set) => (
+						<FaqCard
+							question={set.question}
+							answer={set.answer}
+						></FaqCard>
+					))}
 				</Grid>
+				<Grid
+					item
+					container
+					sx={{ p: 2, pl: 4 }}
+					style={styles.sectionHeader}
+					xs={12}
+					md={12}
+					alignItems="left"
+				></Grid>
 			</Grid>
-			<Grid
-				container
-				item
-				xs={12}
-				md={12}
-				style={styles.sectionFAQ}
-				sx={{ p: 4 }}
-				direction="column"
-				justifyContent="center"
-			>
-				<Stack direction="row" justifyContent="center" id="faq-section"><Box component="img" src={IconFAQ} /><Typography style={styles.fontFAQtitle} sx={{m:2}}>FAQ's</Typography></Stack>
-                {faqData.map(set =>(
-                    <FaqCard question={set.question} answer={set.answer}></FaqCard>
-                ))}
-            </Grid>
-            <Grid item container sx={{p:2,pl:4}} style={styles.sectionHeader} xs={12} md={12} alignItems="left" >
-            </Grid>
-		</Grid>
-    </ThemeProvider>
+		</ThemeProvider>
 	);
 }

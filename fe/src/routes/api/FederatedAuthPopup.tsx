@@ -53,7 +53,7 @@ const mService = new MessagingService(window.opener);
 let input: boolean = false;
 let wSession: WalletLoginSession | null = null;
 let ws: WebSocket | null = null;
-export default function FederatedLogin() {
+export default function FederatedAuthPopup() {
 	const [searchParams, setSearchParams] = useSearchParams();
 
 	const [waitingIndicator, setWaitingIndicator] = useState<boolean>(true);
@@ -63,6 +63,7 @@ export default function FederatedLogin() {
 	const [codeInput, setCodeInput] = useState<boolean>(false);
 	const [page, setPage] = useState<string>("");
 	const [openEmailDialog, setOpenEmailDialog] = useState<boolean>(false);
+	const [emailType, setEmailType] = useState<string> ("login");
 	const [sessionId, setSessionId] = useState<string>("");
 	const params = useParams();
 	const navigate = useNavigate();
@@ -70,9 +71,11 @@ export default function FederatedLogin() {
 	const [displayMessage, setDisplayMessage] = useState<DisplayMessage | null>( null);
 	const [appOrigin, setAppOrigin] = useState<string>("");
 	const [consent, setConsent] = useState<boolean>(false);
+	const [token, setToken] = useState("");
 
 	useEffect(() => {
-		let target = window.parent;
+		// expect opener
+		let target = window.opener;
 		if (target != null) {
 			mService.onMessage((msg, origin) => onMessageHandle(msg, origin));
 		} else {
@@ -89,7 +92,6 @@ export default function FederatedLogin() {
 	// handle iframe message
 	function onMessageHandle(msg: Message, origin: string) {
 		try {
-			console.log("parent: ", origin);
 			mService.origin = origin;
 			mService.id = msg.id;
 			// validate enable
@@ -155,45 +157,18 @@ export default function FederatedLogin() {
 	async function handleLogin() {
 		try {
 			if (!(await vaultSDK.checkUser(username))) {
-				// need to handle safari blocking popup in async
-				try {
 
-					let popupW = openPopup(
-						`/sdk/register?username=${username}&session=${sessionId}&appOrigin=${appOrigin}`,
-						"register",
-						defaultOptions
-					);
-					popupW.focus();
-					window.addEventListener("focus", ()=> {
-						console.log("focus");
-						if(popupW != null) {
-							setTimeout(()=>{popupW.focus()},1);
-						console.log("focusW");
-						}
-					});
-					setWaitingMessage("Waiting for new passkey registration ...");
-					return;
-				} catch (error) {
+				// handle email register
+				emailRegister();
 
-					setDisplayMessage({
-						text: "user not found - use sign up for new account",
-						type: "error",
-					});
-					setShowRegister(true);
-					return;
-				}
+			} else{
+
+				const response = await vaultSDK.federated_authenticate(
+					username,
+					sessionId
+				);
+				setPage("consent");
 			}
-			const response = await vaultSDK.federated_authenticate(
-				username,
-				sessionId
-			);
-			/*
-			AuthService.storeSession({
-				username: username,
-				token: response.jwt,
-			});
-			*/
-			setPage("consent");
 		} catch (error) {
 			setDisplayMessage({
 				text: (error as Error).message,
@@ -202,6 +177,60 @@ export default function FederatedLogin() {
 			//setCodeInput(true);
 			// show 6 digit code
 			emailLogin(username);
+		}
+	}
+
+	async function emailRegister() {
+		try {
+			await vaultSDK.sendEmailSession(sessionId, username, "register", appOrigin);
+			//setWaitingMessage("Check email for login session")
+			setWaitingIndicator(true);
+			setEmailType("register");
+			setOpenEmailDialog(true);
+			ws = new WebSocket(wsurl + "/api/federated/email/ws/" + sessionId);
+			ws.onopen = () => {
+				ws?.send(JSON.stringify({ email: username, type: "register" }));
+			};
+			ws.onmessage = (event) => {
+				let token = event.data;
+				let decoded = jwt_decode(token);
+				if (decoded != null) {
+					closeEmailDialog();
+					//registerFido(token);
+					setToken(token);
+					setPage("fido");
+					clearAlert();
+					//ws?.close();
+					// register fido
+				}
+			};
+			ws.onclose = () => {
+			};
+		} catch (error) {
+			setDisplayMessage({type:"error", text:(error as Error).message})
+		}
+	}
+
+	async function registerFido() {
+		try {
+			const response = await vaultSDK.federated_register(
+				username,
+				token,
+				sessionId
+			);
+			/*
+			AuthService.storeSession({
+				username: username,
+				token: response.jwt,
+			});
+			*/
+			//navigate("/quick_add_algorand");
+			//handleAccountCreation();
+			AuthService.storePref({ username: username });
+			setPage("consent");
+
+		} catch (error) {
+			setDisplayMessage({text:(error as Error).message, type:"error",});
 		}
 	}
 
@@ -226,6 +255,7 @@ export default function FederatedLogin() {
 	async function emailLogin(email: string) {
 		await vaultSDK.sendEmailSession(sessionId, email, "login", appOrigin);
 		setWaitingIndicator(true);
+		setEmailType("login");
 		setOpenEmailDialog(true);
 		ws = new WebSocket(wsurl + "/api/federated/email/ws/" + sessionId);
 		ws.onopen = () => {
@@ -269,6 +299,10 @@ export default function FederatedLogin() {
 		window.close();
 	}
 
+	async function handleClose(){
+		window.close();
+	}
+
 	return (
 		<ThemeProvider theme={LoginID}>
 			{waitingIndicator && <LinearProgress />}
@@ -283,9 +317,10 @@ export default function FederatedLogin() {
 				)}
 
 				{page === "login" && Login()}
+				{page === "fido" && Fido()}
 				{page === "consent" && Consent()}
 				<EmailDialog
-					type="login"
+					type={emailType}
 					email={username}
 					session={sessionId}
 					open={openEmailDialog}
@@ -392,7 +427,7 @@ export default function FederatedLogin() {
 
 	function Consent() {
 		return (
-			<>
+			<Stack>
 				<Typography
 					sx={{ m: 1 }}
 					variant="body2"
@@ -412,7 +447,58 @@ export default function FederatedLogin() {
 						Allow
 					</Button>
 				)}
-			</>
+				<Button
+					variant="text"
+					size="small"
+					onClick={handleClose}
+					sx={{ mt: 2, mb: 2 }}
+				>
+					Close
+				</Button>
+			</Stack>
+		);
+	}
+
+	function Fido() {
+		return (
+			<Stack>
+
+				{displayMessage && (
+					<Alert
+						severity={
+							(displayMessage?.type as AlertColor) || "info"
+						}
+						sx={{ mt: 2 }}
+					>
+						{displayMessage.text}
+					</Alert>
+				)}
+				<Typography
+					sx={{ m: 1 }}
+					variant="body2"
+					color="text.secondary"
+				>
+					You have successfully confirmed your email. Press "Add my
+					passkey" to complete this registration:
+				</Typography>
+				<Chip icon={<EmailIcon />} label={username}></Chip>
+				<Button
+					variant="contained"
+					size="small"
+					sx={{ mt: 3, mb: 0 }}
+					onClick={registerFido}
+				>
+					Add My Passkey
+				</Button>
+				<Button
+					variant="text"
+					size="small"
+					onClick={handleCancel}
+					sx={{ mt: 0, mb: 2 }}
+				>
+					Cancel
+				</Button>
+			</Stack>
 		);
 	}
 }

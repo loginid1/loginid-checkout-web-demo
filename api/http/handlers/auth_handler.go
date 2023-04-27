@@ -32,7 +32,8 @@ type AuthHandler struct {
 }
 
 type RegisterInitRequest struct {
-	Username string
+	Username        string
+	RegisterSession string `json:"register_session"`
 }
 
 /**
@@ -58,7 +59,7 @@ func (u *AuthHandler) RegisterInitHandler(w http.ResponseWriter, r *http.Request
 	}
 
 	// proxy register request to fido2 service
-	response, err := u.Fido2Service.RegisterInit(request.Username)
+	response, err := u.Fido2Service.RegisterInit(request.Username, request.RegisterSession)
 	if err != nil {
 		http_common.SendErrorResponse(w, *err)
 		return

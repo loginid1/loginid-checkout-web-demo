@@ -152,13 +152,6 @@ export default function FederatedRegister() {
 				}
 			};
 			ws.onclose = () => {
-				// close websocket
-				/*
-				setDisplayMessage({
-					text: "email session timeout or cancel!",
-					type: "error",
-				});
-				*/
 			};
 		} catch (error) {
 			setDisplayMessage({type:"error", text:(error as Error).message})

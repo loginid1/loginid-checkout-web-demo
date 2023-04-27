@@ -56,11 +56,16 @@ func NewFido2Service(clientID string, baseURL string, apiClientID string, apiPem
 // return byte for now
 //TODO: may need to map to object to intercept attestation options
 
-func (f *Fido2Service) RegisterInit(username string) ([]byte, *services.ServiceError) {
+func (f *Fido2Service) RegisterInit(username string, register_session string) ([]byte, *services.ServiceError) {
 
-	request := map[string]string{
+	request := map[string]interface{}{
 		"client_id": f.clientID,
 		"username":  username,
+	}
+	if register_session != "" {
+		request["options"] = map[string]string{
+			"register_session": register_session,
+		}
 	}
 
 	data, err := json.Marshal(request)

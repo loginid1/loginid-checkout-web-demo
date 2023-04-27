@@ -18,7 +18,7 @@ import {
 import { OverridableComponent } from "@mui/material/OverridableComponent";
 import { useEffect, useState } from "react";
 import { LoginID } from "../theme/theme";
-import { ReactComponent as VaultLogo } from "../assets/logoContrast.svg";
+import { ReactComponent as VaultLogo } from "../assets/logo_dark.svg";
 import menuHeader from "../assets/sidemenu/MenuHeader.png";
 import LoginIDLogo from "../assets/sidemenu/LoginIDLogo.svg";
 import { useNavigate } from "react-router-dom";

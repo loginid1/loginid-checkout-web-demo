@@ -127,6 +127,7 @@ export class VaultFederated extends Base {
 			{
 				username: string;
 				device_name: string;
+				register_session: string,
 				options: {
 					register_session?: string;
 					roaming_authenticator?: boolean;
@@ -134,6 +135,7 @@ export class VaultFederated extends Base {
 			}
 		>{
 			username,
+			register_session: session,
 			options: {
 				register_session: session,
 			},

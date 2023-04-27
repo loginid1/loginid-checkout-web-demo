@@ -103,7 +103,8 @@ func (h *FederatedAuthHandler) CheckUserHandler(w http.ResponseWriter, r *http.R
 }
 
 type FederatedRegisterInitRequest struct {
-	Username string
+	Username        string
+	RegisterSession string `json:"register_session"`
 }
 
 /**
@@ -146,7 +147,7 @@ func (h *FederatedAuthHandler) FederatedRegisterInitHandler(w http.ResponseWrite
 	*/
 
 	// proxy register request to fido2 service
-	response, err := h.Fido2Service.RegisterInit(request.Username)
+	response, err := h.Fido2Service.RegisterInit(request.Username, request.RegisterSession)
 	if err != nil {
 		http_common.SendErrorResponse(w, *err)
 		return

@@ -17,6 +17,7 @@ import GlobalStyles from '@mui/material/GlobalStyles';
 import Container from '@mui/material/Container';
 import { FederatedSDK } from './lib/FederatedSDK';
 
+const wallet = new FederatedSDK(process.env.REACT_APP_VAULT_URL || "");
 function Copyright(props: any) {
   return (
     <Typography variant="body2" color="text.secondary" align="center" {...props}>
@@ -97,8 +98,8 @@ const footers = [
 
 function PricingContent() {
   const wallet = new FederatedSDK(process.env.REACT_APP_VAULT_URL || "");
-  function signUp(){
-	  wallet.signUp();
+  function signup(){
+	  wallet.signupNew();
   }
   return (
     <React.Fragment>
@@ -140,7 +141,7 @@ function PricingContent() {
               Support
             </Link>
           </nav>
-          <Button href="#" variant="outlined" sx={{ my: 1, mx: 1.5 }} onClick={signUp}>
+          <Button href="#" variant="outlined" sx={{ my: 1, mx: 1.5 }} onClick={signup}>
             Login
           </Button>
         </Toolbar>

@@ -1,4 +1,5 @@
 import { MessagingService } from "./messaging";
+import { defaultOptions, openPopup } from "./popup";
 
 export interface SignupResult {
 	token?: string;
@@ -66,7 +67,7 @@ export class FederatedSDK {
 	 *   https://github.com/algorandfoundation/ARCs/blob/main/ARCs/arc-0006.md
 	 */
 
-	async signUp(): Promise<SignupResult> {
+	async signup(): Promise<SignupResult> {
 
         /*
         if (this.mTarget == null) {
@@ -95,4 +96,22 @@ export class FederatedSDK {
 		let result: SignupResult = JSON.parse(response);
 		return Promise.resolve(result);
 	}
+
+    async signupNew(): Promise<SignupResult> {
+        this.mTarget = openPopup(this.baseURL + "/sdk/auth_p", "auth_new", defaultOptions);
+		let mMessage = new MessagingService("*");
+		let isLoad = await mMessage.pingForResponse(this.mTarget, 20000);
+		if (!isLoad) {
+			return Promise.reject({ message: "communication timeout" });
+		}
+
+		let response = await mMessage.sendMessage(
+			this.mTarget,
+			JSON.stringify({ data: "hello" }),
+			"init"
+		);
+
+		let result: SignupResult = JSON.parse(response);
+		return Promise.resolve(result);
+    }
 }
