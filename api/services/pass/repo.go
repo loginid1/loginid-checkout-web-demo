@@ -13,9 +13,9 @@ func (r *PassRepository) Create(model UserPass) error {
 	return nil
 }
 
-func (r *PassRepository) ListByUserID(user_id string) ([]UserPass, error) {
+func (r *PassRepository) ListByUsername(username string) ([]UserPass, error) {
 	var result []UserPass
-	if err := r.DB.Where("user_id", user_id).Find(&result).Error; err != nil {
+	if err := r.DB.Model(UserPass{}).Select("user_passes.*").Joins("JOIN users ON users.id = user_passes.user_id").Where("users.username", username).Find(&result).Error; err != nil {
 		return nil, err
 	}
 
