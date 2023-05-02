@@ -115,7 +115,7 @@ func main() {
 	api.HandleFunc("/addCredential/complete", authHandler.AddCredentialCompleteHandler)
 
 	//federated auth handler
-	federatedHandler := handlers.FederatedAuthHandler{UserService: userService, Fido2Service: fidoService, KeystoreService: keystoreService, RedisClient: db.GetCacheClient(), AppService: appService}
+	federatedHandler := handlers.FederatedAuthHandler{UserService: userService, Fido2Service: fidoService, KeystoreService: keystoreService, RedisClient: db.GetCacheClient(), AppService: appService, PassService: passService}
 	api.HandleFunc("/federated/checkuser", federatedHandler.CheckUserHandler)
 	api.HandleFunc("/federated/sessionInit", federatedHandler.SessionInitHandler)
 	api.HandleFunc("/federated/register/init", federatedHandler.FederatedRegisterInitHandler)

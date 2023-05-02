@@ -97,7 +97,7 @@ type PassesHandler struct {
 func (h *PassesHandler) List(w http.ResponseWriter, r *http.Request) {
 	session := r.Context().Value("session").(services.UserSession)
 
-	passes, err := h.PassService.List(r.Context(), session)
+	passes, err := h.PassService.List(r.Context(), session.Username)
 	if err != nil {
 		http_common.SendErrorResponse(w, *err)
 		return
@@ -121,7 +121,7 @@ func (h *PassesHandler) PhoneInit(w http.ResponseWriter, r *http.Request) {
 
 	session := r.Context().Value("session").(services.UserSession)
 
-	if err := h.PassService.PhoneInit(r.Context(), session, request.PhoneNumber); err != nil {
+	if err := h.PassService.PhoneInit(r.Context(), session.Username, request.PhoneNumber); err != nil {
 		http_common.SendErrorResponse(w, *err)
 		return
 	}
@@ -143,7 +143,7 @@ func (h *PassesHandler) PhoneComplete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	session := r.Context().Value("session").(services.UserSession)
-	if err := h.PassService.PhoneComplete(r.Context(), session, request.PassName, request.PhoneNumber, request.Code); err != nil {
+	if err := h.PassService.PhoneComplete(r.Context(), session.Username, request.PassName, request.PhoneNumber, request.Code); err != nil {
 		http_common.SendErrorResponse(w, *err)
 		return
 	}

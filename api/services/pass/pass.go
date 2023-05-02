@@ -26,3 +26,6 @@ type UserPass struct {
 type PhonePassSchema struct {
 	PhoneNumber string `json:"phone_number"`
 }
+type EmailPassSchema struct {
+	Email string `json:"email"`
+}

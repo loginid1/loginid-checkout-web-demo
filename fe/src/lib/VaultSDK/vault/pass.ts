@@ -5,6 +5,10 @@ export interface PhonePass {
     phone_number: string
 }
 
+export interface EmailPass {
+    email: string
+}
+
 export interface Pass {
     id: string
     user_id: string;
@@ -12,7 +16,7 @@ export interface Pass {
     attributes: string;
     schema: string;
     issuer: string;
-    data: PhonePass;
+    data: PhonePass & EmailPass;
     created_at: Date;
 }
 
