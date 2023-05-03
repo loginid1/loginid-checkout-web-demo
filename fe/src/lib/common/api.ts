@@ -76,3 +76,7 @@ export interface WalletTransaction {
  export interface LoginResult {
     token: string;
  }
+
+export interface WalletInit {
+	api: string;
+}

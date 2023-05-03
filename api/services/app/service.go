@@ -181,6 +181,9 @@ func (s *AppService) SetupSession(appid string, origin string, ip string) (strin
 		if serr != nil {
 			return "", services.CreateError("invalid app id")
 		}
+		if app.Origins != origin {
+			return "", services.CreateError("invalid origin")
+		}
 	} else {
 
 		app, serr = s.GetAppByOrigin(origin)

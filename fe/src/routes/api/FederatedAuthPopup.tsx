@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { AuthService } from "../../services/auth";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { Message, MessagingService } from "../../services/messaging";
-import { EnableOpts, EnableResult } from "../../lib/common/api";
+import { EnableOpts, EnableResult, WalletInit } from "../../lib/common/api";
 import vaultSDK from "../../lib/VaultSDK";
 import { AccountList, Genesis } from "../../lib/VaultSDK/vault/algo";
 import { ThemeProvider } from "@emotion/react";
@@ -48,6 +48,7 @@ interface WalletLoginSession {
 	origin: string;
 	requestId: number;
 }
+
 
 let wsurl = process.env.REACT_APP_VAULT_WS_URL || "ws://localhost:3001";
 const mService = new MessagingService(window.opener);
@@ -111,12 +112,17 @@ export default function FederatedAuthPopup() {
 					type: "info",
 				});
 			} else if (msg.type === "init") {
-				vaultSDK.sessionInit(origin, "").then((response) => {
+
+				let api : WalletInit = JSON.parse(msg.data);
+				vaultSDK.sessionInit(origin, api.api).then((response) => {
 					setPage("login");
 					setAppOrigin(origin);
 					clearAlert();
 					setSessionId(response.id);
 					console.log("session ", response.id);
+				}).catch(error =>{
+					clearAlert();
+					setDisplayMessage({text:(error as Error).message, type:"error"})
 				});
 				// check api
 			}
@@ -217,6 +223,7 @@ export default function FederatedAuthPopup() {
 			};
 		} catch (error) {
 			setDisplayMessage({type:"error", text:(error as Error).message})
+			mService.sendErrorMessage((error as Error).message);
 		}
 	}
 
