@@ -33,7 +33,7 @@ const Header = (props: any) => {
   const context = useContext(AppContext)
   const [username, setUsername] = useState<string>('')
   const [logout, setLogout] = useState(false)
-  const [anchorLogout, setAnchorLogout] = useState()
+  const [anchorLogout, setAnchorLogout] = useState<any|null>(null)
   const navigate = useHistory()
   // Make the JSS styles
   const classes = makeStyles((theme: Theme) =>
@@ -94,7 +94,7 @@ const Header = (props: any) => {
                 aria-controls="logout-menu"
                 aria-haspopup="true"
                 label={username}
-                onClick={(e) => {
+                onClick={(e ) => {
                   setLogout(true)
                   setAnchorLogout(e.currentTarget)
                 }}
@@ -103,10 +103,6 @@ const Header = (props: any) => {
                 id="logout-menu"
                 anchorEl={anchorLogout}
                 open={logout}
-                anchorOrigin={{
-                  vertical: 'bottom',
-                  horizontal: 'center',
-                }}
                 keepMounted
               >
 
