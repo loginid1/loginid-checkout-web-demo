@@ -21,6 +21,7 @@ type AppSession struct {
 	Origin string `json:"origin"`
 	IP     string `json:"ip"`
 	Method string `json:"method"`
+	Token  string `json:"token"`
 }
 
 type DevApp struct {

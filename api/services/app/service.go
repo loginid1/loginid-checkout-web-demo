@@ -221,25 +221,43 @@ func (s *AppService) UpdateSession(sessionid string, userid string) (*AppSession
 	return session, nil
 }
 
-func (s *AppService) CheckSessionConsent(id string) (bool, *services.ServiceError) {
-	session, err := s.getSession(id)
+func (s *AppService) UpdateSessionToken(sessionid string, token string) (*AppSession, *services.ServiceError) {
+
+	logger.Global.Info(fmt.Sprintf("update session %s", sessionid))
+	session, err := s.getSession(sessionid)
 	if err != nil {
 		logger.Global.Error(err.Error())
-		return false, services.CreateError("session error")
+		return nil, services.CreateError("session update error")
 	}
-	result := s.checkUserConsent(session.AppID, session.UserID)
-	return result, nil
+	session.Token = token
+	err = s.storeSession(*session)
+	if err != nil {
+		logger.Global.Error(err.Error())
+		return nil, services.CreateError("session update error")
+	}
+	return session, nil
 }
 
-func (s *AppService) SaveSessionConsent(id string) (bool, *services.ServiceError) {
+func (s *AppService) CheckSessionConsent(id string) (bool, string, *services.ServiceError) {
+	session, err := s.getSession(id)
+	if err != nil {
+		logger.Global.Error(err.Error())
+		return false, "", services.CreateError("session error")
+	}
+	result := s.checkUserConsent(session.AppID, session.UserID)
+
+	return result, session.Token, nil
+}
+
+func (s *AppService) SaveSessionConsent(id string) (bool, string, *services.ServiceError) {
 
 	session, err := s.getSession(id)
 	if err != nil {
 		logger.Global.Error(err.Error())
-		return false, services.CreateError("session error")
+		return false, "", services.CreateError("session error")
 	}
 	result := s.createConsent(session.AppID, session.UserID)
-	return result, nil
+	return result, session.Token, nil
 }
 
 func (s *AppService) storeSession(session AppSession) error {

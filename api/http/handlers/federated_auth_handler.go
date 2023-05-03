@@ -247,6 +247,13 @@ func (h *FederatedAuthHandler) FederatedRegisterCompleteHandler(w http.ResponseW
 		http_common.SendErrorResponse(w, *err)
 		return
 	}
+	// update token session
+	_, err = h.AppService.UpdateSessionToken(request.SessionID, jwt)
+	if err != nil {
+		http_common.SendErrorResponse(w, *err)
+		return
+	}
+
 	resp := AuthCompleteResponse{
 		Jwt: jwt,
 	}
@@ -326,6 +333,13 @@ func (h *FederatedAuthHandler) FederatedAuthCompleteHandler(w http.ResponseWrite
 		http_common.SendErrorResponse(w, *err)
 		return
 	}
+
+	// update token session
+	_, err = h.AppService.UpdateSessionToken(request.SessionID, jwt)
+	if err != nil {
+		http_common.SendErrorResponse(w, *err)
+		return
+	}
 	resp := AuthCompleteResponse{
 		Jwt: jwt,
 	}
@@ -338,7 +352,8 @@ type CheckConsentRequest struct {
 }
 
 type CheckConsentResponse struct {
-	Required bool `json:"required"`
+	Required bool   `json:"required"`
+	Token    string `json:"token"`
 }
 
 func (h *FederatedAuthHandler) CheckConsentHandler(w http.ResponseWriter, r *http.Request) {
@@ -351,17 +366,21 @@ func (h *FederatedAuthHandler) CheckConsentHandler(w http.ResponseWriter, r *htt
 	}
 
 	// check consent session
-	result, err := h.AppService.CheckSessionConsent(request.Session)
+	result, token, err := h.AppService.CheckSessionConsent(request.Session)
 	if err != nil {
 		http_common.SendErrorResponse(w, *err)
 		return
 	}
 
-	http_common.SendSuccessResponse(w, CheckConsentResponse{Required: !result})
+	http_common.SendSuccessResponse(w, CheckConsentResponse{Required: !result, Token: token})
 }
 
 type SaveConsentRequest struct {
 	Session string
+}
+
+type SaveConsentResponse struct {
+	Token string `json:"token"`
 }
 
 func (h *FederatedAuthHandler) SaveConsentHandler(w http.ResponseWriter, r *http.Request) {
@@ -374,7 +393,7 @@ func (h *FederatedAuthHandler) SaveConsentHandler(w http.ResponseWriter, r *http
 	}
 
 	// save consent session
-	result, err := h.AppService.SaveSessionConsent(request.Session)
+	result, token, err := h.AppService.SaveSessionConsent(request.Session)
 	if err != nil {
 		http_common.SendErrorResponse(w, *err)
 		return
@@ -383,7 +402,7 @@ func (h *FederatedAuthHandler) SaveConsentHandler(w http.ResponseWriter, r *http
 		http_common.SendErrorResponse(w, services.NewError("fail to save consent"))
 	}
 
-	http_common.SendSuccess(w)
+	http_common.SendSuccessResponse(w, SaveConsentResponse{Token: token})
 }
 
 type FederatedEmailSessionRequest struct {

@@ -108,7 +108,7 @@ export default function FederatedLogin() {
 					type: "info",
 				});
 			} else if (msg.type === "init") {
-				vaultSDK.sessionInit(origin).then((response) => {
+				vaultSDK.sessionInit(origin,"").then((response) => {
 					setPage("login");
 					setAppOrigin(origin);
 					clearAlert();
@@ -144,8 +144,16 @@ export default function FederatedLogin() {
 	}
 
 	async function checkConsent() {
-		let result = await vaultSDK.checkConsent(sessionId);
-		setConsent(result);
+
+		try {
+			let consent = await vaultSDK.checkConsent(sessionId);
+			setConsent(consent.required);
+			if (consent.required == false) {
+				mService.sendMessageText(consent.token);
+			}
+		} catch(e) {
+			setConsent(false);
+		}
 	}
 	async function saveConsent() {
 		await vaultSDK.saveConsent(sessionId);

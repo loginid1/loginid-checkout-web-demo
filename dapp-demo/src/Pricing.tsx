@@ -16,6 +16,7 @@ import Link from '@mui/material/Link';
 import GlobalStyles from '@mui/material/GlobalStyles';
 import Container from '@mui/material/Container';
 import { FederatedSDK } from './lib/FederatedSDK';
+import { createTheme } from '@mui/system';
 
 const wallet = new FederatedSDK(process.env.REACT_APP_VAULT_URL || "");
 function Copyright(props: any) {

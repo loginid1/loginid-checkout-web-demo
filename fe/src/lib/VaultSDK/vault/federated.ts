@@ -21,12 +21,23 @@ export interface EmailSessionResponse {
 	token: string;
 }
 
+export interface ConsentResponse {
+	required: boolean;
+	token: string;
+}
+
+export interface SaveConsentResponse {
+	token: string;
+}
+
+
+
 export class VaultFederated extends Base {
-	async sessionInit(origin: string): Promise<SessionInitResponse> {
+	async sessionInit( origin: string, api: string): Promise<SessionInitResponse> {
 		return await utils.http.post(
 			this._baseURL,
 			"/api/federated/sessionInit",
-			{ origin: origin }
+			{ api: api, origin: origin }
 		);
 	}
 
@@ -43,28 +54,18 @@ export class VaultFederated extends Base {
 			);
 	}
 
-	async checkConsent(session: string): Promise<boolean> {
-		try {
-			let response = await utils.http.post(
+	async checkConsent(session: string): Promise<ConsentResponse> {
+			return await utils.http.post(
 				this._baseURL,
 				"/api/federated/checkConsent",
 				{ session: session }
 			);
-			return response.required;
-		} catch (error) {
-			return false;
-		}
 	}
 
-	async saveConsent(session: string): Promise<boolean> {
-		try {
-			await utils.http.post(this._baseURL, "/api/federated/saveConsent", {
+	async saveConsent(session: string): Promise<SaveConsentResponse> {
+			return await utils.http.post(this._baseURL, "/api/federated/saveConsent", {
 				session: session,
 			});
-			return true;
-		} catch (error) {
-			return false;
-		}
 	}
 	/*
     async checkUser(username: string): Promise<boolean>{

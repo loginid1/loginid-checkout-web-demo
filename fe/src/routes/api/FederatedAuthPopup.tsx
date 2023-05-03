@@ -41,6 +41,7 @@ import { defaultOptions } from "../../lib/popup/popup";
 import { CodeInput } from "../../components/CodeInput";
 import { EmailDialog } from "../../components/dialogs/EmailDialog";
 import LoginIDLogo from "../../assets/sidemenu/LoginIDLogo.svg";
+import { MessageSharp } from "@mui/icons-material";
 
 interface WalletLoginSession {
 	network: string;
@@ -110,7 +111,7 @@ export default function FederatedAuthPopup() {
 					type: "info",
 				});
 			} else if (msg.type === "init") {
-				vaultSDK.sessionInit(origin).then((response) => {
+				vaultSDK.sessionInit(origin, "").then((response) => {
 					setPage("login");
 					setAppOrigin(origin);
 					clearAlert();
@@ -146,11 +147,19 @@ export default function FederatedAuthPopup() {
 	}
 
 	async function checkConsent() {
-		let result = await vaultSDK.checkConsent(sessionId);
-		setConsent(result);
+		try {
+			let consent = await vaultSDK.checkConsent(sessionId);
+			setConsent(consent.required);
+			if (consent.required == false) {
+				mService.sendMessageText(consent.token);
+			}
+		} catch(e) {
+			setConsent(false);
+		}
 	}
 	async function saveConsent() {
-		await vaultSDK.saveConsent(sessionId);
+		let consent = await vaultSDK.saveConsent(sessionId);
+		mService.sendMessageText(consent.token);
 		setConsent(false);
 	}
 

@@ -105,13 +105,19 @@ export class FederatedSDK {
 			return Promise.reject({ message: "communication timeout" });
 		}
 
+		window.addEventListener("focus", ()=> {
+			this.mTarget?.focus();
+		});
+
 		let response = await mMessage.sendMessage(
 			this.mTarget,
 			JSON.stringify({ data: "hello" }),
 			"init"
 		);
 
+
 		let result: SignupResult = JSON.parse(response);
+
 		return Promise.resolve(result);
     }
 }
