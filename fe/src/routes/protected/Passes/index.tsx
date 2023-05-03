@@ -84,7 +84,7 @@ const Passes = () => {
 									/>
 									<CardContent>
 										<Typography variant="body1">
-											{pass.data.phone_number}
+											{pass.schema === 'email' ? pass.data.email : pass.data.phone_number}
 										</Typography>
 									</CardContent>
 									<CardActions disableSpacing>

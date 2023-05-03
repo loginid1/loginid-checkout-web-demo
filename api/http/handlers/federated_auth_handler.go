@@ -27,6 +27,7 @@ import (
 	"gitlab.com/loginid/software/services/loginid-vault/services/email"
 	"gitlab.com/loginid/software/services/loginid-vault/services/fido2"
 	"gitlab.com/loginid/software/services/loginid-vault/services/keystore"
+	"gitlab.com/loginid/software/services/loginid-vault/services/pass"
 	"gitlab.com/loginid/software/services/loginid-vault/services/user"
 	"gitlab.com/loginid/software/services/loginid-vault/utils"
 )
@@ -36,6 +37,7 @@ type FederatedAuthHandler struct {
 	Fido2Service    *fido2.Fido2Service
 	KeystoreService *keystore.KeystoreService
 	AppService      *app.AppService
+	PassService     *pass.PassService
 	RedisClient     *redis.Client
 }
 
@@ -222,6 +224,15 @@ func (h *FederatedAuthHandler) FederatedRegisterCompleteHandler(w http.ResponseW
 	// save user to database
 	userid, err := h.UserService.CreateUserAccount(request.Username, request.DeviceName, public_key, key_alg, true)
 	if err != nil {
+		http_common.SendErrorResponse(w, *err)
+		return
+	}
+
+	// create email pass
+	passData := pass.EmailPassSchema{
+		Email: claims.Email,
+	}
+	if err := h.PassService.ForceAddPass(r.Context(), userid, "e-mail", "email", pass.EmailPassSchemaType, passData); err != nil {
 		http_common.SendErrorResponse(w, *err)
 		return
 	}
