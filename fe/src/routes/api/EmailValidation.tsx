@@ -92,17 +92,9 @@ export default function EmailValidation() {
 						)}
 						<Typography variant="body1">
 							<Link href="/fe/faq">
-								Learn more about the FIDO Vault{" "}
+								Learn more about the LoginID Wallet{" "}
 							</Link>
 						</Typography>
-						<Button
-							type="submit"
-							variant="contained"
-							size="small"
-							sx={{ mt: 3, mb: 0 }}
-						>
-							Manage My Portal
-						</Button>
 					</Stack>
 				</Paper>
 			</Container>

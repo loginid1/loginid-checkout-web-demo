@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { AuthService } from "../../services/auth";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { Message, MessagingService } from "../../services/messaging";
-import { EnableOpts, EnableResult } from "../../lib/common/api";
+import { EnableOpts, EnableResult, WalletInit } from "../../lib/common/api";
 import vaultSDK from "../../lib/VaultSDK";
 import { AccountList, Genesis } from "../../lib/VaultSDK/vault/algo";
 import { ThemeProvider } from "@emotion/react";
@@ -108,7 +108,8 @@ export default function FederatedLogin() {
 					type: "info",
 				});
 			} else if (msg.type === "init") {
-				vaultSDK.sessionInit(origin).then((response) => {
+				let api : WalletInit = JSON.parse(msg.data);
+				vaultSDK.sessionInit(origin,api.api).then((response) => {
 					setPage("login");
 					setAppOrigin(origin);
 					clearAlert();
@@ -144,8 +145,16 @@ export default function FederatedLogin() {
 	}
 
 	async function checkConsent() {
-		let result = await vaultSDK.checkConsent(sessionId);
-		setConsent(result);
+
+		try {
+			let consent = await vaultSDK.checkConsent(sessionId);
+			setConsent(consent.required);
+			if (consent.required == false) {
+				mService.sendMessageText(consent.token);
+			}
+		} catch(e) {
+			setConsent(false);
+		}
 	}
 	async function saveConsent() {
 		await vaultSDK.saveConsent(sessionId);

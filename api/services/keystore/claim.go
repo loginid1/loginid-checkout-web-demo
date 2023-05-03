@@ -28,7 +28,7 @@ type AuthSessionClaims struct {
 
 type IDTokenClains struct {
 	Client string       `json:"client"`
-	Nonce  string       `json:"email,omitempty"`
+	Nonce  string       `json:"nonce,omitempty"`
 	Sub    string       `json:"sub"`
 	Iat    int64        `json:"iat"`
 	Passes []PassClaims `json:"passes,omitempty"`

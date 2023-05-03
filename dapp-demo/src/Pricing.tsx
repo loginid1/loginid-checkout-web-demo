@@ -16,8 +16,10 @@ import Link from '@mui/material/Link';
 import GlobalStyles from '@mui/material/GlobalStyles';
 import Container from '@mui/material/Container';
 import { FederatedSDK } from './lib/FederatedSDK';
+import { createTheme } from '@mui/system';
+import { WalletSDK } from '@loginid/wallet-sdk';
 
-const wallet = new FederatedSDK(process.env.REACT_APP_VAULT_URL || "");
+const wallet = new WalletSDK(process.env.REACT_APP_VAULT_URL || "", process.env.REACT_APP_WALLET_API);
 function Copyright(props: any) {
   return (
     <Typography variant="body2" color="text.secondary" align="center" {...props}>
@@ -97,7 +99,6 @@ const footers = [
 
 
 function PricingContent() {
-  const wallet = new FederatedSDK(process.env.REACT_APP_VAULT_URL || "");
   function signup(){
 	  wallet.signupNew();
   }
