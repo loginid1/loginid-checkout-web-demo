@@ -363,8 +363,10 @@ type CheckConsentRequest struct {
 }
 
 type CheckConsentResponse struct {
-	Required bool   `json:"required"`
-	Token    string `json:"token"`
+	AppID              string   `json:"app_id"`
+	AppName            string   `json:"app_name"`
+	RequiredAttributes []string `json:"required_attributes,omitempty"`
+	Token              string   `json:"token"`
 }
 
 func (h *FederatedAuthHandler) CheckConsentHandler(w http.ResponseWriter, r *http.Request) {
@@ -377,13 +379,18 @@ func (h *FederatedAuthHandler) CheckConsentHandler(w http.ResponseWriter, r *htt
 	}
 
 	// check consent session
-	result, token, err := h.AppService.CheckSessionConsent(request.Session)
+	token, appId, appName, required, err := h.AppService.CheckSessionConsent(request.Session)
 	if err != nil {
 		http_common.SendErrorResponse(w, *err)
 		return
 	}
 
-	http_common.SendSuccessResponse(w, CheckConsentResponse{Required: !result, Token: token})
+	http_common.SendSuccessResponse(w, CheckConsentResponse{
+		AppID:              appId,
+		AppName:            appName,
+		RequiredAttributes: required,
+		Token:              token,
+	})
 }
 
 type SaveConsentRequest struct {

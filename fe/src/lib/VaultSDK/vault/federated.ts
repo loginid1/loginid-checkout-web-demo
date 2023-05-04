@@ -22,7 +22,9 @@ export interface EmailSessionResponse {
 }
 
 export interface ConsentResponse {
-	required: boolean;
+	app_id: string;
+	app_name: string;
+	required_attributes: string[];
 	token: string;
 }
 
