@@ -4,10 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
+	"gitlab.com/loginid/software/libraries/goutil.git"
 	"gitlab.com/loginid/software/libraries/goutil.git/logger"
 	"gitlab.com/loginid/software/services/loginid-vault/services"
 	"gitlab.com/loginid/software/services/loginid-vault/utils"
@@ -122,22 +124,6 @@ func (s *AppService) GetAppById(id string) (*DevApp, *services.ServiceError) {
 	return app, nil
 }
 
-func (s *AppService) checkUserConsent(appid string, userid string) bool {
-	consent, err := s.repo.GetConsent(appid, userid)
-	if err != nil {
-		logger.Global.Error(err.Error())
-		return false
-	}
-	app, serr := s.GetAppById(appid)
-	if serr != nil {
-		return false
-	}
-	if app.Attributes != consent.Attributes {
-		return false
-	}
-	return true
-}
-
 func (s *AppService) createConsent(appid string, userid string) bool {
 	app, serr := s.GetAppById(appid)
 	if serr != nil {
@@ -241,15 +227,33 @@ func (s *AppService) UpdateSessionToken(sessionid string, token string) (*AppSes
 	return session, nil
 }
 
-func (s *AppService) CheckSessionConsent(id string) (bool, string, *services.ServiceError) {
+func (s *AppService) CheckSessionConsent(id string) (token, appId, appName string, required []string, serr *services.ServiceError) {
 	session, err := s.getSession(id)
 	if err != nil {
 		logger.Global.Error(err.Error())
-		return false, "", services.CreateError("session error")
+		return "", "", "", nil, services.CreateError("session error")
 	}
-	result := s.checkUserConsent(session.AppID, session.UserID)
+	token = session.Token
 
-	return result, session.Token, nil
+	app, serr := s.GetAppById(session.AppID)
+	if serr != nil {
+		return "", "", "", nil, serr
+	}
+	appId = app.ID
+	appName = app.AppName
+	required = strings.Split(app.Attributes, ",")
+
+	consent, err := s.repo.GetConsent(session.AppID, session.UserID)
+	if err != nil {
+		serr = &services.ServiceError{Error: err, Message: "failed to fetch app consent"}
+		logger.Global.Error(err.Error())
+		return
+	}
+
+	attrArr := strings.Split(consent.Attributes, ",")
+	required = goutil.SubtractLists(required, attrArr)
+
+	return
 }
 
 func (s *AppService) SaveSessionConsent(id string) (bool, string, *services.ServiceError) {

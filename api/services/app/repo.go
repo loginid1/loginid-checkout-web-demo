@@ -3,6 +3,7 @@ package app
 import (
 	"github.com/google/uuid"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type AppRepository struct {
@@ -71,7 +72,10 @@ func (repo *AppRepository) CreateConsent(consent *AppConsent) error {
 		return err
 	}
 
-	if err := tx.Create(&consent).Error; err != nil {
+	if err := tx.Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "app_id"}, {Name: "user_id"}},    // key colume
+		DoUpdates: clause.AssignmentColumns([]string{"attributes", "uat"}), // column needed to be updated
+	}).Create(&consent).Error; err != nil {
 		tx.Rollback()
 		return err
 	}

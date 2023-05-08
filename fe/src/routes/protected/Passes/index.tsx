@@ -9,6 +9,7 @@ import {
 	CardHeader,
 	CardContent,
 	CardActions,
+	CircularProgress,
 } from "@mui/material";
 import { useState, useEffect } from "react";
 import Moment from "moment";
@@ -47,63 +48,72 @@ const Passes = () => {
 			>
 				Your Passes
 			</Typography>
-			{ passes === null || passes.length === 0 ? (
-				<>
-					<Typography align="center" fontSize={30} fontWeight="bold" color="rgba(0,0,0,0.5)" sx={{pb: 5, pt: 10}}>
-						You don't have any passes yet
-					</Typography>
-					<Stack direction="row" justifyContent="center" spacing={2}>
-						<Button variant="text" onClick={() => {navigate('/passes/new')}}>
-							<Add/>
-							Add your first pass
-						</Button>
+			{ passes === null ? 
+				(
+					<Stack direction="row" justifyContent="center">
+						<CircularProgress />
 					</Stack>
-				</>
-			) : (
-				<>
-					<Grid container direction="row" >
-						{ passes.map((pass) => (
-							<Grid item padding={2} xl={3} lg={4} md={6} xs={12}>
-								<Card sx={{ minHeight: 300, display:"flex", flexWrap:"wrap", flexDirection:"column", justifyContent:"space-between" }}>
-									<CardHeader
-										action={
-											<IconButton aria-label="settings">
-												<MoreVert />
-											</IconButton>
-										}
-										title={
-											<Typography align="left" fontSize={20} lineHeight={1.5} fontWeight="bold" textTransform="uppercase">
-												{pass.name}
-											</Typography>
-										}
-										subheader={
-											<Typography align="left" fontSize={14} color="rgba(0,0,0,0.5)">
-												Added {Moment(pass.created_at).format("DD/MM/YYYY hh:mm A")}
-											</Typography>
-										}
-									/>
-									<CardContent>
-										<Typography variant="body1">
-											{pass.schema === 'email' ? pass.data.email : pass.data.phone_number}
-										</Typography>
-									</CardContent>
-									<CardActions disableSpacing>
-										<IconButton aria-label="share">
-											<Share />
-										</IconButton>
-									</CardActions>
-								</Card>
+				) : (
+					passes.length === 0 ? 
+					(
+						<>
+							<Typography align="center" fontSize={30} fontWeight="bold" color="rgba(0,0,0,0.5)" sx={{pb: 5, pt: 10}}>
+								You don't have any passes yet
+							</Typography>
+							<Stack direction="row" justifyContent="center" spacing={2}>
+								<Button variant="text" onClick={() => {navigate('/passes/new')}}>
+									<Add/>
+									Add your first pass
+								</Button>
+							</Stack>
+						</>
+					) : (
+						<>
+							<Grid container direction="row" >
+								{ passes.map((pass) => (
+									<Grid item padding={2} xl={3} lg={4} md={6} xs={12}>
+										<Card sx={{ minHeight: 300, display:"flex", flexWrap:"wrap", flexDirection:"column", justifyContent:"space-between" }}>
+											<CardHeader
+												action={
+													<IconButton aria-label="settings">
+														<MoreVert />
+													</IconButton>
+												}
+												title={
+													<Typography align="left" fontSize={20} lineHeight={1.5} fontWeight="bold" textTransform="uppercase">
+														{pass.name}
+													</Typography>
+												}
+												subheader={
+													<Typography align="left" fontSize={14} color="rgba(0,0,0,0.5)">
+														Added {Moment(pass.created_at).format("DD/MM/YYYY hh:mm A")}
+													</Typography>
+												}
+											/>
+											<CardContent>
+												<Typography variant="body1">
+													{pass.schema === 'email' ? pass.data.email : pass.data.phone_number}
+												</Typography>
+											</CardContent>
+											<CardActions disableSpacing>
+												<IconButton aria-label="share">
+													<Share />
+												</IconButton>
+											</CardActions>
+										</Card>
+									</Grid>
+								))}
 							</Grid>
-						))}
-					</Grid>
-					<Stack direction="row" spacing={2}>
-						<Button variant="text" onClick={() => {navigate('/passes/new')}}>
-							<Add/>
-							Add a new pass
-						</Button>
-					</Stack>
-				</>
-			)}
+							<Stack direction="row" spacing={2}>
+								<Button variant="text" onClick={() => {navigate('/passes/new')}}>
+									<Add/>
+									Add a new pass
+								</Button>
+							</Stack>
+						</>
+					)
+				)
+			}
 		</VaultBase>
 	);
 };

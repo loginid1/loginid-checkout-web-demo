@@ -69,7 +69,7 @@ export default function FederatedLogin() {
 	const [enable, setEnable] = useState<WalletLoginSession | null>(null);
 	const [displayMessage, setDisplayMessage] = useState<DisplayMessage | null>( null);
 	const [appOrigin, setAppOrigin] = useState<string>("");
-	const [consent, setConsent] = useState<boolean>(false);
+	const [consent, setConsent] = useState<string[] | null>(null);
 
 	useEffect(() => {
 		let target = window.parent;
@@ -145,20 +145,20 @@ export default function FederatedLogin() {
 	}
 
 	async function checkConsent() {
-
 		try {
 			let consent = await vaultSDK.checkConsent(sessionId);
-			setConsent(consent.required);
-			if (consent.required == false) {
+			setConsent(consent.required_attributes);
+			if (consent.required_attributes.length !== 0) {
 				mService.sendMessageText(consent.token);
 			}
 		} catch(e) {
-			setConsent(false);
+			setConsent(null);
 		}
 	}
+
 	async function saveConsent() {
 		await vaultSDK.saveConsent(sessionId);
-		setConsent(false);
+		setConsent(null);
 	}
 
 	async function handleLogin() {
