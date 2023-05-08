@@ -8,6 +8,7 @@ import { AccountList, Genesis } from "../../lib/VaultSDK/vault/algo";
 import { ThemeProvider } from "@emotion/react";
 import VaultLogo from "../../assets/logo_light.svg";
 import EmailIcon from "@mui/icons-material/Email";
+import CheckIcon from "@mui/icons-material/Check";
 import styles from "../../styles/common.module.css";
 import jwt_decode from "jwt-decode";
 import {
@@ -41,7 +42,7 @@ import { defaultOptions } from "../../lib/popup/popup";
 import { CodeInput } from "../../components/CodeInput";
 import { EmailDialog } from "../../components/dialogs/EmailDialog";
 import LoginIDLogo from "../../assets/sidemenu/LoginIDLogo.svg";
-import { MessageSharp } from "@mui/icons-material";
+import { Check, MessageSharp } from "@mui/icons-material";
 
 interface WalletLoginSession {
 	network: string;
@@ -70,9 +71,10 @@ export default function FederatedAuthPopup() {
 	const params = useParams();
 	const navigate = useNavigate();
 	const [enable, setEnable] = useState<WalletLoginSession | null>(null);
-	const [displayMessage, setDisplayMessage] = useState<DisplayMessage | null>( null);
+	const [displayMessage, setDisplayMessage] = useState<DisplayMessage | null>(null);
 	const [appOrigin, setAppOrigin] = useState<string>("");
-	const [consent, setConsent] = useState<boolean>(false);
+	const [appName, setAppName] = useState<string>("");
+	const [consent, setConsent] = useState<string[] | null>(null);
 	const [token, setToken] = useState("");
 
 	useEffect(() => {
@@ -155,18 +157,21 @@ export default function FederatedAuthPopup() {
 	async function checkConsent() {
 		try {
 			let consent = await vaultSDK.checkConsent(sessionId);
-			setConsent(consent.required);
-			if (consent.required == false) {
+			setConsent(consent.required_attributes);
+			setAppName(consent.app_name);
+			if (consent.required_attributes.length !== 0) {
 				mService.sendMessageText(consent.token);
 			}
 		} catch(e) {
-			setConsent(false);
+			setConsent(null);
+			setAppName("");
 		}
 	}
 	async function saveConsent() {
 		let consent = await vaultSDK.saveConsent(sessionId);
 		mService.sendMessageText(consent.token);
-		setConsent(false);
+		setConsent(null);
+		setAppName("");
 	}
 
 	async function handleLogin() {
@@ -453,15 +458,29 @@ export default function FederatedAuthPopup() {
 				</Typography>
 				<Chip icon={<EmailIcon />} label={username}></Chip>
 				{consent && (
-					<Button
-						fullWidth
-						variant="contained"
-						onClick={saveConsent}
-						size="small"
-						sx={{ mt: 1, mb: 1 }}
-					>
-						Allow
-					</Button>
+					<>
+						<Typography
+							sx={{ m: 1 }}
+							variant="body2"
+							color="text.secondary"
+						>
+							Do you consent on sharing the following information with <strong>{ appName }</strong>:
+						</Typography>
+						<Stack direction="row" justifyContent="center" spacing={2} >
+							{consent?.map((item) => (
+								<Chip size="small" icon={<CheckIcon/>} label={item}/>
+							))}
+						</Stack>
+						<Button
+							fullWidth
+							variant="contained"
+							onClick={saveConsent}
+							size="small"
+							sx={{ mt: 2, mb: 1 }}
+						>
+							Allow
+						</Button>
+					</>
 				)}
 				<Button
 					variant="text"

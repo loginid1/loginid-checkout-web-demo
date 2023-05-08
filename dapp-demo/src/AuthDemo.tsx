@@ -36,7 +36,7 @@ let theme = createTheme({
 
 theme= responsiveFontSizes(theme);
 
-	const wallet = new WalletSDK(process.env.REACT_APP_VAULT_URL || "", process.env.REACT_APP_WALLET_API);
+const wallet = new WalletSDK(process.env.REACT_APP_VAULT_URL || "", process.env.REACT_APP_WALLET_API);
 export function AuthDemo() {
 	useEffect(() => {
 		//wallet.signup();
