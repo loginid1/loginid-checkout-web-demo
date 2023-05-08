@@ -245,6 +245,7 @@ func (s *AppService) CheckSessionConsent(id string) (token, appId, appName strin
 
 	consent, err := s.repo.GetConsent(session.AppID, session.UserID)
 	if err != nil {
+		serr = &services.ServiceError{Error: err, Message: "failed to fetch app consent"}
 		logger.Global.Error(err.Error())
 		return
 	}
