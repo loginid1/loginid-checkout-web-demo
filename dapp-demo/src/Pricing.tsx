@@ -18,6 +18,7 @@ import Container from '@mui/material/Container';
 import { FederatedSDK } from './lib/FederatedSDK';
 import { createTheme } from '@mui/system';
 import { WalletSDK } from '@loginid/wallet-sdk';
+import { useNavigate } from 'react-router-dom';
 
 const wallet = new WalletSDK(process.env.REACT_APP_VAULT_URL || "", process.env.REACT_APP_WALLET_API);
 function Copyright(props: any) {
@@ -99,8 +100,15 @@ const footers = [
 
 
 function PricingContent() {
-  function signup(){
-	  wallet.signupNew();
+const navigate = useNavigate();
+  async function signup(){
+    try {
+
+	    let result = await wallet.signupNew();
+      navigate("/dashboard");
+    } catch (e) {
+
+    }
   }
   return (
     <React.Fragment>

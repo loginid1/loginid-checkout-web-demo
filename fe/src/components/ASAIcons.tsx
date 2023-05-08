@@ -49,7 +49,7 @@ interface UseDynamicSVGImportOptions {
           const filename = "LTEST2-136.svg" ;
           ImportedIconRef.current = (
             //await import("./LTEST2-136.svg")
-            await import(`./assets/test/${name}.svg`)
+            await import(`./../assets/test/${name}.svg`)
           ).ReactComponent;
         } catch (err) {
           console.log("SVG error: "+err);

@@ -40,7 +40,10 @@ export function EmailDialog(props: EmailProps) {
 		return (
 			<>
 				<DialogContent>
-
+					
+					<Typography  variant="h6" color="primary" sx={{mb:2}}>
+						Email Registration
+					</Typography>
 					<Typography  variant="body2" >
 						Please check your email <b>{props.email}</b> to register to this session: 
 					</Typography>

@@ -5,6 +5,7 @@ import React, { useEffect, useState } from "react";
 import { Routes, Route, Link, Navigate } from "react-router-dom";
 import "./AuthDemo.css";
 import Pricing from "./Pricing";
+import { demo_theme } from "./theme/theme";
 import typography from "./theme/typography";
 
 let theme = createTheme({
@@ -42,7 +43,7 @@ export function AuthDemo() {
 	});
 
 	return (
-		<ThemeProvider theme={theme}>
+		<ThemeProvider theme={demo_theme}>
 			<Pricing />
 		</ThemeProvider>
 	);
