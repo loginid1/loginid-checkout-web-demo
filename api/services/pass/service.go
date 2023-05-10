@@ -10,10 +10,11 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
+	"gitlab.com/loginid/software/libraries/goutil.git/logger"
 	"gitlab.com/loginid/software/services/loginid-vault/services"
+	"gitlab.com/loginid/software/services/loginid-vault/services/app"
 	notification "gitlab.com/loginid/software/services/loginid-vault/services/notification/providers"
 	"gitlab.com/loginid/software/services/loginid-vault/services/user"
-	"gitlab.com/loginid/software/services/loginid-vault/utils"
 	"gorm.io/gorm"
 )
 
@@ -71,18 +72,19 @@ func (s *PassService) List(ctx context.Context, username string) ([]interface{},
 
 func (s *PassService) PhoneInit(ctx context.Context, username, phone_number string) *services.ServiceError {
 	// Generates a random code
-	code, err := utils.GenerateRandomString(3)
-	if err != nil {
-		return services.CreateError("failed to generate verification code")
-	}
-	code = strings.ToUpper(code)
+	//code, err := utils.GenerateRandomString(3)
+	//if err != nil {
+	//	return services.CreateError("failed to generate verification code")
+	//}
+	//code = strings.ToUpper(code)
 
 	// Store the code in redis using the user session
-	s.RedisClient.Set(ctx, getCacheKey(phone_number, username), code, 90*time.Second)
+	//s.RedisClient.Set(ctx, getCacheKey(phone_number, username), code, 90*time.Second)
 
 	// Send the code via SMS
-	msg := fmt.Sprintf("Your Pass verification code is: %s", code)
-	if err := s.NotificationService.Send(phone_number, msg); err != nil {
+	//msg := fmt.Sprintf("Your Pass verification code is: %s", code)
+	if err := s.NotificationService.SendCode(phone_number); err != nil {
+		logger.ForContext(ctx).Error(err.Error())
 		return services.CreateError("failed to send verification code")
 	}
 
@@ -91,15 +93,25 @@ func (s *PassService) PhoneInit(ctx context.Context, username, phone_number stri
 
 func (s *PassService) PhoneComplete(ctx context.Context, username, name, phone_number, code string) *services.ServiceError {
 	// Retrive the code from redis using the user session
-	key := getCacheKey(phone_number, username)
-	redisData := s.RedisClient.Get(ctx, key)
+	/*
+		key := getCacheKey(phone_number, username)
+		redisData := s.RedisClient.Get(ctx, key)
 
-	// Check if we have a valid code
-	if redisData == nil {
-		return services.CreateError("invalid 'phone number' and/or 'code'")
+		// Check if we have a valid code
+		if redisData == nil {
+			return services.CreateError("invalid 'phone number' and/or 'code'")
+		}
+
+		if redisData.Val() != code {
+			return services.CreateError("invalid 'phone number' and/or 'code'")
+		}*/
+
+	result, err := s.NotificationService.VerifyCode(phone_number, code)
+	if err != nil {
+		logger.ForContext(ctx).Error(err.Error())
+		return services.CreateError("verification failed")
 	}
-
-	if redisData.Val() != code {
+	if !result {
 		return services.CreateError("invalid 'phone number' and/or 'code'")
 	}
 
@@ -122,7 +134,7 @@ func (s *PassService) PhoneComplete(ctx context.Context, username, name, phone_n
 		ID:         uuid.NewString(),
 		UserID:     usr.ID,
 		Name:       name,
-		Attributes: "phone_number",
+		Attributes: app.KPhoneAttribute,
 		SchemaType: PhonePassSchemaType,
 		Issuer:     "LoginID Vault",
 		Data:       data,
@@ -136,7 +148,7 @@ func (s *PassService) PhoneComplete(ctx context.Context, username, name, phone_n
 	}
 
 	// Delete the code from redis after the verification is done and the pass is created
-	s.RedisClient.Del(ctx, key)
+	//s.RedisClient.Del(ctx, key)
 
 	return nil
 }
@@ -165,6 +177,37 @@ func (s *PassService) ForceAddPass(ctx context.Context, userId, name, attributes
 		return services.CreateError("failed to create a new phone pass")
 	}
 	return nil
+}
+
+func (s *PassService) GetPassesByUserID(ctx context.Context, user_id string, attributes string) ([]UserPass, *services.ServiceError) {
+	passes, err := s.Repository.ListByID(user_id)
+	if err != nil {
+		logger.ForContext(ctx).Error(err.Error())
+		return passes, services.CreateError("error - no passes found")
+	}
+
+	var mypasses []UserPass
+	for _, pass := range passes {
+		if compareAttributes(attributes, pass.Attributes) {
+			mypasses = append(mypasses, pass)
+		}
+	}
+	return mypasses, nil
+
+}
+
+func compareAttributes(required_attrs string, pass_attrs string) bool {
+	reqs := strings.Split(required_attrs, ",")
+	p_attrs := strings.Split(pass_attrs, ",")
+
+	for _, r_attr := range reqs {
+		for _, p_attr := range p_attrs {
+			if r_attr == p_attr {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func getCacheKey(phone_number, user_id string) string {

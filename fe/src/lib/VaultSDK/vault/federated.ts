@@ -25,11 +25,22 @@ export interface ConsentResponse {
 	app_id: string;
 	app_name: string;
 	required_attributes: string[];
+	missing_attributes: string[];
 	token: string;
+	passes: ConsentPass[];
+}
+
+export interface ConsentPass{
+	type: string;
+	data: string;
 }
 
 export interface SaveConsentResponse {
 	token: string;
+}
+
+export interface AuthResult {
+	jwt: string;
 }
 
 
@@ -122,7 +133,7 @@ export class VaultFederated extends Base {
 		username: string,
 		token: string,
 		sessionId: string
-	): Promise<Result> {
+	): Promise<AuthResult> {
 		const session = localStorage.getItem("register_session");
 
 		// Init the registration flow
@@ -221,7 +232,8 @@ export class VaultFederated extends Base {
 	 * Authenticate a previously registered user through FIDO2.
 	 * @returns {Promise<Result>}
 	 * */
-	async federated_authenticate(username: string, sessionId: string): Promise<Result> {
+	async federated_authenticate(username: string, sessionId: string): Promise<AuthResult> {
+
 		let headers;
 
 		// Init the authentication flow

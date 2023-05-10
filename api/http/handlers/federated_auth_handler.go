@@ -215,9 +215,15 @@ func (h *FederatedAuthHandler) FederatedRegisterCompleteHandler(w http.ResponseW
 
 	// send to fido2 server
 	// proxy register request to fido2 service
-	_, err = h.Fido2Service.RegisterComplete(request.Username, request.CredentialUuid, request.CredentialID, request.Challenge, request.AttestationData, request.ClientData)
+	fidoData, err := h.Fido2Service.RegisterComplete(request.Username, request.CredentialUuid, request.CredentialID, request.Challenge, request.AttestationData, request.ClientData)
 	if err != nil {
 		http_common.SendErrorResponse(w, *err)
+		return
+	}
+	var fidoResp fido2.FidoResponse
+	oerr := json.Unmarshal(fidoData, &fidoResp)
+	if oerr != nil {
+		http_common.SendErrorResponse(w, services.NewError("fido token not found"))
 		return
 	}
 
@@ -266,7 +272,7 @@ func (h *FederatedAuthHandler) FederatedRegisterCompleteHandler(w http.ResponseW
 	}
 
 	resp := AuthCompleteResponse{
-		Jwt: jwt,
+		Jwt: fidoResp.Jwt,
 	}
 
 	http_common.SendSuccessResponse(w, resp)
@@ -312,9 +318,16 @@ func (h *FederatedAuthHandler) FederatedAuthCompleteHandler(w http.ResponseWrite
 		return
 	}
 
-	_, err := h.Fido2Service.AuthenticateComplete(request.Username, request.CredentialID, request.Challenge, request.AuthenticatorData, request.ClientData, request.Signature)
+	fidoData, err := h.Fido2Service.AuthenticateComplete(request.Username, request.CredentialID, request.Challenge, request.AuthenticatorData, request.ClientData, request.Signature)
 	if err != nil {
 		http_common.SendErrorResponse(w, *err)
+		return
+	}
+
+	var fidoResp fido2.FidoResponse
+	oerr := json.Unmarshal(fidoData, &fidoResp)
+	if oerr != nil {
+		http_common.SendErrorResponse(w, services.NewError("fido token not found"))
 		return
 	}
 
@@ -352,7 +365,7 @@ func (h *FederatedAuthHandler) FederatedAuthCompleteHandler(w http.ResponseWrite
 		return
 	}
 	resp := AuthCompleteResponse{
-		Jwt: jwt,
+		Jwt: fidoResp.Jwt,
 	}
 
 	http_common.SendSuccessResponse(w, resp)
@@ -363,10 +376,17 @@ type CheckConsentRequest struct {
 }
 
 type CheckConsentResponse struct {
-	AppID              string   `json:"app_id"`
-	AppName            string   `json:"app_name"`
-	RequiredAttributes []string `json:"required_attributes,omitempty"`
-	Token              string   `json:"token"`
+	AppID              string                `json:"app_id"`
+	AppName            string                `json:"app_name"`
+	RequiredAttributes []string              `json:"required_attributes"`
+	MissingAttributes  []string              `json:"missing_attributes"`
+	Token              string                `json:"token"`
+	Passes             []ConsentPassResponse `json:"passes"`
+}
+
+type ConsentPassResponse struct {
+	Type string `json:"type"`
+	Data string `json:"data"`
 }
 
 func (h *FederatedAuthHandler) CheckConsentHandler(w http.ResponseWriter, r *http.Request) {
@@ -379,17 +399,62 @@ func (h *FederatedAuthHandler) CheckConsentHandler(w http.ResponseWriter, r *htt
 	}
 
 	// check consent session
-	token, appId, appName, required, err := h.AppService.CheckSessionConsent(request.Session)
+	session, required, err := h.AppService.CheckSessionConsent(request.Session)
 	if err != nil {
 		http_common.SendErrorResponse(w, *err)
 		return
 	}
 
+	var cpasses []ConsentPassResponse
+	missing := strings.Split(session.Attributes, ",")
+
+	// retrieve pass and missing attributes if required attributes
+	// is not empty
+	if len(required) > 0 {
+
+		passes, err := h.PassService.GetPassesByUserID(r.Context(), session.UserID, session.Attributes)
+		if err != nil {
+			http_common.SendErrorResponse(w, *err)
+			return
+		}
+		for _, p := range passes {
+			if p.Attributes == app.KEmailAttribute {
+				var emailPass pass.EmailPassSchema
+				err := json.Unmarshal(p.Data, &emailPass)
+				if err != nil {
+					http_common.SendErrorResponse(w, services.NewError("failed to parse pass data"))
+					return
+				}
+				c_pass := ConsentPassResponse{
+					Type: app.KEmailAttribute,
+					Data: emailPass.Email,
+				}
+				cpasses = append(cpasses, c_pass)
+				missing = utils.Remove(missing, app.KEmailAttribute)
+			} else if p.Attributes == app.KPhoneAttribute {
+				var phonePass pass.PhonePassSchema
+				err := json.Unmarshal(p.Data, &phonePass)
+				if err != nil {
+					http_common.SendErrorResponse(w, services.NewError("failed to parse pass data"))
+					return
+				}
+				c_pass := ConsentPassResponse{
+					Type: app.KPhoneAttribute,
+					Data: phonePass.PhoneNumber,
+				}
+				cpasses = append(cpasses, c_pass)
+				missing = utils.Remove(missing, app.KPhoneAttribute)
+			}
+		}
+	}
+
 	http_common.SendSuccessResponse(w, CheckConsentResponse{
-		AppID:              appId,
-		AppName:            appName,
+		AppID:              session.AppID,
+		AppName:            session.AppName,
 		RequiredAttributes: required,
-		Token:              token,
+		MissingAttributes:  missing,
+		Token:              session.Token,
+		Passes:             cpasses,
 	})
 }
 

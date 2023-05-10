@@ -6,11 +6,14 @@ import (
 	"github.com/go-playground/validator/v10"
 	twilio "github.com/twilio/twilio-go"
 	openapi "github.com/twilio/twilio-go/rest/api/v2010"
+	verify "github.com/twilio/twilio-go/rest/verify/v2"
 	"gitlab.com/loginid/software/libraries/goutil.git"
 )
 
 type TwillioProvider struct {
-	from string
+	from      string
+	client    *twilio.RestClient
+	serviceId string
 }
 
 func NewTwillioProvider() ProviderInterface {
@@ -22,7 +25,7 @@ func NewTwillioProvider() ProviderInterface {
 
 func (p *TwillioProvider) Init() {
 	p.from = goutil.GetEnv("TWILIO_PHONE_NUMBER", "")
-
+	p.serviceId = goutil.GetEnv("TWILIO_SERVICE_ID", "")
 	if p.from == "" {
 		panic("[SMS Provider] missing the 'TWILIO_PHONE_NUMBER' environment variable")
 	}
@@ -31,6 +34,8 @@ func (p *TwillioProvider) Init() {
 	if err := V.Var(p.from, "e164"); err != nil {
 		panic(fmt.Sprintf("[SMS Provider] %s", err.Error()))
 	}
+	p.client = twilio.NewRestClient()
+
 }
 
 func (p *TwillioProvider) GetProvider() ProviderType {
@@ -51,6 +56,40 @@ func (p *TwillioProvider) Send(to, message string) error {
 	}
 
 	return nil
+}
+
+func (p *TwillioProvider) SendCode(to string) error {
+	params := &verify.CreateVerificationParams{}
+	params.SetTo(to)
+	params.SetChannel("sms")
+
+	resp, err := p.client.VerifyV2.CreateVerification(p.serviceId, params)
+	if err != nil {
+		fmt.Println(err.Error())
+		return err
+	} else {
+		if resp.Sid != nil {
+			fmt.Println(*resp.Sid)
+		} else {
+			fmt.Println(resp.Sid)
+		}
+	}
+	return nil
+}
+
+func (p *TwillioProvider) VerifyCode(to, code string) (bool, error) {
+	params := &verify.CreateVerificationCheckParams{}
+	params.SetTo(to)
+	params.SetCode(code)
+	//params.SetCustomCode("123456")
+
+	resp, err := p.client.VerifyV2.CreateVerificationCheck(p.serviceId, params)
+	if err != nil {
+		fmt.Println(err.Error())
+		return false, err
+	} else {
+		return *resp.Valid, nil
+	}
 }
 
 var _ ProviderInterface = &TwillioProvider{}

@@ -180,10 +180,12 @@ func (s *AppService) SetupSession(appid string, origin string, ip string) (strin
 	}
 	// store session with appID
 	session := AppSession{
-		AppID:  app.ID,
-		ID:     id,
-		Origin: origin,
-		IP:     ip,
+		AppID:      app.ID,
+		AppName:    app.AppName,
+		Attributes: app.Attributes,
+		ID:         id,
+		Origin:     origin,
+		IP:         ip,
 	}
 
 	err := s.storeSession(session)
@@ -227,33 +229,29 @@ func (s *AppService) UpdateSessionToken(sessionid string, token string) (*AppSes
 	return session, nil
 }
 
-func (s *AppService) CheckSessionConsent(id string) (token, appId, appName string, required []string, serr *services.ServiceError) {
+func (s *AppService) CheckSessionConsent(id string) (session *AppSession, required []string, serr *services.ServiceError) {
 	session, err := s.getSession(id)
 	if err != nil {
 		logger.Global.Error(err.Error())
-		return "", "", "", nil, services.CreateError("session error")
+		return nil, nil, services.CreateError("session error")
 	}
-	token = session.Token
+	if session.Token == "" {
+		return nil, nil, services.CreateError("session missing token")
+	}
 
-	app, serr := s.GetAppById(session.AppID)
-	if serr != nil {
-		return "", "", "", nil, serr
-	}
-	appId = app.ID
-	appName = app.AppName
-	required = strings.Split(app.Attributes, ",")
+	required = strings.Split(session.Attributes, ",")
 
 	consent, err := s.repo.GetConsent(session.AppID, session.UserID)
 	if err != nil {
 		serr = &services.ServiceError{Error: err, Message: "failed to fetch app consent"}
 		logger.Global.Error(err.Error())
-		return
+		return nil, nil, serr
 	}
 
 	attrArr := strings.Split(consent.Attributes, ",")
 	required = goutil.SubtractLists(required, attrArr)
 
-	return
+	return session, required, nil
 }
 
 func (s *AppService) SaveSessionConsent(id string) (bool, string, *services.ServiceError) {

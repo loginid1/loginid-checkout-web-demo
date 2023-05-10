@@ -114,6 +114,10 @@ func (repo *AppRepository) GetConsent(appid string, userid string) (*AppConsent,
 	var consent AppConsent
 	err := repo.DB.Where("app_id = ? ", appid).Where("user_id = ?", userid).Take(&consent).Error
 	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			// return empty record
+			return &consent, nil
+		}
 		return nil, err
 	}
 	return &consent, nil
