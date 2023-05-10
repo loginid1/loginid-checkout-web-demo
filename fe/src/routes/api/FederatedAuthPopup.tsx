@@ -1,4 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, {
+	ChangeEventHandler,
+	createContext,
+	useContext,
+	useEffect,
+	useState,
+} from "react";
 import { AuthService } from "../../services/auth";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { Message, MessagingService } from "../../services/messaging";
@@ -8,8 +14,12 @@ import { AccountList, Genesis } from "../../lib/VaultSDK/vault/algo";
 import { ThemeProvider } from "@emotion/react";
 import VaultLogo from "../../assets/logo_light.svg";
 import EmailIcon from "@mui/icons-material/Email";
+import PhoneIcon from "@mui/icons-material/Phone";
+import AccountIcon from "@mui/icons-material/AccountCircle";
 import CheckIcon from "@mui/icons-material/Check";
 import styles from "../../styles/common.module.css";
+import PhoneInput from "react-phone-input-2";
+import "react-phone-input-2/lib/style.css";
 import jwt_decode from "jwt-decode";
 import {
 	Container,
@@ -31,6 +41,12 @@ import {
 	CircularProgress,
 	Chip,
 	LinearProgress,
+	Divider,
+	Avatar,
+	List,
+	ListItem,
+	ListItemAvatar,
+	ListItemText,
 } from "@mui/material";
 import { DisplayMessage } from "../../lib/common/message";
 import ParseUtil from "../../lib/util/parse";
@@ -43,6 +59,8 @@ import { CodeInput } from "../../components/CodeInput";
 import { EmailDialog } from "../../components/dialogs/EmailDialog";
 import LoginIDLogo from "../../assets/sidemenu/LoginIDLogo.svg";
 import { Check, MessageSharp } from "@mui/icons-material";
+import { ConsentPass } from "../../lib/VaultSDK/vault/federated";
+import { Account } from "../../components/Account";
 
 interface WalletLoginSession {
 	network: string;
@@ -50,12 +68,31 @@ interface WalletLoginSession {
 	requestId: number;
 }
 
+export enum AuthPage {
+	NONE = "none",
+	ERROR = "error",
+	LOGIN = "login",
+	FIDO_REG = "fido_register",
+	CONSENT = "consent",
+	PHONE_PASS = "phone_pass",
+	FINAL = "final",
+}
 
 let wsurl = process.env.REACT_APP_VAULT_WS_URL || "ws://localhost:3001";
 const mService = new MessagingService(window.opener);
 let input: boolean = false;
 let wSession: WalletLoginSession | null = null;
 let ws: WebSocket | null = null;
+
+export interface ConsentContextType {
+	setMissing: (missing: string[]) => void;
+	setPage: (page: AuthPage) => void;
+	handleCancel: () => void;
+	setDisplayMessage: (msg: DisplayMessage) => void;
+}
+
+export const ConsentContext = createContext<ConsentContextType | null>(null);
+
 export default function FederatedAuthPopup() {
 	const [searchParams, setSearchParams] = useSearchParams();
 
@@ -64,18 +101,21 @@ export default function FederatedAuthPopup() {
 	const [username, setUsername] = useState("");
 	const [waitingMessage, setWaitingMessage] = useState<string | null>(null);
 	const [codeInput, setCodeInput] = useState<boolean>(false);
-	const [page, setPage] = useState<string>("");
+	const [page, setPage] = useState<AuthPage>(AuthPage.NONE);
 	const [openEmailDialog, setOpenEmailDialog] = useState<boolean>(false);
-	const [emailType, setEmailType] = useState<string> ("login");
+	const [emailType, setEmailType] = useState<string>("login");
 	const [sessionId, setSessionId] = useState<string>("");
 	const params = useParams();
 	const navigate = useNavigate();
 	const [enable, setEnable] = useState<WalletLoginSession | null>(null);
-	const [displayMessage, setDisplayMessage] = useState<DisplayMessage | null>(null);
+	const [displayMessage, setDisplayMessage] = useState<DisplayMessage | null>(
+		null
+	);
 	const [appOrigin, setAppOrigin] = useState<string>("");
 	const [appName, setAppName] = useState<string>("");
 	const [consent, setConsent] = useState<string[] | null>(null);
 	const [token, setToken] = useState("");
+	const [missing, setMissing] = useState<string[]>([]);
 
 	useEffect(() => {
 		// expect opener
@@ -88,7 +128,7 @@ export default function FederatedAuthPopup() {
 	}, []);
 
 	useEffect(() => {
-		if (page === "consent") {
+		if (page === AuthPage.CONSENT) {
 			checkConsent();
 		}
 	}, [page]);
@@ -108,24 +148,32 @@ export default function FederatedAuthPopup() {
 			} else if (msg.type === "register_complete") {
 				// consent for first time user
 				// send token back
-				setPage("consent");
+
+				setPage(AuthPage.CONSENT);
+
 				setDisplayMessage({
 					text: "Registration completed!",
 					type: "info",
 				});
 			} else if (msg.type === "init") {
-
-				let api : WalletInit = JSON.parse(msg.data);
-				vaultSDK.sessionInit(origin, api.api).then((response) => {
-					setPage("login");
-					setAppOrigin(origin);
-					clearAlert();
-					setSessionId(response.id);
-					console.log("session ", response.id);
-				}).catch(error =>{
-					clearAlert();
-					setDisplayMessage({text:(error as Error).message, type:"error"})
-				});
+				let api: WalletInit = JSON.parse(msg.data);
+				vaultSDK
+					.sessionInit(origin, api.api)
+					.then((response) => {
+						setPage(AuthPage.LOGIN);
+						setAppOrigin(origin);
+						clearAlert();
+						setSessionId(response.id);
+						console.log("session ", response.id);
+					})
+					.catch((error) => {
+						clearAlert();
+						setPage(AuthPage.ERROR);
+						setDisplayMessage({
+							text: (error as Error).message,
+							type: "error",
+						});
+					});
 				// check api
 			}
 		} catch (error) {
@@ -159,12 +207,24 @@ export default function FederatedAuthPopup() {
 			let consent = await vaultSDK.checkConsent(sessionId);
 			setConsent(consent.required_attributes);
 			setAppName(consent.app_name);
-			if (consent.required_attributes.length !== 0) {
+			if (
+				consent.required_attributes == null ||
+				consent.required_attributes.length === 0
+			) {
 				mService.sendMessageText(consent.token);
+				setPage(AuthPage.FINAL);
+			} else {
+				if (consent.missing_attributes.length > 0) {
+					if (consent.missing_attributes[0] === "phone") {
+						setPage(AuthPage.PHONE_PASS);
+					}
+				}
 			}
-		} catch(e) {
+		} catch (e) {
 			setConsent(null);
 			setAppName("");
+			setDisplayMessage({ type: "error", text: (e as Error).message });
+			setPage(AuthPage.ERROR);
 		}
 	}
 	async function saveConsent() {
@@ -177,17 +237,19 @@ export default function FederatedAuthPopup() {
 	async function handleLogin() {
 		try {
 			if (!(await vaultSDK.checkUser(username))) {
-
 				// handle email register
 				emailRegister();
-
-			} else{
-
+			} else {
 				const response = await vaultSDK.federated_authenticate(
 					username,
 					sessionId
 				);
-				setPage("consent");
+
+				AuthService.storeSession({
+					username: username,
+					token: response.jwt,
+				});
+				setPage(AuthPage.CONSENT);
 			}
 		} catch (error) {
 			setDisplayMessage({
@@ -202,7 +264,12 @@ export default function FederatedAuthPopup() {
 
 	async function emailRegister() {
 		try {
-			await vaultSDK.sendEmailSession(sessionId, username, "register", appOrigin);
+			await vaultSDK.sendEmailSession(
+				sessionId,
+				username,
+				"register",
+				appOrigin
+			);
 			//setWaitingMessage("Check email for login session")
 			setWaitingIndicator(true);
 			setEmailType("register");
@@ -218,16 +285,18 @@ export default function FederatedAuthPopup() {
 					closeEmailDialog();
 					//registerFido(token);
 					setToken(token);
-					setPage("fido");
+					setPage(AuthPage.FIDO_REG);
 					clearAlert();
 					//ws?.close();
 					// register fido
 				}
 			};
-			ws.onclose = () => {
-			};
+			ws.onclose = () => {};
 		} catch (error) {
-			setDisplayMessage({type:"error", text:(error as Error).message})
+			setDisplayMessage({
+				type: "error",
+				text: (error as Error).message,
+			});
 			mService.sendErrorMessage((error as Error).message);
 		}
 	}
@@ -239,19 +308,20 @@ export default function FederatedAuthPopup() {
 				token,
 				sessionId
 			);
-			/*
+
 			AuthService.storeSession({
 				username: username,
 				token: response.jwt,
 			});
-			*/
 			//navigate("/quick_add_algorand");
 			//handleAccountCreation();
 			AuthService.storePref({ username: username });
-			setPage("consent");
-
+			setPage(AuthPage.CONSENT);
 		} catch (error) {
-			setDisplayMessage({text:(error as Error).message, type:"error",});
+			setDisplayMessage({
+				text: (error as Error).message,
+				type: "error",
+			});
 		}
 	}
 
@@ -265,7 +335,6 @@ export default function FederatedAuthPopup() {
 			setWaitingMessage("Waiting for new passkey registration ...");
 			return;
 		} catch (error) {
-
 			setDisplayMessage({
 				text: (error as Error).message,
 				type: "error",
@@ -291,7 +360,7 @@ export default function FederatedAuthPopup() {
 					type: "info",
 				});
 				closeEmailDialog();
-				setPage("consent");
+				setPage(AuthPage.CONSENT);
 				//ws?.close();
 			}
 		};
@@ -320,7 +389,7 @@ export default function FederatedAuthPopup() {
 		window.close();
 	}
 
-	async function handleClose(){
+	async function handleClose() {
 		window.close();
 	}
 
@@ -337,9 +406,38 @@ export default function FederatedAuthPopup() {
 					<Box sx={{ m: 2, height: "48px" }}></Box>
 				)}
 
-				{page === "login" && Login()}
-				{page === "fido" && Fido()}
-				{page === "consent" && Consent()}
+				{page === AuthPage.ERROR && ErrorPage()}
+				{page === AuthPage.LOGIN && Login()}
+				{page === AuthPage.FIDO_REG && Fido()}
+				{page === AuthPage.CONSENT && (
+					<ConsentContext.Provider
+						value={{
+							setMissing,
+							setPage,
+							handleCancel,
+							setDisplayMessage,
+						}}
+					>
+						<Consent session={sessionId} username={username} />
+					</ConsentContext.Provider>
+				)}
+
+				{page === AuthPage.PHONE_PASS && (
+					<ConsentContext.Provider
+						value={{
+							setMissing,
+							setPage,
+							handleCancel,
+							setDisplayMessage,
+						}}
+					>
+						<PhonePassPage
+							session={sessionId}
+							username={username}
+						/>
+					</ConsentContext.Provider>
+				)}
+				{page === AuthPage.FINAL && Final()}
 				<EmailDialog
 					type={emailType}
 					email={username}
@@ -404,17 +502,17 @@ export default function FederatedAuthPopup() {
 				>
 					Continue
 				</Button>
-				{showRegister &&
-				<Button
-					fullWidth
-					variant="text"
-					onClick={handleSignup}
-					size="small"
-					sx={{ mt: 1, mb: 1 }}
-				>
-					Signup
-				</Button>
-				}
+				{showRegister && (
+					<Button
+						fullWidth
+						variant="text"
+						onClick={handleSignup}
+						size="small"
+						sx={{ mt: 1, mb: 1 }}
+					>
+						Signup
+					</Button>
+				)}
 				<Typography
 					sx={{ m: 1 }}
 					variant="caption"
@@ -446,42 +544,30 @@ export default function FederatedAuthPopup() {
 		);
 	}
 
-	function Consent() {
+	function ErrorPage() {
+		<>
+			{displayMessage && (
+				<Alert
+					severity={(displayMessage?.type as AlertColor) || "info"}
+					sx={{ mt: 2 }}
+				>
+					{displayMessage.text}
+				</Alert>
+			)}
+		</>;
+	}
+
+	function Final() {
 		return (
 			<Stack>
 				<Typography
 					sx={{ m: 1 }}
-					variant="body2"
+					variant="body1"
 					color="text.secondary"
 				>
 					You have successfully logged in as:
 				</Typography>
-				<Chip icon={<EmailIcon />} label={username}></Chip>
-				{consent && (
-					<>
-						<Typography
-							sx={{ m: 1 }}
-							variant="body2"
-							color="text.secondary"
-						>
-							Do you consent on sharing the following information with <strong>{ appName }</strong>:
-						</Typography>
-						<Stack direction="row" justifyContent="center" spacing={2} >
-							{consent?.map((item) => (
-								<Chip size="small" icon={<CheckIcon/>} label={item}/>
-							))}
-						</Stack>
-						<Button
-							fullWidth
-							variant="contained"
-							onClick={saveConsent}
-							size="small"
-							sx={{ mt: 2, mb: 1 }}
-						>
-							Allow
-						</Button>
-					</>
-				)}
+				<Chip icon={<AccountIcon />} label={username}></Chip>
 				<Button
 					variant="text"
 					size="small"
@@ -497,7 +583,6 @@ export default function FederatedAuthPopup() {
 	function Fido() {
 		return (
 			<Stack>
-
 				{displayMessage && (
 					<Alert
 						severity={
@@ -538,6 +623,246 @@ export default function FederatedAuthPopup() {
 	}
 }
 
+function Consent(props: { session: string; username: string }) {
+	const { setMissing, setPage, setDisplayMessage, handleCancel } =
+		useContext<ConsentContextType | null>(
+			ConsentContext
+		) as ConsentContextType;
+	const [appName, setAppName] = useState<string>("");
+	const [passes, setPasses] = useState<ConsentPass[]>([]);
+	const [load, setLoad] = useState<boolean>(false);
+	useEffect(() => {
+		checkConsent();
+	}, []);
+
+	async function checkConsent() {
+		try {
+			let consent = await vaultSDK.checkConsent(props.session);
+			console.log(consent);
+			setPasses(consent.passes);
+			setAppName(consent.app_name);
+			if (
+				consent.required_attributes == null ||
+				consent.required_attributes.length === 0
+			) {
+				mService.sendMessageText(consent.token);
+				setPage(AuthPage.FINAL);
+			} else {
+				if (consent.missing_attributes.length > 0) {
+					setMissing(consent.missing_attributes);
+					if (consent.missing_attributes[0] === "phone") {
+						setPage(AuthPage.PHONE_PASS);
+					}
+				} else {
+					// load consent page
+					setLoad(true);
+				}
+			}
+		} catch (e) {
+			setDisplayMessage({ type: "error", text: (e as Error).message });
+			setPage(AuthPage.ERROR);
+		}
+	}
+
+	async function saveConsent() {
+		//console.log("save consent");
+		let consent = await vaultSDK.saveConsent(props.session);
+		//console.log(consent.token);
+		mService.sendMessageText(consent.token);
+		setPage(AuthPage.FINAL);
+	}
+
+	if (load) {
+		return (
+			<Stack>
+				<Typography
+					sx={{ m: 1 }}
+					variant="body1"
+					color="text.secondary"
+				>
+					You have successfully logged in as:
+				</Typography>
+				<Chip
+					icon={<AccountIcon />}
+					label={props.username}
+					sx={{ mb: 2 }}
+				></Chip>
+				<Divider variant="fullWidth" />
+				{passes && (
+					<>
+						<Typography
+							sx={{ m: 1 }}
+							variant="body2"
+							color="text.secondary"
+						>
+							Do you consent on sharing the following information
+							with <strong>{appName}</strong>?
+						</Typography>
+						<Stack
+							direction="column"
+							justifyContent="center"
+						>
+							{passes?.map((pass) => (
+								 <List dense={true} sx={{ width: '100%', maxWidth: 300, bgcolor: 'background.paper' }}>
+								 <ListItem>
+								   <ListItemAvatar>
+									 <Avatar>
+									   <PassIcon type={pass.type}/>
+									 </Avatar>
+								   </ListItemAvatar>
+								   <ListItemText primary={pass.data}  />
+								 </ListItem>
+							   </List>
+							))}
+						</Stack>
+						<Button
+							fullWidth
+							variant="contained"
+							onClick={saveConsent}
+							size="small"
+							sx={{ mt: 2, mb: 1 }}
+						>
+							Confirm
+						</Button>
+					</>
+				)}
+				<Button
+					variant="text"
+					size="small"
+					onClick={handleCancel}
+					sx={{ mt: 2, mb: 2 }}
+				>
+					Close
+				</Button>
+			</Stack>
+		);
+	} else {
+		return <></>;
+	}
+}
+
+function PhonePassPage(props: { session: string; username: string }) {
+	const [phone, setPhone] = useState<string>("");
+	const [showCode, setShowCode] = useState<boolean>(false);
+	const [allowConfirm, setAllowConfirm] = useState<boolean>(false);
+	const [code, setCode] = useState<string>("");
+	const { setMissing, setPage, setDisplayMessage, handleCancel } =
+		useContext<ConsentContextType | null>(
+			ConsentContext
+		) as ConsentContextType;
+
+	async function handleVerify() {
+		const token = AuthService.getToken();
+		if (token) {
+			try {
+				console.log(phone);
+				await vaultSDK.createPhonePassInit(token, "+"+phone);
+				setShowCode(true);
+			} catch (err) {
+				console.error(err);
+			}
+		}
+	}
+
+	async function handleConfirm() {
+		const token = AuthService.getToken();
+		if (token) {
+			try {
+				console.log(phone);
+				await vaultSDK.createPhonePassComplete(token,"My Phone", "+"+phone, code);
+				setPage(AuthPage.CONSENT);
+			} catch (err) {
+				console.error(err);
+			}
+		}
+	}
+	function validateCode(value: string) {
+		let pattern = new RegExp("^[0-9]+$|^$");
+		if (pattern.test(value)) {
+			setCode(value);
+			if (value.length === 6){
+				setAllowConfirm(true);
+			} else {
+				setAllowConfirm(false);
+			}
+		}
+		
+	}
+	return (
+		<Stack>
+			<Typography sx={{ m: 2 }} variant="body2" color="text.secondary">
+				Add a phone number
+			</Typography>
+			<Stack direction="row" sx={{mt: 2, mb:1}}>
+				<PhoneInput
+					inputStyle={{
+						width: "100%",
+						height: "35px",
+						fontSize: "13px",
+						borderRadius: "5px",
+					}}
+					enableLongNumbers
+					country={"us"}
+					value={phone}
+					onChange={(value) => setPhone(value)}
+				/>
+			</Stack>
+			{showCode && (
+				<>
+			<Typography sx={{ m: 1 }} variant="caption" color="text.secondary">
+				Enter code received from your phone
+			</Typography>
+				<CodeInput
+					inputName="code"
+					validateCode={validateCode}
+				></CodeInput>
+				</>
+			)}
+
+			{showCode == false && (
+				<Button
+					fullWidth
+					variant="contained"
+					size="small"
+					sx={{ mt: 1, mb: 1 }}
+					onClick={handleVerify}
+				>
+					Verify Number
+				</Button>
+			)}
+			{showCode && (
+				<Button
+					fullWidth
+					variant="contained"
+					size="small"
+					sx={{ mt: 1, mb: 1 }}
+					disabled={!allowConfirm}
+					onClick={handleConfirm}
+				>
+					Confirm
+				</Button>
+			)}
+			<Button
+				variant="text"
+				size="small"
+				onClick={handleCancel}
+				sx={{ mt: 1, mb: 1 }}
+			>
+				Close
+			</Button>
+		</Stack>
+	);
+}
+
+function PassIcon(props: { type: string }) {
+	if (props.type === "email") {
+		return <EmailIcon fontSize="small" color="primary" />;
+	} else if (props.type === "phone") {
+		return <PhoneIcon  fontSize="small" color="primary"/>;
+	} else {
+		return <AccountIcon fontSize="small" color="primary"/>;
+	}
+}
 /*
 function Lgin(){
 	return (

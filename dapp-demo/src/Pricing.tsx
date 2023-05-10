@@ -107,7 +107,7 @@ const navigate = useNavigate();
 	    let result = await wallet.signupNew();
       navigate("/dashboard");
     } catch (e) {
-
+      console.log((e as Error).message);
     }
   }
   return (

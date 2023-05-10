@@ -15,13 +15,15 @@ const (
 )
 
 type AppSession struct {
-	ID     string `json:"id"`
-	AppID  string `json:"app_id"`
-	UserID string `json:"user_id"`
-	Origin string `json:"origin"`
-	IP     string `json:"ip"`
-	Method string `json:"method"`
-	Token  string `json:"token"`
+	ID         string `json:"id"`
+	AppID      string `json:"app_id"`
+	AppName    string `json:"app_name"`
+	Attributes string `json:"attributes"`
+	UserID     string `json:"user_id"`
+	Origin     string `json:"origin"`
+	IP         string `json:"ip"`
+	Method     string `json:"method"`
+	Token      string `json:"token"`
 }
 
 type DevApp struct {

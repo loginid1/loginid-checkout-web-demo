@@ -22,6 +22,15 @@ func Contains[T comparable](s []T, e T) bool {
 	return false
 }
 
+func Remove[T comparable](l []T, item T) []T {
+	for i, other := range l {
+		if other == item {
+			return append(l[:i], l[i+1:]...)
+		}
+	}
+	return l
+}
+
 func GenerateRandomBytes(n int) ([]byte, error) {
 	b := make([]byte, n)
 	_, err := rand.Read(b)
