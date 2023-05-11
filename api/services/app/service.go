@@ -156,7 +156,7 @@ func (s *AppService) createConsent(appid string, userid string) bool {
 	return false
 }
 
-func (s *AppService) SetupSession(appid string, origin string, ip string) (string, *services.ServiceError) {
+func (s *AppService) SetupSession(appid string, origin string, ip string) (*AppSession, *services.ServiceError) {
 
 	id := uuid.New().String()
 
@@ -165,16 +165,16 @@ func (s *AppService) SetupSession(appid string, origin string, ip string) (strin
 	if appid != "" {
 		app, serr = s.GetAppById(appid)
 		if serr != nil {
-			return "", services.CreateError("invalid app id")
+			return nil, services.CreateError("invalid app id")
 		}
 		if app.Origins != origin {
-			return "", services.CreateError("invalid origin")
+			return nil, services.CreateError("invalid origin")
 		}
 	} else {
 
 		app, serr = s.GetAppByOrigin(origin)
 		if serr != nil {
-			return "", services.CreateError("invalid origin")
+			return nil, services.CreateError("invalid origin")
 		}
 
 	}
@@ -190,9 +190,9 @@ func (s *AppService) SetupSession(appid string, origin string, ip string) (strin
 
 	err := s.storeSession(session)
 	if err != nil {
-		return "", services.CreateError("session error")
+		return nil, services.CreateError("session error")
 	}
-	return id, nil
+	return &session, nil
 }
 
 func (s *AppService) UpdateSession(sessionid string, userid string) (*AppSession, *services.ServiceError) {

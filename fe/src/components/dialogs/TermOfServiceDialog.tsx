@@ -32,14 +32,13 @@ export function TermDialog(props: TermProps) {
 			<>
 				<DialogContent>
 					<Typography align="center" variant="h2" color="secondary">
-						LoginID Vault Terms of Service
+						LoginID Wallet Terms of Service
 					</Typography>
 
-					<Typography align="left" variant="body1" sx={{ p: 2 }}>
+					<Typography align="left" variant="body2">
 						<p>
-							By clicking “Create Account” (in the LoginID Vault
-							application) to these Terms of Service (or
-							"Disclaimer") or by accessing the LoginID Vault, you
+							By creating an account (in the LoginID Wallet
+							application) or by accessing the LoginID Wallet, you
 							acknowledge that you have read and agree to the
 							following statements, disclaimers, and limitation of
 							liability. If you don’t agree, you may not use the

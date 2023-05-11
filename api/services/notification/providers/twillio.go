@@ -1,6 +1,7 @@
 package notification
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/go-playground/validator/v10"
@@ -58,7 +59,7 @@ func (p *TwillioProvider) Send(to, message string) error {
 	return nil
 }
 
-func (p *TwillioProvider) SendCode(to string) error {
+func (p *TwillioProvider) SendCode(to string) (string, error) {
 	params := &verify.CreateVerificationParams{}
 	params.SetTo(to)
 	params.SetChannel("sms")
@@ -66,21 +67,21 @@ func (p *TwillioProvider) SendCode(to string) error {
 	resp, err := p.client.VerifyV2.CreateVerification(p.serviceId, params)
 	if err != nil {
 		fmt.Println(err.Error())
-		return err
+		return "", err
 	} else {
 		if resp.Sid != nil {
-			fmt.Println(*resp.Sid)
+			return *resp.Sid, nil
 		} else {
-			fmt.Println(resp.Sid)
+			return "", errors.New("no sid")
 		}
 	}
-	return nil
 }
 
-func (p *TwillioProvider) VerifyCode(to, code string) (bool, error) {
+func (p *TwillioProvider) VerifyCode(sid string, code string) (bool, error) {
 	params := &verify.CreateVerificationCheckParams{}
-	params.SetTo(to)
+	//params.SetTo(to)
 	params.SetCode(code)
+	params.SetVerificationSid(sid)
 	//params.SetCustomCode("123456")
 
 	resp, err := p.client.VerifyV2.CreateVerificationCheck(p.serviceId, params)
