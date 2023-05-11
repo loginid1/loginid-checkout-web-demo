@@ -61,6 +61,7 @@ import LoginIDLogo from "../../assets/sidemenu/LoginIDLogo.svg";
 import { Check, MessageSharp } from "@mui/icons-material";
 import { ConsentPass } from "../../lib/VaultSDK/vault/federated";
 import { Account } from "../../components/Account";
+import { TermDialog } from "../../components/dialogs/TermOfServiceDialog";
 
 interface WalletLoginSession {
 	network: string;
@@ -116,6 +117,9 @@ export default function FederatedAuthPopup() {
 	const [consent, setConsent] = useState<string[] | null>(null);
 	const [token, setToken] = useState("");
 	const [missing, setMissing] = useState<string[]>([]);
+	const [globalError, setGlobalError] = useState<string>("");
+	const [termOpen, setTermOpen] = useState<boolean>(false);
+	const [attributes, setAttributes] = useState<string[]>([]);
 
 	useEffect(() => {
 		// expect opener
@@ -123,61 +127,43 @@ export default function FederatedAuthPopup() {
 		if (target != null) {
 			mService.onMessage((msg, origin) => onMessageHandle(msg, origin));
 		} else {
-			setDisplayMessage({ text: "Missing dApp origin", type: "error" });
+			clearAlert();
+			setGlobalError("App origin not found");
+			setPage(AuthPage.ERROR);
 		}
 	}, []);
 
-	useEffect(() => {
-		if (page === AuthPage.CONSENT) {
-			checkConsent();
-		}
-	}, [page]);
-
-	// handle iframe message
+	// handle  message
 	function onMessageHandle(msg: Message, origin: string) {
 		try {
 			mService.origin = origin;
 			mService.id = msg.id;
-			// validate enable
-			if (msg.type === "register_cancel") {
-				setWaitingMessage(null);
-				setDisplayMessage({
-					text: "Registration cancel!",
-					type: "error",
-				});
-			} else if (msg.type === "register_complete") {
-				// consent for first time user
-				// send token back
-
-				setPage(AuthPage.CONSENT);
-
-				setDisplayMessage({
-					text: "Registration completed!",
-					type: "info",
-				});
-			} else if (msg.type === "init") {
+			if (msg.type === "init") {
 				let api: WalletInit = JSON.parse(msg.data);
 				vaultSDK
 					.sessionInit(origin, api.api)
 					.then((response) => {
 						setPage(AuthPage.LOGIN);
 						setAppOrigin(origin);
+						setAttributes(response.attributes);
 						clearAlert();
 						setSessionId(response.id);
 						console.log("session ", response.id);
 					})
 					.catch((error) => {
 						clearAlert();
+						setGlobalError((error as Error).message);
 						setPage(AuthPage.ERROR);
-						setDisplayMessage({
-							text: (error as Error).message,
-							type: "error",
-						});
 					});
 				// check api
+			} else {
+				setGlobalError("Invalid app id");
+				setPage(AuthPage.ERROR);
 			}
 		} catch (error) {
-			console.log(error);
+			clearAlert();
+			setGlobalError((error as Error).message);
+			setPage(AuthPage.ERROR);
 		}
 	}
 
@@ -200,38 +186,6 @@ export default function FederatedAuthPopup() {
 		setWaitingIndicator(false);
 		setWaitingMessage(null);
 		setDisplayMessage(null);
-	}
-
-	async function checkConsent() {
-		try {
-			let consent = await vaultSDK.checkConsent(sessionId);
-			setConsent(consent.required_attributes);
-			setAppName(consent.app_name);
-			if (
-				consent.required_attributes == null ||
-				consent.required_attributes.length === 0
-			) {
-				mService.sendMessageText(consent.token);
-				setPage(AuthPage.FINAL);
-			} else {
-				if (consent.missing_attributes.length > 0) {
-					if (consent.missing_attributes[0] === "phone") {
-						setPage(AuthPage.PHONE_PASS);
-					}
-				}
-			}
-		} catch (e) {
-			setConsent(null);
-			setAppName("");
-			setDisplayMessage({ type: "error", text: (e as Error).message });
-			setPage(AuthPage.ERROR);
-		}
-	}
-	async function saveConsent() {
-		let consent = await vaultSDK.saveConsent(sessionId);
-		mService.sendMessageText(consent.token);
-		setConsent(null);
-		setAppName("");
 	}
 
 	async function handleLogin() {
@@ -325,23 +279,6 @@ export default function FederatedAuthPopup() {
 		}
 	}
 
-	async function handleSignup() {
-		try {
-			openPopup(
-				`/sdk/register?username=${username}&session=${sessionId}&appOrigin=${appOrigin}`,
-				"regiser",
-				defaultOptions
-			);
-			setWaitingMessage("Waiting for new passkey registration ...");
-			return;
-		} catch (error) {
-			setDisplayMessage({
-				text: (error as Error).message,
-				type: "error",
-			});
-		}
-	}
-
 	async function emailLogin(email: string) {
 		await vaultSDK.sendEmailSession(sessionId, email, "login", appOrigin);
 		setWaitingIndicator(true);
@@ -406,7 +343,7 @@ export default function FederatedAuthPopup() {
 					<Box sx={{ m: 2, height: "48px" }}></Box>
 				)}
 
-				{page === AuthPage.ERROR && ErrorPage()}
+				{page === AuthPage.ERROR && <ErrorPage error={globalError} />}
 				{page === AuthPage.LOGIN && Login()}
 				{page === AuthPage.FIDO_REG && Fido()}
 				{page === AuthPage.CONSENT && (
@@ -446,6 +383,7 @@ export default function FederatedAuthPopup() {
 					handleClose={closeEmailDialog}
 				></EmailDialog>
 
+				<Divider variant="fullWidth" />
 				<Typography
 					variant="caption"
 					color="#1E2898"
@@ -459,6 +397,14 @@ export default function FederatedAuthPopup() {
 				>
 					powered by&nbsp;
 					<img src={LoginIDLogo} alt="something" />
+				</Typography>
+
+				<Typography
+					sx={{ mt: 1 }}
+					variant="caption"
+					color="text.secondary"
+				>
+					Simple passwordless login with passkey or email
 				</Typography>
 			</Container>
 		</ThemeProvider>
@@ -502,17 +448,34 @@ export default function FederatedAuthPopup() {
 				>
 					Continue
 				</Button>
-				{showRegister && (
-					<Button
-						fullWidth
-						variant="text"
-						onClick={handleSignup}
-						size="small"
-						sx={{ mt: 1, mb: 1 }}
-					>
-						Signup
-					</Button>
-				)}
+
+				<Typography
+					variant="body2"
+					color="text.secondary"
+					sx={{ mt: 1, mb: 2 }}
+				>
+					By clicking 'Continue', I agree to the{" "}
+					<Link onClick={() => setTermOpen(true)}>
+						terms of service
+					</Link>
+					<TermDialog
+						open={termOpen}
+						handleClose={() => setTermOpen(false)}
+					/>
+				</Typography>
+				<Stack direction="row" justifyContent="center" alignItems="center">
+
+				<Typography
+					sx={{ m: 1 }}
+					variant="caption"
+					color="text.secondary"
+				>
+					Sign up required: 	
+				</Typography>
+				{attributes.map((attr) => (<PassIcon type={attr} color="info" />))}
+				</Stack>
+
+				{/*
 				<Typography
 					sx={{ m: 1 }}
 					variant="caption"
@@ -520,18 +483,7 @@ export default function FederatedAuthPopup() {
 				>
 					Simple passwordless login with passkey or email
 				</Typography>
-				{codeInput && (
-					<Stack spacing={2}>
-						<Typography variant="caption" maxWidth="400px">
-							Please enter the 6-digit code from your email to
-							login.
-						</Typography>
-						<CodeInput
-							inputName="code"
-							validateCode={validateCode}
-						/>
-					</Stack>
-				)}
+						 */}
 				{waitingMessage && (
 					<Stack direction="row" alignItems="center">
 						<CircularProgress size="2rem" />
@@ -542,19 +494,6 @@ export default function FederatedAuthPopup() {
 				)}
 			</>
 		);
-	}
-
-	function ErrorPage() {
-		<>
-			{displayMessage && (
-				<Alert
-					severity={(displayMessage?.type as AlertColor) || "info"}
-					sx={{ mt: 2 }}
-				>
-					{displayMessage.text}
-				</Alert>
-			)}
-		</>;
 	}
 
 	function Final() {
@@ -621,6 +560,16 @@ export default function FederatedAuthPopup() {
 			</Stack>
 		);
 	}
+}
+
+function ErrorPage(props: { error: string }) {
+	return (
+		<>
+			<Alert severity="error" sx={{ mt: 2 }}>
+				{props.error}
+			</Alert>
+		</>
+	);
 }
 
 function Consent(props: { session: string; username: string }) {
@@ -698,21 +647,25 @@ function Consent(props: { session: string; username: string }) {
 							Do you consent on sharing the following information
 							with <strong>{appName}</strong>?
 						</Typography>
-						<Stack
-							direction="column"
-							justifyContent="center"
-						>
+						<Stack direction="column" justifyContent="center">
 							{passes?.map((pass) => (
-								 <List dense={true} sx={{ width: '100%', maxWidth: 300, bgcolor: 'background.paper' }}>
-								 <ListItem>
-								   <ListItemAvatar>
-									 <Avatar>
-									   <PassIcon type={pass.type}/>
-									 </Avatar>
-								   </ListItemAvatar>
-								   <ListItemText primary={pass.data}  />
-								 </ListItem>
-							   </List>
+								<List
+									dense={true}
+									sx={{
+										width: "100%",
+										maxWidth: 300,
+										bgcolor: "background.paper",
+									}}
+								>
+									<ListItem>
+										<ListItemAvatar>
+											<Avatar>
+												<PassIcon type={pass.type} />
+											</Avatar>
+										</ListItemAvatar>
+										<ListItemText primary={pass.data} />
+									</ListItem>
+								</List>
 							))}
 						</Stack>
 						<Button
@@ -730,7 +683,7 @@ function Consent(props: { session: string; username: string }) {
 					variant="text"
 					size="small"
 					onClick={handleCancel}
-					sx={{ mt: 2, mb: 2 }}
+					sx={{ mt: 0, mb: 2 }}
 				>
 					Close
 				</Button>
@@ -746,6 +699,7 @@ function PhonePassPage(props: { session: string; username: string }) {
 	const [showCode, setShowCode] = useState<boolean>(false);
 	const [allowConfirm, setAllowConfirm] = useState<boolean>(false);
 	const [code, setCode] = useState<string>("");
+	const [error, setError] = useState<string | null>(null);
 	const { setMissing, setPage, setDisplayMessage, handleCancel } =
 		useContext<ConsentContextType | null>(
 			ConsentContext
@@ -755,10 +709,10 @@ function PhonePassPage(props: { session: string; username: string }) {
 		const token = AuthService.getToken();
 		if (token) {
 			try {
-				console.log(phone);
-				await vaultSDK.createPhonePassInit(token, "+"+phone);
+				await vaultSDK.createPhonePassInit(token, "+" + phone);
 				setShowCode(true);
 			} catch (err) {
+				setError((err as Error).message);
 				console.error(err);
 			}
 		}
@@ -769,9 +723,15 @@ function PhonePassPage(props: { session: string; username: string }) {
 		if (token) {
 			try {
 				console.log(phone);
-				await vaultSDK.createPhonePassComplete(token,"My Phone", "+"+phone, code);
+				await vaultSDK.createPhonePassComplete(
+					token,
+					"My Phone",
+					"+" + phone,
+					code
+				);
 				setPage(AuthPage.CONSENT);
 			} catch (err) {
+				setError((err as Error).message);
 				console.error(err);
 			}
 		}
@@ -780,20 +740,20 @@ function PhonePassPage(props: { session: string; username: string }) {
 		let pattern = new RegExp("^[0-9]+$|^$");
 		if (pattern.test(value)) {
 			setCode(value);
-			if (value.length === 6){
+			if (value.length === 6) {
 				setAllowConfirm(true);
 			} else {
 				setAllowConfirm(false);
 			}
 		}
-		
 	}
 	return (
 		<Stack>
 			<Typography sx={{ m: 2 }} variant="body2" color="text.secondary">
 				Add a phone number
 			</Typography>
-			<Stack direction="row" sx={{mt: 2, mb:1}}>
+			{error && <Alert severity="error">{error}</Alert>}
+			<Stack direction="row" sx={{ mt: 2, mb: 1 }}>
 				<PhoneInput
 					inputStyle={{
 						width: "100%",
@@ -809,13 +769,17 @@ function PhonePassPage(props: { session: string; username: string }) {
 			</Stack>
 			{showCode && (
 				<>
-			<Typography sx={{ m: 1 }} variant="caption" color="text.secondary">
-				Enter code received from your phone
-			</Typography>
-				<CodeInput
-					inputName="code"
-					validateCode={validateCode}
-				></CodeInput>
+					<Typography
+						sx={{ m: 1 }}
+						variant="caption"
+						color="text.secondary"
+					>
+						Enter code received from your phone
+					</Typography>
+					<CodeInput
+						inputName="code"
+						validateCode={validateCode}
+					></CodeInput>
 				</>
 			)}
 
@@ -854,13 +818,13 @@ function PhonePassPage(props: { session: string; username: string }) {
 	);
 }
 
-function PassIcon(props: { type: string }) {
+function PassIcon(props: { type: string, color?: AlertColor }) {
 	if (props.type === "email") {
-		return <EmailIcon fontSize="small" color="primary" />;
+		return <EmailIcon fontSize="small" color={props.color || "primary"} sx={{ml:1}}/>;
 	} else if (props.type === "phone") {
-		return <PhoneIcon  fontSize="small" color="primary"/>;
+		return <PhoneIcon fontSize="small" color={props.color || "primary"} sx={{ml:1}} />;
 	} else {
-		return <AccountIcon fontSize="small" color="primary"/>;
+		return <AccountIcon fontSize="small" color={props.color || "primary"} sx={{ml:1}} />;
 	}
 }
 /*

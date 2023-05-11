@@ -48,7 +48,10 @@ type SessionInitRequest struct {
 }
 
 type SessionInitResponse struct {
-	ID string `json:"id"`
+	ID         string   `json:"id"`
+	AppName    string   `json:"app_name"`
+	Origin     string   `json:"origin"`
+	Attributes []string `json:"attributes"`
 }
 
 func (h *FederatedAuthHandler) SessionInitHandler(w http.ResponseWriter, r *http.Request) {
@@ -60,7 +63,7 @@ func (h *FederatedAuthHandler) SessionInitHandler(w http.ResponseWriter, r *http
 		return
 	}
 
-	id, serr := h.AppService.SetupSession(request.API, request.Origin, request.IP)
+	sesResp, serr := h.AppService.SetupSession(request.API, request.Origin, request.IP)
 
 	if serr != nil {
 
@@ -70,11 +73,12 @@ func (h *FederatedAuthHandler) SessionInitHandler(w http.ResponseWriter, r *http
 	// generated uuid
 
 	session := SessionInitResponse{
-		ID: id,
+		ID:         sesResp.ID,
+		AppName:    sesResp.AppName,
+		Origin:     request.Origin,
+		Attributes: strings.Split(sesResp.Attributes, ","),
 	}
-
 	http_common.SendSuccessResponse(w, session)
-
 }
 
 type CheckUserRequest struct {

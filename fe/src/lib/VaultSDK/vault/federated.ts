@@ -15,6 +15,9 @@ export interface AddCredentialOptions extends RegistrationOptions {
 
 export interface SessionInitResponse {
 	id: string;
+	app_name: string;
+	origin: string;
+	attributes: string[];
 }
 
 export interface EmailSessionResponse {

@@ -78,35 +78,30 @@ func (s *PassService) PhoneInit(ctx context.Context, username, phone_number stri
 	//}
 	//code = strings.ToUpper(code)
 
-	// Store the code in redis using the user session
-	//s.RedisClient.Set(ctx, getCacheKey(phone_number, username), code, 90*time.Second)
-
 	// Send the code via SMS
 	//msg := fmt.Sprintf("Your Pass verification code is: %s", code)
-	if err := s.NotificationService.SendCode(phone_number); err != nil {
+	sid, err := s.NotificationService.SendCode(phone_number)
+	if err != nil || sid == "" {
 		logger.ForContext(ctx).Error(err.Error())
 		return services.CreateError("failed to send verification code")
 	}
+	//Store the code in redis using the user session
+	s.RedisClient.Set(ctx, getCacheKey(phone_number, username), sid, 300*time.Second)
 
 	return nil
 }
 
 func (s *PassService) PhoneComplete(ctx context.Context, username, name, phone_number, code string) *services.ServiceError {
 	// Retrive the code from redis using the user session
-	/*
-		key := getCacheKey(phone_number, username)
-		redisData := s.RedisClient.Get(ctx, key)
+	key := getCacheKey(phone_number, username)
+	redisData := s.RedisClient.Get(ctx, key)
 
-		// Check if we have a valid code
-		if redisData == nil {
-			return services.CreateError("invalid 'phone number' and/or 'code'")
-		}
+	// Check if we have a valid code
+	if redisData == nil {
+		return services.CreateError("invalid 'phone number' and/or 'code'")
+	}
 
-		if redisData.Val() != code {
-			return services.CreateError("invalid 'phone number' and/or 'code'")
-		}*/
-
-	result, err := s.NotificationService.VerifyCode(phone_number, code)
+	result, err := s.NotificationService.VerifyCode(redisData.Val(), code)
 	if err != nil {
 		logger.ForContext(ctx).Error(err.Error())
 		return services.CreateError("verification failed")
@@ -148,7 +143,7 @@ func (s *PassService) PhoneComplete(ctx context.Context, username, name, phone_n
 	}
 
 	// Delete the code from redis after the verification is done and the pass is created
-	//s.RedisClient.Del(ctx, key)
+	s.RedisClient.Del(ctx, key)
 
 	return nil
 }
