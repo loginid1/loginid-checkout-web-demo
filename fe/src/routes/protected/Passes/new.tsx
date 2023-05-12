@@ -1,4 +1,4 @@
-import { ArrowBack, Refresh } from "@mui/icons-material";
+import { ArrowBack } from "@mui/icons-material";
 import {
 	Stack,
 	Button,
@@ -19,9 +19,7 @@ import React, { useState, useEffect } from "react";
 import { NavigateFunction, useNavigate } from "react-router-dom";
 import { VaultBase } from "../../../components/VaultBase";
 import { ReactComponent as ProfileDefault } from "../../../assets/sidemenu/DIDs/Default.svg";
-import vaultSDK from "../../../lib/VaultSDK";
-import { AuthService } from "../../../services/auth";
-import { SDKError } from "../../../lib/VaultSDK/utils/errors";
+import { passesMap, NewPassController } from "./PassController";
 
 interface NewPassNameProps {
     navigate: NavigateFunction;
@@ -30,6 +28,7 @@ interface NewPassNameProps {
     setName: React.Dispatch<React.SetStateAction<string>>;
 }
 
+// Step 1 - Setup the pass name
 const NewPassName = (props: NewPassNameProps) => {
     return (
         <>
@@ -60,11 +59,18 @@ const NewPassName = (props: NewPassNameProps) => {
     )
 }
 
+// Step 2 - Select the pass type
 interface NewPassTypeProps {
     setActiveStep: React.Dispatch<React.SetStateAction<number>>;
+    passType: string;
+    setPassType: React.Dispatch<React.SetStateAction<string>>;
 }
 
 const NewPassType = (props: NewPassTypeProps) => {
+    const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        props.setPassType(event.currentTarget.value);
+    }
+    
     return (
         <>
             <div></div>
@@ -74,10 +80,21 @@ const NewPassType = (props: NewPassTypeProps) => {
                     row
                     aria-labelledby="pass-selector"
                     name="pass"
-                    value="phone"
+                    value={props.passType}
+                    onChange={onChange}
                 >
-                    <FormControlLabel disabled value="email" control={<Radio />} label="Email" />
-                    <FormControlLabel  value="phone" control={<Radio />} label="Phone Number" />
+                    {
+                        Object.keys(passesMap).map((key: string) => {
+                            const pass = passesMap[key];
+
+                            return <FormControlLabel 
+                                disabled={!pass.isEnabled}
+                                key={key}
+                                value={key}
+                                label={pass.label}
+                                control={<Radio />} />
+                        })
+                    }
                 </RadioGroup>
             </FormControl>
             <Stack direction="row" spacing={2} justifyContent="center" alignItems="center">
@@ -93,122 +110,18 @@ const NewPassType = (props: NewPassTypeProps) => {
     )
 }
 
-interface NewPassVerificationProps {
-    navigate: NavigateFunction;
-    setActiveStep: React.Dispatch<React.SetStateAction<number>>;
-    name: string;
-    value: string;
-    setValue: React.Dispatch<React.SetStateAction<string>>;
-}
-
-const NewPassVerification = (props: NewPassVerificationProps) => {
-    const [code, setCode] = useState('');
-    const [verifyInit, setVerifyInit] = useState(false);
-    const [timer, setTimer] = useState(45);
-
-
-    useEffect(() => {
-        timer > 0 && verifyInit && setTimeout(() => setTimer(timer - 1), 1000);
-    }, [timer, verifyInit]);
-
-    return (
-        <>
-            <div></div>
-            <FormControl fullWidth>
-                <TextField
-                    fullWidth
-                    disabled={verifyInit}
-                    label="Phone number"
-                    value={props.value}
-                    onChange={e => props.setValue(e.target.value)}
-                    sx={{mb: 2}}
-                />
-                <TextField
-                    fullWidth
-                    label="Code"
-                    value={code}
-                    onChange={e => e.target.value.length <= 6 && setCode(e.target.value.toUpperCase())}
-                    sx={{mb: 2, visibility: verifyInit ? "visible" : "hidden"}}
-                />
-                <Typography
-                    variant="subtitle2"
-                    color="rgba(0,0,0,0.5)"
-                    sx={{mb: 2, visibility: verifyInit && timer !== 0 ? "visible" : "hidden"}}
-                >
-                    resend code in <strong>{ timer } seconds</strong>
-                </Typography>
-                <Button 
-                    variant="text" 
-                    size="small" 
-                    sx={{visibility: verifyInit && timer === 0 ? "visible" : "hidden"}}
-                    onClick={async () => {
-                    const token = AuthService.getToken();
-                    if (token) {
-                        try {
-                            setTimer(45);
-                            await vaultSDK.createPhonePassInit(token, props.value);
-                            setVerifyInit(true);
-                        } catch(err) {
-                            console.error(err)
-                        }
-                    }
-                }}>
-                    <Refresh/>
-                    Resend code
-                </Button>
-            </FormControl>
-            <Stack display={verifyInit ? "none" : ""} direction="row" spacing={2} justifyContent="center" alignItems="center">
-                <Button variant="text" onClick={() => { props.setActiveStep(1) }}>
-                    <ArrowBack/>
-                    Back
-                </Button>
-                <Button disabled={props.value.length < 10} variant="contained" onClick={async () => {
-                    const token = AuthService.getToken();
-                    if (token) {
-                        try {
-                            await vaultSDK.createPhonePassInit(token, props.value);
-                            setVerifyInit(true);
-                        } catch(err) {
-                            console.error(err)
-                        }
-                    }
-                }}>
-                    Next
-                </Button>
-            </Stack>
-            <Stack display={verifyInit ? "" : "none"} direction="row" spacing={2} justifyContent="center" alignItems="center">
-                <Button variant="text" onClick={() => { props.navigate('/passes') }}>
-                    Cancel
-                </Button>
-                <Button disabled={code.length !== 6} variant="contained" onClick={async () => {
-                    const token = AuthService.getToken();
-                    if (token) {
-                        try {
-                            await vaultSDK.createPhonePassComplete(token, props.name, props.value, code);
-                            props.navigate('/passes');
-                        } catch(err) {
-                            console.error(err)
-                        }
-                    }
-                }}>
-                    Finish
-                </Button>
-            </Stack>
-        </>
-    )
-}
-
+// Step 3 - Generate the pass based on specific pass requirements
 export default function NewPass(){
     const navigate = useNavigate();
     const [activeStep, setActiveStep] = useState(0);
-    // const [type, setType] = useState('phone');
+    const [type, setType] = useState('phone');
     const [name, setName] = useState('');
-    const [value, setValue] = useState('');
 
     const steps = [
         { 
             label: 'Chose a name', 
-            component: <NewPassName navigate={navigate} 
+            component: <NewPassName 
+                navigate={navigate} 
                 setActiveStep={setActiveStep}
                 name={name}
                 setName={setName}/> 
@@ -216,16 +129,17 @@ export default function NewPass(){
         { 
             label: 'Chose a type', 
             component: <NewPassType 
-                setActiveStep={setActiveStep}/>
+                setActiveStep={setActiveStep}
+                passType={type}
+                setPassType={setType}/>
         },
         {
             label: 'Create it',
-            component: <NewPassVerification 
+            component: <NewPassController 
                 navigate={navigate} 
                 setActiveStep={setActiveStep}
                 name={name}
-                value={value}
-                setValue={setValue}/> 
+                passType={type}/> 
         },
     ];
 

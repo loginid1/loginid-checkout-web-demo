@@ -50,6 +50,26 @@ export const get = async (server: string, endpoint: string, payload?: object, he
     throw new SDKError(code, message, []);
 };
 
+/**
+ *
+ * */
+export const httpDelete = async (server: string, endpoint: string, headers?: any) => {
+    headers = Object.assign(defaultHeaders, headers);
+    const payloadJSON = {
+        method: "delete",
+        headers: headers,
+    };
+
+    const response = await fetch(server + endpoint, payloadJSON);
+    const responseJSON = await response.json();
+    if (response.ok) {
+        return responseJSON;
+    }
+    const { code, message } = responseJSON;
+    //throw new SDKError(code, getErrorMessageByCode(code), []);
+    throw new SDKError(code, message, []);
+};
+
 function objToQueryString(obj: object) {
     const keyValuePairs = [];
     for (let i = 0; i < Object.keys(obj).length; i += 1) {

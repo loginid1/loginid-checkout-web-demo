@@ -5,8 +5,9 @@ import "time"
 type PassSchemaType string
 
 const (
-	PhonePassSchemaType PassSchemaType = "phone"
-	EmailPassSchemaType PassSchemaType = "email"
+	PhonePassSchemaType          PassSchemaType = "phone"
+	EmailPassSchemaType          PassSchemaType = "email"
+	DriversLicensePassSchemaType PassSchemaType = "drivers-license"
 )
 
 type UserPass struct {

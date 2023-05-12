@@ -7,6 +7,7 @@
     "@emotion/styled": "^11.11.0",
     "@mdx-js/loader": "^2.1.3",
     "@mdx-js/react": "^2.1.3",
+    "@microblink/blinkid-in-browser-sdk": "^6.0.1",
     "@mui/icons-material": "^5.3.0",
     "@mui/lab": "^5.0.0-alpha.89",
     "@mui/material": "^5.12.3",
@@ -44,7 +45,9 @@
     "start": "react-app-rewired start",
     "build": "react-app-rewired build",
     "test": "react-app-rewired test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "copy-blinkid-sdk-ui": "mkdir -p ./public/microblink/js && cp -R ./node_modules/@microblink/blinkid-in-browser-sdk/ui/dist/* ./public/microblink/js",
+    "copy-blinkid-sdk-resources": "mkdir -p ./public/microblink/resources && cp -R ./node_modules/@microblink/blinkid-in-browser-sdk/resources/* ./public/microblink/resources"
   },
   "eslintConfig": {
     "extends": [
