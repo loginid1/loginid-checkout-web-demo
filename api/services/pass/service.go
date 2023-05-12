@@ -26,6 +26,7 @@ type PassService struct {
 }
 
 type PassResponse struct {
+	ID         string         `json:"id"`
 	UserID     string         `json:"user_id"`
 	Name       string         `json:"name"`
 	Attributes string         `json:"attributes"`
@@ -55,6 +56,7 @@ func (s *PassService) List(ctx context.Context, username string) ([]interface{},
 	var response []interface{}
 	for _, pass := range passes {
 		item := PassResponse{
+			ID:         pass.ID,
 			UserID:     pass.UserID,
 			Name:       pass.Name,
 			Attributes: pass.Attributes,
@@ -68,6 +70,14 @@ func (s *PassService) List(ctx context.Context, username string) ([]interface{},
 	}
 
 	return response, nil
+}
+
+func (s *PassService) Delete(ctx context.Context, id string) *services.ServiceError {
+	if err := s.Repository.DeleteByID(id); err != nil {
+		return services.CreateError("failed to delete user passes")
+	}
+
+	return nil
 }
 
 func (s *PassService) PhoneInit(ctx context.Context, username, phone_number string) *services.ServiceError {

@@ -1,4 +1,4 @@
-import { MoreVert, Add, Share } from "@mui/icons-material";
+import { MoreVert, Add, Share, Delete } from "@mui/icons-material";
 import {
 	Stack,
 	Button,
@@ -10,13 +10,17 @@ import {
 	CardContent,
 	CardActions,
 	CircularProgress,
+	Menu,
+	MenuItem,
+	ListItemIcon,
+	ListItemText,
 } from "@mui/material";
 import { useState, useEffect } from "react";
 import Moment from "moment";
 import vaultSDK from "../../../lib/VaultSDK";
 import { EmailPass, PhonePass, DriversLicensePass, Pass } from "../../../lib/VaultSDK/vault/pass";
 import { AuthService } from "../../../services/auth";
-import { useNavigate } from "react-router-dom";
+import { NavigateFunction, useNavigate } from "react-router-dom";
 import { VaultBase } from "../../../components/VaultBase";
 import NewPass from "./new";
 import moment from "moment";
@@ -76,10 +80,72 @@ const PassData = (props: PassDataProps): JSX.Element => {
 	}
 }
 
+const PassMenu = (props: {passId: string; }) => {
+	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+	const open = Boolean(anchorEl);
+
+	const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+		setAnchorEl(event.currentTarget);
+	};
+	const handleClose = () => {
+		setAnchorEl(null);
+	};
+	const handleDelete = async() => {
+		setAnchorEl(null);
+		const token = AuthService.getToken();
+		if (token) {
+			try {
+				await vaultSDK.deletePass(token, props.passId);
+				window.location.reload();
+			} catch (err) {
+				console.error(err);
+			}
+		}
+	};
+
+	return (
+		<>
+			<IconButton
+				id={`pass-settings-${props.passId}`}
+				aria-controls={open ? `pass-menu-${props.passId}` : undefined}
+				aria-haspopup="true"
+				aria-expanded={open ? 'true' : undefined}
+				onClick={handleClick}
+				aria-label="settings">
+				<MoreVert />
+			</IconButton>
+			<Menu
+				id={`pass-menu-${props.passId}`}
+				anchorEl={anchorEl}
+				open={open}
+				onClose={handleClose}
+				MenuListProps={{
+					'aria-labelledby': `pass-settings-${props.passId}`
+				}}
+				anchorOrigin={{
+					vertical: 'bottom',
+					horizontal: 'right',
+				}}
+				transformOrigin={{
+					vertical: 'top',
+					horizontal: 'right',
+				}}
+			>
+				<MenuItem onClick={handleDelete}>
+					<ListItemIcon>
+						<Delete fontSize="small" />
+					</ListItemIcon>
+					<ListItemText>Delete</ListItemText>
+				</MenuItem>
+			</Menu>
+		</>
+	)
+}
+
 const Passes = () => {
 	const navigate = useNavigate();
 	const [passes, setPasses] = useState<Pass[] | null>(null);
-
+	
 	useEffect(() => {
 		const fetchData = async () => {
 			const token = AuthService.getToken();
@@ -126,14 +192,12 @@ const Passes = () => {
 					) : (
 						<>
 							<Grid container direction="row" >
-								{ passes.map((pass) => (
+								{ passes.map(pass => (
 									<Grid item padding={2} xl={4} lg={4} md={6} xs={12}>
 										<Card sx={{ minHeight: 350, display:"flex", flexWrap:"wrap", flexDirection:"column", justifyContent:"space-between" }}>
 											<CardHeader
 												action={
-													<IconButton aria-label="settings">
-														<MoreVert />
-													</IconButton>
+													<PassMenu passId={pass.id}/>
 												}
 												title={
 													<Typography align="left" fontSize={20} lineHeight={1.5} fontWeight="bold" textTransform="uppercase">

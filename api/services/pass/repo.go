@@ -34,3 +34,7 @@ func (r *PassRepository) ListByID(userid string) ([]UserPass, error) {
 
 	return result, nil
 }
+
+func (r *PassRepository) DeleteByID(id string) error {
+	return r.DB.Where("id = ?", id).Delete(&UserPass{}).Error
+}

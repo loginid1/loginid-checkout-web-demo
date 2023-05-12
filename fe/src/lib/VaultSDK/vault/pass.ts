@@ -21,7 +21,7 @@ export interface DriversLicensePass {
 }
 
 export interface Pass {
-    id: string
+    id: string;
     user_id: string;
     name: string;
     attributes: string;
@@ -38,6 +38,15 @@ export class VaultPass extends Base{
             this._baseURL,
             "/api/protected/passes",
             undefined,
+            header
+        );
+    }
+
+    async deletePass(token: string, id: string): Promise<Pass[]> {
+        const header = { "x-session-token": token };
+        return await utils.http.httpDelete(
+            this._baseURL,
+            `/api/protected/passes/${id}`,
             header
         );
     }

@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/gorilla/mux"
 	http_common "gitlab.com/loginid/software/services/loginid-vault/http/common"
 	"gitlab.com/loginid/software/services/loginid-vault/services"
 	"gitlab.com/loginid/software/services/loginid-vault/services/pass"
@@ -141,6 +142,23 @@ func (h *PassesHandler) List(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http_common.SendSuccessResponse(w, passes)
+}
+
+func (h *PassesHandler) Delete(w http.ResponseWriter, r *http.Request) {
+	pathParams := mux.Vars(r)
+
+	id := pathParams["id"]
+	if id == "" {
+		http_common.SendErrorResponse(w, services.NewError("Missing pass ID"))
+		return
+	}
+
+	if err := h.PassService.Delete(r.Context(), id); err != nil {
+		http_common.SendErrorResponse(w, *err)
+		return
+	}
+
+	http_common.SendSuccess(w)
 }
 
 func (h *PassesHandler) PhoneInit(w http.ResponseWriter, r *http.Request) {

@@ -185,6 +185,7 @@ func main() {
 	passesHandler := handlers.PassesHandler{PassService: passService}
 	passes := protected.PathPrefix("/passes").Subrouter()
 	passes.HandleFunc("", passesHandler.List).Methods("GET")
+	passes.HandleFunc("/{id}", passesHandler.Delete).Methods("DELETE")
 	passes.HandleFunc("/phone/init", passesHandler.PhoneInit).Methods("POST")
 	passes.HandleFunc("/phone/complete", passesHandler.PhoneComplete).Methods("POST")
 	passes.HandleFunc("/drivers-license", passesHandler.DriversLicense).Methods("POST")
@@ -203,6 +204,7 @@ func main() {
 		AllowedOrigins:   cor_array,
 		AllowCredentials: true,
 		AllowedHeaders:   []string{"Content-Type", "X-Session-Token", "x-api-token"},
+		AllowedMethods:   []string{"OPTIONS", "GET", "POST", "DELETE"},
 		// Enable Debugging for testing, consider disabling in production
 		Debug: true,
 	})
