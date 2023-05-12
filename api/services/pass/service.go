@@ -52,8 +52,7 @@ func (s *PassService) List(ctx context.Context, username string) ([]interface{},
 		return nil, services.CreateError("failed to list user passes")
 	}
 
-	// TODO: abstract the loop to handle other type of passes
-	var response []interface{}
+	response := []interface{}{}
 	for _, pass := range passes {
 		item := PassResponse{
 			ID:         pass.ID,
