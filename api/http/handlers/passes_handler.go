@@ -90,6 +90,43 @@ func (r *PhoneCompleteRequest) validate() *services.ServiceError {
 	return nil
 }
 
+type DriversLicenseRequest struct {
+	PassName string                  `json:"pass_name" validate:"required"`
+	Data     pass.DriversLicensePass `json:"data" validate:"required"`
+}
+
+func (r *DriversLicenseRequest) validate() *services.ServiceError {
+	// Store the validation errors that occurred
+	errMap := map[string]string{}
+
+	V := *validator.New()
+	errs := V.Struct(r)
+	if errs != nil {
+		for _, err := range errs.(validator.ValidationErrors) {
+			errField := err.Field()
+
+			message := ""
+			switch err.Tag() {
+			case "required":
+				message = fmt.Sprintf("'%s' is required", errField)
+			default:
+				message = fmt.Sprintf("'%s' is invalid", errField)
+			}
+			errMap[errField] = message
+		}
+	}
+
+	errMessages := []string{}
+	for _, message := range errMap {
+		errMessages = append(errMessages, message)
+	}
+	if len(errMessages) > 0 {
+		return services.CreateError(strings.Join(errMessages, "; "))
+	}
+
+	return nil
+}
+
 type PassesHandler struct {
 	PassService *pass.PassService
 }
@@ -144,6 +181,28 @@ func (h *PassesHandler) PhoneComplete(w http.ResponseWriter, r *http.Request) {
 
 	session := r.Context().Value("session").(services.UserSession)
 	if err := h.PassService.PhoneComplete(r.Context(), session.Username, request.PassName, request.PhoneNumber, request.Code); err != nil {
+		http_common.SendErrorResponse(w, *err)
+		return
+	}
+
+	http_common.SendSuccess(w)
+}
+
+func (h *PassesHandler) DriversLicense(w http.ResponseWriter, r *http.Request) {
+	var request DriversLicenseRequest
+	defer r.Body.Close()
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		http_common.SendErrorResponse(w, services.NewError("failed to parse request"))
+		return
+	}
+
+	if err := request.validate(); err != nil {
+		http_common.SendErrorResponse(w, *err)
+		return
+	}
+
+	session := r.Context().Value("session").(services.UserSession)
+	if err := h.PassService.AddDriversLicensePass(r.Context(), session.Username, request.PassName, request.Data); err != nil {
 		http_common.SendErrorResponse(w, *err)
 		return
 	}

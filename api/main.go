@@ -187,6 +187,7 @@ func main() {
 	passes.HandleFunc("", passesHandler.List).Methods("GET")
 	passes.HandleFunc("/phone/init", passesHandler.PhoneInit).Methods("POST")
 	passes.HandleFunc("/phone/complete", passesHandler.PhoneComplete).Methods("POST")
+	passes.HandleFunc("/drivers-license", passesHandler.DriversLicense).Methods("POST")
 
 	// dispenser handler
 	dispenserHandler := handlers.DispenserHandler{AlgoService: algoService}

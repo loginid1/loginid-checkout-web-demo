@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 
 import { Routes, Route, Link, Navigate } from "react-router-dom";
 import './App.css';
+// import "@microblink/blinkid-in-browser-sdk/ui";
 import Register from './routes/Register';
 import Login from './routes/Login';
 import AddDevice from './routes/AddDevice';

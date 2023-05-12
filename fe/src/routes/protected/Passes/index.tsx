@@ -14,11 +14,67 @@ import {
 import { useState, useEffect } from "react";
 import Moment from "moment";
 import vaultSDK from "../../../lib/VaultSDK";
-import { Pass } from "../../../lib/VaultSDK/vault/pass";
+import { EmailPass, PhonePass, DriversLicensePass, Pass } from "../../../lib/VaultSDK/vault/pass";
 import { AuthService } from "../../../services/auth";
 import { useNavigate } from "react-router-dom";
 import { VaultBase } from "../../../components/VaultBase";
 import NewPass from "./new";
+import moment from "moment";
+
+interface PassDataProps {
+	pass: Pass;
+}
+
+const PassData = (props: PassDataProps): JSX.Element => {
+	switch (props.pass.schema) {
+		case "email":
+			const emailData = props.pass.data as EmailPass
+			return (
+				<Typography variant="body1">
+					{emailData.email}
+				</Typography>
+			);
+		case "phone":
+			const phoneData = props.pass.data as PhonePass
+			return (
+				<Typography variant="body1">
+					{phoneData.phone_number}
+				</Typography>
+			);
+		case "drivers-license":
+			const dlData = props.pass.data as DriversLicensePass
+			return (
+				<>
+					<Typography display={dlData.full_name === undefined ? "none" : ""} textAlign="left" variant="body1">
+						<strong>Name: </strong> {dlData.full_name}
+					</Typography>
+					<Typography display={dlData.personal_id_number === undefined ? "none" : ""} textAlign="left" variant="body1">
+						<strong>ID Number: </strong> {dlData.personal_id_number}
+					</Typography>
+					<Typography textAlign="left" variant="body1">
+						<strong>Document Number: </strong> {dlData.document_number}
+					</Typography>
+					<Typography display={dlData.document_country === undefined ? "none" : ""} textAlign="left" variant="body1">
+						<strong>Country: </strong> {dlData.document_country}
+					</Typography>
+					<Typography display={dlData.address === undefined ? "none" : ""} textAlign="left" variant="body1">
+						<strong>Address: </strong> {dlData.address}
+					</Typography>
+					<Typography display={dlData.date_of_birth === undefined ? "none" : ""} textAlign="left" variant="body1">
+						<strong>Date of Birth: </strong> {moment(dlData.date_of_birth).format("DD/MM/YYYY")}
+					</Typography>
+					<Typography display={dlData.date_of_issue === undefined ? "none" : ""} textAlign="left" variant="body1">
+						<strong>Issuing Date: </strong> {moment(dlData.date_of_issue).format("DD/MM/YYYY")}
+					</Typography>
+					<Typography display={dlData.date_of_expiry === undefined ? "none" : ""} textAlign="left" variant="body1">
+						<strong>Expiry Date: </strong> {moment(dlData.date_of_expiry).format("DD/MM/YYYY")}
+					</Typography>
+				</>
+			);
+		default:
+			return (<></>);
+	}
+}
 
 const Passes = () => {
 	const navigate = useNavigate();
@@ -71,8 +127,8 @@ const Passes = () => {
 						<>
 							<Grid container direction="row" >
 								{ passes.map((pass) => (
-									<Grid item padding={2} xl={3} lg={4} md={6} xs={12}>
-										<Card sx={{ minHeight: 300, display:"flex", flexWrap:"wrap", flexDirection:"column", justifyContent:"space-between" }}>
+									<Grid item padding={2} xl={4} lg={4} md={6} xs={12}>
+										<Card sx={{ minHeight: 350, display:"flex", flexWrap:"wrap", flexDirection:"column", justifyContent:"space-between" }}>
 											<CardHeader
 												action={
 													<IconButton aria-label="settings">
@@ -91,9 +147,7 @@ const Passes = () => {
 												}
 											/>
 											<CardContent>
-												<Typography variant="body1">
-													{pass.schema === 'email' ? pass.data.email : pass.data.phone_number}
-												</Typography>
+												<PassData pass={pass}/>
 											</CardContent>
 											<CardActions disableSpacing>
 												<IconButton aria-label="share">
@@ -110,6 +164,7 @@ const Passes = () => {
 									Add a new pass
 								</Button>
 							</Stack>
+								
 						</>
 					)
 				)
