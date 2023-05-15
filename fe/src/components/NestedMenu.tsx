@@ -113,7 +113,7 @@ export function NestedMenu(props: NestedMenuProps) {
 		<Stack
 			sx={{
 				height: "100%",
-				justifyContent: "space-between",
+				justifyContent: "space-between"
 			}}
 		>
 			<Box>
@@ -188,6 +188,7 @@ export function NestedMenu(props: NestedMenuProps) {
 						width: `${drawerWidth}px`,
 					},
 					display: { xs: "none", sm: "inherit" },
+					zIndex: 900,
 				}}
 			>
 				{drawer}

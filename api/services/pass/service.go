@@ -26,6 +26,7 @@ type PassService struct {
 }
 
 type PassResponse struct {
+	ID         string         `json:"id"`
 	UserID     string         `json:"user_id"`
 	Name       string         `json:"name"`
 	Attributes string         `json:"attributes"`
@@ -51,10 +52,10 @@ func (s *PassService) List(ctx context.Context, username string) ([]interface{},
 		return nil, services.CreateError("failed to list user passes")
 	}
 
-	// TODO: abstract the loop to handle other type of passes
-	var response []interface{}
+	response := []interface{}{}
 	for _, pass := range passes {
 		item := PassResponse{
+			ID:         pass.ID,
 			UserID:     pass.UserID,
 			Name:       pass.Name,
 			Attributes: pass.Attributes,
@@ -68,6 +69,14 @@ func (s *PassService) List(ctx context.Context, username string) ([]interface{},
 	}
 
 	return response, nil
+}
+
+func (s *PassService) Delete(ctx context.Context, id string) *services.ServiceError {
+	if err := s.Repository.DeleteByID(id); err != nil {
+		return services.CreateError("failed to delete user passes")
+	}
+
+	return nil
 }
 
 func (s *PassService) PhoneInit(ctx context.Context, username, phone_number string) *services.ServiceError {
@@ -148,6 +157,73 @@ func (s *PassService) PhoneComplete(ctx context.Context, username, name, phone_n
 	return nil
 }
 
+type DriversLicensePass struct {
+	DocumentNumber   string     `json:"document_number" validate:"required"`
+	DocumentCountry  string     `json:"document_country,omitempty"`
+	PersonalIdNumber string     `json:"personal_id_number,omitempty"`
+	FullName         string     `json:"full_name,omitempty"`
+	Address          string     `json:"address,omitempty"`
+	DateOfBirth      time.Time  `json:"date_of_birth" validate:"required"`
+	DateOfIssue      *time.Time `json:"date_of_issue,omitempty"`
+	DateOfExpiry     *time.Time `json:"date_of_expiry,omitempty"`
+}
+
+func (s *PassService) AddDriversLicensePass(ctx context.Context, username, name string, data DriversLicensePass) *services.ServiceError {
+	dataBytes, err := json.Marshal(&data)
+	if err != nil {
+		return services.CreateError("failed to create a new pass")
+	}
+	dataHash := sha256.Sum256([]byte(data.DocumentNumber))
+
+	attributes := []string{"document_number", "date_of_birth"}
+	if data.DocumentCountry != "" {
+		attributes = append(attributes, "document_country")
+	}
+
+	if data.PersonalIdNumber != "" {
+		attributes = append(attributes, "personal_id_number")
+	}
+
+	if data.FullName != "" {
+		attributes = append(attributes, "full_name")
+	}
+
+	if data.Address != "" {
+		attributes = append(attributes, "address")
+	}
+
+	if data.DateOfIssue != nil {
+		attributes = append(attributes, "date_of_issue")
+	}
+
+	if data.DateOfExpiry != nil {
+		attributes = append(attributes, "date_of_expiry")
+	}
+
+	usr, svcErr := s.UserService.GetUser(username)
+	if svcErr != nil {
+		return svcErr
+	}
+
+	pass := UserPass{
+		ID:         uuid.NewString(),
+		UserID:     usr.ID,
+		Name:       name,
+		Attributes: strings.Join(attributes, ","),
+		SchemaType: DriversLicensePassSchemaType,
+		Issuer:     "Microblink",
+		Data:       dataBytes,
+		DataHash:   dataHash[:],
+		CreatedAt:  time.Now(),
+		UpdatedAt:  time.Now(),
+		ExpiresAt:  data.DateOfExpiry,
+	}
+	if err := s.Repository.Create(pass); err != nil {
+		return services.CreateError("failed to create a new drivers license pass")
+	}
+	return nil
+}
+
 func (s *PassService) ForceAddPass(ctx context.Context, userId, name, attributes string, schema PassSchemaType, data interface{}) *services.ServiceError {
 	dataBytes, err := json.Marshal(&data)
 	if err != nil {
@@ -169,7 +245,7 @@ func (s *PassService) ForceAddPass(ctx context.Context, userId, name, attributes
 		ExpiresAt:  nil,
 	}
 	if err := s.Repository.Create(pass); err != nil {
-		return services.CreateError("failed to create a new phone pass")
+		return services.CreateError("failed to create a new pass")
 	}
 	return nil
 }
