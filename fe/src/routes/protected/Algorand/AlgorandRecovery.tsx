@@ -1,14 +1,13 @@
 import { Paper } from "@mui/material";
 import React, { useState } from "react";
-import { CredentialsManage } from "../../../components/CredentialsManage";
 import { RecoveryManage } from "../../../components/RecoveryManage";
 import { VaultBase } from "../../../components/VaultBase";
 
-const Credentials: React.FC = () => {
+export const AlgorandRecovery: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState("");
 
   return (
-    <VaultBase focus={"passkeys"}>
+    <VaultBase focus={"algo_recovery"}>
       <Paper
         elevation={0}
         sx={{
@@ -17,10 +16,10 @@ const Credentials: React.FC = () => {
           flexDirection: "column",
         }}
       >
-        <CredentialsManage />
+        <RecoveryManage />
       </Paper>
     </VaultBase>
   );
 };
 
-export default Credentials;
+export default AlgorandRecovery;

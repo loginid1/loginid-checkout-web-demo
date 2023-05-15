@@ -52,6 +52,12 @@ const menuData: MenuData[] = [
 				link: "/algorand/dapps",
 				items: [],
 			},
+			{
+				id: "algo_recovery",
+				title: "Recovery",
+				link: "/algorand/recovery",
+				items: [],
+			},
 		],
 	},
 

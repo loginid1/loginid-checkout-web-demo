@@ -12,7 +12,7 @@ import { EnableOpts, EnableResult, WalletInit } from "../../lib/common/api";
 import vaultSDK from "../../lib/VaultSDK";
 import { AccountList, Genesis } from "../../lib/VaultSDK/vault/algo";
 import { ThemeProvider } from "@emotion/react";
-import VaultLogo from "../../assets/logo_light.svg";
+import VaultLogo from "../../assets/logo_dark.svg";
 import EmailIcon from "@mui/icons-material/Email";
 import PhoneIcon from "@mui/icons-material/Phone";
 import AccountIcon from "@mui/icons-material/AccountCircle";
@@ -47,6 +47,7 @@ import {
 	ListItem,
 	ListItemAvatar,
 	ListItemText,
+	Grid,
 } from "@mui/material";
 import { DisplayMessage } from "../../lib/common/message";
 import ParseUtil from "../../lib/util/parse";
@@ -333,6 +334,22 @@ export default function FederatedAuthPopup() {
 	return (
 		<ThemeProvider theme={LoginID}>
 			{waitingIndicator && <LinearProgress />}
+			{/* 
+			*/}
+				<AppBar position="static">
+					<Toolbar>
+						<Grid
+							container
+							spacing={0}
+							justifyContent="center"
+							alignItems="center"
+						>
+							<Grid item xs={12} sx={{ "text-align": "center" }}>
+								<img src={VaultLogo} width="180" height="30" />
+							</Grid>
+						</Grid>
+					</Toolbar>
+				</AppBar>
 			<Container component="main">
 				{/* 
 				<Box sx={{ m: 2 }}>
@@ -340,7 +357,7 @@ export default function FederatedAuthPopup() {
 				</Box>
 				*/}
 				{displayMessage == null && (
-					<Box sx={{ m: 2, height: "48px" }}></Box>
+					<Box sx={{ m: 2, height: "32px" }}></Box>
 				)}
 
 				{page === AuthPage.ERROR && <ErrorPage error={globalError} />}

@@ -18,8 +18,8 @@ import WalletTxnConfirmation from './routes/api/WalletTransaction';
 import Credentials from './routes/protected/Credentials/Credentials';
 import AddCredential from './routes/protected/Credentials/AddCredential';
 import CompleteCredential from './routes/protected/Credentials/CompleteCredential';
-import AddRecovery from './routes/protected/Credentials/AddRecovery';
-import CompleteRecovery from './routes/protected/Credentials/CompleteRecovery';
+import AddRecovery from './routes/protected/Algorand/AddRecovery';
+import CompleteRecovery from './routes/protected/Algorand/CompleteRecovery';
 import AlgorandAccounts from './routes/protected/Algorand/AlgorandAccounts';
 import AddAlgorand from './routes/protected/Algorand/AddAlgorand';
 import {AlgorandTransactions} from './routes/protected/Algorand/AlgorandTransactions';
@@ -44,6 +44,7 @@ import DeveloperConsole from './routes/protected/Developer/Console';
 import CreateApp from './routes/protected/Developer/CreateApp';
 import UpdateApp from './routes/protected/Developer/UpdateApp';
 import FederatedAuthPopup from './routes/api/FederatedAuthPopup';
+import AlgorandRecovery from './routes/protected/Algorand/AlgorandRecovery';
 
 
 
@@ -70,10 +71,11 @@ function App() {
           <Route path="/home" element={<AlgorandAccounts />} />
           <Route path="/add_credential" element={<AddCredential />} />
           <Route path="/complete_credential" element={<CompleteCredential />} />
-          <Route path="/add_recovery" element={<AddRecovery />} />
-          <Route path="/complete_recovery" element={<CompleteRecovery />} />
 
           <Route path="/algorand/accounts" element={<AlgorandAccounts />} />
+          <Route path="/algorand/recovery" element={<AlgorandRecovery />} />
+          <Route path="/add_recovery" element={<AddRecovery />} />
+          <Route path="/complete_recovery" element={<CompleteRecovery />} />
           <Route path="/algorand_transactions" element={<AlgorandTransactions />} />
           <Route path="/add_algorand_account" element={<AddAlgorand />} />
           <Route path="/add_algorand_account_form" element={<AddAlgorandForm />} />
