@@ -128,24 +128,13 @@ export const CredentialsManage: React.FC = () => {
 					</Typography>
 				</Grid>
 			</Grid>
-			<Grid item xs container direction="row" spacing={2}>
+			<Grid item xs container direction="row" spacing={1}>
 				{credentials?.credentials?.map((credential) => (
 					<Grid item xs={12} md={6} key={credential.id}>
-						<Card
-							variant="outlined"
-							sx={{
-								width: "100%",
-								backgroundColor: alpha("#F2F2F2", 0.2),
-							}}
-							elevation={0}
-						>
-							<CardContent>
-								<CredentialCards
-									credential={credential}
-									rename={renameCredential}
-								></CredentialCards>
-							</CardContent>
-						</Card>
+						<CredentialCards
+							credential={credential}
+							rename={renameCredential}
+						></CredentialCards>
 					</Grid>
 				))}
 			</Grid>
