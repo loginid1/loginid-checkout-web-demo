@@ -696,6 +696,13 @@ func (h *FederatedAuthHandler) subscribeChannel(r *http.Request, ws *websocket.C
 					break
 				}
 
+				// update token session
+				_, serr = h.AppService.UpdateSessionToken(claims.Session, jwt)
+				if serr != nil {
+					logger.ForRequest(r).Error(serr.Message)
+					break
+				}
+
 				err := ws.WriteMessage(websocket.TextMessage, []byte(jwt))
 				if err != nil {
 					logger.ForRequest(r).Error(err.Error())
