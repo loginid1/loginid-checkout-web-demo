@@ -3,26 +3,30 @@
 <html>
 
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 </head>
 
 <body>
-<p>
+    <p>
     <h2>
-        LoginID Email Confirmation!
+        LoginID Wallet Login Confirmation!
     </h2>
-</p>    
-<p>
-    You have login session from {{.Origin}}.
-</p>
-<p>
-    Please <a href="{{.Url}}">press sign in</a> to continue.
-</p>
-    
-<a href="{{.Url}}" class="btn" style="border-radius: 2px;box-shadow: 0 1px 4px rgba(0, 0, 0, .6);background-color: #1E2898; border-width: 0; margin: 4px 2px; padding:12px 24px; color: #FFFFFF; text-align: center; text-decoration: none; cursor: pointer; display: inline-block;">
-    <span>Confirm Sign in</span>
-</a>
+    </p>
+    <p>
+        You have login session from {{.Origin}}.
+    </p>
+    <p>
+        Please verify that the request matched this session <b>{{.Session}}</b> before confirming your sign in below.
+    </p>
+    <p>If you didn’t request this, you can ignore this email.</p>
+    <p>Thanks.</p>
+
+    <a href="{{.Url}}" class="btn"
+        style="border-radius: 2px;box-shadow: 0 1px 4px rgba(0, 0, 0, .6);background-color: #1E2898; border-width: 0; margin: 4px 2px; padding:12px 24px; color: #FFFFFF; text-align: center; text-decoration: none; cursor: pointer; display: inline-block;">
+        <span>Confirm Sign in</span>
+    </a>
+
 </body>
 
 </html>

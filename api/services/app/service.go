@@ -265,6 +265,15 @@ func (s *AppService) SaveSessionConsent(id string) (bool, string, *services.Serv
 	return result, session.Token, nil
 }
 
+func (s *AppService) ListConsentsByUsername(ctx context.Context, username string) ([]CustomConsent, *services.ServiceError) {
+	consents, err := s.repo.ListConsentsByUsername(username)
+	if err != nil {
+		logger.ForContext(ctx).Error(err.Error())
+		return consents, services.CreateError("data error")
+	}
+	return consents, nil
+}
+
 func (s *AppService) storeSession(session AppSession) error {
 	ctx := context.Background()
 	sessionbyte, err := json.Marshal(session)

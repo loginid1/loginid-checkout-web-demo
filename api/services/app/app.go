@@ -44,4 +44,14 @@ type AppConsent struct {
 	Attributes string    `json:"attributes" gorm:"not null"`
 	Status     int32     `json:"status" gorm:"not null"`
 	Uat        time.Time `json:"uat" gorm:"DEFAULT:current_timestamp"`
+	LoginAt    time.Time `json:"login_at" gorm:"DEFAULT:current_timestamp"`
+}
+
+type CustomConsent struct {
+	UserID     string    `json:"user_id"`
+	AppID      string    `json:"app_id"`
+	Attributes string    `json:"attributes"`
+	Origins    string    `json:"origins"`
+	Status     int32     `json:"status"`
+	Uat        time.Time `json:"uat"`
 }

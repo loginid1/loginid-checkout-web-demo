@@ -129,7 +129,7 @@ func main() {
 	api.HandleFunc("/federated/saveConsent", federatedHandler.SaveConsentHandler)
 
 	// protected usesr handler
-	userHandler := handlers.UserHandler{UserService: userService, Fido2Service: fidoService}
+	userHandler := handlers.UserHandler{UserService: userService, Fido2Service: fidoService, AppService: appService}
 	algoHandler := handlers.AlgoHandler{UserService: userService, AlgoService: algoService, FidoService: fidoService, SendWyreService: wyreService}
 	devHandler := handlers.DeveloperHandler{AppService: appService}
 	protected := api.PathPrefix("/protected").Subrouter()
@@ -143,6 +143,7 @@ func main() {
 	protected.HandleFunc("/user/generateRecoveryInit", userHandler.GenerateRecoveryInitHandler)
 	protected.HandleFunc("/user/generateRecoveryComplete", userHandler.GenerateRecoveryCompleteHandler)
 	protected.HandleFunc("/user/getRecoveryList", userHandler.GetRecoveryListHandler)
+	protected.HandleFunc("/user/getConsentList", userHandler.GetConsentList)
 	protected.HandleFunc("/user/generateCredentialCode", userHandler.GenerateCredentialCodeHandler)
 
 	protected.HandleFunc("/algo/getAccount", algoHandler.GetAccountHandler)

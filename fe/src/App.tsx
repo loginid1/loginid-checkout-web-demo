@@ -36,8 +36,8 @@ import Passes, { NewPass } from './routes/protected/Passes';
 import Index from './routes/Index';
 import { Faq } from './routes/Faq';
 import { Help } from './routes/protected/Help';
-import WalletLogin from './routes/api/FederatedLogin';
-import FederatedLogin from './routes/api/FederatedLogin';
+import WalletLogin from './routes/api/FederatedAuth';
+import FederatedAuth from './routes/api/FederatedAuth';
 import FederatedRegister from './routes/api/FederatedRegister';
 import EmailValidation from './routes/api/EmailValidation';
 import DeveloperConsole from './routes/protected/Developer/Console';
@@ -59,7 +59,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/sdk/auth_p" element={<FederatedAuthPopup />} />
-        <Route path="/sdk/auth" element={<FederatedLogin />} />
+        <Route path="/sdk/auth" element={<FederatedAuth />} />
         <Route path="/sdk/register" element={<FederatedRegister />} />
         <Route path="/sdk/email" element={<EmailValidation />} />
         <Route path="/add_device" element={<AddDevice />} />

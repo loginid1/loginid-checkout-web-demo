@@ -60,7 +60,7 @@ export const RecoveryManage: React.FC = () => {
 									<Stack>
 										<Typography variant="body2">
 											Recover options provide a way for
-											you to recover your Algorand account if you
+											you to recover your Algorand t account if you
 											lose your device.
 										</Typography>
 										<Link variant="body2" color="inherit">

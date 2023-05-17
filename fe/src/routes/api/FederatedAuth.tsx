@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { createContext, useEffect, useState } from "react";
 import { AuthService } from "../../services/auth";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { Message, MessagingService } from "../../services/messaging";
@@ -10,6 +10,7 @@ import VaultLogo from "../../assets/logo_light.svg";
 import EmailIcon from "@mui/icons-material/Email";
 import styles from "../../styles/common.module.css";
 import jwt_decode from "jwt-decode";
+import AccountIcon from "@mui/icons-material/AccountCircle";
 import {
 	Container,
 	AppBar,
@@ -30,6 +31,7 @@ import {
 	CircularProgress,
 	Chip,
 	LinearProgress,
+	Divider,
 } from "@mui/material";
 import { DisplayMessage } from "../../lib/common/message";
 import ParseUtil from "../../lib/util/parse";
@@ -41,6 +43,10 @@ import { defaultOptions } from "../../lib/popup/popup";
 import { CodeInput } from "../../components/CodeInput";
 import { EmailDialog } from "../../components/dialogs/EmailDialog";
 import LoginIDLogo from "../../assets/sidemenu/LoginIDLogo.svg";
+import { Consent, ErrorPage, PhonePassPage } from "../../components/federated/Consent";
+import { AuthContext, AuthPage, ConsentContext } from "../../lib/federated";
+import { SessionInitResponse } from "../../lib/VaultSDK/vault/federated";
+import { LoginPage } from "../../components/federated/Auth";
 
 interface WalletLoginSession {
 	network: string;
@@ -48,12 +54,13 @@ interface WalletLoginSession {
 	requestId: number;
 }
 
+
 let wsurl = process.env.REACT_APP_VAULT_WS_URL || "ws://localhost:3001";
-const mService = new MessagingService(window.opener);
 let input: boolean = false;
 let wSession: WalletLoginSession | null = null;
 let ws: WebSocket | null = null;
-export default function FederatedLogin() {
+const mService = new MessagingService(window.parent);
+export default function FederatedAuth() {
 	const [searchParams, setSearchParams] = useSearchParams();
 
 	const [waitingIndicator, setWaitingIndicator] = useState<boolean>(true);
@@ -61,7 +68,6 @@ export default function FederatedLogin() {
 	const [username, setUsername] = useState("");
 	const [waitingMessage, setWaitingMessage] = useState<string | null>(null);
 	const [codeInput, setCodeInput] = useState<boolean>(false);
-	const [page, setPage] = useState<string>("");
 	const [openEmailDialog, setOpenEmailDialog] = useState<boolean>(false);
 	const [sessionId, setSessionId] = useState<string>("");
 	const params = useParams();
@@ -70,6 +76,13 @@ export default function FederatedLogin() {
 	const [displayMessage, setDisplayMessage] = useState<DisplayMessage | null>( null);
 	const [appOrigin, setAppOrigin] = useState<string>("");
 	const [consent, setConsent] = useState<string[] | null>(null);
+	const [page, setPage] = useState<AuthPage>(AuthPage.NONE);
+	const [emailType, setEmailType] = useState<string>("login");
+	const [missing, setMissing] = useState<string[]>([]);
+	const [globalError, setGlobalError] = useState<string>("");
+	const [attributes, setAttributes] = useState<string[]>([]);
+	const [token, setToken] = useState<string>("");
+	const [sessionInit, setSessionInit] = useState<SessionInitResponse | null >(null);
 
 	useEffect(() => {
 		let target = window.parent;
@@ -81,40 +94,32 @@ export default function FederatedLogin() {
 	}, []);
 
 	useEffect(() => {
-		if (page === "consent") {
-			checkConsent();
-		}
 	}, [page]);
 
 	// handle iframe message
 	function onMessageHandle(msg: Message, origin: string) {
 		try {
-			console.log("parent: ", origin);
-			mService.origin = origin;
-			mService.id = msg.id;
+			//mService.origin = origin;
 			// validate enable
 			if (msg.type === "register_cancel") {
 				setWaitingMessage(null);
 				setDisplayMessage({
-					text: "Registration cancel!",
+					text: "Passkey registration cancel!",
 					type: "error",
 				});
 			} else if (msg.type === "register_complete") {
 				// consent for first time user
 				// send token back
-				setPage("consent");
-				setDisplayMessage({
-					text: "Registration completed!",
-					type: "info",
-				});
+				setPage(AuthPage.CONSENT);
 			} else if (msg.type === "init") {
+				mService.id = msg.id;
 				let api : WalletInit = JSON.parse(msg.data);
 				vaultSDK.sessionInit(origin,api.api).then((response) => {
-					setPage("login");
+					setPage(AuthPage.LOGIN);
 					setAppOrigin(origin);
 					clearAlert();
 					setSessionId(response.id);
-					console.log("session ", response.id);
+					setSessionInit(response);
 				});
 				// check api
 			}
@@ -123,20 +128,6 @@ export default function FederatedLogin() {
 		}
 	}
 
-	const INTERVAL = 100;
-	const TIMEOUT = 10000;
-	async function waitForEnableInput(): Promise<boolean> {
-		let wait = TIMEOUT;
-		while (wait > 0) {
-			if (input == false) {
-				await new Promise((resolve) => setTimeout(resolve, INTERVAL));
-			} else {
-				return Promise.resolve(true);
-			}
-			wait = wait - INTERVAL;
-		}
-		return Promise.resolve(false);
-	}
 
 	function clearAlert() {
 		setWaitingIndicator(false);
@@ -144,31 +135,58 @@ export default function FederatedLogin() {
 		setDisplayMessage(null);
 	}
 
-	async function checkConsent() {
-		try {
-			let consent = await vaultSDK.checkConsent(sessionId);
-			setConsent(consent.required_attributes);
-			if (consent.required_attributes.length !== 0) {
-				mService.sendMessageText(consent.token);
-			}
-		} catch(e) {
-			setConsent(null);
+	function postMessageText(text: string){
+		if(mService != null){
+			mService.sendMessageText(text);
 		}
 	}
 
-	async function saveConsent() {
-		await vaultSDK.saveConsent(sessionId);
-		setConsent(null);
+	function postMessage(type: string, text: string){
+		if(mService != null){
+			if(type === "error"){
+				mService.sendErrorMessage(text);
+			} else {
+				mService.sendMessageText(text);
+			}
+		}
 	}
+
 
 	async function handleLogin() {
 		try {
 			if (!(await vaultSDK.checkUser(username))) {
+
+				emailRegister();
+			} else {
+
+				const response = await vaultSDK.federated_authenticate(
+					username,
+					sessionId
+				);
+				AuthService.storeSession({
+					username: username,
+					token: response.jwt,
+				});
+				setPage(AuthPage.CONSENT);
+			}
+		} catch (error) {
+			setDisplayMessage({
+				text: (error as Error).message,
+				type: "error",
+			});
+			//setCodeInput(true);
+			// show 6 digit code
+			emailLogin(username);
+		}
+	}
+
+	async function fidoRegister() {
+
 				// need to handle safari blocking popup in async
 				try {
 
 					let popupW = openPopup(
-						`/sdk/register?username=${username}&session=${sessionId}&appOrigin=${appOrigin}`,
+						`/sdk/register?username=${username}&session=${sessionId}&appOrigin=${appOrigin}&token=${token}`,
 						"register",
 						defaultOptions
 					);
@@ -191,26 +209,44 @@ export default function FederatedLogin() {
 					setShowRegister(true);
 					return;
 				}
-			}
-			const response = await vaultSDK.federated_authenticate(
+	}
+
+	async function emailRegister() {
+		try {
+			await vaultSDK.sendEmailSession(
+				sessionId,
 				username,
-				sessionId
+				"register",
+				appOrigin
 			);
-			/*
-			AuthService.storeSession({
-				username: username,
-				token: response.jwt,
-			});
-			*/
-			setPage("consent");
+			//setWaitingMessage("Check email for login session")
+			setWaitingIndicator(true);
+			setEmailType("register");
+			setOpenEmailDialog(true);
+			ws = new WebSocket(wsurl + "/api/federated/email/ws/" + sessionId);
+			ws.onopen = () => {
+				ws?.send(JSON.stringify({ email: username, type: "register" }));
+			};
+			ws.onmessage = (event) => {
+				let token = event.data;
+				let decoded = jwt_decode(token);
+				if (decoded != null) {
+					closeEmailDialog();
+					//registerFido(token);
+					setToken(token);
+					setPage(AuthPage.FIDO_REG);
+					clearAlert();
+					//ws?.close();
+					// register fido
+				}
+			};
+			ws.onclose = () => {};
 		} catch (error) {
 			setDisplayMessage({
-				text: (error as Error).message,
 				type: "error",
+				text: (error as Error).message,
 			});
-			//setCodeInput(true);
-			// show 6 digit code
-			emailLogin(username);
+			mService.sendErrorMessage((error as Error).message);
 		}
 	}
 
@@ -249,7 +285,7 @@ export default function FederatedLogin() {
 					type: "info",
 				});
 				closeEmailDialog();
-				setPage("consent");
+				setPage(AuthPage.CONSENT);
 				//ws?.close();
 			}
 		};
@@ -275,7 +311,7 @@ export default function FederatedLogin() {
 
 	async function handleCancel() {
 		mService.sendErrorMessage("user cancel");
-		window.close();
+		//window.close();
 	}
 
 	return (
@@ -287,20 +323,47 @@ export default function FederatedLogin() {
 					<img src={VaultLogo} width="160" height="30" />
 				</Box>
 				*/}
-				{displayMessage == null && (
-					<Box sx={{ m: 2, height: "48px" }}></Box>
+
+				{page === AuthPage.ERROR && <ErrorPage error={globalError} />}
+				{page === AuthPage.LOGIN && 
+					<AuthContext.Provider value={{username, setUsername, postMessage, setPage,handleCancel,setToken}}>
+						{sessionInit && 
+						<LoginPage session={sessionInit} username={username}/>}
+					</AuthContext.Provider>
+				}
+				{page === AuthPage.FIDO_REG && Fido()}
+				{page === AuthPage.CONSENT && (
+					<ConsentContext.Provider
+						value={{
+							postMessageText,
+							setPage,
+							handleCancel,
+							setDisplayMessage,
+						}}
+					>	
+						{/*Consent ({session:sessionId, username})*/}
+						<Consent session={sessionId} username={username}  />
+					</ConsentContext.Provider>
 				)}
 
-				{page === "login" && Login()}
-				{page === "consent" && Consent()}
-				<EmailDialog
-					type="login"
-					email={username}
-					session={sessionId}
-					open={openEmailDialog}
-					handleClose={closeEmailDialog}
-				></EmailDialog>
+				{page === AuthPage.PHONE_PASS && (
+					<ConsentContext.Provider
+						value={{
+							postMessageText,
+							setPage,
+							handleCancel,
+							setDisplayMessage,
+						}}
+					>
+						<PhonePassPage
+							session={sessionId}
+							username={username}
+						/>
+					</ConsentContext.Provider>
+				)}
+				{page === AuthPage.FINAL && Final()}
 
+				<Divider variant="fullWidth" />
 				<Typography
 					variant="caption"
 					color="#1E2898"
@@ -319,9 +382,33 @@ export default function FederatedLogin() {
 		</ThemeProvider>
 	);
 
-	function Login() {
+
+	function Final() {
 		return (
-			<>
+			<Stack>
+				<Typography
+					sx={{ m: 1 }}
+					variant="body1"
+					color="text.secondary"
+				>
+					You have successfully logged in as:
+				</Typography>
+				<Chip icon={<AccountIcon />} label={username}></Chip>
+				<Button
+					variant="text"
+					size="small"
+					onClick={handleCancel}
+					sx={{ mt: 2, mb: 2 }}
+				>
+					Close
+				</Button>
+			</Stack>
+		);
+	}
+
+	function Fido() {
+		return (
+			<Stack>
 				{displayMessage && (
 					<Alert
 						severity={
@@ -337,179 +424,29 @@ export default function FederatedLogin() {
 					variant="body2"
 					color="text.secondary"
 				>
-					Sign In or Sign Up
-				</Typography>
-				<TextField
-					fullWidth
-					label="Email"
-					value={username}
-					size="small"
-					onChange={(e) => setUsername(e.target.value)}
-					focused
-				/>
-
-				<Button
-					fullWidth
-					variant="contained"
-					onClick={handleLogin}
-					size="small"
-					sx={{ mt: 1, mb: 1 }}
-				>
-					Continue
-				</Button>
-				{showRegister &&
-				<Button
-					fullWidth
-					variant="text"
-					onClick={handleSignup}
-					size="small"
-					sx={{ mt: 1, mb: 1 }}
-				>
-					Signup
-				</Button>
-				}
-				<Typography
-					sx={{ m: 1 }}
-					variant="caption"
-					color="text.secondary"
-				>
-					Simple passwordless login with passkey or email
-				</Typography>
-				{codeInput && (
-					<Stack spacing={2}>
-						<Typography variant="caption" maxWidth="400px">
-							Please enter the 6-digit code from your email to
-							login.
-						</Typography>
-						<CodeInput
-							inputName="code"
-							validateCode={validateCode}
-						/>
-					</Stack>
-				)}
-				{waitingMessage && (
-					<Stack direction="row" alignItems="center">
-						<CircularProgress size="2rem" />
-						<Typography variant="caption">
-							{waitingMessage}
-						</Typography>
-					</Stack>
-				)}
-			</>
-		);
-	}
-
-	function Consent() {
-		return (
-			<>
-				<Typography
-					sx={{ m: 1 }}
-					variant="body2"
-					color="text.secondary"
-				>
-					You have successfully logged in as:
+					You have successfully confirmed your email. Press "Add my
+					passkey" to complete this registration:
 				</Typography>
 				<Chip icon={<EmailIcon />} label={username}></Chip>
-				{consent && (
-					<Button
-						fullWidth
-						variant="contained"
-						onClick={saveConsent}
-						size="small"
-						sx={{ mt: 1, mb: 1 }}
-					>
-						Allow
-					</Button>
-				)}
-			</>
+				<Button
+					variant="contained"
+					size="small"
+					sx={{ mt: 3, mb: 0 }}
+					onClick={fidoRegister}
+				>
+					Add My Passkey
+				</Button>
+				<Button
+					variant="text"
+					size="small"
+					onClick={handleCancel}
+					sx={{ mt: 0, mb: 2 }}
+				>
+					Cancel
+				</Button>
+			</Stack>
 		);
 	}
+
 }
 
-/*
-function Lgin(){
-	return (
-		<ThemeProvider theme={LoginID}>
-		  <CssBaseline />
-		  <Container
-			component="main"
-			maxWidth={false}
-			sx={{
-			  display: "flex",
-			  justifyContent: "center",
-			  alignItems: "center",
-			  backgroundImage: `url(${background})`,
-			  height: `${window.innerHeight}px`,
-			}}
-		  >
-			<Paper
-			  elevation={0}
-			  sx={{
-				p: { md: 6, xs: 2 },
-				borderRadius: "2%",
-			  }}
-			>
-			  <Stack
-				component="form"
-				onSubmit={handleSubmit}
-				spacing={2}
-				sx={{
-				  display: "flex",
-				  flexDirection: "column",
-				  justifyContent: "center",
-				  alignItems: "center",
-				}}
-			  >
-				<VaultLogo />
-				<Typography variant="body1" marginTop={2}>
-				  Log in securely to your FIDO Vault Account.
-				</Typography>
-				{errorMessage.length > 0 && (
-				  <Alert severity="error">{errorMessage}</Alert>
-				)}
-				<TextField
-				  fullWidth
-				  label="Username"
-				  value={username}
-				  onChange={(e) => setUsername(e.target.value)}
-				  focused
-				/>
-				<Button
-				  type="submit"
-				  variant="contained"
-				  size="large"
-				  sx={{ mt: 4, mb: 2 }}
-				>
-				  Login
-				</Button>
-				<Typography variant="body1">
-				  Don't have an account yet?{" "}
-				  <Link href={redirect_url?"./register?redirect_url="+redirect_url:"./register"}>Create Account Now</Link>
-				</Typography>
-				<Typography variant="body1">
-				  Returned user with a new device? <Link href={redirect_url?"./add_device?redirect_url="+redirect_url:"./add_device"}>Click Here</Link>
-				</Typography>
-			  </Stack>
-			</Paper>
-		  </Container>
-		</ThemeProvider>
-	  );
-}
-
-	*/
-function handleSubmit() {}
-function EnableLabel(alias: string, address: string, date: string) {
-	return (
-		<Stack sx={{ justifyContent: "flex-start" }}>
-			<Typography align="left" variant="subtitle1">
-				{alias}
-			</Typography>
-			<Typography align="left" variant="body2">
-				{ParseUtil.displayLongAddress(address)}
-			</Typography>
-			<Typography align="left" variant="caption">
-				{ParseUtil.parseDateTime(date)}
-			</Typography>
-		</Stack>
-	);
-}

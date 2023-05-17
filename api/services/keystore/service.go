@@ -214,6 +214,24 @@ func (s *KeystoreService) VerifyEmailJWT(token string) (*EmailClaims, *services.
 	return &claims, nil
 }
 
+func (s *KeystoreService) VerifyFidoJWT(token string) (*FidoClaims, *services.ServiceError) {
+	keystore := s.LoadKeystore(ksSessionID)
+	if keystore == nil {
+		return nil, services.CreateError("fail to load key")
+	}
+
+	publicKey, err := utils.LoadPublicKeyFromPEM(keystore.PublicKey)
+	if err != nil {
+		return nil, services.CreateError("fail to load key in pem format")
+	}
+	var claims FidoClaims
+	err = utils.VerifyClaims(token, publicKey, &claims)
+	if err != nil {
+		return nil, services.CreateError("fail to load key in pem format")
+	}
+	return &claims, nil
+}
+
 func awsEncryption(data string) (string, error) {
 	sess, err := session.NewSession(&aws.Config{
 		Region:                        aws.String(AWS_KMS_REGION),

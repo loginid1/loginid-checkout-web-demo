@@ -9,6 +9,7 @@ import (
 
 	http_common "gitlab.com/loginid/software/services/loginid-vault/http/common"
 	"gitlab.com/loginid/software/services/loginid-vault/services"
+	"gitlab.com/loginid/software/services/loginid-vault/services/app"
 	"gitlab.com/loginid/software/services/loginid-vault/services/fido2"
 	"gitlab.com/loginid/software/services/loginid-vault/services/user"
 )
@@ -16,16 +17,17 @@ import (
 type UserHandler struct {
 	UserService  *user.UserService
 	Fido2Service *fido2.Fido2Service
+	AppService   *app.AppService
 }
 
 type CredentialListResponse struct {
 	Credentials []user.UserCredential `json:"credentials"`
 }
 
-func (u *UserHandler) GetCredentialListHandler(w http.ResponseWriter, r *http.Request) {
+func (h *UserHandler) GetCredentialListHandler(w http.ResponseWriter, r *http.Request) {
 
 	session := r.Context().Value("session").(services.UserSession)
-	credentials, err := u.UserService.GetCredentialList(session.Username)
+	credentials, err := h.UserService.GetCredentialList(session.Username)
 	if err != nil {
 		http_common.SendErrorResponse(w, services.NewError("no credential found"))
 		return
@@ -39,7 +41,7 @@ type RenameCredentialRequest struct {
 	Name string `json:"name"`
 }
 
-func (u *UserHandler) RenameCredentialHandler(w http.ResponseWriter, r *http.Request) {
+func (h *UserHandler) RenameCredentialHandler(w http.ResponseWriter, r *http.Request) {
 
 	var request RenameCredentialRequest
 	defer r.Body.Close()
@@ -48,7 +50,7 @@ func (u *UserHandler) RenameCredentialHandler(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	err := u.UserService.UserRepository.RenameCredential(request.ID, request.Name)
+	err := h.UserService.UserRepository.RenameCredential(request.ID, request.Name)
 	if err != nil {
 		http_common.SendErrorResponse(w, services.NewError("rename credential failed"))
 		return
@@ -57,9 +59,9 @@ func (u *UserHandler) RenameCredentialHandler(w http.ResponseWriter, r *http.Req
 	http_common.SendSuccess(w)
 }
 
-func (u *UserHandler) GetUserProfileHandler(w http.ResponseWriter, r *http.Request) {
+func (h *UserHandler) GetUserProfileHandler(w http.ResponseWriter, r *http.Request) {
 	session := r.Context().Value("session").(services.UserSession)
-	profile, err := u.UserService.GetProfile(session.Username)
+	profile, err := h.UserService.GetProfile(session.Username)
 	if err != nil {
 		http_common.SendErrorResponse(w, services.NewError("no profile found"))
 		return
@@ -74,9 +76,9 @@ type RecoveryPhrase struct {
 	PrivateKey string `json:"private_key"`
 }
 
-func (u *UserHandler) CreateRecoveryHandler(w http.ResponseWriter, r *http.Request) {
+func (h *UserHandler) CreateRecoveryHandler(w http.ResponseWriter, r *http.Request) {
 	session := r.Context().Value("session").(services.UserSession)
-	mnemonic, recovery, err := u.UserService.CreateRecovery(session.Username)
+	mnemonic, recovery, err := h.UserService.CreateRecovery(session.Username)
 	if err != nil {
 		http_common.SendErrorResponse(w, services.NewError("fail to create mnemonic recovery code"))
 		return
@@ -88,9 +90,9 @@ func (u *UserHandler) CreateRecoveryHandler(w http.ResponseWriter, r *http.Reque
 
 }
 
-func (u *UserHandler) GenerateRecoveryInitHandler(w http.ResponseWriter, r *http.Request) {
+func (h *UserHandler) GenerateRecoveryInitHandler(w http.ResponseWriter, r *http.Request) {
 	session := r.Context().Value("session").(services.UserSession)
-	mnemonic, recovery, err := u.UserService.GenerateRecoveryInit(session.Username)
+	mnemonic, recovery, err := h.UserService.GenerateRecoveryInit(session.Username)
 	if err != nil {
 		http_common.SendErrorResponse(w, services.NewError("fail to create mnemonic recovery code"))
 		return
@@ -106,7 +108,7 @@ type GenerateRecoveryCompleteRequest struct {
 	PublicKey string `json:"public_key"`
 }
 
-func (u *UserHandler) GenerateRecoveryCompleteHandler(w http.ResponseWriter, r *http.Request) {
+func (h *UserHandler) GenerateRecoveryCompleteHandler(w http.ResponseWriter, r *http.Request) {
 	session := r.Context().Value("session").(services.UserSession)
 	var request GenerateRecoveryCompleteRequest
 	defer r.Body.Close()
@@ -115,7 +117,7 @@ func (u *UserHandler) GenerateRecoveryCompleteHandler(w http.ResponseWriter, r *
 		return
 	}
 
-	err := u.UserService.GenerateRecoveryComplete(session.Username, request.PublicKey)
+	err := h.UserService.GenerateRecoveryComplete(session.Username, request.PublicKey)
 	if err != nil {
 		http_common.SendErrorResponse(w, services.NewError("fail to create mnemonic recovery code"))
 		return
@@ -129,9 +131,9 @@ type RecoveryListResponse struct {
 	Recovery []user.UserRecovery `json:"recovery"`
 }
 
-func (u *UserHandler) GetRecoveryListHandler(w http.ResponseWriter, r *http.Request) {
+func (h *UserHandler) GetRecoveryListHandler(w http.ResponseWriter, r *http.Request) {
 	session := r.Context().Value("session").(services.UserSession)
-	recovery, err := u.UserService.GetRecoveryList(session.Username)
+	recovery, err := h.UserService.GetRecoveryList(session.Username)
 	if err != nil {
 		http_common.SendErrorResponse(w, services.NewError("no recovery found"))
 		return
@@ -140,13 +142,33 @@ func (u *UserHandler) GetRecoveryListHandler(w http.ResponseWriter, r *http.Requ
 	http_common.SendSuccessResponse(w, RecoveryListResponse{Recovery: recovery})
 }
 
-func (u *UserHandler) GenerateCredentialCodeHandler(w http.ResponseWriter, r *http.Request) {
+func (h *UserHandler) GenerateCredentialCodeHandler(w http.ResponseWriter, r *http.Request) {
 	session := r.Context().Value("session").(services.UserSession)
 
-	response, err := u.Fido2Service.GenerateCode(session.UserID)
+	response, err := h.Fido2Service.GenerateCode(session.UserID)
 	if err != nil {
 		http_common.SendErrorResponse(w, *err)
 		return
 	}
 	http_common.SendSuccessResponseRaw(w, response)
+}
+
+// TODO: pagination
+type ConsentListResponse struct {
+	Consents []app.CustomConsent `json:"consents"`
+}
+
+func (h *UserHandler) GetConsentList(w http.ResponseWriter, r *http.Request) {
+
+	session := r.Context().Value("session").(services.UserSession)
+
+	consents, serr := h.AppService.ListConsentsByUsername(r.Context(), session.Username)
+	//logger.ForRequest(r).Info(fmt.Sprintf("%#v", consents))
+	if serr != nil {
+		http_common.SendErrorResponse(w, services.NewError("no results found"))
+		return
+	}
+
+	http_common.SendSuccessResponse(w, ConsentListResponse{Consents: consents})
+
 }

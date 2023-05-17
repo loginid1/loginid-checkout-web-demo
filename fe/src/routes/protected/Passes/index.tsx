@@ -24,6 +24,8 @@ import { NavigateFunction, useNavigate } from "react-router-dom";
 import { VaultBase } from "../../../components/VaultBase";
 import NewPass from "./new";
 import moment from "moment";
+import { Consent } from "../../../lib/VaultSDK/vault/user";
+import { DisplayConsents } from "../../../components/AppConsentList";
 
 interface PassDataProps {
 	pass: Pass;
@@ -145,6 +147,7 @@ const PassMenu = (props: {passId: string; }) => {
 const Passes = () => {
 	const navigate = useNavigate();
 	const [passes, setPasses] = useState<Pass[] | null>(null);
+	const [consents, setConsents] = useState<Consent[]>([]);
 	
 	useEffect(() => {
 		const fetchData = async () => {

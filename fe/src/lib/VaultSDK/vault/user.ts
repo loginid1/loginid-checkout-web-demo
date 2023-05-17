@@ -46,6 +46,18 @@ export interface CredentialCode {
     is_authorized: boolean;
 }
 
+export interface Consent {
+    app_id : string;
+    origins: string;
+    attributes: string;
+    status: number;
+    uat: string;
+}
+
+export interface ConsentListResult {
+    consents: Consent[];
+}
+
 export class VaultUser extends Base{
 
     async getProfile(token: string) : Promise<Profile>  {
@@ -63,6 +75,16 @@ export class VaultUser extends Base{
         return await utils.http.get(
             this._baseURL,
             "/api/protected/user/getCredentialList",
+            undefined,
+            header
+        );
+    }
+
+    async getConsentList(token: string) : Promise<ConsentListResult> {
+        const header = { "x-session-token": token };
+        return await utils.http.get(
+            this._baseURL,
+            "/api/protected/user/getConsentList",
             undefined,
             header
         );

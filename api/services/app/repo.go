@@ -1,6 +1,8 @@
 package app
 
 import (
+	"strings"
+
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -121,4 +123,15 @@ func (repo *AppRepository) GetConsent(appid string, userid string) (*AppConsent,
 		return nil, err
 	}
 	return &consent, nil
+}
+
+func (repo *AppRepository) ListConsentsByUsername(username string) ([]CustomConsent, error) {
+	var consents []CustomConsent
+	if err := repo.DB.Model(AppConsent{}).Select("app_consents.user_id, app_consents.app_id, app_consents.attributes, app_consents.status, app_consents.uat, dev_apps.origins").Joins("JOIN users ON users.id = app_consents.user_id").Joins("JOIN dev_apps ON dev_apps.id = app_consents.app_id").Where("users.username_lower = ?", strings.ToLower(username)).Scan(&consents).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return consents, nil
+		}
+		return nil, err
+	}
+	return consents, nil
 }

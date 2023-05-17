@@ -1499,10 +1499,10 @@
   "resolved" "https://registry.npmjs.org/@loginid/vault-sdk/-/vault-sdk-0.31.5.tgz"
   "version" "0.31.5"
 
-"@loginid/wallet-sdk@^0.41.5-beta":
-  "integrity" "sha512-NvboGf7/OZ/jy3hwQ6457pdbVFxz64dTpXcID3JHrbeXaMUj64BYHzsE8Je0igoECIHUg+S1wLiXO76U358riA=="
-  "resolved" "https://registry.npmjs.org/@loginid/wallet-sdk/-/wallet-sdk-0.41.5-beta.tgz"
-  "version" "0.41.5-beta"
+"@loginid/wallet-sdk@^0.42.3-beta":
+  "integrity" "sha512-9l9+RQ5Kh0u0KxlIYQQMxoh5bTngVZu/nx/r3CdYbDQflIS8kT6r3dNJChbMkiNykAh2Sn5IjoP2TKAtrI4LVw=="
+  "resolved" "https://registry.npmjs.org/@loginid/wallet-sdk/-/wallet-sdk-0.42.3-beta.tgz"
+  "version" "0.42.3-beta"
 
 "@mui/base@5.0.0-alpha.119":
   "integrity" "sha512-XA5zhlYfXi67u613eIF0xRmktkatx6ERy3h+PwrMN5IcWFbgiL1guz8VpdXON+GWb8+G7B8t5oqTFIaCqaSAeA=="

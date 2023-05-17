@@ -6,7 +6,7 @@
     "@emotion/react": "^11.10.6",
     "@emotion/styled": "^11.10.6",
     "@loginid/vault-sdk": "^0.31.5",
-    "@loginid/wallet-sdk": "^0.41.5-beta",
+    "@loginid/wallet-sdk": "^0.42.3-beta",
     "@mui/icons-material": "^5.11.11",
     "@mui/material": "^5.11.12",
     "@testing-library/jest-dom": "^5.14.1",
