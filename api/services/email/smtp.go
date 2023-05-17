@@ -74,8 +74,10 @@ func SendHtmlEmailValidation(email string, request_type string, url string, orig
 
 	mime := "MIME-version: 1.0;\nContent-Type: text/html; charset=\"UTF-8\";\n\n"
 	filepath := "signup.template.html"
+	subject := "Subject: LoginID Wallet Signup Confirmation!"
 	if request_type == "login" {
 		filepath = "login.template.html"
+		subject = "Subject: LoginID Wallet Login Confirmation!"
 	}
 	body, err := ParseTemplate(filepath, data)
 	if err != nil {
@@ -85,8 +87,7 @@ func SendHtmlEmailValidation(email string, request_type string, url string, orig
 	// Connect to the server, authenticate, set the sender and recipient,
 	// and send the email all in one step.
 	to := []string{email}
-	msg := []byte(fmt.Sprintf("Subject: Email confirmation !\n"+
-		"%s\n%s", mime, body))
+	msg := []byte(fmt.Sprintf("%s\n%s\n%s", subject, mime, body))
 	err = smtp.SendMail(fmt.Sprintf("%s:587", email_url), auth, "vault-no-reply@loginid.io", to, msg)
 	if err != nil {
 		logger.Global.Error(err.Error())
