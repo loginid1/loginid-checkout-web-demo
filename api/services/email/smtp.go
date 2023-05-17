@@ -54,7 +54,7 @@ func SendEmailValidation(email string, url string, jwt string) error {
 	return nil
 }
 
-func SendHtmlEmailValidation(email string, request_type string, url string, origin string, jwt string) error {
+func SendHtmlEmailValidation(email string, request_type string, url string, origin string, jwt string, session string) error {
 
 	username := goutil.GetEnv("SMTP_USER", "")
 	password := goutil.GetEnv("SMTP_PASSWORD", "")
@@ -63,11 +63,13 @@ func SendHtmlEmailValidation(email string, request_type string, url string, orig
 	auth := smtp.PlainAuth("", username, password, email_url)
 
 	data := struct {
-		Origin string
-		Url    string
+		Origin  string
+		Url     string
+		Session string
 	}{
-		Origin: origin,
-		Url:    fmt.Sprintf("%s/sdk/email?token=%s", url, jwt),
+		Origin:  origin,
+		Url:     fmt.Sprintf("%s/sdk/email?token=%s", url, jwt),
+		Session: session,
 	}
 
 	mime := "MIME-version: 1.0;\nContent-Type: text/html; charset=\"UTF-8\";\n\n"

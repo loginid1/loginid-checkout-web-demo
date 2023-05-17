@@ -54,22 +54,15 @@ export const CredentialCards: React.FC<CredentialCard> = ({
 			}}
 			elevation={0}
 		>
-			<Stack
-				direction="column"
-				alignItems="left"
-				justifyContent="left"
-				sx={{ width: "100%" }}
-			>
 				<CardContent>
 					<Typography
 						noWrap
 						variant="h3"
-						align="left"
-						overflow="hidden"
+            component="div"
 					>
 						{credential.name}
 					</Typography>
-					<Typography noWrap variant="caption" align="left">
+					<Typography noWrap variant="caption" component="div">
 						Added {credIAT}
 					</Typography>
 				</CardContent>
@@ -123,7 +116,6 @@ export const CredentialCards: React.FC<CredentialCard> = ({
 						</Stack>
 					</Stack>
 				</Dialog>
-			</Stack>
 		</Card>
 	);
 };

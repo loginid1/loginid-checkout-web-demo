@@ -54,14 +54,18 @@ const Header = (props: any) => {
   }, [])
 
   const handleCart = async () => {
-    console.log('cart')
     let account = wallet.getAccount()
     if (account != '') {
       navigate.push('/cart')
     } else {
-      let result = await wallet.signupNew()
+      let result = await wallet.signup()
       setUsername(result.claims.sub)
     }
+  }
+
+  const handleSignin = async()=>{
+      let result = await wallet.signup()
+      setUsername(result.claims.sub)
   }
 
   const handleLogout = () => {
@@ -87,6 +91,16 @@ const Header = (props: any) => {
               <ShoppingCartIcon />
             </Badge>
           </IconButton>
+          {username === '' &&
+          <IconButton
+            edge="start"
+            color="inherit"
+            aria-label="account"
+            onClick={handleSignin}
+          >
+              <AccountCircleIcon />
+          </IconButton>
+          }
           {username != '' && (
             <>
               <Chip

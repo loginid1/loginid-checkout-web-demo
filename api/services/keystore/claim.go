@@ -12,6 +12,13 @@ type EmailClaims struct {
 	Session  string `json:"session"`
 }
 
+type FidoClaims struct {
+	Username string `json:"username,omitempty"`
+	Type     string `json:"type"`
+	Session  string `json:"session"`
+	IssuedAt int64  `json:"iat,omitempty"`
+}
+
 type EmailLoginClaims struct {
 	Client   string `json:"client"`
 	Email    string `json:"email,omitempty"`

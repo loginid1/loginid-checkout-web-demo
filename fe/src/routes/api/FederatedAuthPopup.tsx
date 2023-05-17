@@ -63,6 +63,7 @@ import { Check, MessageSharp } from "@mui/icons-material";
 import { ConsentPass } from "../../lib/VaultSDK/vault/federated";
 import { Account } from "../../components/Account";
 import { TermDialog } from "../../components/dialogs/TermOfServiceDialog";
+import { AuthPage, ConsentContext, ConsentContextType } from "../../lib/federated";
 
 interface WalletLoginSession {
 	network: string;
@@ -70,15 +71,6 @@ interface WalletLoginSession {
 	requestId: number;
 }
 
-export enum AuthPage {
-	NONE = "none",
-	ERROR = "error",
-	LOGIN = "login",
-	FIDO_REG = "fido_register",
-	CONSENT = "consent",
-	PHONE_PASS = "phone_pass",
-	FINAL = "final",
-}
 
 let wsurl = process.env.REACT_APP_VAULT_WS_URL || "ws://localhost:3001";
 const mService = new MessagingService(window.opener);
@@ -86,14 +78,6 @@ let input: boolean = false;
 let wSession: WalletLoginSession | null = null;
 let ws: WebSocket | null = null;
 
-export interface ConsentContextType {
-	setMissing: (missing: string[]) => void;
-	setPage: (page: AuthPage) => void;
-	handleCancel: () => void;
-	setDisplayMessage: (msg: DisplayMessage) => void;
-}
-
-export const ConsentContext = createContext<ConsentContextType | null>(null);
 
 export default function FederatedAuthPopup() {
 	const [searchParams, setSearchParams] = useSearchParams();
@@ -110,9 +94,7 @@ export default function FederatedAuthPopup() {
 	const params = useParams();
 	const navigate = useNavigate();
 	const [enable, setEnable] = useState<WalletLoginSession | null>(null);
-	const [displayMessage, setDisplayMessage] = useState<DisplayMessage | null>(
-		null
-	);
+	const [displayMessage, setDisplayMessage] = useState<DisplayMessage | null>( null);
 	const [appOrigin, setAppOrigin] = useState<string>("");
 	const [appName, setAppName] = useState<string>("");
 	const [consent, setConsent] = useState<string[] | null>(null);
@@ -319,6 +301,9 @@ export default function FederatedAuthPopup() {
 			ws.close();
 		}
 	}
+	function postMessageText(text: string){
+		mService.sendMessageText(text);
+	}
 
 	async function validateCode() {}
 
@@ -366,7 +351,7 @@ export default function FederatedAuthPopup() {
 				{page === AuthPage.CONSENT && (
 					<ConsentContext.Provider
 						value={{
-							setMissing,
+							postMessageText,
 							setPage,
 							handleCancel,
 							setDisplayMessage,
@@ -379,7 +364,7 @@ export default function FederatedAuthPopup() {
 				{page === AuthPage.PHONE_PASS && (
 					<ConsentContext.Provider
 						value={{
-							setMissing,
+							postMessageText,
 							setPage,
 							handleCancel,
 							setDisplayMessage,
@@ -492,23 +477,6 @@ export default function FederatedAuthPopup() {
 				{attributes.map((attr) => (<PassIcon type={attr} color="info" />))}
 				</Stack>
 
-				{/*
-				<Typography
-					sx={{ m: 1 }}
-					variant="caption"
-					color="text.secondary"
-				>
-					Simple passwordless login with passkey or email
-				</Typography>
-						 */}
-				{waitingMessage && (
-					<Stack direction="row" alignItems="center">
-						<CircularProgress size="2rem" />
-						<Typography variant="caption">
-							{waitingMessage}
-						</Typography>
-					</Stack>
-				)}
 			</>
 		);
 	}
@@ -590,7 +558,7 @@ function ErrorPage(props: { error: string }) {
 }
 
 function Consent(props: { session: string; username: string }) {
-	const { setMissing, setPage, setDisplayMessage, handleCancel } =
+	const {  setPage, setDisplayMessage, handleCancel } =
 		useContext<ConsentContextType | null>(
 			ConsentContext
 		) as ConsentContextType;
@@ -615,7 +583,6 @@ function Consent(props: { session: string; username: string }) {
 				setPage(AuthPage.FINAL);
 			} else {
 				if (consent.missing_attributes.length > 0) {
-					setMissing(consent.missing_attributes);
 					if (consent.missing_attributes[0] === "phone") {
 						setPage(AuthPage.PHONE_PASS);
 					}
@@ -717,7 +684,7 @@ function PhonePassPage(props: { session: string; username: string }) {
 	const [allowConfirm, setAllowConfirm] = useState<boolean>(false);
 	const [code, setCode] = useState<string>("");
 	const [error, setError] = useState<string | null>(null);
-	const { setMissing, setPage, setDisplayMessage, handleCancel } =
+	const {  setPage, setDisplayMessage, handleCancel } =
 		useContext<ConsentContextType | null>(
 			ConsentContext
 		) as ConsentContextType;
@@ -843,91 +810,4 @@ function PassIcon(props: { type: string, color?: AlertColor }) {
 	} else {
 		return <AccountIcon fontSize="small" color={props.color || "primary"} sx={{ml:1}} />;
 	}
-}
-/*
-function Lgin(){
-	return (
-		<ThemeProvider theme={LoginID}>
-		  <CssBaseline />
-		  <Container
-			component="main"
-			maxWidth={false}
-			sx={{
-			  display: "flex",
-			  justifyContent: "center",
-			  alignItems: "center",
-			  backgroundImage: `url(${background})`,
-			  height: `${window.innerHeight}px`,
-			}}
-		  >
-			<Paper
-			  elevation={0}
-			  sx={{
-				p: { md: 6, xs: 2 },
-				borderRadius: "2%",
-			  }}
-			>
-			  <Stack
-				component="form"
-				onSubmit={handleSubmit}
-				spacing={2}
-				sx={{
-				  display: "flex",
-				  flexDirection: "column",
-				  justifyContent: "center",
-				  alignItems: "center",
-				}}
-			  >
-				<VaultLogo />
-				<Typography variant="body1" marginTop={2}>
-				  Log in securely to your FIDO Vault Account.
-				</Typography>
-				{errorMessage.length > 0 && (
-				  <Alert severity="error">{errorMessage}</Alert>
-				)}
-				<TextField
-				  fullWidth
-				  label="Username"
-				  value={username}
-				  onChange={(e) => setUsername(e.target.value)}
-				  focused
-				/>
-				<Button
-				  type="submit"
-				  variant="contained"
-				  size="large"
-				  sx={{ mt: 4, mb: 2 }}
-				>
-				  Login
-				</Button>
-				<Typography variant="body1">
-				  Don't have an account yet?{" "}
-				  <Link href={redirect_url?"./register?redirect_url="+redirect_url:"./register"}>Create Account Now</Link>
-				</Typography>
-				<Typography variant="body1">
-				  Returned user with a new device? <Link href={redirect_url?"./add_device?redirect_url="+redirect_url:"./add_device"}>Click Here</Link>
-				</Typography>
-			  </Stack>
-			</Paper>
-		  </Container>
-		</ThemeProvider>
-	  );
-}
-
-	*/
-function handleSubmit() {}
-function EnableLabel(alias: string, address: string, date: string) {
-	return (
-		<Stack sx={{ justifyContent: "flex-start" }}>
-			<Typography align="left" variant="subtitle1">
-				{alias}
-			</Typography>
-			<Typography align="left" variant="body2">
-				{ParseUtil.displayLongAddress(address)}
-			</Typography>
-			<Typography align="left" variant="caption">
-				{ParseUtil.parseDateTime(date)}
-			</Typography>
-		</Stack>
-	);
 }

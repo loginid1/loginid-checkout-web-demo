@@ -104,7 +104,8 @@ const navigate = useNavigate();
   async function signup(){
     try {
 
-	    let result = await wallet.signupNew();
+	    let result = await wallet.signup();
+      console.log(result);
       navigate("/dashboard");
     } catch (e) {
       console.log((e as Error).message);

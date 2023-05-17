@@ -14,7 +14,7 @@ import {
   Typography,
 } from "@mui/material";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { LoginID } from "../theme/theme";
 import background from "../assets/background.svg";
 import { ReactComponent as VaultLogo } from "../assets/logo.svg";
@@ -31,6 +31,11 @@ export default function AddDevice() {
   const [errorMessage, setErrorMessage] = useState("");
   const [searchParams, setSearchParams] = useSearchParams();
   let redirect_url = searchParams.get("redirect_url");
+  useEffect(()=>{
+    let aname = searchParams.get("username");
+    setUsername(aname || "");
+
+  },[]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

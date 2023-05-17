@@ -91,7 +91,7 @@ export default function EmailValidation() {
 							<Alert severity="error">{errorMessage}</Alert>
 						)}
 						<Typography variant="body1">
-							<Link href="/fe/faq">
+							<Link href="/faq">
 								Learn more about the LoginID Wallet{" "}
 							</Link>
 						</Typography>

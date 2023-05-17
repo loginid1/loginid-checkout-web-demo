@@ -201,7 +201,6 @@ func (h *FederatedAuthHandler) FederatedRegisterCompleteHandler(w http.ResponseW
 	if claims.Email != request.Username || claims.Session != request.SessionID || utils.IsExpired(claims.IssuedAt, 5*time.Minute) {
 		http_common.SendErrorResponse(w, services.NewError("invalid email validation"))
 		return
-
 	}
 
 	// extract public_key and algorithm from attestation_data
@@ -529,7 +528,7 @@ func (h *FederatedAuthHandler) FederatedSendEmailSessionHandler(w http.ResponseW
 		return
 	}
 	// send email confirmation first
-	mail_err := email.SendHtmlEmailValidation(request.Email, request.Type, email_url, request.Origin, token)
+	mail_err := email.SendHtmlEmailValidation(request.Email, request.Type, email_url, request.Origin, token, request.Session[0:6])
 	if mail_err != nil {
 
 		logger.ForRequest(r).Error(mail_err.Error())

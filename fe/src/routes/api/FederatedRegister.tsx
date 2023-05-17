@@ -67,6 +67,10 @@ export default function FederatedRegister() {
 		if (aOrigin != null) {
 			setAppOrigin(aOrigin);
 		}
+		let aToken = searchParams.get("token");
+		if (aToken != null) {
+			setToken(aToken);
+		}
 
 		let target = window.parent;
 		if (target != null) {
@@ -106,12 +110,11 @@ export default function FederatedRegister() {
 				token,
 				sessionId
 			);
-			/*
+
 			AuthService.storeSession({
 				username: username,
 				token: response.jwt,
 			});
-			*/
 			let message = {
 				type: "register_complete",
 				channel: "register",
@@ -128,43 +131,6 @@ export default function FederatedRegister() {
 		}
 	}
 
-	async function emailRegister() {
-		console.log(sessionId);
-		try {
-			await vaultSDK.sendEmailSession(sessionId, username, "register", appOrigin);
-			//setWaitingMessage("Check email for login session")
-			setWaitingIndicator(true);
-			setOpenEmailDialog(true);
-			ws = new WebSocket(wsurl + "/api/federated/email/ws/" + sessionId);
-			ws.onopen = () => {
-				ws?.send(JSON.stringify({ email: username, type: "register" }));
-			};
-			ws.onmessage = (event) => {
-				let token = event.data;
-				let decoded = jwt_decode(token);
-				if (decoded != null) {
-					closeEmailDialog();
-					//registerFido(token);
-					setToken(token);
-					setPage("fido");
-					//ws?.close();
-					// register fido
-				}
-			};
-			ws.onclose = () => {
-			};
-		} catch (error) {
-			setDisplayMessage({type:"error", text:(error as Error).message})
-		}
-	}
-
-	function closeEmailDialog() {
-		setWaitingIndicator(false);
-		setOpenEmailDialog(false);
-		if (ws != null) {
-			ws.close();
-		}
-	}
 	async function handleCancel() {
 		let message = {
 			type: "register_cancel",
@@ -209,37 +175,30 @@ export default function FederatedRegister() {
 					>
 						<VaultLogo />
 
-				{displayMessage && (
-					<Alert
-						severity={
-							(displayMessage?.type as AlertColor) || "info"
-						}
-						sx={{ mt: 2 }}
-					>
-						{displayMessage.text}
-					</Alert>
-				)}
-						{page === "email" && Email()}
-						{page === "fido" && Fido()}
+						{displayMessage && (
+							<Alert
+								severity={
+									(displayMessage?.type as AlertColor) ||
+									"info"
+								}
+								sx={{ mt: 2 }}
+							>
+								{displayMessage.text}
+							</Alert>
+						)}
+						{Register()}
 					</Stack>
 				</Paper>
-
-				<EmailDialog
-					type="register"
-					email={username}
-					session={sessionId}
-					open={openEmailDialog}
-					handleClose={closeEmailDialog}
-				></EmailDialog>
 			</Container>
 		</ThemeProvider>
 	);
 
-	function Email() {
+	function Register() {
 		return (
 			<>
 				<Typography variant="body1" marginTop={2} maxWidth="400px">
-					Create a new account to login to {appOrigin}.
+					Create a passkey to securely login to all apps powered by
+					LoginID Wallet using your device biometric.
 				</Typography>
 				{errorMessage.length > 0 && (
 					<Alert severity="error">{errorMessage}</Alert>
@@ -248,61 +207,17 @@ export default function FederatedRegister() {
 					fullWidth
 					label="Email"
 					name="email"
+					disabled
 					value={username}
 					onChange={(e) => setUsername(e.target.value)}
 				/>
-				<Typography variant="body1">
-					By clicking 'Create Account', I agree to the{" "}
-					<Link onClick={() => setTermOpen(true)}>
-						terms of service
-					</Link>
-					<TermDialog
-						open={termOpen}
-						handleClose={() => setTermOpen(false)}
-					/>
-				</Typography>
-				<Button
-					variant="contained"
-					size="small"
-					sx={{ mt: 3, mb: 0 }}
-					onClick={emailRegister}
-				>
-					Create Account
-				</Button>
-				<Button
-					variant="text"
-					size="small"
-					onClick={handleCancel}
-					sx={{ mt: 0, mb: 2 }}
-				>
-					Cancel
-				</Button>
-			</>
-		);
-	}
-
-	function Fido() {
-		return (
-			<>
-				{errorMessage.length > 0 && (
-					<Alert severity="error">{errorMessage}</Alert>
-				)}
-				<Typography
-					sx={{ m: 1 }}
-					variant="body2"
-					color="text.secondary"
-				>
-					You have successfully confirmed your email. Press "Add my
-					passkey" to complete this registration:
-				</Typography>
-				<Chip icon={<EmailIcon />} label={username}></Chip>
 				<Button
 					variant="contained"
 					size="small"
 					sx={{ mt: 3, mb: 0 }}
 					onClick={registerFido}
 				>
-					Add My Passkey
+					Create Passkey
 				</Button>
 				<Button
 					variant="text"

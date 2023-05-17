@@ -51,6 +51,7 @@ export class MessagingService {
                         let message : Message = JSON.parse(event.data)
                         if(message.type === MessageType.ping.toString()) {
                             if (event.source !=null && event.source as Window ){
+                                this.target = event.source as Window;
                                 (event.source as Window).postMessage(JSON.stringify(message),"*" );
                             } else {
                                 this.target.postMessage(JSON.stringify(message), "*");
