@@ -2,9 +2,13 @@ package utils
 
 import (
 	"crypto/rand"
+	"encoding/base64"
 	"encoding/hex"
+	"fmt"
 	"regexp"
 	"time"
+
+	qrcode "github.com/skip2/go-qrcode"
 )
 
 var email_regex = regexp.MustCompile(`^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$`)
@@ -51,4 +55,13 @@ func IsExpired(t int64, duration time.Duration) bool {
 	current := time.Now()
 	mt := time.Unix(t, 0).Add(duration)
 	return current.After(mt)
+}
+
+func GenerateQRCode(url string) (string, error) {
+	var png []byte
+	png, err := qrcode.Encode(url, qrcode.Medium, 256)
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("data:image/png;base64,%s", base64.RawStdEncoding.EncodeToString(png)), nil
 }

@@ -29,6 +29,15 @@ type FidoResponse struct {
 	Success bool   `json:"success"`
 }
 
+type FidoAuthResponse struct {
+	Jwt  string   `json:"jwt"`
+	User FidoUser `json:"user"`
+}
+type FidoUser struct {
+	Username string `json:"username"`
+	ID       string `json:"id"`
+}
+
 func NewFido2Service(clientID string, baseURL string, apiClientID string, apiPem string) (*Fido2Service, error) {
 	var netTransport = &http.Transport{
 		Dial: (&net.Dialer{
@@ -96,7 +105,7 @@ func (f *Fido2Service) RegisterInit(username string, register_session string) ([
 	return respBody, nil
 }
 
-func (f *Fido2Service) RegisterComplete(username string, credential_uuid string, credential_id string, challenge string, attestation_data string, client_data string) ([]byte, *services.ServiceError) {
+func (f *Fido2Service) RegisterComplete(username string, credential_uuid string, credential_id string, challenge string, attestation_data string, client_data string) (*FidoAuthResponse, *services.ServiceError) {
 
 	attestation_payload := map[string]string{
 		"credential_id":    credential_id,
@@ -133,7 +142,12 @@ func (f *Fido2Service) RegisterComplete(username string, credential_uuid string,
 		msg := decodeError(respBody)
 		return nil, &services.ServiceError{Message: msg.Message}
 	}
-	return respBody, nil
+	var fresp FidoAuthResponse
+	err = json.Unmarshal(respBody, &fresp)
+	if err != nil {
+		return nil, &services.ServiceError{Message: "transaction response error"}
+	}
+	return &fresp, nil
 }
 
 func (f *Fido2Service) AuthenticateInit(username string) ([]byte, *services.ServiceError) {
@@ -171,7 +185,7 @@ func (f *Fido2Service) AuthenticateInit(username string) ([]byte, *services.Serv
 	return respBody, nil
 }
 
-func (f *Fido2Service) AuthenticateComplete(username string, credential_id string, challenge string, authenticator_data string, client_data string, signature string) ([]byte, *services.ServiceError) {
+func (f *Fido2Service) AuthenticateComplete(username string, credential_id string, challenge string, authenticator_data string, client_data string, signature string) (*FidoAuthResponse, *services.ServiceError) {
 
 	assertion_payload := map[string]string{
 		"credential_id":      credential_id,
@@ -209,7 +223,13 @@ func (f *Fido2Service) AuthenticateComplete(username string, credential_id strin
 		msg := decodeError(respBody)
 		return nil, &services.ServiceError{Message: msg.Message}
 	}
-	return respBody, nil
+
+	var fresp FidoAuthResponse
+	err = json.Unmarshal(respBody, &fresp)
+	if err != nil {
+		return nil, &services.ServiceError{Message: "transaction response error"}
+	}
+	return &fresp, nil
 }
 
 func (f *Fido2Service) TransactionInit(username string, tx_payload string, tx_nonce string) ([]byte, *services.ServiceError) {

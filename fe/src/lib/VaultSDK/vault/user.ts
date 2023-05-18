@@ -58,6 +58,11 @@ export interface ConsentListResult {
     consents: Consent[];
 }
 
+export interface CodeLinkResponse {
+    link : string;
+    qr_code: string;
+}
+
 export class VaultUser extends Base{
 
     async getProfile(token: string) : Promise<Profile>  {
@@ -70,6 +75,17 @@ export class VaultUser extends Base{
         );
     }
 
+    async getCodeLink(token: string) : Promise<CodeLinkResponse>  {
+        const header = { "x-session-token": token };
+        return await utils.http.get(
+            this._baseURL,
+            "/api/protected/user/getCodeLink",
+            undefined,
+            header
+        );
+    }
+
+    
     async getCredentials(token: string) : Promise<Credentials> {
         const header = { "x-session-token": token };
         return await utils.http.get(

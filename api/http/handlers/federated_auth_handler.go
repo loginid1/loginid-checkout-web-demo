@@ -223,12 +223,6 @@ func (h *FederatedAuthHandler) FederatedRegisterCompleteHandler(w http.ResponseW
 		http_common.SendErrorResponse(w, *err)
 		return
 	}
-	var fidoResp fido2.FidoResponse
-	oerr := json.Unmarshal(fidoData, &fidoResp)
-	if oerr != nil {
-		http_common.SendErrorResponse(w, services.NewError("fido token not found"))
-		return
-	}
 
 	// save user to database
 	userid, err := h.UserService.CreateUserAccount(request.Username, request.DeviceName, public_key, key_alg, true)
@@ -274,8 +268,14 @@ func (h *FederatedAuthHandler) FederatedRegisterCompleteHandler(w http.ResponseW
 		return
 	}
 
+	db_jwt, err := h.KeystoreService.GenerateDashboardJWT(fidoData.User.Username, userid, fidoData.User.ID)
+	if err != nil {
+		http_common.SendErrorResponse(w, *err)
+		return
+	}
+
 	resp := AuthCompleteResponse{
-		Jwt: fidoResp.Jwt,
+		Jwt: db_jwt,
 	}
 
 	http_common.SendSuccessResponse(w, resp)
@@ -327,13 +327,6 @@ func (h *FederatedAuthHandler) FederatedAuthCompleteHandler(w http.ResponseWrite
 		return
 	}
 
-	var fidoResp fido2.FidoResponse
-	oerr := json.Unmarshal(fidoData, &fidoResp)
-	if oerr != nil {
-		http_common.SendErrorResponse(w, services.NewError("fido token not found"))
-		return
-	}
-
 	user, err := h.UserService.GetUser(request.Username)
 	if err != nil {
 		http_common.SendErrorResponse(w, *err)
@@ -367,10 +360,16 @@ func (h *FederatedAuthHandler) FederatedAuthCompleteHandler(w http.ResponseWrite
 		http_common.SendErrorResponse(w, *err)
 		return
 	}
-	resp := AuthCompleteResponse{
-		Jwt: fidoResp.Jwt,
+
+	db_jwt, err := h.KeystoreService.GenerateDashboardJWT(fidoData.User.Username, user.ID, fidoData.User.ID)
+	if err != nil {
+		http_common.SendErrorResponse(w, *err)
+		return
 	}
 
+	resp := AuthCompleteResponse{
+		Jwt: db_jwt,
+	}
 	http_common.SendSuccessResponse(w, resp)
 }
 

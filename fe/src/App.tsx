@@ -63,12 +63,14 @@ function App() {
         <Route path="/sdk/register" element={<FederatedRegister />} />
         <Route path="/sdk/email" element={<EmailValidation />} />
         <Route path="/add_device" element={<AddDevice />} />
+        <Route path="/add" element={<AddDevice />} />
         <Route path="/sdk/enable" element={<WalletEnable />} />
         <Route path="/sdk/enable/:data" element={<WalletEnable />} />
         <Route path="/sdk/transaction" element={<WalletTxnConfirmation />} />
         <Route path="/" element={<ProtectedRoute />} >
           <Route path="/help" element={<Help />} />
-          <Route path="/home" element={<AlgorandAccounts />} />
+          <Route path="/home" element={<Credentials />} />
+          <Route path="/home/algo" element={<AlgorandAccounts />} />
           <Route path="/add_credential" element={<AddCredential />} />
           <Route path="/complete_credential" element={<CompleteCredential />} />
 

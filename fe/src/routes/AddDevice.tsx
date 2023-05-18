@@ -33,7 +33,13 @@ export default function AddDevice() {
   let redirect_url = searchParams.get("redirect_url");
   useEffect(()=>{
     let aname = searchParams.get("username");
-    setUsername(aname || "");
+    if (aname != null) {
+      setUsername(aname);
+    }
+    let u = searchParams.get("u");
+    if (u!= null){
+      setUsername(u);
+    }
 
   },[]);
 

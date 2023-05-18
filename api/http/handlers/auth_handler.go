@@ -22,13 +22,15 @@ import (
 	http_common "gitlab.com/loginid/software/services/loginid-vault/http/common"
 	"gitlab.com/loginid/software/services/loginid-vault/services"
 	"gitlab.com/loginid/software/services/loginid-vault/services/fido2"
+	"gitlab.com/loginid/software/services/loginid-vault/services/keystore"
 	"gitlab.com/loginid/software/services/loginid-vault/services/user"
 	"gitlab.com/loginid/software/services/loginid-vault/utils"
 )
 
 type AuthHandler struct {
-	UserService  *user.UserService
-	Fido2Service *fido2.Fido2Service
+	UserService     *user.UserService
+	Fido2Service    *fido2.Fido2Service
+	KeystoreService *keystore.KeystoreService
 }
 
 type RegisterInitRequest struct {
@@ -106,20 +108,29 @@ func (u *AuthHandler) RegisterCompleteHandler(w http.ResponseWriter, r *http.Req
 
 	// send to fido2 server
 	// proxy register request to fido2 service
-	response, err := u.Fido2Service.RegisterComplete(request.Username, request.CredentialUuid, request.CredentialID, request.Challenge, request.AttestationData, request.ClientData)
+	fidoData, err := u.Fido2Service.RegisterComplete(request.Username, request.CredentialUuid, request.CredentialID, request.Challenge, request.AttestationData, request.ClientData)
 	if err != nil {
 		http_common.SendErrorResponse(w, *err)
 		return
 	}
 
 	// save user to database
-	_, err = u.UserService.CreateUserAccount(request.Username, request.DeviceName, public_key, key_alg, false)
+	userid, err := u.UserService.CreateUserAccount(request.Username, request.DeviceName, public_key, key_alg, false)
 	if err != nil {
 		http_common.SendErrorResponse(w, *err)
 		return
 	}
 
-	http_common.SendSuccessResponseRaw(w, response)
+	db_jwt, err := u.KeystoreService.GenerateDashboardJWT(fidoData.User.Username, userid, fidoData.User.ID)
+	if err != nil {
+		http_common.SendErrorResponse(w, *err)
+		return
+	}
+
+	resp := AuthCompleteResponse{
+		Jwt: db_jwt,
+	}
+	http_common.SendSuccessResponse(w, resp)
 }
 
 type AuthenticateInitRequest struct {
@@ -160,14 +171,28 @@ func (u *AuthHandler) AuthenticateCompleteHandler(w http.ResponseWriter, r *http
 		return
 	}
 
-	response, err := u.Fido2Service.AuthenticateComplete(request.Username, request.CredentialID, request.Challenge, request.AuthenticatorData, request.ClientData, request.Signature)
+	fidoData, err := u.Fido2Service.AuthenticateComplete(request.Username, request.CredentialID, request.Challenge, request.AuthenticatorData, request.ClientData, request.Signature)
 	if err != nil {
 		http_common.SendErrorResponse(w, *err)
 		return
 	}
 
-	debugRequest(request)
-	http_common.SendSuccessResponseRaw(w, response)
+	user, err := u.UserService.GetUser(request.Username)
+	if err != nil {
+		http_common.SendErrorResponse(w, *err)
+		return
+	}
+
+	db_jwt, err := u.KeystoreService.GenerateDashboardJWT(fidoData.User.Username, user.ID, fidoData.User.ID)
+	if err != nil {
+		http_common.SendErrorResponse(w, *err)
+		return
+	}
+
+	resp := AuthCompleteResponse{
+		Jwt: db_jwt,
+	}
+	http_common.SendSuccessResponse(w, resp)
 }
 
 /// ADD CREDENTIAL

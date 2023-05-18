@@ -14,16 +14,21 @@
     </h2>
     </p>
     <p>
-        You have signup for a passwordless account from {{.Origin}}.
+        You have signed up for a passwordless account from {{.Origin}}.
     </p>
     <p>
-        Please verify that the request matched the following session before confirming your email below.
+        Please verify that the following registration code <b>{{.Session}}</b> matches the one from your signup screen
+        before confirming your email below.
     </p>
 
     <p>
-        <h3 style="font-size:25px;color:#1E2898;">{{.Session}}</h3>
+    <h3 style="font-size:25px;color:#1E2898;">{{.Session}}</h3>
     </p>
-    <p>If you didn’t request this, you can ignore this email.</p>
+    <p>
+        If the registration codes do not match, please ignore this email.
+    </p>
+    <p>If the registration codes match, please confirm with the ‘Confirm Email’ button below.
+    </p>
     <p>Thanks.</p>
     <a href="{{.Url}}" class="btn"
         style="border-radius: 2px;box-shadow: 0 1px 4px rgba(0, 0, 0, .6);background-color: #1E2898; border-width: 0; margin: 4px 2px; padding:12px 24px; color: #FFFFFF; text-align: center; text-decoration: none; cursor: pointer; display: inline-block;">

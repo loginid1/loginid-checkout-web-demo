@@ -1,18 +1,20 @@
 import {
 	Button,
+	Chip,
 	Dialog,
 	DialogContentText,
+	IconButton,
 	Link,
 	Paper,
 	Stack,
 	TextField,
 	Typography,
 } from "@mui/material";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthService } from "../../../services/auth";
 import AddImg from "../../../assets/AddCredential.png";
-import { ArrowBack, InfoOutlined } from "@mui/icons-material";
+import { ArrowBack, ContentCopy, InfoOutlined } from "@mui/icons-material";
 import vaultSDK from "../../../lib/VaultSDK";
 import { VaultBase } from "../../../components/VaultBase";
 import { HtmlTooltip } from "../../../components/HtmlTooltip";
@@ -25,6 +27,36 @@ const AddCredential: React.FC = () => {
 	const [isCodeGenerated, setIsCodeGenerated] = useState(false);
 	const [errorMessage, setErrorMessage] = useState("");
 	const [openCredential, setOpenCredential] = useState(false);
+
+
+	const [link, setLink] = useState<string>("");
+	const [qrcode, setQrcode] = useState<string>("");
+
+	useEffect(()=>{
+		getCodeLink();
+	},[]);
+
+	async function getCodeLink() {
+
+		const token = AuthService.getToken();
+		try {
+
+		if (token) {
+			const response = await vaultSDK.getCodeLink(token);
+			setQrcode(response.qr_code);
+			setLink(response.link)
+
+		} else {
+			// display error here
+			setIsCodeGenerated(true);
+
+		}
+	} catch (e) {
+		// TODO: display error message
+		setIsCodeGenerated(true);
+	}
+
+	}
 
 	async function generateCredentialCode(): Promise<string | null> {
 		const token = AuthService.getToken();
@@ -46,7 +78,7 @@ const AddCredential: React.FC = () => {
 	const handleCloseCredential = () => {
 		setOpenCredential(false);
 		setIsCodeGenerated(true);
-		navigate("/complete_credential");
+		navigate("/credential");
 	};
 
 	const handleRestartCredential = () => {
@@ -56,7 +88,11 @@ const AddCredential: React.FC = () => {
 	};
 
 	const handleCompleteCredential = () => {
-		navigate("/complete_credential");
+		navigate("/credential");
+	};
+	
+	const copyLink = () => {
+		navigator.clipboard.writeText(link);
 	};
 
 	return (
@@ -71,14 +107,14 @@ const AddCredential: React.FC = () => {
 			>
 				{!isCodeGenerated ? (
 					<Stack
-						spacing={{ md: 4, xs: 2 }}
+						spacing={{ md: 2, xs: 1 }}
 						direction="column"
 						maxWidth="400px"
 						alignItems={"center"}
 					>
 						<Stack direction="row" spacing={1}>
 							<Typography variant="h2" color="secondary">
-								Add New Credential
+								Add New Passkey
 							</Typography>
 							<HtmlTooltip
 								title={
@@ -98,14 +134,26 @@ const AddCredential: React.FC = () => {
 								<InfoOutlined color="secondary"></InfoOutlined>
 							</HtmlTooltip>
 						</Stack>
-						<Typography variant="body1">
-							Credentials are a combination of browsers and
+						<Typography variant="body2" color="text.secondary">
+							Passkeys are a combination of browsers and
 							devices used to give you access to your account. A
 							Registration Code is a 6-digit code that will allow
 							you to register a new credential with this account.
 						</Typography>
 
-						<img src={AddImg} alt="Add Credential" />
+						<Typography variant="body1" color="primary" >Go to following link on your new device: </Typography>
+						<Stack direction="row">
+						<Chip label={link}></Chip>
+									<IconButton
+										size="small"
+										onClick={copyLink}
+									>
+										<ContentCopy />
+									</IconButton>
+						</Stack>
+						<Typography variant="body1" color="primary">or use following QR code: </Typography>
+						
+						<img src={qrcode} alt="Add Credential" />
 
 						<Typography variant="body1">
 							When you have your other device ready, select Get
