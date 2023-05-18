@@ -399,7 +399,7 @@ func (f *Fido2Service) AddCredentialInit(username string, code string) ([]byte, 
 	return respBody, nil
 }
 
-func (f *Fido2Service) AddCredentialComplete(username string, credential_uuid string, credential_id string, challenge string, attestation_data string, client_data string) ([]byte, *services.ServiceError) {
+func (f *Fido2Service) AddCredentialComplete(username string, credential_uuid string, credential_id string, challenge string, attestation_data string, client_data string) (*FidoAuthResponse, *services.ServiceError) {
 
 	attestation_payload := map[string]string{
 		"credential_id":    credential_id,
@@ -436,7 +436,13 @@ func (f *Fido2Service) AddCredentialComplete(username string, credential_uuid st
 		msg := decodeError(respBody)
 		return nil, &services.ServiceError{Message: msg.Message}
 	}
-	return respBody, nil
+
+	var fresp FidoAuthResponse
+	err = json.Unmarshal(respBody, &fresp)
+	if err != nil {
+		return nil, &services.ServiceError{Message: "response error"}
+	}
+	return &fresp, nil
 }
 
 // post http util function
