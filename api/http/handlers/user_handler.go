@@ -5,13 +5,16 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
+	"gitlab.com/loginid/software/libraries/goutil.git"
 	http_common "gitlab.com/loginid/software/services/loginid-vault/http/common"
 	"gitlab.com/loginid/software/services/loginid-vault/services"
 	"gitlab.com/loginid/software/services/loginid-vault/services/app"
 	"gitlab.com/loginid/software/services/loginid-vault/services/fido2"
 	"gitlab.com/loginid/software/services/loginid-vault/services/user"
+	"gitlab.com/loginid/software/services/loginid-vault/utils"
 )
 
 type UserHandler struct {
@@ -145,12 +148,32 @@ func (h *UserHandler) GetRecoveryListHandler(w http.ResponseWriter, r *http.Requ
 func (h *UserHandler) GenerateCredentialCodeHandler(w http.ResponseWriter, r *http.Request) {
 	session := r.Context().Value("session").(services.UserSession)
 
-	response, err := h.Fido2Service.GenerateCode(session.UserID)
+	response, err := h.Fido2Service.GenerateCode(session.FidoID)
 	if err != nil {
 		http_common.SendErrorResponse(w, *err)
 		return
 	}
+
 	http_common.SendSuccessResponseRaw(w, response)
+}
+
+type GetCodeLinkResponse struct {
+	Link   string `json:"link"`
+	QRCode string `json:"qr_code"`
+}
+
+func (h *UserHandler) GetCodeLink(w http.ResponseWriter, r *http.Request) {
+	session := r.Context().Value("session").(services.UserSession)
+
+	wallet_url := goutil.GetEnv("WALLET_BASEURL", "")
+	link := fmt.Sprintf("%s/add?u=%s", wallet_url, session.Username)
+
+	qrcode, err := utils.GenerateQRCode(link)
+	if err != nil {
+		http_common.SendErrorResponse(w, services.NewError("fail to generate qr code"))
+		return
+	}
+	http_common.SendSuccessResponse(w, GetCodeLinkResponse{Link: link, QRCode: qrcode})
 }
 
 // TODO: pagination

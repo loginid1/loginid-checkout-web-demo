@@ -105,7 +105,16 @@ const navigate = useNavigate();
     try {
 
 	    let result = await wallet.signup();
-      console.log(result);
+      navigate("/dashboard");
+    } catch (e) {
+      console.log((e as Error).message);
+    }
+  }
+
+  async function signupPopup(){
+    try {
+
+	    let result = await wallet.signupPopup();
       navigate("/dashboard");
     } catch (e) {
       console.log((e as Error).message);
@@ -234,6 +243,7 @@ const navigate = useNavigate();
                   <Button
                     fullWidth
                     variant={tier.buttonVariant as 'outlined' | 'contained'}
+                    onClick={signupPopup}
                   >
                     {tier.buttonText}
                   </Button>

@@ -16,18 +16,24 @@
     <p>
         You have login session from {{.Origin}}.
     </p>
+
     <p>
-        Please verify that the request matched the following session before confirming your sign in below.
+        Please verify that the following login code <b>{{.Session}}</b> matches the one from your login screen before
+        confirming your email below.
+    </p>
+
+    <p>
+    <h3 style="font-size:25px;color:#1E2898;">{{.Session}}</h3>
     </p>
     <p>
-        <h3 style="font-size:25px;color:#1E2898;">{{.Session}}</h3>
+        If the login codes do not match, please ignore this email.
     </p>
-    <p>If you didn’t request this, you can ignore this email.</p>
-    <p>Thanks.</p>
+    <p>If the login codes match, please confirm with the ‘Confirm Sign In’ button below.
+    </p>
 
     <a href="{{.Url}}" class="btn"
         style="border-radius: 2px;box-shadow: 0 1px 4px rgba(0, 0, 0, .6);background-color: #1E2898; border-width: 0; margin: 4px 2px; padding:12px 24px; color: #FFFFFF; text-align: center; text-decoration: none; cursor: pointer; display: inline-block;">
-        <span>Confirm Sign in</span>
+        <span>Confirm Sign In</span>
     </a>
 
 </body>

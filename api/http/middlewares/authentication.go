@@ -2,30 +2,29 @@ package middlewares
 
 import (
 	"context"
-	"crypto/ecdsa"
 	"errors"
 	"fmt"
-	"io/ioutil"
-	"net"
 	"net/http"
-	"net/url"
 	"strings"
-	"time"
 
-	"github.com/allegro/bigcache"
 	"gitlab.com/loginid/software/libraries/goutil.git/logger"
 	http_common "gitlab.com/loginid/software/services/loginid-vault/http/common"
 	"gitlab.com/loginid/software/services/loginid-vault/services"
-	"gitlab.com/loginid/software/services/loginid-vault/utils"
+	"gitlab.com/loginid/software/services/loginid-vault/services/keystore"
 )
 
 type AuthService struct {
-	keyCache  *bigcache.BigCache
-	jwtUrl    string
-	clientID  string
-	jwtClient *http.Client
+	/*
+		keyCache  *bigcache.BigCache
+		jwtUrl    string
+		clientID  string
+		jwtClient *http.Client
+	*/
+
+	Keystore *keystore.KeystoreService
 }
 
+/*
 func NewAuthService(clientID string, jwtUrl string) (*AuthService, error) {
 	keyCache, err := bigcache.NewBigCache(bigcache.DefaultConfig(10 * time.Minute))
 	if err != nil {
@@ -43,6 +42,7 @@ func NewAuthService(clientID string, jwtUrl string) (*AuthService, error) {
 	}
 	return &AuthService{keyCache: keyCache, clientID: clientID, jwtUrl: jwtUrl, jwtClient: jwtClient}, nil
 }
+*/
 
 //TokenAuthenticationMiddleware - handle jwt validation
 func (auth *AuthService) Middleware(next http.Handler) http.Handler {
@@ -108,6 +108,17 @@ func (auth *AuthService) ValidateSessionToken(r *http.Request) (*services.UserSe
 	return nil, errors.New("No session token found")
 }
 
+func (auth *AuthService) validateToken(token string) (*services.UserSession, error) {
+	myClaims, serr := auth.Keystore.VerifyDashboardJWT(token)
+	if serr != nil {
+
+		return nil, errors.New("invalid token")
+	}
+	return &services.UserSession{Username: myClaims.Sub, UserID: myClaims.UID, FidoID: myClaims.FID}, nil
+}
+
+/*
+
 type LoginIDClaims struct {
 	Issuer   string `json:"iss,omitempty"`
 	Subject  string `json:"sub,omitempty"`
@@ -116,7 +127,6 @@ type LoginIDClaims struct {
 	IssuedAt int64  `json:"iat,omitempty"`
 	ID       string `json:"jti,omitempty"`
 }
-
 func (auth *AuthService) validateToken(token string) (*services.UserSession, error) {
 
 	keyID, err := utils.GetKIDFromToken(token)
@@ -196,3 +206,4 @@ func (auth *AuthService) getKeyFromURL(kid string) (string, error) {
 	}
 	return string(resp_body), nil
 }
+*/

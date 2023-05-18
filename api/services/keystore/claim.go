@@ -5,6 +5,9 @@ const (
 	KEmailClaimsLogin    = "login"
 )
 
+/**
+* use when sending email verification
+ */
 type EmailClaims struct {
 	Email    string `json:"email,omitempty"`
 	Type     string `json:"type"`
@@ -33,6 +36,9 @@ type AuthSessionClaims struct {
 	UpdatedAt int64  `json:"uat,omitempty"`
 }
 
+/**
+* return to federated apps after successful login
+ */
 type IDTokenClains struct {
 	Client string       `json:"client"`
 	Nonce  string       `json:"nonce,omitempty"`
@@ -49,4 +55,15 @@ type PassClaims struct {
 type IDTokenPhonePass struct {
 	PassClaims
 	Phone string `json:"phone"`
+}
+
+/**
+* token return for dashboard login
+ */
+type DashboardClaims struct {
+	Sub    string `json:"sub"`
+	FID    string `json:"fid"`
+	UID    string `json:"uid"`
+	Scopes string `json:"scopes"`
+	Iat    int64  `json:"iat"`
 }

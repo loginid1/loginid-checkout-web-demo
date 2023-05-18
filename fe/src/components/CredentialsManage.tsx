@@ -63,19 +63,18 @@ export const CredentialsManage: React.FC = () => {
 					<Stack spacing={2} direction="row" alignItems={"center"}>
 						<Stack direction="row" spacing={1}>
 							<Typography variant="h2" color="secondary">
-								My Credentials
+								My Passkeys
 							</Typography>
 							<HtmlTooltip
 								title={
 									<Stack>
 										<Typography variant="body2">
-											Credentials are associated with your
+											Passkeys are associated with your
 											devices and/or browsers. You can add
-											new credentials or recovery options
-											for your Account.
+											new passkeys for your Account.
 										</Typography>
 										<Link variant="body2" color="inherit">
-											Learn more about Credentials.
+											Learn more about Passkeys.
 										</Link>
 									</Stack>
 								}
@@ -109,7 +108,7 @@ export const CredentialsManage: React.FC = () => {
 						variant="contained"
 						onClick={() => navigate("/add_credential")}
 					>
-						+ Add New Credential
+						+ Add New Passkey
 					</Button>
 				</Grid>
 				<Grid
@@ -122,9 +121,10 @@ export const CredentialsManage: React.FC = () => {
 						// maxWidth: "400px",
 					}}
 				>
-					<Typography variant="body1">
-						Credentials are a combination of browsers and devices
-						used to give you access to your account.
+					<Typography variant="body2" color="text.secondary">
+						Passkeys are a replacement for passwords that provide
+						faster, easier, and more secure sign-ins to websites and
+						apps across a user’s devices
 					</Typography>
 				</Grid>
 			</Grid>
