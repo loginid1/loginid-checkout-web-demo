@@ -259,15 +259,17 @@ func (u *AuthHandler) AddCredentialCompleteHandler(w http.ResponseWriter, r *htt
 		return
 	}
 
-	pUser := user.PendingUser{}
-	pUser.DeviceName = request.DeviceName
-	pUser.Username = request.Username
-	pUser.PublicKey = public_key
-	pUser.KeyAlg = key_alg
+	/*
+		pUser := user.PendingUser{}
+		pUser.DeviceName = request.DeviceName
+		pUser.Username = request.Username
+		pUser.PublicKey = public_key
+		pUser.KeyAlg = key_alg
+	*/
 
 	// send to fido2 server
 	// proxy register request to fido2 service
-	response, err := u.Fido2Service.AddCredentialComplete(request.Username, request.CredentialUuid, request.CredentialID, request.Challenge, request.AttestationData, request.ClientData)
+	fidoData, err := u.Fido2Service.AddCredentialComplete(request.Username, request.CredentialUuid, request.CredentialID, request.Challenge, request.AttestationData, request.ClientData)
 	if err != nil {
 		http_common.SendErrorResponse(w, *err)
 		return
@@ -280,7 +282,23 @@ func (u *AuthHandler) AddCredentialCompleteHandler(w http.ResponseWriter, r *htt
 		return
 	}
 
-	http_common.SendSuccessResponseRaw(w, response)
+	user, err := u.UserService.GetUser(request.Username)
+	if err != nil {
+		http_common.SendErrorResponse(w, *err)
+		return
+	}
+
+	db_jwt, err := u.KeystoreService.GenerateDashboardJWT(fidoData.User.Username, user.ID, fidoData.User.ID)
+	if err != nil {
+		http_common.SendErrorResponse(w, *err)
+		return
+	}
+
+	resp := AuthCompleteResponse{
+		Jwt: db_jwt,
+	}
+	http_common.SendSuccessResponse(w, resp)
+
 }
 
 func debugRequest(request AuthenticateCompleteRequest) {
