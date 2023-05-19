@@ -25,6 +25,7 @@ const menuData: MenuData[] = [
 		title: "My Passkeys",
 		link: "/credential",
 		items: [],
+		removable: false,
 	},
 	{
 		id: "passes",
@@ -32,6 +33,7 @@ const menuData: MenuData[] = [
 		title: "Passes",
 		link: "/passes",
 		items: [],
+		removable: false,
 	},
 
 	{
@@ -39,24 +41,28 @@ const menuData: MenuData[] = [
 		icon: <AlgorandDefault />,
 		title: "Algorand",
 		link: "",
+		removable: true,
 		items: [
 			{
 				id: "algo_accounts",
 				title: "Manage Account",
 				link: "/algorand/accounts",
 				items: [],
+				removable: false,
 			},
 			{
 				id: "algo_dapps",
 				title: "Dapps",
 				link: "/algorand/dapps",
 				items: [],
+				removable: false,
 			},
 			{
 				id: "algo_recovery",
 				title: "Recovery",
 				link: "/algorand/recovery",
 				items: [],
+				removable: false,
 			},
 		],
 	},
@@ -67,6 +73,7 @@ const menuData: MenuData[] = [
 		title: "Developer Console",
 		link: "/developer/console",
 		items: [],
+				removable: true,
 	},
 ];
 
@@ -77,14 +84,36 @@ export const VaultBase: React.FC<VaultBaseInterface> = ({
 	const navigate = useNavigate();
 	const [mobileOpen, setMobileOpen] = useState(false);
 	const [profile, setProfile] = useState<Profile | null>(null);
+	const [customMenu, setCustomMenu] = useState<MenuData [] >(menuData);
 
 	const mobileMenuHandler = () => {
 		setMobileOpen(!mobileOpen);
 	};
 
 	useEffect(() => {
+		prepareMenu();
 		retrieveProfile();
 	}, []);
+
+	function prepareMenu()  {
+		let pref = AuthService.getPref();
+		let scopes : string[]= []
+		if( pref != null && pref.scopes != null) {
+			scopes = pref.scopes.split(",");
+		}
+		var item: MenuData;
+		var customMenu : MenuData[] = [];
+		for (item of menuData){
+			if (item.removable) {
+				if (scopes.includes(item.id)) {
+					customMenu.push(item);
+				}
+			} else {
+				customMenu.push(item);
+			}
+		}
+		setCustomMenu(customMenu);
+	}
 
 	async function retrieveProfile() {
 		const token = AuthService.getToken();
@@ -116,7 +145,7 @@ export const VaultBase: React.FC<VaultBaseInterface> = ({
 					focus={focus}
 					mobileOpen={mobileOpen}
 					mobileMenuHandler={mobileMenuHandler}
-					items={menuData}
+					items={customMenu}
 				/>
 				<Stack
 					spacing={2}
