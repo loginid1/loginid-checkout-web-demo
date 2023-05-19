@@ -29,6 +29,7 @@ export interface MenuData {
 	title: string;
 	link: string;
 	items: MenuData[];
+	removable: boolean;
 }
 
 export interface NestedMenuProps {

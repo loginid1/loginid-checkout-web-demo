@@ -5,6 +5,7 @@ export interface UserSession {
 
 export interface UserPreference {
     username: string;
+    scopes?: string;
 }
 export class AuthService {
 
