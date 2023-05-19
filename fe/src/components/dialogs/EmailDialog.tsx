@@ -42,13 +42,13 @@ export function EmailDialog(props: EmailProps) {
 			<>
 				<DialogContent>
 					<Typography variant="h6" color="primary" sx={{ mb: 2 }}>
-						Email Registration
+						Check email to register	
 					</Typography>
 					<Typography variant="body2">
 						<p>
 							Please follow the instruction sent to{" "}
-							<b>{props.email}</b> and use the session code below
-							to proceed.
+							<b>{props.email}</b> and use the code below for
+							verification.
 						</p>
 					</Typography>
 					<Typography
@@ -72,11 +72,14 @@ export function EmailDialog(props: EmailProps) {
 		return (
 			<>
 				<DialogContent>
+					<Typography variant="h6" color="primary" sx={{ mb: 2 }}>
+						Check email to login
+					</Typography>
 					<Typography variant="body2">
 						<p>
 							Please follow the instruction sent to{" "}
-							<b>{props.email}</b> and use the session code below
-							to proceed.
+							<b>{props.email}</b> and use the code below for
+							verification.
 						</p>
 					</Typography>
 					<Typography
