@@ -198,7 +198,7 @@ export function LoginPage(props: {
 			</Button>
 
 			<Typography
-				variant="body2"
+				variant="caption"
 				color="text.secondary"
 				sx={{ mt: 1, mb: 2 }}
 			>

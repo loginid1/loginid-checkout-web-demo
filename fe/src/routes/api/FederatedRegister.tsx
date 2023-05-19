@@ -196,9 +196,16 @@ export default function FederatedRegister() {
 	function Register() {
 		return (
 			<>
-				<Typography variant="body1" marginTop={2} maxWidth="400px">
+				<Typography variant="body2" marginTop={2} maxWidth="400px" align="left">
+					<p>
+
 					Create a passkey to securely login to all apps powered by
 					LoginID Wallet using your device biometric.
+					</p>
+					Your biometric information never leaves the device.
+					<p>
+
+					</p>
 				</Typography>
 				{errorMessage.length > 0 && (
 					<Alert severity="error">{errorMessage}</Alert>
