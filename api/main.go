@@ -17,6 +17,7 @@ import (
 	"gitlab.com/loginid/software/services/loginid-vault/services/algo"
 	"gitlab.com/loginid/software/services/loginid-vault/services/app"
 	"gitlab.com/loginid/software/services/loginid-vault/services/fido2"
+	"gitlab.com/loginid/software/services/loginid-vault/services/iproov"
 	"gitlab.com/loginid/software/services/loginid-vault/services/keystore"
 	notification "gitlab.com/loginid/software/services/loginid-vault/services/notification/providers"
 	"gitlab.com/loginid/software/services/loginid-vault/services/pass"
@@ -93,6 +94,12 @@ func main() {
 
 	notificationService := notification.NewTwillioProvider()
 	passService := pass.NewPassService(db.GetConnection(), db.GetCacheClient(), notificationService)
+
+	iproveService, err := iproov.NewIProovService(db.GetConnection())
+	if err != nil {
+		logger.Global.Fatal(err.Error())
+		os.Exit(0)
+	}
 
 	// init http handlers & server
 	r := mux.NewRouter()
@@ -182,13 +189,19 @@ func main() {
 	wallet.HandleFunc("/txComplete", walletHandler.TxCompleteHandler)
 
 	// passes handlers
-	passesHandler := handlers.PassesHandler{PassService: passService}
+	passesHandler := handlers.PassesHandler{PassService: passService, IProovService: iproveService, UserService: userService}
 	passes := protected.PathPrefix("/passes").Subrouter()
 	passes.HandleFunc("", passesHandler.List).Methods("GET")
 	passes.HandleFunc("/{id}", passesHandler.Delete).Methods("DELETE")
 	passes.HandleFunc("/phone/init", passesHandler.PhoneInit).Methods("POST")
 	passes.HandleFunc("/phone/complete", passesHandler.PhoneComplete).Methods("POST")
 	passes.HandleFunc("/drivers-license", passesHandler.DriversLicense).Methods("POST")
+
+	// passes handlers
+	iproovHandler := handlers.IProovHandler{IProovService: iproveService, UserService: userService}
+	iproovRouter := protected.PathPrefix("/iproov").Subrouter()
+	iproovRouter.HandleFunc("/enrolment/token", iproovHandler.EnrolmentToken).Methods("POST")
+	iproovRouter.HandleFunc("/verification/token/{credential_id}", iproovHandler.VerificationToken).Methods("GET")
 
 	// dispenser handler
 	dispenserHandler := handlers.DispenserHandler{AlgoService: algoService}
@@ -197,8 +210,8 @@ func main() {
 	dispenser.HandleFunc("/sign", dispenserHandler.DispenserSignHandler)
 	dispenser.HandleFunc("/post", dispenserHandler.DispenserPostHandler)
 
-	cor_origins := goutil.GetEnv("CORS_ORIGINS", "http://localhost:3000,http://localhost:3010")
-	cor_array := strings.Split(cor_origins, ",")
+	cors_origins := goutil.GetEnv("CORS_ORIGINS", "http://localhost:3000,http://localhost:3010")
+	cor_array := strings.Split(cors_origins, ",")
 	//TODO: change CORS handling to middleware
 	c := cors.New(cors.Options{
 		AllowedOrigins:   cor_array,

@@ -1,6 +1,8 @@
 import { NavigateFunction } from "react-router-dom";
+import { Typography } from "@mui/material";
 import PhonePass from "./PhonePass";
 import DriversLicensePass from "./DriversLicensePass";
+import { ReactComponent as ProfileDefault } from "../../../assets/sidemenu/DIDs/Default.svg";
 
 interface PassController {
     label: string;
@@ -37,7 +39,14 @@ const NewPassController = (props: NewPassControllerProps) => {
     const pass = passesMap[props.passType];
     return (
         <>
-            <div></div>
+            <ProfileDefault width={50} height={50} />
+            <Typography
+                variant="h2"
+                color="secondary"
+                sx={{ padding: 2 }}
+            >
+                Create a new Pass
+            </Typography>
             { pass.controller(props) }
         </>
     )
