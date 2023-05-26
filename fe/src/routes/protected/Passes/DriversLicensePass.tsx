@@ -310,7 +310,8 @@ const FacialScanning = (props: IFacialScanningProps): JSX.Element => {
         const token = AuthService.getToken();
         if (token && props.pass) {
             try {
-                await vaultSDK.createDriversLicensePass(token, props.name, props.credentialId, props.iProovToken, props.pass);
+                const { image, ...pass } = props.pass;
+                await vaultSDK.createDriversLicensePass(token, props.name, props.credentialId, props.iProovToken, pass);
                 props.navigate('/passes');
             } catch (err) {
                 console.error(err);
