@@ -16,11 +16,11 @@ import {
 	ListItemText,
 } from "@mui/material";
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Moment from "moment";
 import vaultSDK from "../../../lib/VaultSDK";
 import { EmailPass, PhonePass, DriversLicensePass, Pass } from "../../../lib/VaultSDK/vault/pass";
 import { AuthService } from "../../../services/auth";
-import { NavigateFunction, useNavigate } from "react-router-dom";
 import { VaultBase } from "../../../components/VaultBase";
 import NewPass from "./new";
 import moment from "moment";

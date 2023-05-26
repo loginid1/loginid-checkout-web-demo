@@ -168,7 +168,7 @@ type DriversLicensePass struct {
 	DateOfExpiry     *time.Time `json:"date_of_expiry,omitempty"`
 }
 
-func (s *PassService) AddDriversLicensePass(ctx context.Context, username, name string, data DriversLicensePass) *services.ServiceError {
+func (s *PassService) AddDriversLicensePass(ctx context.Context, userId, credentialId, name string, data DriversLicensePass) *services.ServiceError {
 	dataBytes, err := json.Marshal(&data)
 	if err != nil {
 		return services.CreateError("failed to create a new pass")
@@ -200,14 +200,9 @@ func (s *PassService) AddDriversLicensePass(ctx context.Context, username, name 
 		attributes = append(attributes, "date_of_expiry")
 	}
 
-	usr, svcErr := s.UserService.GetUser(username)
-	if svcErr != nil {
-		return svcErr
-	}
-
 	pass := UserPass{
-		ID:         uuid.NewString(),
-		UserID:     usr.ID,
+		ID:         credentialId,
+		UserID:     userId,
 		Name:       name,
 		Attributes: strings.Join(attributes, ","),
 		SchemaType: DriversLicensePassSchemaType,

@@ -25,6 +25,23 @@ export const post = async (server: string, endpoint: string, payload: object, he
     throw new SDKError(code, message, []);
 };
 
+export const postFormData = async (server: string, endpoint: string, payload: FormData, headers?: any) => {
+    headers = Object.assign(headers);
+    const payloadData = {
+        method: "post",
+        headers: headers,
+        body: payload,
+    };
+
+    const response = await fetch(server + endpoint, payloadData);
+    const responseJSON = await response.json();
+    if (response.ok) {
+        return responseJSON;
+    }
+    const { code, message } = responseJSON;
+    //throw new SDKError(code, getErrorMessageByCode(code), []);
+    throw new SDKError(code, message, []);
+};
 
 /**
  *
