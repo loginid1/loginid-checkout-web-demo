@@ -48,6 +48,7 @@ const IProovWeb = (props: React.PropsWithChildren<IProovWebProps>) => {
         "base_url": props.baseURL,
         "show_countdown": "true",
         "enable_camera_selector": "true",
+        "logo": "",
         ref: ref,
     }, props.children);
 
@@ -90,6 +91,9 @@ const IProovWeb = (props: React.PropsWithChildren<IProovWebProps>) => {
                 { el }
             </Box>
             <Stack mb={5} sx={{ display: failed ? 'flex' : 'none', alignContent: 'center', justifyContent: 'center' }}>
+                <Typography slot="passed" mb={2} textAlign="center" variant="body2">
+                    Success
+                </Typography>
                 <Typography slot="ready" mb={2} textAlign="center" variant="body2">
                     We were not able to match your face with the picture on your ID.
                 </Typography>
