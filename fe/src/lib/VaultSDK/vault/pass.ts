@@ -93,4 +93,13 @@ export class VaultPass extends Base{
             header
         );
     }
+
+    async iProveClaimVerificationToken(token: string, credential_id: string): Promise<any> {
+        const header = { "x-session-token": token };
+        return await utils.http.get(
+            this._baseURL,
+            `/api/protected/iproov/verification/token/${credential_id}`,
+            header
+        );
+    }
 }
