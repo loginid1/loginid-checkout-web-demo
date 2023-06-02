@@ -32,6 +32,7 @@ export default function EmailValidation() {
 
 	const [errorMessage, setErrorMessage] = useState("");
 	const [termOpen, setTermOpen] = useState<boolean>(false);
+	const [type, setType] = useState<string>("register");
 
 	useEffect(() => {
 		let token = searchParams.get("token");
@@ -43,6 +44,7 @@ export default function EmailValidation() {
 	async function validateEmail(token: string) {
 		try {
 			const response = await vaultSDK.federated_validate_email(token);
+			setType(response.type);
 		} catch (error) {
 			setErrorMessage((error as Error).message);
 		}
@@ -76,7 +78,7 @@ export default function EmailValidation() {
 							display: "flex",
 							flexDirection: "column",
 							justifyContent: "center",
-							alignItems: "center",
+							alignItems: "left",
 						}}
 					>
 						<VaultLogo />
@@ -84,13 +86,31 @@ export default function EmailValidation() {
 							variant="body1"
 							marginTop={2}
 							maxWidth="400px"
+							align="left"
 						>
-							Thank you for confirming your email.
+							{type === "register" &&
+							<p>
+							Thank you for confirming your email. Please go back
+							to the site where you registered and complete the
+							Passkey registration within 5 minutes.
+							</p>
+							}
+							{type === "login" &&
+							<p>
+							`Thank you for confirming your email. Please go back
+							to the site where you login to complete.`
+							</p>
+							}
 						</Typography>
 						{errorMessage.length > 0 && (
 							<Alert severity="error">{errorMessage}</Alert>
 						)}
-						<Typography variant="body1">
+						<Typography variant="body2" align="left">
+							<Link href="/login">
+								Go to LoginID Wallet account{" "}
+							</Link>
+						</Typography>
+						<Typography variant="body2" align="left">
 							<Link href="/faq">
 								Learn more about the LoginID Wallet{" "}
 							</Link>

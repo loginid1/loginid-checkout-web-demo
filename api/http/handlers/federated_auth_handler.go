@@ -544,6 +544,11 @@ type FederatedEmailValidationRequest struct {
 	Token string
 }
 
+type EmailValidationResponse struct {
+	Email string `json:"email"`
+	Type  string `json:"type"`
+}
+
 func (h *FederatedAuthHandler) FederatedEmailValidationHandler(w http.ResponseWriter, r *http.Request) {
 	// session info
 
@@ -571,7 +576,7 @@ func (h *FederatedAuthHandler) FederatedEmailValidationHandler(w http.ResponseWr
 		return
 	}
 
-	http_common.SendSuccess(w)
+	http_common.SendSuccessResponse(w, EmailValidationResponse{Email: claims.Email, Type: claims.Type})
 
 }
 

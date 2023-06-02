@@ -33,7 +33,7 @@ export interface ConsentResponse {
 	passes: ConsentPass[];
 }
 
-export interface ConsentPass{
+export interface ConsentPass {
 	type: string;
 	data: string;
 }
@@ -46,10 +46,16 @@ export interface AuthResult {
 	jwt: string;
 }
 
-
+export interface EmailValiationResponse {
+	email: string;
+	type: string;
+}
 
 export class VaultFederated extends Base {
-	async sessionInit( origin: string, api: string): Promise<SessionInitResponse> {
+	async sessionInit(
+		origin: string,
+		api: string
+	): Promise<SessionInitResponse> {
 		return await utils.http.post(
 			this._baseURL,
 			"/api/federated/sessionInit",
@@ -61,71 +67,41 @@ export class VaultFederated extends Base {
 		session: string,
 		email: string,
 		type: string,
-        origin: string,
+		origin: string
 	): Promise<void> {
-			return await utils.http.post(
-				this._baseURL,
-				"/api/federated/sendEmailSession",
-				{ email: email, session: session, type: type, origin: origin }
-			);
+		return await utils.http.post(
+			this._baseURL,
+			"/api/federated/sendEmailSession",
+			{ email: email, session: session, type: type, origin: origin }
+		);
 	}
 
 	async checkConsent(session: string): Promise<ConsentResponse> {
-			return await utils.http.post(
-				this._baseURL,
-				"/api/federated/checkConsent",
-				{ session: session }
-			);
+		return await utils.http.post(
+			this._baseURL,
+			"/api/federated/checkConsent",
+			{ session: session }
+		);
 	}
 
 	async saveConsent(session: string): Promise<SaveConsentResponse> {
-			return await utils.http.post(this._baseURL, "/api/federated/saveConsent", {
+		return await utils.http.post(
+			this._baseURL,
+			"/api/federated/saveConsent",
+			{
 				session: session,
-			});
+			}
+		);
 	}
-	/*
-    async checkUser(username: string): Promise<boolean>{
-        try {
 
-        await utils.http.post(
-            this._baseURL,
-            "/api/federated/checkuser",
-            { username: username },
-        );
-        console.log("user found");
-            return true; 
-        } catch (err ) {
-            return false;
-        }
-    }
-
-    async sendCode(username: string): Promise<boolean>{
-        try {
-
-        await utils.http.post(
-            this._baseURL,
-            "/api/federated/sendcode",
-            { email: username },
-        );
-            return true; 
-        } catch (err ) {
-            return false;
-        }
-
-    }
-    */
-
-	async federated_validate_email(token: string): Promise<boolean> {
-		try {
-			await utils.http.post(
-				this._baseURL,
-				"/api/federated/email/validation",
-				{ token: token }
-			);
-			return true;
-		} catch (err) {
-			return false;
-		}
+	async federated_validate_email(
+		token: string
+	): Promise<EmailValiationResponse> {
+		return await utils.http.post(
+			this._baseURL,
+			"/api/federated/email/validation",
+			{ token: token }
+		);
 	}
 
 	/**
@@ -144,7 +120,7 @@ export class VaultFederated extends Base {
 			{
 				username: string;
 				device_name: string;
-				register_session: string,
+				register_session: string;
 				options: {
 					register_session?: string;
 					roaming_authenticator?: boolean;
@@ -235,18 +211,21 @@ export class VaultFederated extends Base {
 	 * Authenticate a previously registered user through FIDO2.
 	 * @returns {Promise<Result>}
 	 * */
-	async federated_authenticate(username: string, sessionId: string): Promise<AuthResult> {
-
+	async federated_authenticate(
+		username: string,
+		sessionId: string
+	): Promise<AuthResult> {
 		let headers;
 
 		// Init the authentication flow
 		let initPayload = <
 			{
 				username: string;
-                session_id: string;
+				session_id: string;
 			}
 		>{
-			username, session_id: sessionId,
+			username,
+			session_id: sessionId,
 		};
 
 		let initResponse = await utils.http.post(
@@ -283,12 +262,12 @@ export class VaultFederated extends Base {
 				client_data: string;
 				authenticator_data: string;
 				signature: string;
-                session_id: string;
+				session_id: string;
 			}
 		>{
 			username,
 			challenge,
-            session_id: sessionId,
+			session_id: sessionId,
 			credential_id: utils.encoding.bufferToBase64(credential.rawId),
 			client_data: utils.encoding.bufferToBase64(response.clientDataJSON),
 			authenticator_data: utils.encoding.bufferToBase64(

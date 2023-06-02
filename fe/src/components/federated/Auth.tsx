@@ -31,8 +31,14 @@ export function LoginPage(props: {
 	session: SessionInitResponse;
 	username: string;
 }) {
-	const { username, setUsername, postMessage, setPage, handleCancel, setToken } =
-		useContext<AuthContextType | null>(AuthContext) as AuthContextType;
+	const {
+		username,
+		setUsername,
+		postMessage,
+		setPage,
+		handleCancel,
+		setToken,
+	} = useContext<AuthContextType | null>(AuthContext) as AuthContextType;
 
 	const [displayMessage, setDisplayMessage] = useState<DisplayMessage | null>(
 		null
@@ -105,52 +111,64 @@ export function LoginPage(props: {
 					// register fido
 				}
 			};
-			ws.onclose = () => {};
+			ws.onclose = () => {
+				closeEmailDialog();
+			};
 		} catch (error) {
 			setDisplayMessage({
 				type: "error",
 				text: (error as Error).message,
 			});
-			postMessage("error", (error as Error).message);
+			closeEmailDialog();
+			//postMessage("error", (error as Error).message);
 		}
 	}
 
 	async function emailLogin(email: string) {
-		await vaultSDK.sendEmailSession(
-			props.session.id,
-			email,
-			"login",
-			props.session.origin
-		);
-		setWaitingIndicator(true);
-		setEmailType("login");
-		setOpenEmailDialog(true);
-		ws = new WebSocket(
-			wsurl + "/api/federated/email/ws/" + props.session.id
-		);
-		ws.onopen = () => {
-			ws?.send(JSON.stringify({ email: email, type: "login" }));
-		};
-		ws.onmessage = (event) => {
-			let token = event.data;
-			let decoded = jwt_decode(token);
-			if (decoded != null) {
-				setDisplayMessage({
-					text: "Login completed!",
-					type: "info",
-				});
+		try {
+			await vaultSDK.sendEmailSession(
+				props.session.id,
+				email,
+				"login",
+				props.session.origin
+			);
+			setWaitingIndicator(true);
+			setEmailType("login");
+			setOpenEmailDialog(true);
+			ws = new WebSocket(
+				wsurl + "/api/federated/email/ws/" + props.session.id
+			);
+			ws.onopen = () => {
+				ws?.send(JSON.stringify({ email: email, type: "login" }));
+			};
+			ws.onmessage = (event) => {
+				let token = event.data;
+				let decoded = jwt_decode(token);
+				if (decoded != null) {
+					setDisplayMessage({
+						text: "Login completed!",
+						type: "info",
+					});
+					closeEmailDialog();
+					setPage(AuthPage.CONSENT);
+					//ws?.close();
+				}
+			};
+			ws.onclose = () => {
+				// close websocket
 				closeEmailDialog();
-				setPage(AuthPage.CONSENT);
-				//ws?.close();
-			}
-		};
-		ws.onclose = () => {
-			// close websocket
+				setDisplayMessage({
+					text: "email session timeout or cancel!",
+					type: "error",
+				});
+			};
+		} catch (error) {
 			setDisplayMessage({
-				text: "email session timeout or cancel!",
 				type: "error",
+				text: (error as Error).message,
 			});
-		};
+			closeEmailDialog();
+		}
 	}
 
 	function closeEmailDialog() {

@@ -50,3 +50,13 @@ type UserProfile struct {
 	NumAlgorand    int32  `json:"num_algorand"`
 	RecentActivity string `json:"recent_activity"`
 }
+
+// reporting
+type UserAppSession struct {
+	ID      string    `json:"id" gorm:"primary_key"`
+	UserID  string    `json:"user_id"`
+	AppID   string    `json:"app_id"`
+	Version string    `json:"version"`
+	Uat     time.Time `json:"uat"`
+	Data    []byte    `json:"data"`
+}
