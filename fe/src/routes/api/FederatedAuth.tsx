@@ -43,7 +43,11 @@ import { defaultOptions } from "../../lib/popup/popup";
 import { CodeInput } from "../../components/CodeInput";
 import { EmailDialog } from "../../components/dialogs/EmailDialog";
 import LoginIDLogo from "../../assets/sidemenu/LoginIDLogo.svg";
-import { Consent, ErrorPage, PhonePassPage } from "../../components/federated/Consent";
+import {
+	Consent,
+	ErrorPage,
+	PhonePassPage,
+} from "../../components/federated/Consent";
 import { AuthContext, AuthPage, ConsentContext } from "../../lib/federated";
 import { SessionInitResponse } from "../../lib/VaultSDK/vault/federated";
 import { LoginPage } from "../../components/federated/Auth";
@@ -53,7 +57,6 @@ interface WalletLoginSession {
 	origin: string;
 	requestId: number;
 }
-
 
 let wsurl = process.env.REACT_APP_VAULT_WS_URL || "ws://localhost:3001";
 let input: boolean = false;
@@ -73,7 +76,9 @@ export default function FederatedAuth() {
 	const params = useParams();
 	const navigate = useNavigate();
 	const [enable, setEnable] = useState<WalletLoginSession | null>(null);
-	const [displayMessage, setDisplayMessage] = useState<DisplayMessage | null>( null);
+	const [displayMessage, setDisplayMessage] = useState<DisplayMessage | null>(
+		null
+	);
 	const [appOrigin, setAppOrigin] = useState<string>("");
 	const [consent, setConsent] = useState<string[] | null>(null);
 	const [page, setPage] = useState<AuthPage>(AuthPage.NONE);
@@ -82,7 +87,9 @@ export default function FederatedAuth() {
 	const [globalError, setGlobalError] = useState<string>("");
 	const [attributes, setAttributes] = useState<string[]>([]);
 	const [token, setToken] = useState<string>("");
-	const [sessionInit, setSessionInit] = useState<SessionInitResponse | null >(null);
+	const [sessionInit, setSessionInit] = useState<SessionInitResponse | null>(
+		null
+	);
 
 	useEffect(() => {
 		let target = window.parent;
@@ -93,8 +100,7 @@ export default function FederatedAuth() {
 		}
 	}, []);
 
-	useEffect(() => {
-	}, [page]);
+	useEffect(() => {}, [page]);
 
 	// handle iframe message
 	function onMessageHandle(msg: Message, origin: string) {
@@ -113,8 +119,8 @@ export default function FederatedAuth() {
 				setPage(AuthPage.CONSENT);
 			} else if (msg.type === "init") {
 				mService.id = msg.id;
-				let api : WalletInit = JSON.parse(msg.data);
-				vaultSDK.sessionInit(origin,api.api).then((response) => {
+				let api: WalletInit = JSON.parse(msg.data);
+				vaultSDK.sessionInit(origin, api.api).then((response) => {
 					setPage(AuthPage.LOGIN);
 					setAppOrigin(origin);
 					clearAlert();
@@ -128,22 +134,21 @@ export default function FederatedAuth() {
 		}
 	}
 
-
 	function clearAlert() {
 		setWaitingIndicator(false);
 		setWaitingMessage(null);
 		setDisplayMessage(null);
 	}
 
-	function postMessageText(text: string){
-		if(mService != null){
+	function postMessageText(text: string) {
+		if (mService != null) {
 			mService.sendMessageText(text);
 		}
 	}
 
-	function postMessage(type: string, text: string){
-		if(mService != null){
-			if(type === "error"){
+	function postMessage(type: string, text: string) {
+		if (mService != null) {
+			if (type === "error") {
 				mService.sendErrorMessage(text);
 			} else {
 				mService.sendMessageText(text);
@@ -151,14 +156,11 @@ export default function FederatedAuth() {
 		}
 	}
 
-
 	async function handleLogin() {
 		try {
 			if (!(await vaultSDK.checkUser(username))) {
-
 				emailRegister();
 			} else {
-
 				const response = await vaultSDK.federated_authenticate(
 					username,
 					sessionId
@@ -181,34 +183,33 @@ export default function FederatedAuth() {
 	}
 
 	async function fidoRegister() {
-
-				// need to handle safari blocking popup in async
-				try {
-
-					let popupW = openPopup(
-						`/sdk/register?username=${username}&session=${sessionId}&appOrigin=${appOrigin}&token=${token}`,
-						"register",
-						defaultOptions
-					);
-					popupW.focus();
-					window.addEventListener("focus", ()=> {
-						console.log("focus");
-						if(popupW != null) {
-							setTimeout(()=>{popupW.focus()},1);
-						console.log("focusW");
-						}
-					});
-					setWaitingMessage("Waiting for new passkey registration ...");
-					return;
-				} catch (error) {
-
-					setDisplayMessage({
-						text: "user not found - use sign up for new account",
-						type: "error",
-					});
-					setShowRegister(true);
-					return;
+		// need to handle safari blocking popup in async
+		try {
+			let popupW = openPopup(
+				`/sdk/register?username=${username}&session=${sessionId}&appOrigin=${appOrigin}&token=${token}`,
+				"register",
+				defaultOptions
+			);
+			popupW.focus();
+			window.addEventListener("focus", () => {
+				console.log("focus");
+				if (popupW != null) {
+					setTimeout(() => {
+						popupW.focus();
+					}, 1);
+					console.log("focusW");
 				}
+			});
+			setWaitingMessage("Waiting for new passkey registration ...");
+			return;
+		} catch (error) {
+			setDisplayMessage({
+				text: "user not found - use sign up for new account",
+				type: "error",
+			});
+			setShowRegister(true);
+			return;
+		}
 	}
 
 	async function emailRegister() {
@@ -260,7 +261,6 @@ export default function FederatedAuth() {
 			setWaitingMessage("Waiting for new passkey registration ...");
 			return;
 		} catch (error) {
-
 			setDisplayMessage({
 				text: (error as Error).message,
 				type: "error",
@@ -325,12 +325,25 @@ export default function FederatedAuth() {
 				*/}
 
 				{page === AuthPage.ERROR && <ErrorPage error={globalError} />}
-				{page === AuthPage.LOGIN && 
-					<AuthContext.Provider value={{username, setUsername, postMessage, setPage,handleCancel,setToken}}>
-						{sessionInit && 
-						<LoginPage session={sessionInit} username={username}/>}
+				{page === AuthPage.LOGIN && (
+					<AuthContext.Provider
+						value={{
+							username,
+							setUsername,
+							postMessage,
+							setPage,
+							handleCancel,
+							setToken,
+						}}
+					>
+						{sessionInit && (
+							<LoginPage
+								session={sessionInit}
+								username={username}
+							/>
+						)}
 					</AuthContext.Provider>
-				}
+				)}
 				{page === AuthPage.FIDO_REG && Fido()}
 				{page === AuthPage.CONSENT && (
 					<ConsentContext.Provider
@@ -340,9 +353,9 @@ export default function FederatedAuth() {
 							handleCancel,
 							setDisplayMessage,
 						}}
-					>	
+					>
 						{/*Consent ({session:sessionId, username})*/}
-						<Consent session={sessionId} username={username}  />
+						<Consent session={sessionId} username={username} />
 					</ConsentContext.Provider>
 				)}
 
@@ -381,7 +394,6 @@ export default function FederatedAuth() {
 			</Container>
 		</ThemeProvider>
 	);
-
 
 	function Final() {
 		return (
@@ -424,8 +436,14 @@ export default function FederatedAuth() {
 					variant="body2"
 					color="text.secondary"
 				>
-					You have successfully confirmed your email. Press "Add my
-					passkey" to complete this registration:
+					<p>
+						You have successfully confirmed your email. Press "Add
+						my passkey" to register a passkey with LoginID Wallet.
+					</p>
+					<p>
+						LoginID Wallet provides simple and secure ways to sign
+						in to your apps.
+					</p>
 				</Typography>
 				<Chip icon={<EmailIcon />} label={username}></Chip>
 				<Button
@@ -447,6 +465,4 @@ export default function FederatedAuth() {
 			</Stack>
 		);
 	}
-
 }
-

@@ -268,6 +268,7 @@ export default function FederatedAuthPopup() {
 		setEmailType("login");
 		setOpenEmailDialog(true);
 		ws = new WebSocket(wsurl + "/api/federated/email/ws/" + sessionId);
+		
 		ws.onopen = () => {
 			ws?.send(JSON.stringify({ email: email, type: "login" }));
 		};

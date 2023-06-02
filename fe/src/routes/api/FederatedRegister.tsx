@@ -200,7 +200,7 @@ export default function FederatedRegister() {
 					<p>
 
 					Create a passkey to securely login to all apps powered by
-					LoginID Wallet using your device biometric.
+					LoginID Wallet using your biometrics similar to method use to unlock your device.
 					</p>
 					Your biometric information never leaves the device.
 					<p>

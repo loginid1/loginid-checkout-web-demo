@@ -9,20 +9,20 @@ export const makeStaticProducts = (): ProductItem[] => {
   return [
     {
       id: 'p1',
-      title: 'Apple',
-      price: 1.6,
-      image: '/images/apple.jpg',
+      title: 'Work wear-resistant shoes',
+      price: 59.99,
+      image: '/images/shoe-wresist.webp',
       description:
-        'An apple a day keeps the doctor away. Buy one, get one free special.',
+        'New work wear-resistant non-slip rubber shoes father shoes labor protection shoes men and women training.',
       special: PRODUCT_SPECIAL.TWO_FOR_ONE,
     },
     {
       id: 'p2',
-      title: 'Orange',
-      price: 1.25,
-      image: '/images/orange.jpg',
-      description: 'Fresh Florida oranges. 3 for the price of 2 special',
-      special: PRODUCT_SPECIAL.THREE_FOR_TWO,
+      title: 'Men Sneaker Runner',
+      price: 40.99,
+      image: '/images/shoe-running.webp',
+      description: 'Men Sneakers Summer Mesh Lightweight Shoes Men Fashion Casual Walking Shoes Breathable Slip on Mens Loafers CASUAL SNEAKER',
+      special: PRODUCT_SPECIAL.TWO_FOR_ONE,
     },
   ]
 }

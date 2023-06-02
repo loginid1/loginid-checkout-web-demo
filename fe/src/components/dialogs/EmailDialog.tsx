@@ -42,13 +42,14 @@ export function EmailDialog(props: EmailProps) {
 			<>
 				<DialogContent>
 					<Typography variant="h6" color="primary" sx={{ mb: 2 }}>
-						Check email to register	
+						Check email to register
 					</Typography>
 					<Typography variant="body2">
 						<p>
 							Please follow the instruction sent to{" "}
-							<b>{props.email}</b> and use the code below for
-							verification.
+							<b>{props.email}</b>, and click on the confirm email
+							button. The code below should also be in the
+							confirmation email received.
 						</p>
 					</Typography>
 					<Typography
@@ -78,8 +79,9 @@ export function EmailDialog(props: EmailProps) {
 					<Typography variant="body2">
 						<p>
 							Please follow the instruction sent to{" "}
-							<b>{props.email}</b> and use the code below for
-							verification.
+							<b>{props.email}</b>, and click on the confirm email
+							button. The code below should also be in the
+							confirmation email received.
 						</p>
 					</Typography>
 					<Typography

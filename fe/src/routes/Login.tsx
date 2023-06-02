@@ -36,7 +36,10 @@ const Login: React.FC = () => {
 
   useEffect(() => {
     let redirect_url = searchParams.get("redirect_url");
-    console.log(redirect_url);
+    let u = searchParams.get("u");
+    if (u!= null){
+      setUsername(u);
+    }
 	}, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -87,7 +90,7 @@ const Login: React.FC = () => {
           >
             <VaultLogo />
             <Typography variant="body1" marginTop={2}>
-              Log in securely to your FIDO Vault Account.
+              Login securely to your LoginID Wallet Account.
             </Typography>
             {errorMessage.length > 0 && (
               <Alert severity="error">{errorMessage}</Alert>
