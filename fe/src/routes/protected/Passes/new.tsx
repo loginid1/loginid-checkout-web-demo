@@ -22,36 +22,46 @@ import { ReactComponent as ProfileDefault } from "../../../assets/sidemenu/DIDs/
 import { passesMap, NewPassController } from "./PassController";
 
 interface NewPassNameProps {
-    navigate: NavigateFunction;
     setActiveStep: React.Dispatch<React.SetStateAction<number>>;
+    passType: string;
     name: string;
     setName: React.Dispatch<React.SetStateAction<string>>;
 }
 
 // Step 1 - Setup the pass name
 const NewPassName = (props: NewPassNameProps) => {
+    const name = "My " + props.passType
+        .split("-")
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(" ");
+    if (props.name === "" || props.name === "My Drivers License" || props.name === "My Phone") {
+        props.setName(name);
+    }
     return (
         <>
             <ProfileDefault width={50} height={50} />
             <Typography
                 variant="h2"
                 color="secondary"
-                sx={{ padding: { md: 4, xs: 2 } }}
+                sx={{ padding: 2 }}
             >
                 Create a new Pass
+                <Typography variant="body1" color="gray">
+                    Create a name for your new Pass, for example:  ‘{name}’.
+                </Typography>
             </Typography>
             <TextField
                 fullWidth
-                label="Chose a name"
+                label="Pass name"
                 value={props.name}
                 onChange={e => props.setName(e.target.value)}
             />
             <Stack direction="row" spacing={2} justifyContent="center" alignItems="center">
-                <Button variant="text" onClick={() => { props.navigate('/passes') }}>
+                <Button variant="text" onClick={() => { props.setActiveStep(0) }}>
                     <ArrowBack/>
                     Back
                 </Button>
-                <Button disabled={ props.name.length < 3 } variant="contained" onClick={() => { props.setActiveStep(1) }}>
+                <Button disabled={ props.name.length < 3 } variant="contained" onClick={() => { props.setActiveStep(2) }}>
                     Next
                 </Button>
             </Stack>
@@ -61,6 +71,7 @@ const NewPassName = (props: NewPassNameProps) => {
 
 // Step 2 - Select the pass type
 interface NewPassTypeProps {
+    navigate: NavigateFunction;
     setActiveStep: React.Dispatch<React.SetStateAction<number>>;
     passType: string;
     setPassType: React.Dispatch<React.SetStateAction<string>>;
@@ -73,8 +84,18 @@ const NewPassType = (props: NewPassTypeProps) => {
     
     return (
         <>
-            <div></div>
-            <FormControl>
+            <ProfileDefault width={50} height={50} />
+            <Typography
+                variant="h2"
+                color="secondary"
+                sx={{ padding: 2 }}
+            >
+                Create a new Pass
+                <Typography variant="body1" color="gray">
+                    Select the type of Pass you would like to create. Passes, and this information, can be selectively shared by you with other parties in the future.
+                </Typography>
+            </Typography>
+            <FormControl sx={{ paddingBottom: 4 }}>
                 <FormLabel id="pass-selector">Type</FormLabel>
                 <RadioGroup
                     row
@@ -98,11 +119,11 @@ const NewPassType = (props: NewPassTypeProps) => {
                 </RadioGroup>
             </FormControl>
             <Stack direction="row" spacing={2} justifyContent="center" alignItems="center">
-                <Button variant="text" onClick={() => { props.setActiveStep(0) }}>
+                <Button variant="text" onClick={() => { props.navigate('/passes') }}>
                     <ArrowBack/>
                     Back
                 </Button>
-                <Button variant="contained" onClick={() => { props.setActiveStep(2) }}>
+                <Button variant="contained" onClick={() => { props.setActiveStep(1) }}>
                     Next
                 </Button>
             </Stack>
@@ -119,27 +140,16 @@ export default function NewPass(){
 
     const steps = [
         { 
-            label: 'Chose a name', 
-            component: <NewPassName 
-                navigate={navigate} 
-                setActiveStep={setActiveStep}
-                name={name}
-                setName={setName}/> 
+            label: 'Chose a type', 
+            component: <NewPassType {...{navigate, setActiveStep, passType: type, setPassType: setType}}/>
         },
         { 
-            label: 'Chose a type', 
-            component: <NewPassType 
-                setActiveStep={setActiveStep}
-                passType={type}
-                setPassType={setType}/>
+            label: 'Chose a name', 
+            component: <NewPassName {...{setActiveStep, name, setName, passType: type}}/> 
         },
         {
             label: 'Create it',
-            component: <NewPassController 
-                navigate={navigate} 
-                setActiveStep={setActiveStep}
-                name={name}
-                passType={type}/> 
+            component: <NewPassController {...{navigate, setActiveStep, name, passType: type}}/> 
         },
     ];
 
@@ -159,10 +169,10 @@ export default function NewPass(){
                     }
                 </Stepper>
                 <Grid container direction="row" >
-                    <Grid item padding={2} xl={4} md={3} xs={0}/>
+                    <Grid item padding={2} lg={3} xs={0}/>
                     <Grid item 
                         padding={2} 
-                        xl={4} md={6} xs={12}
+                        lg={6} xs={12}
                         sx={{ 
                             minHeight: 400, 
                             display:"flex", 
@@ -174,7 +184,7 @@ export default function NewPass(){
                     >
                         { steps[activeStep].component }
                     </Grid>
-                    <Grid item padding={2} xl={4} md={3} xs={0}/>
+                    <Grid item padding={2} lg={3} xs={0}/>
                 </Grid>
             </Paper>
         </VaultBase>

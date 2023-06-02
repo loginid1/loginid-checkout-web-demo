@@ -10,7 +10,9 @@ import (
 	"github.com/gorilla/mux"
 	http_common "gitlab.com/loginid/software/services/loginid-vault/http/common"
 	"gitlab.com/loginid/software/services/loginid-vault/services"
+	"gitlab.com/loginid/software/services/loginid-vault/services/iproov"
 	"gitlab.com/loginid/software/services/loginid-vault/services/pass"
+	"gitlab.com/loginid/software/services/loginid-vault/services/user"
 )
 
 type PhoneInitRequest struct {
@@ -92,8 +94,10 @@ func (r *PhoneCompleteRequest) validate() *services.ServiceError {
 }
 
 type DriversLicenseRequest struct {
-	PassName string                  `json:"pass_name" validate:"required"`
-	Data     pass.DriversLicensePass `json:"data" validate:"required"`
+	PassName     string                  `json:"pass_name" validate:"required"`
+	Data         pass.DriversLicensePass `json:"data" validate:"required"`
+	IproovToken  string                  `json:"iproov_token" validate:"required"`
+	CredentialId string                  `json:"credential_id" validate:"required"`
 }
 
 func (r *DriversLicenseRequest) validate() *services.ServiceError {
@@ -129,7 +133,9 @@ func (r *DriversLicenseRequest) validate() *services.ServiceError {
 }
 
 type PassesHandler struct {
-	PassService *pass.PassService
+	PassService   *pass.PassService
+	IProovService *iproov.IProovService
+	UserService   *user.UserService
 }
 
 func (h *PassesHandler) List(w http.ResponseWriter, r *http.Request) {
@@ -220,7 +226,23 @@ func (h *PassesHandler) DriversLicense(w http.ResponseWriter, r *http.Request) {
 	}
 
 	session := r.Context().Value("session").(services.UserSession)
-	if err := h.PassService.AddDriversLicensePass(r.Context(), session.Username, request.PassName, request.Data); err != nil {
+	usr, err := h.UserService.GetUser(session.Username)
+	if err != nil {
+		http_common.SendErrorResponse(w, *err)
+		return
+	}
+
+	result, err := h.IProovService.ClaimVerifyValidate(r.Context(), request.CredentialId, request.IproovToken, r.UserAgent())
+	if err != nil {
+		http_common.SendErrorResponse(w, *err)
+		return
+	}
+	if !result.Passed {
+		http_common.SendErrorResponse(w, services.NewError("facial matching with the document did not pass"))
+		return
+	}
+
+	if err := h.PassService.AddDriversLicensePass(r.Context(), usr.ID, request.CredentialId, request.PassName, request.Data); err != nil {
 		http_common.SendErrorResponse(w, *err)
 		return
 	}

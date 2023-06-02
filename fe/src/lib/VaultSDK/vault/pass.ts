@@ -71,12 +71,34 @@ export class VaultPass extends Base{
         );
     }
 
-    async createDriversLicensePass(token: string, pass_name: string, data: DriversLicensePass): Promise<void> {
+    async createDriversLicensePass(token: string, pass_name: string, credential_id: string, iproov_token: string, data: DriversLicensePass): Promise<void> {
         const header = { "x-session-token": token };
         return await utils.http.post(
             this._baseURL,
             "/api/protected/passes/drivers-license",
-            {pass_name, data},
+            {pass_name, credential_id, iproov_token, data},
+            header
+        );
+    }
+
+    async iProveClaimEnrolmentToken(token: string, image: Blob): Promise<any> {
+        const header = { "x-session-token": token };
+        const data = new FormData();
+        data.append("file", image);
+
+        return await utils.http.postFormData(
+            this._baseURL,
+            "/api/protected/iproov/enrolment/token",
+            data,
+            header
+        );
+    }
+
+    async iProveClaimVerificationToken(token: string, credential_id: string): Promise<any> {
+        const header = { "x-session-token": token };
+        return await utils.http.get(
+            this._baseURL,
+            `/api/protected/iproov/verification/token/${credential_id}`,
             header
         );
     }
