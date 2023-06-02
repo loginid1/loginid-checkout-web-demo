@@ -117,6 +117,9 @@ const IProovWeb = (props: React.PropsWithChildren<IProovWebProps>) => {
 
 interface BlinkIdElement extends HTMLElement {
     recognizerOptions: { [key: string]: any; };
+    translations: { [key: string]: string; };
+    scanFromImage: boolean;
+    scanFromCamera: boolean;
 }
 
 interface BlinkidProps {
@@ -147,6 +150,11 @@ const BlinkidInBrowser = (props: BlinkidProps) => {
                     "returnFaceImage": true,
                     "returnFullDocumentImage": true,
                 },
+            };
+            el.scanFromCamera = true;
+            el.scanFromImage = false;
+            el.translations = {
+                "action-message": "Scan with your device camera",
             };
             el.addEventListener('scanSuccess', props.handleSuccess);
             if (props.handleFeedback !== undefined) {
