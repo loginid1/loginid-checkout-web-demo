@@ -31,9 +31,9 @@ interface NewPassNameProps {
 // Step 1 - Setup the pass name
 const NewPassName = (props: NewPassNameProps) => {
     const name = "My " + props.passType
-            .split("-")
-            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-            .join(" ");
+        .split("-")
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(" ");
     if (props.name === "" || props.name === "My Drivers License" || props.name === "My Phone") {
         props.setName(name);
     }
@@ -46,7 +46,7 @@ const NewPassName = (props: NewPassNameProps) => {
                 sx={{ padding: 2 }}
             >
                 Create a new Pass
-                <Typography variant="body2" color="gray">
+                <Typography variant="body1" color="gray">
                     Create a name for your new Pass, for example:  ‘{name}’.
                 </Typography>
             </Typography>
@@ -91,7 +91,7 @@ const NewPassType = (props: NewPassTypeProps) => {
                 sx={{ padding: 2 }}
             >
                 Create a new Pass
-                <Typography variant="body2" color="gray">
+                <Typography variant="body1" color="gray">
                     Select the type of Pass you would like to create. Passes, and this information, can be selectively shared by you with other parties in the future.
                 </Typography>
             </Typography>

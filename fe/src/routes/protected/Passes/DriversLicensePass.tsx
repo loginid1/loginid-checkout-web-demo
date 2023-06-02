@@ -35,6 +35,7 @@ interface IProovWebProps {
     baseURL?: string;
     credentialId: string;
     handleSuccess: () => void;
+    handleRetry: () => Promise<void>;
 }
 
 const IProovWeb = (props: React.PropsWithChildren<IProovWebProps>) => {
@@ -47,6 +48,7 @@ const IProovWeb = (props: React.PropsWithChildren<IProovWebProps>) => {
         "base_url": props.baseURL,
         "show_countdown": "true",
         "enable_camera_selector": "true",
+        "logo": "",
         ref: ref,
     }, props.children);
 
@@ -56,9 +58,10 @@ const IProovWeb = (props: React.PropsWithChildren<IProovWebProps>) => {
         };
     
         const handleFailure = (data: any) => {
-            setFailed(true);
-            setReady(true);
-            console.log(data);
+            if (data.detail.feedback !== 'integration_unloaded') {
+                setFailed(true);
+                setReady(true);
+            }
         }
 
         const el = ref.current;
@@ -77,17 +80,26 @@ const IProovWeb = (props: React.PropsWithChildren<IProovWebProps>) => {
         }
     }, [ref, props]);
 
+    const handleRetry = async () => {
+        await props.handleRetry();
+        setFailed(false);
+    }
+
     return (
         <>
-            <Box sx={{ display: ready && !failed ? 'flex' : 'none'}}>
+            <Box key={props.token?.slice(0,8)} sx={{ display: ready && !failed ? 'flex' : 'none'}}>
                 { el }
             </Box>
             <Stack mb={5} sx={{ display: failed ? 'flex' : 'none', alignContent: 'center', justifyContent: 'center' }}>
+                <Typography slot="passed" mb={2} textAlign="center" variant="body2">
+                    Success
+                </Typography>
                 <Typography slot="ready" mb={2} textAlign="center" variant="body2">
                     We were not able to match your face with the picture on your ID.
                 </Typography>
                 <Box sx={{ display: 'flex', alignContent: 'center', justifyContent: 'center' }}>
                     <Button
+                        onClick={handleRetry}
                         variant="contained"
                         sx={{ mt: 1, mr: 1 }}
                     >
@@ -105,6 +117,9 @@ const IProovWeb = (props: React.PropsWithChildren<IProovWebProps>) => {
 
 interface BlinkIdElement extends HTMLElement {
     recognizerOptions: { [key: string]: any; };
+    translations: { [key: string]: string; };
+    scanFromImage: boolean;
+    scanFromCamera: boolean;
 }
 
 interface BlinkidProps {
@@ -135,6 +150,11 @@ const BlinkidInBrowser = (props: BlinkidProps) => {
                     "returnFaceImage": true,
                     "returnFullDocumentImage": true,
                 },
+            };
+            el.scanFromCamera = true;
+            el.scanFromImage = false;
+            el.translations = {
+                "action-message": "Scan with your device camera",
             };
             el.addEventListener('scanSuccess', props.handleSuccess);
             if (props.handleFeedback !== undefined) {
@@ -303,6 +323,7 @@ interface IFacialScanningProps {
     credentialId: string;
     navigate: NavigateFunction;
     setActiveStep: React.Dispatch<React.SetStateAction<number>>;
+    setIProovToken: React.Dispatch<React.SetStateAction<string>>;
 }
 
 const FacialScanning = (props: IFacialScanningProps): JSX.Element => {
@@ -318,6 +339,18 @@ const FacialScanning = (props: IFacialScanningProps): JSX.Element => {
             }
         }
     };
+
+    const handleRetry = async () => {
+        const token = AuthService.getToken();
+        if (token) {
+            try {
+                const result = await vaultSDK.iProveClaimVerificationToken(token, props.credentialId);
+                props.setIProovToken(result.token);
+            } catch (err) {
+                console.error(err);
+            }
+        }
+    }
   
     const handleBack = () => {
         props.navigate('/passes');
@@ -331,6 +364,7 @@ const FacialScanning = (props: IFacialScanningProps): JSX.Element => {
                     baseURL={props.iProovBaseURL}
                     credentialId={props.credentialId}
                     handleSuccess={handleSuccess}
+                    handleRetry={handleRetry}
                 >
                     <Typography slot="ready" mb={2} textAlign="center" variant="body2">
                         The last step is to scan your face in order to prove the picture in the document is you
@@ -392,7 +426,7 @@ const DriversLicensePass = (props: NewPassControllerProps): JSX.Element => {
         },
         {
             label: 'Scan your face',
-            component: <FacialScanning {...{...props, pass, iProovBaseURL, iProovToken, credentialId, setActiveStep}}/>,
+            component: <FacialScanning {...{...props, pass, iProovBaseURL, iProovToken, setIProovToken, credentialId, setActiveStep}}/>,
         }
     ];
 
