@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"regexp"
+	"strings"
 	"time"
 
 	qrcode "github.com/skip2/go-qrcode"
@@ -64,4 +65,33 @@ func GenerateQRCode(url string) (string, error) {
 		return "", err
 	}
 	return fmt.Sprintf("data:image/png;base64,%s", base64.RawStdEncoding.EncodeToString(png)), nil
+}
+
+func MaskData(data string, startLen, finishLen int) (string, error) {
+	length := len(data)
+
+	// sanity check; data must be validated before calling this function
+	if length < startLen+finishLen {
+		return "", fmt.Errorf("phone number is too short")
+	}
+
+	return data[:startLen] + strings.Repeat("*", length-startLen+finishLen) + data[length-finishLen:], nil
+}
+
+func MaskEmailAddress(email string) (string, error) {
+	// sanity check; email must be validated before calling this function
+	if len(email) < 3 {
+		return "", fmt.Errorf("email is too short")
+	}
+
+	// Mask user email as credential name
+	emailSplit := strings.Split(email, "@")
+	emailLength := len(emailSplit[0])
+	maskedEmail := strings.Repeat("*", emailLength) + "@" + emailSplit[1]
+
+	if emailLength > 2 {
+		maskedEmail = emailSplit[0][:1] + strings.Repeat("*", emailLength-2) + emailSplit[0][emailLength-1:] + "@" + emailSplit[1]
+	}
+
+	return maskedEmail, nil
 }

@@ -17,8 +17,10 @@ type UserPass struct {
 	Attributes string         `gorm:"column:attributes;not null"`
 	SchemaType PassSchemaType `gorm:"column:schema;index;not null"`
 	Issuer     string         `gorm:"column:issuer;not null"`
+	KeyId      string         `gorm:"column:key_id"`
 	Data       []byte         `gorm:"column:data"`
 	DataHash   []byte         `gorm:"column:data_hash"`
+	MaskedData string         `gorm:"column:masked_data"`
 	CreatedAt  time.Time      `gorm:"column:created_at;not null; DEFAULT:current_timestamp"`
 	UpdatedAt  time.Time      `gorm:"column:updated_at;not null; DEFAULT:current_timestamp"`
 	ExpiresAt  *time.Time     `gorm:"column:expires_at"`

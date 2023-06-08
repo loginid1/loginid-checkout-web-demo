@@ -13,7 +13,7 @@ import (
 	logger "gitlab.com/loginid/software/libraries/goutil.git/logger"
 )
 
-var dbName = fmt.Sprintf("%s_%s", goutil.GetEnv("DB_PREFIX", "app"), goutil.GetEnv("DB_NAME", "vault"))
+var dbName = goutil.GetEnv("POSTGRES_DB", "app_vault")
 
 var db *gorm.DB
 

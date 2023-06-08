@@ -11,9 +11,11 @@ import (
 	"github.com/rs/cors"
 	goutil "gitlab.com/loginid/software/libraries/goutil.git"
 	logger "gitlab.com/loginid/software/libraries/goutil.git/logger"
+	pgxx "gitlab.com/loginid/software/libraries/goutil.git/pgxx"
 	"gitlab.com/loginid/software/services/loginid-vault/db"
 	"gitlab.com/loginid/software/services/loginid-vault/http/handlers"
 	"gitlab.com/loginid/software/services/loginid-vault/http/middlewares"
+	"gitlab.com/loginid/software/services/loginid-vault/services"
 	"gitlab.com/loginid/software/services/loginid-vault/services/algo"
 	"gitlab.com/loginid/software/services/loginid-vault/services/app"
 	"gitlab.com/loginid/software/services/loginid-vault/services/fido2"
@@ -34,11 +36,19 @@ func main() {
 	if goutil.GetEnvBool("ENABLE_AUTO_DBMIGRATION", false) {
 		db.MigrateUp()
 	}
-
 	db.InitCacheClient()
 
-	// init services
+	// ! Init DB connection for gocrypto
+	pgConf := goutil.GetEnvPGConfig()
+	pgConf.Schema = "public"
+	connPool, err := pgxx.InitConnPool(pgConf.String())
+	if err != nil {
+		logger.Global.Fatal(err.Error())
+		os.Exit(0)
+	}
+	services.InitCrypto(connPool)
 
+	// init services
 	keystoreService, err := keystore.NewKeystoreService(db.GetConnection())
 	if err != nil {
 		logger.Global.Fatal(err.Error())

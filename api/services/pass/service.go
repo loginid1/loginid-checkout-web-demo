@@ -15,6 +15,7 @@ import (
 	"gitlab.com/loginid/software/services/loginid-vault/services/app"
 	notification "gitlab.com/loginid/software/services/loginid-vault/services/notification/providers"
 	"gitlab.com/loginid/software/services/loginid-vault/services/user"
+	"gitlab.com/loginid/software/services/loginid-vault/utils"
 	"gorm.io/gorm"
 )
 
@@ -32,7 +33,7 @@ type PassResponse struct {
 	Attributes string         `json:"attributes"`
 	SchemaType PassSchemaType `json:"schema"`
 	Issuer     string         `json:"issuer"`
-	Data       interface{}    `json:"data"`
+	Data       string         `json:"data"`
 	CreatedAt  time.Time      `json:"created_at"`
 }
 
@@ -60,11 +61,11 @@ func (s *PassService) List(ctx context.Context, username string) ([]interface{},
 			Name:       pass.Name,
 			Attributes: pass.Attributes,
 			SchemaType: pass.SchemaType,
+			Data:       pass.MaskedData,
 			Issuer:     pass.Issuer,
 			CreatedAt:  pass.CreatedAt,
 		}
 
-		json.Unmarshal(pass.Data, &item.Data)
 		response = append(response, item)
 	}
 
@@ -133,6 +134,16 @@ func (s *PassService) PhoneComplete(ctx context.Context, username, name, phone_n
 	}
 	dataHash := sha256.Sum256(data)
 
+	keyId, encryptedData, err := services.EncryptWithOwnerID(ctx, "loginid.io", string(data))
+	if err != nil {
+		return services.CreateError("failed to encrypt the phone pass")
+	}
+
+	maskedData, err := utils.MaskData(phone_number, 3, 4)
+	if err != nil {
+		return services.CreateError(err.Error())
+	}
+
 	// Code verification check is complete, procede to create the phone pass
 	pass := UserPass{
 		ID:         uuid.NewString(),
@@ -141,8 +152,10 @@ func (s *PassService) PhoneComplete(ctx context.Context, username, name, phone_n
 		Attributes: app.KPhoneAttribute,
 		SchemaType: PhonePassSchemaType,
 		Issuer:     "LoginID Vault",
-		Data:       data,
+		KeyId:      keyId,
+		Data:       encryptedData,
 		DataHash:   dataHash[:],
+		MaskedData: maskedData,
 		CreatedAt:  time.Now(),
 		UpdatedAt:  time.Now(),
 		ExpiresAt:  nil,
@@ -200,15 +213,27 @@ func (s *PassService) AddDriversLicensePass(ctx context.Context, userId, credent
 		attributes = append(attributes, "date_of_expiry")
 	}
 
+	keyId, encryptedData, err := services.EncryptWithOwnerID(ctx, "loginid.io", string(dataBytes))
+	if err != nil {
+		return services.CreateError("failed to encrypt the phone pass")
+	}
+
+	maskedData, err := utils.MaskData(data.DocumentNumber, 2, 3)
+	if err != nil {
+		return services.CreateError(err.Error())
+	}
+
 	pass := UserPass{
 		ID:         credentialId,
 		UserID:     userId,
 		Name:       name,
 		Attributes: strings.Join(attributes, ","),
 		SchemaType: DriversLicensePassSchemaType,
-		Issuer:     "Microblink",
-		Data:       dataBytes,
+		Issuer:     "LoginID Vault (Microblink, iProov)",
+		KeyId:      keyId,
+		Data:       encryptedData,
 		DataHash:   dataHash[:],
+		MaskedData: maskedData,
 		CreatedAt:  time.Now(),
 		UpdatedAt:  time.Now(),
 		ExpiresAt:  data.DateOfExpiry,
@@ -219,12 +244,17 @@ func (s *PassService) AddDriversLicensePass(ctx context.Context, userId, credent
 	return nil
 }
 
-func (s *PassService) ForceAddPass(ctx context.Context, userId, name, attributes string, schema PassSchemaType, data interface{}) *services.ServiceError {
+func (s *PassService) ForceAddPass(ctx context.Context, userId, name, attributes, maskedData string, schema PassSchemaType, data interface{}) *services.ServiceError {
 	dataBytes, err := json.Marshal(&data)
 	if err != nil {
 		return services.CreateError("failed to create a new pass")
 	}
 	dataHash := sha256.Sum256(dataBytes)
+
+	keyId, encryptedData, err := services.EncryptWithOwnerID(ctx, "loginid.io", string(dataBytes))
+	if err != nil {
+		return services.CreateError("failed to encrypt the phone pass")
+	}
 
 	pass := UserPass{
 		ID:         uuid.NewString(),
@@ -233,8 +263,10 @@ func (s *PassService) ForceAddPass(ctx context.Context, userId, name, attributes
 		Attributes: attributes,
 		SchemaType: schema,
 		Issuer:     "LoginID Vault",
-		Data:       dataBytes,
+		KeyId:      keyId,
+		Data:       encryptedData,
 		DataHash:   dataHash[:],
+		MaskedData: maskedData,
 		CreatedAt:  time.Now(),
 		UpdatedAt:  time.Now(),
 		ExpiresAt:  nil,
