@@ -235,7 +235,8 @@ func (h *FederatedAuthHandler) FederatedRegisterCompleteHandler(w http.ResponseW
 	passData := pass.EmailPassSchema{
 		Email: claims.Email,
 	}
-	if err := h.PassService.ForceAddPass(r.Context(), userid, "e-mail", "email", pass.EmailPassSchemaType, passData); err != nil {
+	maskedData, _ := utils.MaskEmailAddress(claims.Email)
+	if err := h.PassService.ForceAddPass(r.Context(), userid, "My e-mail", "email", maskedData, pass.EmailPassSchemaType, passData); err != nil {
 		http_common.SendErrorResponse(w, *err)
 		return
 	}
@@ -421,28 +422,16 @@ func (h *FederatedAuthHandler) CheckConsentHandler(w http.ResponseWriter, r *htt
 		}
 		for _, p := range passes {
 			if p.Attributes == app.KEmailAttribute {
-				var emailPass pass.EmailPassSchema
-				err := json.Unmarshal(p.Data, &emailPass)
-				if err != nil {
-					http_common.SendErrorResponse(w, services.NewError("failed to parse pass data"))
-					return
-				}
 				c_pass := ConsentPassResponse{
 					Type: app.KEmailAttribute,
-					Data: emailPass.Email,
+					Data: p.MaskedData,
 				}
 				cpasses = append(cpasses, c_pass)
 				missing = utils.Remove(missing, app.KEmailAttribute)
 			} else if p.Attributes == app.KPhoneAttribute {
-				var phonePass pass.PhonePassSchema
-				err := json.Unmarshal(p.Data, &phonePass)
-				if err != nil {
-					http_common.SendErrorResponse(w, services.NewError("failed to parse pass data"))
-					return
-				}
 				c_pass := ConsentPassResponse{
 					Type: app.KPhoneAttribute,
-					Data: phonePass.PhoneNumber,
+					Data: p.MaskedData,
 				}
 				cpasses = append(cpasses, c_pass)
 				missing = utils.Remove(missing, app.KPhoneAttribute)

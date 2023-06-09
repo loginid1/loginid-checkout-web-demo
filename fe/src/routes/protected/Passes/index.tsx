@@ -19,68 +19,11 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Moment from "moment";
 import vaultSDK from "../../../lib/VaultSDK";
-import { EmailPass, PhonePass, DriversLicensePass, Pass } from "../../../lib/VaultSDK/vault/pass";
+import { Pass } from "../../../lib/VaultSDK/vault/pass";
 import { AuthService } from "../../../services/auth";
 import { VaultBase } from "../../../components/VaultBase";
 import NewPass from "./new";
-import moment from "moment";
 import { Consent } from "../../../lib/VaultSDK/vault/user";
-import { DisplayConsents } from "../../../components/AppConsentList";
-
-interface PassDataProps {
-	pass: Pass;
-}
-
-const PassData = (props: PassDataProps): JSX.Element => {
-	switch (props.pass.schema) {
-		case "email":
-			const emailData = props.pass.data as EmailPass
-			return (
-				<Typography variant="body1">
-					{emailData.email}
-				</Typography>
-			);
-		case "phone":
-			const phoneData = props.pass.data as PhonePass
-			return (
-				<Typography variant="body1">
-					{phoneData.phone_number}
-				</Typography>
-			);
-		case "drivers-license":
-			const dlData = props.pass.data as DriversLicensePass
-			return (
-				<>
-					<Typography display={dlData.full_name === undefined ? "none" : ""} textAlign="left" variant="body1">
-						<strong>Name: </strong> {dlData.full_name}
-					</Typography>
-					<Typography display={dlData.personal_id_number === undefined ? "none" : ""} textAlign="left" variant="body1">
-						<strong>ID Number: </strong> {dlData.personal_id_number}
-					</Typography>
-					<Typography textAlign="left" variant="body1">
-						<strong>Document Number: </strong> {dlData.document_number}
-					</Typography>
-					<Typography display={dlData.document_country === undefined ? "none" : ""} textAlign="left" variant="body1">
-						<strong>Country: </strong> {dlData.document_country}
-					</Typography>
-					<Typography display={dlData.address === undefined ? "none" : ""} textAlign="left" variant="body1">
-						<strong>Address: </strong> {dlData.address}
-					</Typography>
-					<Typography display={dlData.date_of_birth === undefined ? "none" : ""} textAlign="left" variant="body1">
-						<strong>Date of Birth: </strong> {moment(dlData.date_of_birth).format("DD/MM/YYYY")}
-					</Typography>
-					<Typography display={dlData.date_of_issue === undefined ? "none" : ""} textAlign="left" variant="body1">
-						<strong>Issuing Date: </strong> {moment(dlData.date_of_issue).format("DD/MM/YYYY")}
-					</Typography>
-					<Typography display={dlData.date_of_expiry === undefined ? "none" : ""} textAlign="left" variant="body1">
-						<strong>Expiry Date: </strong> {moment(dlData.date_of_expiry).format("DD/MM/YYYY")}
-					</Typography>
-				</>
-			);
-		default:
-			return (<></>);
-	}
-}
 
 const PassMenu = (props: {passId: string; }) => {
 	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -214,7 +157,7 @@ const Passes = () => {
 												}
 											/>
 											<CardContent>
-												<PassData pass={pass}/>
+												{ pass.data }
 											</CardContent>
 											<CardActions disableSpacing>
 												<IconButton aria-label="share">
