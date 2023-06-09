@@ -27,7 +27,7 @@ export interface Pass {
     attributes: string;
     schema: string;
     issuer: string;
-    data: PhonePass | EmailPass | DriversLicensePass;
+    data: string;
     created_at: Date;
 }
 

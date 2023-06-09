@@ -13,8 +13,8 @@ import (
 
 type TwillioProvider struct {
 	from      string
-	client    *twilio.RestClient
 	serviceId string
+	client    *twilio.RestClient
 }
 
 func NewTwillioProvider() ProviderInterface {
