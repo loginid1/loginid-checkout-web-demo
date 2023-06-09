@@ -13,8 +13,8 @@ import {
 	ThemeProvider,
 	Typography,
 } from "@mui/material";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import React, { useState } from "react";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import React, { useEffect, useState } from "react";
 import { LoginID } from "../theme/theme";
 import background from "../assets/background.svg";
 import { ReactComponent as VaultLogo } from "../assets/logo.svg";
@@ -33,6 +33,17 @@ export default function Register() {
 
 	const [errorMessage, setErrorMessage] = useState("");
 	const [termOpen, setTermOpen] = useState<boolean>(false);
+	const [entry, setEntry] = useState<string>("wallet");
+
+	
+	const params = useParams();
+	
+	useEffect(()=>{
+		let aEntry = params["entry"];
+		if(aEntry != null && aEntry === "algo"){
+			setEntry("algo");
+		}
+	},[]);
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -43,7 +54,11 @@ export default function Register() {
 				token: response.jwt,
 			});
 			//navigate("/quick_add_algorand");
-			handleAccountCreation();
+			if (entry === "algo") {
+				handleAccountCreation();
+			} else {
+				navigate("/home");
+			}
       AuthService.storePref({username:username});
 		} catch (error) {
 			setErrorMessage((error as Error).message);

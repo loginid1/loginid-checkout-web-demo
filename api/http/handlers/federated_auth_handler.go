@@ -225,7 +225,7 @@ func (h *FederatedAuthHandler) FederatedRegisterCompleteHandler(w http.ResponseW
 	}
 
 	// save user to database
-	userid, err := h.UserService.CreateUserAccount(request.Username, request.DeviceName, public_key, key_alg, true)
+	userid, err := h.UserService.CreateUserAccount(request.Username, request.DeviceName, public_key, key_alg, "", true)
 	if err != nil {
 		http_common.SendErrorResponse(w, *err)
 		return
@@ -268,7 +268,7 @@ func (h *FederatedAuthHandler) FederatedRegisterCompleteHandler(w http.ResponseW
 		return
 	}
 
-	db_jwt, err := h.KeystoreService.GenerateDashboardJWT(fidoData.User.Username, userid, fidoData.User.ID)
+	db_jwt, err := h.KeystoreService.GenerateDashboardJWT(fidoData.User.Username, userid, fidoData.User.ID, "")
 	if err != nil {
 		http_common.SendErrorResponse(w, *err)
 		return
@@ -361,7 +361,7 @@ func (h *FederatedAuthHandler) FederatedAuthCompleteHandler(w http.ResponseWrite
 		return
 	}
 
-	db_jwt, err := h.KeystoreService.GenerateDashboardJWT(fidoData.User.Username, user.ID, fidoData.User.ID)
+	db_jwt, err := h.KeystoreService.GenerateDashboardJWT(fidoData.User.Username, user.ID, fidoData.User.ID, user.Scopes)
 	if err != nil {
 		http_common.SendErrorResponse(w, *err)
 		return

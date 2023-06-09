@@ -162,7 +162,20 @@ func (s *AppService) SetupSession(appid string, origin string, ip string) (*AppS
 
 	var app *DevApp
 	var serr *services.ServiceError
-	if appid != "" {
+
+	if appid == goutil.GetEnv("CONSOLE_APP_ID", "") && origin == goutil.GetEnv("WALLET_BASEURL", "") {
+
+		// check session for LoginID Wallet dashboard
+		app = &DevApp{
+			ID:         appid,
+			Origins:    origin,
+			AppName:    "LoginID Wallet",
+			Attributes: KEmailAttribute,
+			Status:     kStatusActive,
+			Iat:        time.Now(),
+			Uat:        time.Now(),
+		}
+	} else if appid != "" {
 		app, serr = s.GetAppById(appid)
 		if serr != nil {
 			return nil, services.CreateError("invalid app id")

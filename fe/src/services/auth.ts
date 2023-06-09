@@ -1,3 +1,5 @@
+import jwtDecode from "jwt-decode";
+
 export interface UserSession {
     username : string | null;
     token : string | null;
@@ -7,6 +9,13 @@ export interface UserPreference {
     username: string;
     scopes?: string;
 }
+
+export interface Claims {
+    sub: string;
+    scopes: string;
+    iat: number;
+    aud: string;
+}
 export class AuthService {
 
     static storePref(pref : UserPreference) {
@@ -15,6 +24,12 @@ export class AuthService {
 
     static storeSession(user : UserSession ) {
         localStorage.setItem("session", JSON.stringify(user) )
+        //parse token and store pref
+        if (user!=null && user.token != null && user.username!= null ){
+            let claims : Claims = jwtDecode(user.token);
+            this.storePref({username: user.username, scopes: claims.scopes});
+        }
+
     }
 
     static logout() {

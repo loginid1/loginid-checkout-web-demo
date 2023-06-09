@@ -77,6 +77,8 @@ type RegisterCompleteRequest struct {
 	CredentialID    string `json:"credential_id"`
 	ClientData      string `json:"client_data"`
 	AttestationData string `json:"attestation_data"`
+	EmailToken      string `json:"email_token"`
+	Scope           string `json:"scope"`
 }
 
 /**
@@ -115,13 +117,13 @@ func (u *AuthHandler) RegisterCompleteHandler(w http.ResponseWriter, r *http.Req
 	}
 
 	// save user to database
-	userid, err := u.UserService.CreateUserAccount(request.Username, request.DeviceName, public_key, key_alg, false)
+	userid, err := u.UserService.CreateUserAccount(request.Username, request.DeviceName, public_key, key_alg, request.Scope, false)
 	if err != nil {
 		http_common.SendErrorResponse(w, *err)
 		return
 	}
 
-	db_jwt, err := u.KeystoreService.GenerateDashboardJWT(fidoData.User.Username, userid, fidoData.User.ID)
+	db_jwt, err := u.KeystoreService.GenerateDashboardJWT(fidoData.User.Username, userid, fidoData.User.ID, request.Scope)
 	if err != nil {
 		http_common.SendErrorResponse(w, *err)
 		return
@@ -183,7 +185,7 @@ func (u *AuthHandler) AuthenticateCompleteHandler(w http.ResponseWriter, r *http
 		return
 	}
 
-	db_jwt, err := u.KeystoreService.GenerateDashboardJWT(fidoData.User.Username, user.ID, fidoData.User.ID)
+	db_jwt, err := u.KeystoreService.GenerateDashboardJWT(fidoData.User.Username, user.ID, fidoData.User.ID, user.Scopes)
 	if err != nil {
 		http_common.SendErrorResponse(w, *err)
 		return
@@ -288,7 +290,7 @@ func (u *AuthHandler) AddCredentialCompleteHandler(w http.ResponseWriter, r *htt
 		return
 	}
 
-	db_jwt, err := u.KeystoreService.GenerateDashboardJWT(fidoData.User.Username, user.ID, fidoData.User.ID)
+	db_jwt, err := u.KeystoreService.GenerateDashboardJWT(fidoData.User.Username, user.ID, fidoData.User.ID, user.Scopes)
 	if err != nil {
 		http_common.SendErrorResponse(w, *err)
 		return

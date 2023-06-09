@@ -51,7 +51,6 @@ func MigrateUp() {
 		os.Exit(1)
 	}
 	// migrate to latest
-
 	err = m.Up()
 	if err != nil && err != migrate.ErrNoChange {
 		logger.Global.Panic(fmt.Sprintf("failed to migrate: %s", err.Error()))
@@ -59,16 +58,19 @@ func MigrateUp() {
 		//_ = m.Force(202104270001)
 	}
 	//reverse last change
-
-	// err = m.Steps(-1)
-	// if err != nil {
-	// 	logger.Global.Error(fmt.Sprintf("failed to reverse: %s", err.Error()))
-	// }
+	/*
+		err = m.Steps(-1)
+		if err != nil {
+			logger.Global.Error(fmt.Sprintf("failed to reverse: %s", err.Error()))
+		}
+	*/
 	// force previous version
 
-	// err = m.Force(2023032701)
-	// if err != nil {
-	// 	logger.Global.Error(fmt.Sprintf("failed to force version: %s", err.Error()))
-	// }
+	/*
+		err = m.Force(2023051401)
+		if err != nil {
+			logger.Global.Error(fmt.Sprintf("failed to force version: %s", err.Error()))
+		}
+	*/
 
 }

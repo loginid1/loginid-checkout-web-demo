@@ -88,19 +88,21 @@ export default function EmailValidation() {
 							maxWidth="400px"
 							align="left"
 						>
-							{type === "register" &&
-							<p>
-							Thank you for confirming your email. Please go back
-							to the site where you registered and complete the
-							Passkey registration within 5 minutes.
-							</p>
-							}
-							{type === "login" &&
-							<p>
-							`Thank you for confirming your email. Please go back
-							to the site where you login to complete.`
-							</p>
-							}
+							{type === "register" && (
+								<p>
+									Thank you for confirming your email. Please
+									go back to the site where you registered and
+									complete the Passkey registration within 5
+									minutes.
+								</p>
+							)}
+							{type === "login" && (
+								<p>
+									`Thank you for confirming your email. Please
+									go back to the site where you login to
+									complete.`
+								</p>
+							)}
 						</Typography>
 						{errorMessage.length > 0 && (
 							<Alert severity="error">{errorMessage}</Alert>

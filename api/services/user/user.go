@@ -2,6 +2,10 @@ package user
 
 import "time"
 
+const KScopePass = "pass"
+const KScopeDeveloper = "developer"
+const KScopeAlgo = "algo"
+
 type PendingUser struct {
 	Username   string
 	PublicKey  string
@@ -14,6 +18,7 @@ type User struct {
 	Username       string    `json:"username" gorm:"not null"`
 	UsernameLower  string    `json:"username_lower" gorm:"->;type:varchar GENERATED ALWAYS AS (lower(username)) STORED;default:(-)"`
 	Email          string    `json:"email" `
+	Scopes         string    `json:"scopes" `
 	EmailValidated bool      `json:"email_validated" `
 	Iat            time.Time `json:"iat" gorm:"DEFAULT:current_timestamp"`
 }

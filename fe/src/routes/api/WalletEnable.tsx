@@ -86,12 +86,12 @@ export default function WalletEnable() {
 			let sessionString = JSON.stringify(wSession);
 			// create session
 			let redirect_url =
-				"/login?redirect_url=" +
+				"/algo/login?redirect_url=" +
 				encodeURIComponent("/api/enable/") +
 				EncodingUtil.encodeString(sessionString);
 			if (!AuthService.hasAccount()) {
 				redirect_url =
-					"/register?redirect_url=" +
+					"/algo/register?redirect_url=" +
 					encodeURIComponent("/api/enable/") +
 					EncodingUtil.encodeString(sessionString);
 			}

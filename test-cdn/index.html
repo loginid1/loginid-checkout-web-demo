@@ -2,35 +2,39 @@
 <html lang="en">
 
 <head>
-  <meta charset="utf-8" />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
-  <meta http-equiv="Permissions-Policy" content="publickey-credentials-get=*">
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
+    <meta http-equiv="Permissions-Policy" content="publickey-credentials-get=*">
 
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#000000" />
-  <meta name="description" content="A simple shopping cart created using the Material UI framework" />
-  <title>CDN Test</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="description" content="A simple shopping cart created using the Material UI framework" />
+    <title>CDN Test</title>
 </head>
 
 <body>
-  <noscript>You need to enable JavaScript to run this app.</noscript>
-  <script src="https://loginid-wallet-cdn.s3.us-east-2.amazonaws.com/loginid-wallet-sdk.min.js"></script>
-  <script>
-    async function onSignup(){
-        const wallet = new loginid.WalletSDK("https://vault.testnet.loginid.io",null, null)
-        try {
-
-        let result = await wallet.signup();
-        } catch(error) {
-            console.log(error);
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <script src="https://loginid-wallet-cdn.s3.us-east-2.amazonaws.com/loginid-wallet-sdk.min.js"></script>
+    <script>
+        window.onload = function () {
+            let login = document.getElementById("loginid-button");
+            login.onclick = onSignup;
         }
-    }
-  </script>
-  <div id="root">
-    <button onclick="onSignup()">Login</button>
+        async function onSignup() {
+            const wallet = new loginid.WalletSDK("https://vault.testnet.loginid.io", null, null)
+            try {
 
-  </div>
+                let result = await wallet.signup();
+            } catch (error) {
+                console.log(error);
+            }
+        }
+
+    </script>
+    <div id="root">
+        <button id="loginid-button">Login Button</button>
+    </div>
 </body>
 
 </html>

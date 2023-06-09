@@ -196,7 +196,7 @@ func (s *KeystoreService) GenerateIDTokenJWT(claims IDTokenClains) (string, *ser
 	return token, nil
 }
 
-func (s *KeystoreService) GenerateDashboardJWT(username string, userid string, fid string) (string, *services.ServiceError) {
+func (s *KeystoreService) GenerateDashboardJWT(username string, userid string, fid string, scopes string) (string, *services.ServiceError) {
 
 	keystore := s.LoadKeystore(ksSessionID)
 	if keystore == nil {
@@ -208,7 +208,7 @@ func (s *KeystoreService) GenerateDashboardJWT(username string, userid string, f
 		return "", services.CreateError("fail to load key in pem format")
 	}
 
-	claims := DashboardClaims{Sub: username, FID: fid, Scopes: "all", UID: userid, Iat: time.Now().Unix()}
+	claims := DashboardClaims{Sub: username, FID: fid, Scopes: scopes, UID: userid, Iat: time.Now().Unix()}
 
 	token, err := utils.GenerateJWT(privateKey, keystore.ID, claims)
 	if err != nil {
