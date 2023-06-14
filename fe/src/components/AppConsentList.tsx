@@ -8,7 +8,7 @@ export function DisplayConsents(consents : Consent[]){
 
 		<Grid container justifyContent="left"  spacing={1} sx={{ mt:1  }}>
             <Grid container item xs={6}><Typography variant="medium">App</Typography></Grid>
-            <Grid container item xs={3}><Typography variant="medium">Attributes</Typography></Grid>
+            <Grid container item xs={3}><Typography variant="medium">Passes</Typography></Grid>
             <Grid container item xs={3}><Typography variant="medium">Time</Typography></Grid>
             <Grid item xs={12} ><Divider variant="fullWidth" ></Divider></Grid>
             {consents && consents.map((consent)=> (

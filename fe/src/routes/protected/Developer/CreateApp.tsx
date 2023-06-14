@@ -158,7 +158,7 @@ export default function CreateApp() {
 							label="Origin"
 							value={origins}
 							size="small"
-							helperText="domain name i.e. example.com"
+							helperText="domain name i.e. https://example.com , http://localhost:3000"
 							onChange={(e) => setOrigins(e.target.value)}
 						/>
 					</Grid>

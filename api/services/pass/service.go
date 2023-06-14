@@ -253,7 +253,8 @@ func (s *PassService) ForceAddPass(ctx context.Context, userId, name, attributes
 
 	keyId, encryptedData, err := services.EncryptWithOwnerID(ctx, "loginid.io", string(dataBytes))
 	if err != nil {
-		return services.CreateError("failed to encrypt the phone pass")
+		logger.ForContext(ctx).Error(err.Error())
+		return services.CreateError("failed to encrypt pass")
 	}
 
 	pass := UserPass{

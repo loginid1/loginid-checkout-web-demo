@@ -26,6 +26,7 @@ import { AuthService } from "../../services/auth";
 import { CodeInput } from "../../components/CodeInput";
 import { TermDialog } from "../../components/dialogs/TermOfServiceDialog";
 import { Message, MessagingService } from "../../services/messaging";
+import FingerprintIcon from "@mui/icons-material/Fingerprint";
 import EmailIcon from "@mui/icons-material/Email";
 
 import jwt_decode from "jwt-decode";
@@ -202,22 +203,14 @@ export default function FederatedRegister() {
 					Create a passkey to securely login to all apps powered by
 					LoginID Wallet using your biometrics similar to method use to unlock your device.
 					</p>
+				</Typography>
+				<Chip icon={<FingerprintIcon />} label={username}></Chip>
+				<Typography variant="caption" marginTop={2} maxWidth="400px" align="left">
 					Your biometric information never leaves the device.
-					<p>
-
-					</p>
 				</Typography>
 				{errorMessage.length > 0 && (
 					<Alert severity="error">{errorMessage}</Alert>
 				)}
-				<TextField
-					fullWidth
-					label="Email"
-					name="email"
-					disabled
-					value={username}
-					onChange={(e) => setUsername(e.target.value)}
-				/>
 				<Button
 					variant="contained"
 					size="small"
