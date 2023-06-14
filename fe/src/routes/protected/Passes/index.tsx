@@ -1,4 +1,4 @@
-import { MoreVert, Add, Share, Delete } from "@mui/icons-material";
+import { MoreVert, Add, Share, Delete, History } from "@mui/icons-material";
 import {
 	Stack,
 	Button,
@@ -14,6 +14,7 @@ import {
 	MenuItem,
 	ListItemIcon,
 	ListItemText,
+	Tooltip,
 } from "@mui/material";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -104,6 +105,41 @@ const Passes = () => {
 		fetchData();
 	}, []);
 
+	const PassDates = (props: {created_at: Date, expires_at?: Date}) => {
+		if (props.expires_at === undefined || props.expires_at === null) {
+			return (
+				<Typography align="left" fontSize={14} color="rgba(0,0,0,0.5)">
+					Added {Moment(props.created_at).format("DD/MM/YYYY hh:mm A")}
+				</Typography>
+			)
+		}
+
+		const expiresAt = Moment(props.expires_at)
+		if (expiresAt.isAfter(Moment.now())) {
+			return (
+				<Stack direction="row" justifyContent="space-between">
+					<Typography align="left" fontSize={14} color="rgba(0,0,0,0.5)">
+						Added {Moment(props.created_at).format("DD/MM/YYYY hh:mm A")}
+					</Typography>
+					<Tooltip title={"Expires at " + expiresAt.format("DD/MM/YYYY")}>
+						<History fontSize="small" sx={{ color: "rgba(15,190,0,0.8)"}}/>
+					</Tooltip>
+				</Stack>
+			)
+		}
+
+		return (
+			<Stack direction="row" justifyContent="space-between">
+				<Typography align="left" fontSize={14} color="rgba(0,0,0,0.5)">
+					Added {Moment(props.created_at).format("DD/MM/YYYY hh:mm A")}
+				</Typography>
+				<Tooltip title={"Expired at " + expiresAt.format("DD/MM/YYYY")}>
+					<History fontSize="small" sx={{ color: "rgba(255,0,0,0.8)"}}/>
+				</Tooltip>
+			</Stack>
+		)
+	}
+
 	return (
 		<VaultBase focus={"passes"}>
 			<Typography
@@ -139,8 +175,8 @@ const Passes = () => {
 						<>
 							<Grid container direction="row" >
 								{ passes.map(pass => (
-									<Grid item padding={2} xl={4} lg={4} md={6} xs={12}>
-										<Card sx={{ minHeight: 350, display:"flex", flexWrap:"wrap", flexDirection:"column", justifyContent:"space-between" }}>
+									<Grid item padding={2} xl={3} lg={4} md={6} xs={12}>
+										<Card sx={{ minHeight: 220, display:"flex", flexWrap:"wrap", flexDirection:"column", justifyContent:"space-between" }}>
 											<CardHeader
 												action={
 													<PassMenu passId={pass.id}/>
@@ -150,11 +186,7 @@ const Passes = () => {
 														{pass.name}
 													</Typography>
 												}
-												subheader={
-													<Typography align="left" fontSize={14} color="rgba(0,0,0,0.5)">
-														Added {Moment(pass.created_at).format("DD/MM/YYYY hh:mm A")}
-													</Typography>
-												}
+												subheader={ <PassDates created_at={pass.created_at} expires_at={pass.expires_at}/> }
 											/>
 											<CardContent>
 												{ pass.data }

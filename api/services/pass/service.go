@@ -35,6 +35,7 @@ type PassResponse struct {
 	Issuer     string         `json:"issuer"`
 	Data       string         `json:"data"`
 	CreatedAt  time.Time      `json:"created_at"`
+	ExpiresAt  *time.Time     `json:"expires_at,omitempty"`
 }
 
 func NewPassService(db *gorm.DB, redis *redis.Client, notification_service notification.ProviderInterface) *PassService {
@@ -64,6 +65,7 @@ func (s *PassService) List(ctx context.Context, username string) ([]interface{},
 			Data:       pass.MaskedData,
 			Issuer:     pass.Issuer,
 			CreatedAt:  pass.CreatedAt,
+			ExpiresAt:  pass.ExpiresAt,
 		}
 
 		response = append(response, item)

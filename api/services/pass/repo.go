@@ -19,7 +19,7 @@ func (r *PassRepository) Create(model UserPass) error {
 
 func (r *PassRepository) ListByUsername(username string) ([]UserPass, error) {
 	var result []UserPass
-	if err := r.DB.Model(UserPass{}).Select("user_passes.*").Joins("JOIN users ON users.id = user_passes.user_id").Where("users.username_lower = ?", strings.ToLower(username)).Find(&result).Error; err != nil {
+	if err := r.DB.Model(UserPass{}).Select("user_passes.*").Joins("JOIN users ON users.id = user_passes.user_id").Where("users.username_lower = ?", strings.ToLower(username)).Order("expires_at NULLS FIRST, created_at ASC").Find(&result).Error; err != nil {
 		return nil, err
 	}
 
