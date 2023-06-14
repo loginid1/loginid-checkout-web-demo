@@ -29,6 +29,7 @@ export interface Pass {
     issuer: string;
     data: string;
     created_at: Date;
+    expires_at?: Date;
 }
 
 export class VaultPass extends Base{

@@ -120,6 +120,7 @@ interface BlinkIdElement extends HTMLElement {
     translations: { [key: string]: string; };
     scanFromImage: boolean;
     scanFromCamera: boolean;
+    startCameraScan: () => Promise<void>;
 }
 
 interface BlinkidProps {
@@ -128,6 +129,7 @@ interface BlinkidProps {
 }
 
 const BlinkidInBrowser = (props: BlinkidProps) => {
+    const [blinkIdEl, setBlinkIdEl] = useState<BlinkIdElement|null>(null);
     let settings = new BlinkIDSDK.BlinkIdMultiSideRecognizerSettings()
     settings.returnFaceImage = true;
     
@@ -141,36 +143,47 @@ const BlinkidInBrowser = (props: BlinkidProps) => {
     });
 
     useEffect(() => {
-        const el = ref.current as BlinkIdElement;
-        if (el !== null) {
+        const blinkIdEl = ref.current as BlinkIdElement;
+        if (blinkIdEl !== null) {
             // Setup the `BlinkIdMultiSideRecognizer` to return 
             // extra information `FaceImage` and the `FullDocumentImage`
-            el.recognizerOptions = {
+            blinkIdEl.recognizerOptions = {
                 "BlinkIdMultiSideRecognizer": {
                     "returnFaceImage": true,
                     "returnFullDocumentImage": true,
                 },
             };
-            el.scanFromCamera = true;
-            el.scanFromImage = false;
-            el.translations = {
+            blinkIdEl.scanFromCamera = true;
+            blinkIdEl.scanFromImage = false;
+            blinkIdEl.translations = {
                 "action-message": "Scan with your device camera",
             };
-            el.addEventListener('scanSuccess', props.handleSuccess);
+            blinkIdEl.addEventListener('ready', () => { setBlinkIdEl(blinkIdEl) });
+            blinkIdEl.addEventListener('scanSuccess', props.handleSuccess);
             if (props.handleFeedback !== undefined) {
-                el.addEventListener('feedback', props.handleFeedback);
+                blinkIdEl.addEventListener('feedback', props.handleFeedback);
             }
 
             return () => {
-                el.removeEventListener('scanSuccess', props.handleSuccess);
+                blinkIdEl.removeEventListener('ready', () => { setBlinkIdEl(blinkIdEl) });
+                blinkIdEl.removeEventListener('scanSuccess', props.handleSuccess);
                 if (props.handleFeedback !== undefined) {
-                    el.removeEventListener('feedback', props.handleFeedback);
+                    blinkIdEl.removeEventListener('feedback', props.handleFeedback);
                 }
             };
         }
     }, [ref, props]);
 
-    return el;
+    return (
+        <>
+            <Box sx={{visibility: "hidden", height: 0}}>
+                {el}
+            </Box>
+            <Box mb={5} sx={{ display: 'flex', alignContent: 'center', justifyContent: 'center' }}>
+                { blinkIdEl === null ? <CircularProgress /> : <Button variant="contained" onClick={() => blinkIdEl.startCameraScan()}>Scan Your Document</Button> }
+            </Box>
+        </>
+    );
 }
 
 interface IDocumentScanningProps {

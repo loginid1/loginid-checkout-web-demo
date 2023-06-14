@@ -1,8 +1,10 @@
-import { Button, FormControl, Stack, TextField, Typography } from "@mui/material";
+import { Button, FormControl, Stack, Typography } from "@mui/material";
+import { ArrowBack, Refresh } from "@mui/icons-material";
 import React, { useState, useEffect } from "react";
+import PhoneInput from "react-phone-input-2";
+import ReactCodeInput from "react-code-input";
 import { AuthService } from "../../../services/auth";
 import vaultSDK from "../../../lib/VaultSDK";
-import { ArrowBack, Refresh } from "@mui/icons-material";
 import { NewPassControllerProps } from "./PassController";
 
 const PhonePass = (props: NewPassControllerProps): JSX.Element => {
@@ -11,27 +13,46 @@ const PhonePass = (props: NewPassControllerProps): JSX.Element => {
     const [timer, setTimer] = useState(45);
     const [phoneNumber, setPhoneNumber] = useState("");
 
-
     useEffect(() => {
         timer > 0 && verifyInit && setTimeout(() => setTimer(timer - 1), 1000);
     }, [timer, verifyInit]);
-    
+
     return (
         <>
             <FormControl fullWidth>
-                <TextField
-                    fullWidth
+                <PhoneInput
+                    inputStyle={{
+                        width: "100%",
+                        height: "50px",
+                        fontSize: "15px",
+                        borderRadius: "5px",
+                        marginBottom: "10px",
+                    }}
+                    enableLongNumbers
+                    country={"us"}
                     disabled={verifyInit}
-                    label="Phone number"
                     value={phoneNumber}
-                    onChange={e => setPhoneNumber(e.target.value)}
-                    sx={{ mb: 2 }} />
-                <TextField
-                    fullWidth
-                    label="Code"
-                    value={code}
-                    onChange={e => e.target.value.length <= 6 && setCode(e.target.value.toUpperCase())}
-                    sx={{ mb: 2, visibility: verifyInit ? "visible" : "hidden" }} />
+                    onChange={value => setPhoneNumber("+" + value)}
+                />
+                { verifyInit && (
+                    <ReactCodeInput
+                        type="text"
+                        fields={6}
+                        name="code"
+                        inputMode="numeric"
+                        onChange={(value: string) => setCode(value)}
+                        pattern="^[0-9]+$|^$"
+                        inputStyle={{
+                            font: "inherit",
+                            letterSpacing: "inherit",
+                            color: "currentcolor",
+                            padding: "16.5px 14px",
+                            margin: "25px 5px",
+                            width: "54px",
+                            textAlign: "center"
+                        }}
+                    />
+                )}
                 <Typography
                     variant="subtitle2"
                     color="rgba(0,0,0,0.5)"
