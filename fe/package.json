@@ -44,7 +44,7 @@
   },
   "scripts": {
     "start": "react-app-rewired start",
-    "build": "react-app-rewired build",
+    "build": "BUILD_PATH='./dist' react-app-rewired build",
     "test": "react-app-rewired test",
     "eject": "react-scripts eject",
     "copy-blinkid-sdk-ui": "mkdir -p ./public/microblink/js && cp -R ./node_modules/@microblink/blinkid-in-browser-sdk/ui/dist/* ./public/microblink/js",
