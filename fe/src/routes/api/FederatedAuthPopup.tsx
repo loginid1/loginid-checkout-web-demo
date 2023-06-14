@@ -19,6 +19,7 @@ import AccountIcon from "@mui/icons-material/AccountCircle";
 import CheckIcon from "@mui/icons-material/Check";
 import styles from "../../styles/common.module.css";
 import PhoneInput from "react-phone-input-2";
+import FingerprintIcon from "@mui/icons-material/Fingerprint";
 import "react-phone-input-2/lib/style.css";
 import jwt_decode from "jwt-decode";
 import {
@@ -518,22 +519,29 @@ export default function FederatedAuthPopup() {
 						{displayMessage.text}
 					</Alert>
 				)}
+
 				<Typography
 					sx={{ m: 1 }}
 					variant="body2"
 					color="text.secondary"
+					textAlign="left"
 				>
-					You have successfully confirmed your email. Press "Add my
-					passkey" to complete this registration:
+					<p>
+						Register a LoginID Wallet account with biometrics you already use to unlock your device.
+					</p>
+					<p>
+						LoginID Wallet provides simple and secure ways to sign
+						in to your apps and manage all your identities.
+					</p>
 				</Typography>
-				<Chip icon={<EmailIcon />} label={username}></Chip>
+				<Chip icon={<FingerprintIcon />} label={username}></Chip>
 				<Button
 					variant="contained"
 					size="small"
 					sx={{ mt: 3, mb: 0 }}
 					onClick={registerFido}
 				>
-					Add My Passkey
+					Register with Biometrics
 				</Button>
 				<Button
 					variant="text"

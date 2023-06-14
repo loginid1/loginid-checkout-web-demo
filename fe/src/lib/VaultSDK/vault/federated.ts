@@ -50,6 +50,9 @@ export interface EmailValiationResponse {
 	email: string;
 	type: string;
 }
+export interface EmailSendResponse {
+	session: string;
+}
 
 export class VaultFederated extends Base {
 	async sessionInit(
@@ -68,7 +71,7 @@ export class VaultFederated extends Base {
 		email: string,
 		type: string,
 		origin: string
-	): Promise<void> {
+	): Promise<EmailSendResponse> {
 		return await utils.http.post(
 			this._baseURL,
 			"/api/federated/sendEmailSession",

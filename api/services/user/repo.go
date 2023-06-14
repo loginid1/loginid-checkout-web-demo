@@ -47,6 +47,11 @@ func (repo *UserRepository) CreateAccount(user User, credential UserCredential) 
 	return tx.Commit().Error
 }
 
+func (repo *UserRepository) UpdateScopes(username string, scope string) error {
+	var user User
+	return repo.DB.Model(&user).Where("username=?", username).Update("scopes", scope).Error
+}
+
 func (repo *UserRepository) AddUserCredential(username string, credential UserCredential) error {
 
 	tx := repo.DB.Begin()

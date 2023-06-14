@@ -58,6 +58,8 @@ function App() {
         <Route path="/faq" element={<Faq />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/:entry/login" element={<Login />} />
+        <Route path="/:entry/register" element={<Register />} />
         <Route path="/sdk/auth_p" element={<FederatedAuthPopup />} />
         <Route path="/sdk/auth" element={<FederatedAuth />} />
         <Route path="/sdk/register" element={<FederatedRegister />} />

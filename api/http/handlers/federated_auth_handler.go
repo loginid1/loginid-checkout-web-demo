@@ -225,7 +225,7 @@ func (h *FederatedAuthHandler) FederatedRegisterCompleteHandler(w http.ResponseW
 	}
 
 	// save user to database
-	userid, err := h.UserService.CreateUserAccount(request.Username, request.DeviceName, public_key, key_alg, true)
+	userid, err := h.UserService.CreateUserAccount(request.Username, request.DeviceName, public_key, key_alg, "", true)
 	if err != nil {
 		http_common.SendErrorResponse(w, *err)
 		return
@@ -269,7 +269,7 @@ func (h *FederatedAuthHandler) FederatedRegisterCompleteHandler(w http.ResponseW
 		return
 	}
 
-	db_jwt, err := h.KeystoreService.GenerateDashboardJWT(fidoData.User.Username, userid, fidoData.User.ID)
+	db_jwt, err := h.KeystoreService.GenerateDashboardJWT(fidoData.User.Username, userid, fidoData.User.ID, "")
 	if err != nil {
 		http_common.SendErrorResponse(w, *err)
 		return
@@ -362,7 +362,7 @@ func (h *FederatedAuthHandler) FederatedAuthCompleteHandler(w http.ResponseWrite
 		return
 	}
 
-	db_jwt, err := h.KeystoreService.GenerateDashboardJWT(fidoData.User.Username, user.ID, fidoData.User.ID)
+	db_jwt, err := h.KeystoreService.GenerateDashboardJWT(fidoData.User.Username, user.ID, fidoData.User.ID, user.Scopes)
 	if err != nil {
 		http_common.SendErrorResponse(w, *err)
 		return
@@ -486,6 +486,10 @@ type FederatedEmailSessionRequest struct {
 	Type    string
 }
 
+type EmailSessionResponse struct {
+	Session string `json:"session"`
+}
+
 func (h *FederatedAuthHandler) FederatedSendEmailSessionHandler(w http.ResponseWriter, r *http.Request) {
 	// session info
 
@@ -501,6 +505,19 @@ func (h *FederatedAuthHandler) FederatedSendEmailSessionHandler(w http.ResponseW
 		return
 	}
 
+	var sessionId = request.Session
+
+	if sessionId == "" {
+
+		sesResp, serr := h.AppService.SetupSession(goutil.GetEnv("CONSOLE_APP_ID", "00000"), request.Origin, "")
+		if serr != nil {
+
+			http_common.SendErrorResponse(w, services.NewError("missing session info"))
+			return
+		}
+		sessionId = sesResp.ID
+	}
+
 	//* send out email here
 
 	request_type := keystore.KEmailClaimsLogin
@@ -509,14 +526,14 @@ func (h *FederatedAuthHandler) FederatedSendEmailSessionHandler(w http.ResponseW
 	}
 
 	email_url := goutil.GetEnv("EMAIL_BASEURL", "http://localhost:3000")
-	token, serr := h.KeystoreService.GenerateEmailValidationJWT(request.Email, request_type, request.Session)
+	token, serr := h.KeystoreService.GenerateEmailValidationJWT(request.Email, request_type, sessionId)
 	if serr != nil {
 		logger.ForRequest(r).Error(serr.Message)
 		http_common.SendErrorResponse(w, services.NewError("register failed - please try again "))
 		return
 	}
 	// send email confirmation first
-	mail_err := email.SendHtmlEmailValidation(request.Email, request.Type, email_url, request.Origin, token, request.Session[0:6])
+	mail_err := email.SendHtmlEmailValidation(request.Email, request.Type, email_url, request.Origin, token, sessionId[0:6])
 	if mail_err != nil {
 
 		logger.ForRequest(r).Error(mail_err.Error())
@@ -525,7 +542,7 @@ func (h *FederatedAuthHandler) FederatedSendEmailSessionHandler(w http.ResponseW
 	}
 
 	//email.SendCode(request.Email, "123456")
-	http_common.SendSuccess(w)
+	http_common.SendSuccessResponse(w, EmailSessionResponse{Session: sessionId})
 
 }
 

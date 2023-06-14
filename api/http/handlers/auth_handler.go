@@ -17,12 +17,14 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"gitlab.com/loginid/software/libraries/goutil.git/logger"
 	http_common "gitlab.com/loginid/software/services/loginid-vault/http/common"
 	"gitlab.com/loginid/software/services/loginid-vault/services"
 	"gitlab.com/loginid/software/services/loginid-vault/services/fido2"
 	"gitlab.com/loginid/software/services/loginid-vault/services/keystore"
+	"gitlab.com/loginid/software/services/loginid-vault/services/pass"
 	"gitlab.com/loginid/software/services/loginid-vault/services/user"
 	"gitlab.com/loginid/software/services/loginid-vault/utils"
 )
@@ -31,6 +33,8 @@ type AuthHandler struct {
 	UserService     *user.UserService
 	Fido2Service    *fido2.Fido2Service
 	KeystoreService *keystore.KeystoreService
+
+	PassService *pass.PassService
 }
 
 type RegisterInitRequest struct {
@@ -54,12 +58,6 @@ func (u *AuthHandler) RegisterInitHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	// make sure to prevent email "@" in username
-	if strings.Contains(request.Username, "@") {
-		http_common.SendErrorResponse(w, services.NewError(`username contains reserved symbol '@'`))
-		return
-	}
-
 	// proxy register request to fido2 service
 	response, err := u.Fido2Service.RegisterInit(request.Username, request.RegisterSession)
 	if err != nil {
@@ -77,6 +75,9 @@ type RegisterCompleteRequest struct {
 	CredentialID    string `json:"credential_id"`
 	ClientData      string `json:"client_data"`
 	AttestationData string `json:"attestation_data"`
+	EmailToken      string `json:"email_token"`
+	SessionID       string `json:"session_id"`
+	Scope           string `json:"scope"`
 }
 
 /**
@@ -93,6 +94,21 @@ func (u *AuthHandler) RegisterCompleteHandler(w http.ResponseWriter, r *http.Req
 		return
 	}
 
+	if request.EmailToken != "" {
+
+		// validate token
+		claims, err := u.KeystoreService.VerifyEmailJWT(request.EmailToken)
+		if err != nil {
+			http_common.SendErrorResponse(w, services.NewError("invalid email validation"))
+			return
+		}
+
+		if claims.Email != request.Username || claims.Session != request.SessionID || utils.IsExpired(claims.IssuedAt, 5*time.Minute) {
+			http_common.SendErrorResponse(w, services.NewError("invalid email validation"))
+			return
+		}
+	}
+
 	// extract public_key and algorithm from attestation_data
 	public_key, key_alg, err := fido2.ExtractPublicKey(request.AttestationData)
 
@@ -100,11 +116,6 @@ func (u *AuthHandler) RegisterCompleteHandler(w http.ResponseWriter, r *http.Req
 		http_common.SendErrorResponse(w, services.NewError("device key not supported"))
 		return
 	}
-	pUser := user.PendingUser{}
-	pUser.DeviceName = request.DeviceName
-	pUser.Username = request.Username
-	pUser.PublicKey = public_key
-	pUser.KeyAlg = key_alg
 
 	// send to fido2 server
 	// proxy register request to fido2 service
@@ -115,13 +126,25 @@ func (u *AuthHandler) RegisterCompleteHandler(w http.ResponseWriter, r *http.Req
 	}
 
 	// save user to database
-	userid, err := u.UserService.CreateUserAccount(request.Username, request.DeviceName, public_key, key_alg, false)
+	userid, err := u.UserService.CreateUserAccount(request.Username, request.DeviceName, public_key, key_alg, request.Scope, false)
 	if err != nil {
 		http_common.SendErrorResponse(w, *err)
 		return
 	}
 
-	db_jwt, err := u.KeystoreService.GenerateDashboardJWT(fidoData.User.Username, userid, fidoData.User.ID)
+	// create email pass
+	if request.EmailToken != "" {
+		passData := pass.EmailPassSchema{
+			Email: strings.ToLower(request.Username),
+		}
+		maskedData, _ := utils.MaskEmailAddress(strings.ToLower(request.Username))
+		if err := u.PassService.ForceAddPass(r.Context(), userid, "My e-mail", "email", maskedData, pass.EmailPassSchemaType, passData); err != nil {
+			http_common.SendErrorResponse(w, *err)
+			return
+		}
+	}
+
+	db_jwt, err := u.KeystoreService.GenerateDashboardJWT(fidoData.User.Username, userid, fidoData.User.ID, request.Scope)
 	if err != nil {
 		http_common.SendErrorResponse(w, *err)
 		return
@@ -183,7 +206,7 @@ func (u *AuthHandler) AuthenticateCompleteHandler(w http.ResponseWriter, r *http
 		return
 	}
 
-	db_jwt, err := u.KeystoreService.GenerateDashboardJWT(fidoData.User.Username, user.ID, fidoData.User.ID)
+	db_jwt, err := u.KeystoreService.GenerateDashboardJWT(fidoData.User.Username, user.ID, fidoData.User.ID, user.Scopes)
 	if err != nil {
 		http_common.SendErrorResponse(w, *err)
 		return
@@ -288,7 +311,7 @@ func (u *AuthHandler) AddCredentialCompleteHandler(w http.ResponseWriter, r *htt
 		return
 	}
 
-	db_jwt, err := u.KeystoreService.GenerateDashboardJWT(fidoData.User.Username, user.ID, fidoData.User.ID)
+	db_jwt, err := u.KeystoreService.GenerateDashboardJWT(fidoData.User.Username, user.ID, fidoData.User.ID, user.Scopes)
 	if err != nil {
 		http_common.SendErrorResponse(w, *err)
 		return

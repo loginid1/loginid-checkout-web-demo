@@ -37,7 +37,7 @@ const menuData: MenuData[] = [
 	},
 
 	{
-		id: "algorand",
+		id: "algo",
 		icon: <AlgorandDefault />,
 		title: "Algorand",
 		link: "",

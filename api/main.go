@@ -125,7 +125,7 @@ func main() {
 	//api.Use(logger.InjectRequestIDMiddleware)
 
 	//auth handler
-	authHandler := handlers.AuthHandler{UserService: userService, Fido2Service: fidoService, KeystoreService: keystoreService}
+	authHandler := handlers.AuthHandler{UserService: userService, Fido2Service: fidoService, KeystoreService: keystoreService, PassService: passService}
 	api.HandleFunc("/register/init", authHandler.RegisterInitHandler)
 	api.HandleFunc("/register/complete", authHandler.RegisterCompleteHandler)
 	api.HandleFunc("/authenticate/init", authHandler.AuthenticateInitHandler)
@@ -233,7 +233,7 @@ func main() {
 		AllowedHeaders:   []string{"Content-Type", "X-Session-Token", "x-api-token"},
 		AllowedMethods:   []string{"OPTIONS", "GET", "POST", "DELETE"},
 		// Enable Debugging for testing, consider disabling in production
-		Debug: true,
+		Debug: false,
 	})
 
 	corsHandler := c.Handler(r)
