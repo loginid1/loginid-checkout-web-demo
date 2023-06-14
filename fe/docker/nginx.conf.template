@@ -1,0 +1,67 @@
+server {
+    listen $PORT default_server;
+    listen [::]:$PORT default_server;
+
+    # Disables browsers' buggy cross-site scripting filter by setting the X-XSS-Protection header to 0.
+    # See discussion about disabling the header and documentation on MDN.
+    #  - https://github.com/helmetjs/helmet/issues/230 and
+    #  - https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-XSS-Protection.
+    add_header X-XSS-Protection 0;
+
+    # Sets the X-Frame-Options header to help mitigate clickjacking attacks. This header is superseded
+    # by the frame-ancestors Content Security Policy directive but is still useful on old browsers.
+    # For more, see the documentation on MDN.
+    #  - https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Frame-Options
+    add_header X-Frame-Options SAMEORIGIN;
+
+    # Sets the X-Content-Type-Options header to nosniff. This mitigates MIME type
+    # sniffing which can cause security vulnerabilities. For more, see the
+    # documentation on MDN.
+    #  - https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Content-Type-Options
+    add_header X-Content-Type-Options nosniff;
+
+    # Sets the Content-Security-Policy header which helps mitigate cross-site scripting
+    # attacks, among other things. See MDN's introductory article on Content
+    # Security Policy.
+    #  - https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP
+    add_header Content-Security-Policy "default-src 'self' www.google-analytics.com www.googletagmanager.com; script-src 'self' www.google-analytics.com www.googletagmanager.com; script-src-attr 'none'; style-src 'self'; img-src 'self' data: www.google-analytics.com www.googletagmanager.com; font-src 'self' data: https:; object-src 'none'; frame-ancestors 'self'; form-action 'self'; upgrade-insecure-requests; block-all-mixed-content; base-uri 'self'";
+
+    # Sets Strict-Transport-Security header which allow a web site tell browsers that it
+    # should only be accessed using HTTPS, instead of using HTTP.
+    #  - https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Strict-Transport-Security
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains;";
+
+    # Sets Referrer-Policy header which controls how much referrer information (sent via the Referer header)
+    # should be included with requests. "no-referrer-when-downgrade" is the default behaviour if
+    # no policy is specified, just making it explicit.
+    #  - https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Referrer-Policy
+    add_header Referrer-Policy no-referrer-when-downgrade;
+
+    root /usr/share/nginx/html;
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    location ~* \.html?$ {
+        expires -1;
+        add_header Pragma "no-cache";
+        add_header Cache-Control "no-store, must-revalidate";
+    }
+
+    location ~* \.(?:ico|css|js|gif|jpe?g|png)$ {
+        # Some basic cache-control for static files to be sent to the browser
+        expires max;
+        add_header Pragma public;
+        add_header Cache-Control "public, must-revalidate, proxy-revalidate";
+    }
+
+
+    # gzip on; #enable gzip compression
+    # gzip_static on;
+    # gzip_vary on; #cache both normal and gzipped versions of the resources
+    # gzip_min_length 10240; # dont' compress anything smaller than 10 kb
+    # gzip_proxied expired no-cache-no-store private auth; # enable gzip for proxies
+    # gzip_types text/html text/css application/javascript application/x-javascript image/svg+xml; # allow gzipping for the list of type of content
+}
