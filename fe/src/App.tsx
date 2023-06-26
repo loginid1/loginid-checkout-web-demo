@@ -14,6 +14,7 @@ import ManageCredential from './routes/protected/ManageCredential';
 import ManageAlgorand from './routes/protected/ManageAlgorand';
 import CreateAlgorand from './routes/protected/CreateAlgorand';
 import WalletEnable from './routes/api/WalletEnable';
+import DriversLicenseMobile from './routes/api/DriversLicenseMobile';
 import WalletTxnConfirmation from './routes/api/WalletTransaction';
 import Credentials from './routes/protected/Credentials/Credentials';
 import AddCredential from './routes/protected/Credentials/AddCredential';
@@ -69,6 +70,7 @@ function App() {
         <Route path="/sdk/enable" element={<WalletEnable />} />
         <Route path="/sdk/enable/:data" element={<WalletEnable />} />
         <Route path="/sdk/transaction" element={<WalletTxnConfirmation />} />
+        <Route path="/passes/new/drivers-license/mobile/:session" element={ <DriversLicenseMobile/> }/>
         <Route path="/" element={<ProtectedRoute />} >
           <Route path="/help" element={<Help />} />
           <Route path="/home" element={<Credentials />} />

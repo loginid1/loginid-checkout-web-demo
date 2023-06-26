@@ -100,7 +100,37 @@ export class VaultPass extends Base{
         return await utils.http.get(
             this._baseURL,
             `/api/protected/iproov/verification/token/${credential_id}`,
+            undefined,
             header
+        );
+    }
+
+    async driversLicenseMobileInit(token: string | null, pass_name: string, pass_type: string): Promise<any> {
+        const header = { "x-session-token": token };
+        return await utils.http.post(
+            this._baseURL,
+            "/api/protected/passes/drivers-license/mobile/init",
+            {pass_name, pass_type},
+            header
+        );
+    }
+
+    async driversLicenseMobileComplete(token: string | null, session: string, credential_id: string, iproov_token: string, data: DriversLicensePass): Promise<any> {
+        const header = { "x-session-token": token };
+        return await utils.http.post(
+            this._baseURL,
+            `/api/protected/passes/drivers-license/mobile/complete/${session}`,
+            { credential_id, iproov_token, data },
+            header
+        );
+    }
+
+    async driversLicenseMobileVerify(session: string): Promise<any> {
+        return await utils.http.get(
+            this._baseURL,
+            `/api/passes/drivers-license/mobile/${session}/verify`,
+            undefined,
+            undefined
         );
     }
 }

@@ -203,13 +203,17 @@ func main() {
 	wallet.HandleFunc("/txComplete", walletHandler.TxCompleteHandler)
 
 	// passes handlers
-	passesHandler := handlers.PassesHandler{PassService: passService, IProovService: iproveService, UserService: userService}
+	passesHandler := handlers.PassesHandler{PassService: passService, IProovService: iproveService, UserService: userService, RedisClient: db.GetCacheClient()}
 	passes := protected.PathPrefix("/passes").Subrouter()
 	passes.HandleFunc("", passesHandler.List).Methods("GET")
 	passes.HandleFunc("/{id}", passesHandler.Delete).Methods("DELETE")
 	passes.HandleFunc("/phone/init", passesHandler.PhoneInit).Methods("POST")
 	passes.HandleFunc("/phone/complete", passesHandler.PhoneComplete).Methods("POST")
 	passes.HandleFunc("/drivers-license", passesHandler.DriversLicense).Methods("POST")
+	passes.HandleFunc("/drivers-license/mobile/init", passesHandler.DriversLicenseMobileInit).Methods("POST")
+	passes.HandleFunc("/drivers-license/mobile/complete/{session}", passesHandler.DriversLicenseMobileComplete).Methods("POST")
+	api.HandleFunc("/passes/drivers-license/mobile/{session}/verify", passesHandler.DriversLicenseMobileVerify).Methods("GET")
+	api.HandleFunc("/passes/drivers-license/mobile/ws/{session}", passesHandler.DriversLicenseMobileWS)
 
 	// passes handlers
 	iproovHandler := handlers.IProovHandler{IProovService: iproveService, UserService: userService}
