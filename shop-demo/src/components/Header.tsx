@@ -58,13 +58,15 @@ const Header = (props: any) => {
     if (account != '') {
       navigate.push('/cart')
     } else {
-      let result = await wallet.signup()
+      let result = await wallet.signup();
+      console.log(result);
       setUsername(result.claims.sub)
     }
   }
 
   const handleSignin = async()=>{
       let result = await wallet.signup()
+      console.log(result);
       setUsername(result.claims.sub)
   }
 

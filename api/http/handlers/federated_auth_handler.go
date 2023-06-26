@@ -11,6 +11,7 @@ Public handles for user authentication processes
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -454,7 +455,8 @@ type SaveConsentRequest struct {
 }
 
 type SaveConsentResponse struct {
-	Token string `json:"token"`
+	Token string   `json:"token"`
+	VCS   []string `json:"vcs"`
 }
 
 func (h *FederatedAuthHandler) SaveConsentHandler(w http.ResponseWriter, r *http.Request) {
@@ -467,16 +469,29 @@ func (h *FederatedAuthHandler) SaveConsentHandler(w http.ResponseWriter, r *http
 	}
 
 	// save consent session
-	result, token, err := h.AppService.SaveSessionConsent(request.Session)
-	if err != nil {
-		http_common.SendErrorResponse(w, *err)
+	result, session, serr := h.AppService.SaveSessionConsent(request.Session)
+	if serr != nil {
+		http_common.SendErrorResponse(w, *serr)
 		return
 	}
 	if !result {
 		http_common.SendErrorResponse(w, services.NewError("fail to save consent"))
 	}
 
-	http_common.SendSuccessResponse(w, SaveConsentResponse{Token: token})
+	// get vc credentials
+	passes, serr := h.PassService.GetPassesByUserID(r.Context(), session.UserID, session.Attributes)
+	if serr != nil {
+		http_common.SendErrorResponse(w, *serr)
+		return
+	}
+
+	vcs, err := h.generateVeriableCredentials(r.Context(), passes)
+	if err != nil {
+		http_common.SendErrorResponse(w, services.NewError("failed to generate veriable credentials"))
+		return
+	}
+
+	http_common.SendSuccessResponse(w, SaveConsentResponse{Token: session.Token, VCS: vcs})
 }
 
 type FederatedEmailSessionRequest struct {
@@ -728,4 +743,23 @@ func (h *FederatedAuthHandler) subscribeChannel(r *http.Request, ws *websocket.C
 			}
 		}
 	}
+}
+
+func (h *FederatedAuthHandler) generateVeriableCredentials(ctx context.Context, passes []pass.UserPass) ([]string, error) {
+	var tokens []string
+	claims, err := h.PassService.GenerateW3C(ctx, passes)
+	if err != nil {
+		logger.ForContext(ctx).Error(err.Message)
+		return tokens, errors.New("failed to generate claims")
+	}
+	for _, claim := range claims {
+
+		token, err := h.KeystoreService.GenerateVCJWT(claim)
+		if err != nil {
+			logger.ForContext(ctx).Error(err.Message)
+			return tokens, errors.New("failed to generate claims")
+		}
+		tokens = append(tokens, token)
+	}
+	return tokens, nil
 }

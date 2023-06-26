@@ -20,6 +20,7 @@ import (
 	goutil "gitlab.com/loginid/software/libraries/goutil.git"
 	"gitlab.com/loginid/software/libraries/goutil.git/logger"
 	"gitlab.com/loginid/software/services/loginid-vault/services"
+	"gitlab.com/loginid/software/services/loginid-vault/specs"
 	"gitlab.com/loginid/software/services/loginid-vault/utils"
 	"gorm.io/gorm"
 )
@@ -211,6 +212,25 @@ func (s *KeystoreService) GenerateDashboardJWT(username string, userid string, f
 	claims := DashboardClaims{Sub: username, FID: fid, Scopes: scopes, UID: userid, Iat: time.Now().Unix()}
 
 	token, err := utils.GenerateJWT(privateKey, keystore.ID, claims)
+	if err != nil {
+		return "", services.CreateError("fail to generate token")
+	}
+	return token, nil
+}
+
+func (s *KeystoreService) GenerateVCJWT(claim specs.W3cClaims) (string, *services.ServiceError) {
+
+	keystore := s.LoadKeystore(ksSignID)
+	if keystore == nil {
+		return "", services.CreateError("fail to load key")
+	}
+
+	privateKey, err := utils.ParseECPrivateKeyFromPEM([]byte(keystore.PrivateKey))
+	if err != nil {
+		return "", services.CreateError("fail to load key in pem format")
+	}
+
+	token, err := utils.GenerateJWT(privateKey, keystore.ID, claim)
 	if err != nil {
 		return "", services.CreateError("fail to generate token")
 	}

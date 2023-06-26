@@ -46,7 +46,7 @@ export function Consent(props: {  session: string; username: string }) {
 				consent.required_attributes == null ||
 				consent.required_attributes.length === 0
 			) {
-				postMessageText(consent.token);
+				postMessageText(JSON.stringify({token:consent.token}));
 				setPage(AuthPage.FINAL);
 			} else {
 				if (consent.missing_attributes.length > 0) {
@@ -69,7 +69,7 @@ export function Consent(props: {  session: string; username: string }) {
 		//console.log("save consent");
 		let consent = await vaultSDK.saveConsent(props.session);
 		//console.log(consent.token);
-		postMessageText(consent.token);
+		postMessageText(JSON.stringify({token:consent.token, vcs:consent.vcs}));
 		setPage(AuthPage.FINAL);
 	}
 
