@@ -13,6 +13,7 @@ import "react-phone-input-2/lib/style.css";
 import jwt_decode from "jwt-decode";
 import { ConsentContextType, ConsentContext, AuthPage } from "../../lib/federated";
 import { PassIcon } from "./Icons";
+import { ArrowBack, Refresh } from "@mui/icons-material";
 
 export function ErrorPage(props: { error: string }) {
 	return (
@@ -158,12 +159,20 @@ export function PhonePassPage(props: { session: string; username: string }) {
 			ConsentContext
 		) as ConsentContextType;
 
+    const [verifyInit, setVerifyInit] = useState(false);
+    const [timer, setTimer] = useState(45);
+
+    useEffect(() => {
+        timer > 0 && verifyInit && setTimeout(() => setTimer(timer - 1), 1000);
+    }, [timer, verifyInit]);
+
 	async function handleVerify() {
 		const token = AuthService.getToken();
 		if (token) {
 			try {
 				await vaultSDK.createPhonePassInit(token, "+" + phone);
 				setShowCode(true);
+                setVerifyInit(true);
 			} catch (err) {
 				setError((err as Error).message);
 				console.error(err);
@@ -233,6 +242,34 @@ export function PhonePassPage(props: { session: string; username: string }) {
 						inputName="code"
 						validateCode={validateCode}
 					></CodeInput>
+			<Stack direction="row" justifyContent="center" alignItems="center">
+
+                <Typography
+                    variant="caption"
+                    color="text.secondary"
+                >
+                    resend code in <strong>{timer} seconds</strong>
+                </Typography>
+                <Button
+                    variant="text"
+                    size="small"
+                    startIcon={<Refresh/>}
+                    disabled={verifyInit && timer !==0}
+                    onClick={async () => {
+                        const token = AuthService.getToken();
+                        if (token) {
+                            try {
+                                setTimer(45);
+                                await vaultSDK.createPhonePassInit(token, "+"+phone);
+                                setVerifyInit(true);
+                            } catch (err) {
+                                console.error(err);
+                            }
+                        }
+                    } }>
+                    Resend
+                </Button>
+            </Stack>
 				</>
 			)}
 
