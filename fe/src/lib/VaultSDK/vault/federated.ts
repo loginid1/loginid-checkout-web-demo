@@ -40,6 +40,7 @@ export interface ConsentPass {
 
 export interface SaveConsentResponse {
 	token: string;
+	vcs?: string[];
 }
 
 export interface AuthResult {

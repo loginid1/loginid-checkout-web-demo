@@ -10,11 +10,13 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
+	"gitlab.com/loginid/software/libraries/goutil.git"
 	"gitlab.com/loginid/software/libraries/goutil.git/logger"
 	"gitlab.com/loginid/software/services/loginid-vault/services"
 	"gitlab.com/loginid/software/services/loginid-vault/services/app"
 	notification "gitlab.com/loginid/software/services/loginid-vault/services/notification/providers"
 	"gitlab.com/loginid/software/services/loginid-vault/services/user"
+	"gitlab.com/loginid/software/services/loginid-vault/specs"
 	"gitlab.com/loginid/software/services/loginid-vault/utils"
 	"gorm.io/gorm"
 )
@@ -37,6 +39,8 @@ type PassResponse struct {
 	CreatedAt  time.Time      `json:"created_at"`
 	ExpiresAt  *time.Time     `json:"expires_at,omitempty"`
 }
+
+var ISSUER_NAME = goutil.GetEnv("ISSUER_NAME", "LoginID Wallet")
 
 func NewPassService(db *gorm.DB, redis *redis.Client, notification_service notification.ProviderInterface) *PassService {
 	userService, _ := user.NewUserService(db)
@@ -153,7 +157,7 @@ func (s *PassService) PhoneComplete(ctx context.Context, username, name, phone_n
 		Name:       name,
 		Attributes: app.KPhoneAttribute,
 		SchemaType: PhonePassSchemaType,
-		Issuer:     "LoginID Vault",
+		Issuer:     ISSUER_NAME,
 		KeyId:      keyId,
 		Data:       encryptedData,
 		DataHash:   dataHash[:],
@@ -231,7 +235,7 @@ func (s *PassService) AddDriversLicensePass(ctx context.Context, userId, credent
 		Name:       name,
 		Attributes: strings.Join(attributes, ","),
 		SchemaType: DriversLicensePassSchemaType,
-		Issuer:     "LoginID Vault (Microblink, iProov)",
+		Issuer:     ISSUER_NAME,
 		KeyId:      keyId,
 		Data:       encryptedData,
 		DataHash:   dataHash[:],
@@ -265,7 +269,7 @@ func (s *PassService) ForceAddPass(ctx context.Context, userId, name, attributes
 		Name:       name,
 		Attributes: attributes,
 		SchemaType: schema,
-		Issuer:     "LoginID Vault",
+		Issuer:     ISSUER_NAME,
 		KeyId:      keyId,
 		Data:       encryptedData,
 		DataHash:   dataHash[:],
@@ -295,6 +299,69 @@ func (s *PassService) GetPassesByUserID(ctx context.Context, user_id string, att
 	}
 	return mypasses, nil
 
+}
+
+func (s *PassService) GenerateW3C(ctx context.Context, passes []UserPass) ([]specs.W3cClaims, *services.ServiceError) {
+	var claims []specs.W3cClaims
+	const meta_url = "https://api.wallet.loginid.io"
+
+	var vcSubject interface{}
+	for _, pass := range passes {
+		did := fmt.Sprintf("did:loginid:%s", pass.ID)
+		if pass.SchemaType == PhonePassSchemaType {
+			data, err := services.DecryptWithOwnerID(ctx, "loginid.io", pass.KeyId, pass.Data)
+			if err != nil {
+				return claims, services.CreateError("fail to decrypt pass info")
+			}
+			var phone PhonePassSchema
+			err = json.Unmarshal([]byte(data), &phone)
+			if err != nil {
+				return claims, services.CreateError("fail to extract pass info")
+			}
+			vcSubject = specs.PhoneCredential{
+				ID:    did,
+				Type:  "phone",
+				Phone: phone.PhoneNumber,
+			}
+		} else if pass.SchemaType == EmailPassSchemaType {
+			data, err := services.DecryptWithOwnerID(ctx, "loginid.io", pass.KeyId, pass.Data)
+			if err != nil {
+				return claims, services.CreateError("fail to decrypt pass info")
+			}
+			var email EmailPassSchema
+			err = json.Unmarshal([]byte(data), &email)
+			if err != nil {
+				return claims, services.CreateError("fail to extract pass info")
+			}
+			vcSubject = specs.EmailCredential{
+				ID:    did,
+				Type:  "email",
+				Email: email.Email,
+			}
+		}
+
+		if vcSubject != nil {
+			random, _ := utils.GenerateRandomString(16)
+			claim := specs.W3cClaims{
+				VC: specs.VerifiableCredential{
+					Context:           specs.KW3cContext,
+					ID:                fmt.Sprintf("%s/user/%s", meta_url, pass.UserID),
+					Issuer:            pass.Issuer,
+					IssuanceDate:      pass.CreatedAt.Format(time.RFC3339),
+					CredentialSubject: vcSubject,
+					Type:              []string{string(pass.SchemaType)},
+					Iss:               pass.Issuer,
+					Nbf:               time.Now().Format(time.RFC3339),
+					Jti:               random,
+					Sub:               did,
+				},
+			}
+
+			claims = append(claims, claim)
+
+		}
+	}
+	return claims, nil
 }
 
 func compareAttributes(required_attrs string, pass_attrs string) bool {

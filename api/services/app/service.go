@@ -267,15 +267,15 @@ func (s *AppService) CheckSessionConsent(id string) (session *AppSession, requir
 	return session, required, nil
 }
 
-func (s *AppService) SaveSessionConsent(id string) (bool, string, *services.ServiceError) {
+func (s *AppService) SaveSessionConsent(id string) (bool, *AppSession, *services.ServiceError) {
 
 	session, err := s.getSession(id)
 	if err != nil {
 		logger.Global.Error(err.Error())
-		return false, "", services.CreateError("session error")
+		return false, nil, services.CreateError("session error")
 	}
 	result := s.createConsent(session.AppID, session.UserID)
-	return result, session.Token, nil
+	return result, session, nil
 }
 
 func (s *AppService) ListConsentsByUsername(ctx context.Context, username string) ([]CustomConsent, *services.ServiceError) {
