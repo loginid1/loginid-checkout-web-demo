@@ -34,6 +34,12 @@ type EmailCredential struct {
 	Email string `json:"email"`
 }
 
+type DriverLicenseCredential struct {
+	ID             string `json:"id"`   // pass id
+	Type           string `json:"type"` // pass id
+	DocumentNumber string `json:"documentNumber"`
+}
+
 type DID struct {
 	ID                 string              `json: "id"`
 	VerificationMethod []VerficationMethod `json:"verificationMethod"`
