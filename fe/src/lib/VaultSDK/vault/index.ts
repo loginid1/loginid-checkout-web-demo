@@ -13,6 +13,13 @@ export interface AddCredentialOptions extends RegistrationOptions {
 	roaming_authenticator?: boolean;
 }
 
+interface UserAgentInfo { 
+	name: string;
+	device: string;
+	os: string;
+	browser: string; 
+}
+
 export class VaultAuth extends Base {
 	async checkUser(username: string): Promise<boolean> {
 		try {
@@ -50,17 +57,7 @@ export class VaultAuth extends Base {
 		const session = localStorage.getItem("register_session");
 
 		// Init the registration flow
-		const initPayload = <
-			{
-				username: string;
-				device_name: string;
-				register_session: string;
-				options: {
-					register_session?: string;
-					roaming_authenticator?: boolean;
-				};
-			}
-		>{
+		const initPayload = {
 			username,
 			register_session: session,
 			options: {
@@ -100,29 +97,17 @@ export class VaultAuth extends Base {
 		});
 		const response = <AuthenticatorAttestationResponse>credential.response;
 
-		const deviceName = this.getDeviceNameFromAgent();
+		const userAgentInfo = this.getUserAgentInfo();
 		// Complete the registration flow
-		const completePayload = <
-			{
-				client_id: string;
-				device_name: string;
-				username: string;
-				challenge: string;
-				credential_uuid: string;
-				credential_id: string;
-				client_data: string;
-				attestation_data: string;
-				scope: string;
-				email_token: string;
-				session_id: string;
-				options?: {
-					credential_name?: string;
-				};
-			}
-		>{
+		const completePayload = {
 			client_id: this._clientID,
 			username: username,
-			device_name: deviceName,
+			device_name: userAgentInfo.name,
+			user_agent: {
+				operating_system: userAgentInfo.os,
+				device: userAgentInfo.device,
+				browser: userAgentInfo.browser,
+			},
 			challenge: challenge,
 			credential_uuid: credentialUUID,
 			credential_id: utils.encoding.bufferToBase64(credential.rawId),
@@ -151,11 +136,7 @@ export class VaultAuth extends Base {
 		let headers;
 
 		// Init the authentication flow
-		let initPayload = <
-			{
-				username: string;
-			}
-		>{
+		let initPayload = {
 			username,
 		};
 
@@ -185,16 +166,7 @@ export class VaultAuth extends Base {
 		const response = <AuthenticatorAssertionResponse>credential.response;
 
 		// Complete the authentication flow
-		const completePayload = <
-			{
-				username: string;
-				challenge: string;
-				credential_id: string;
-				client_data: string;
-				authenticator_data: string;
-				signature: string;
-			}
-		>{
+		const completePayload = {
 			username,
 			challenge,
 			credential_id: utils.encoding.bufferToBase64(credential.rawId),
@@ -218,12 +190,7 @@ export class VaultAuth extends Base {
 	 * */
 	async addCredential(username: string, code: string): Promise<Result> {
 		// Init the registration flow
-		const initPayload = <
-			{
-				username: string;
-				code: string;
-			}
-		>{
+		const initPayload: { username: string; code: string; } = {
 			username,
 			code,
 		};
@@ -251,31 +218,25 @@ export class VaultAuth extends Base {
 			);
 		}
 
+		console.log("Before...")
 		const credential = await utils.navigator.createCredential({
 			publicKey,
 		});
+
+		console.log(credential)
 		const response = <AuthenticatorAttestationResponse>credential.response;
 
-		const deviceName = this.getDeviceNameFromAgent();
+		const userAgentInfo = this.getUserAgentInfo();
 		// Complete the registration flow
-		const completePayload = <
-			{
-				client_id: string;
-				device_name: string;
-				username: string;
-				challenge: string;
-				credential_uuid: string;
-				credential_id: string;
-				client_data: string;
-				attestation_data: string;
-				options?: {
-					credential_name?: string;
-				};
-			}
-		>{
+		const completePayload = {
 			client_id: this._clientID,
 			username: username,
-			device_name: deviceName,
+			device_name: userAgentInfo.name,
+			user_agent: {
+				operating_system: userAgentInfo.os,
+				device: userAgentInfo.device,
+				browser: userAgentInfo.browser,
+			},
 			challenge: challenge,
 			credential_uuid: credentialUUID,
 			credential_id: utils.encoding.bufferToBase64(credential.rawId),
@@ -293,30 +254,34 @@ export class VaultAuth extends Base {
 		);
 	}
 
-	getDeviceNameFromAgent(): string {
-		// device name
-		var parser = new UAParser();
+	getUserAgentInfo(): UserAgentInfo {
+		const parser = new UAParser();
 		parser.setUA(navigator.userAgent);
-		var deviceInfo = parser.getResult();
+		const result = parser.getResult();
 
-		var deviceName = "";
-		if (deviceInfo.device != null && deviceInfo.device.model != null) {
-			if (deviceName.length > 0) {
-				deviceName = deviceName + " ";
-			}
-			deviceName = deviceName + deviceInfo.device.model;
+		let response: UserAgentInfo = {
+			name: "", os: "", browser: "", device: ""
 		}
-		if (deviceInfo.os != null && deviceInfo.os.name != null) {
-			if (deviceName.length > 0) {
-				deviceName = deviceName + " ";
-			}
-			deviceName = deviceName + deviceInfo.os.name;
+
+		if (result.device != null && result.device.model != null) {
+			response = {...response, device: result.device.model}
 		}
-		if (deviceName.length > 0) {
-			deviceName = deviceName + " ";
+
+		if (result.os != null && result.os.name != null) {
+			response = {...response, os: result.os.name}
 		}
-		deviceName = deviceName + deviceInfo.browser.name;
-		return deviceName;
+
+		if (result.browser != null && result.browser.name != null) {
+			response = {...response, browser: result.browser.name}
+		}
+
+		if (response.os !== "" && response.browser !== "") {
+			response = {...response, name: `${response.os} Passkey [${response.browser}]`}
+		} else {
+			response = {...response, name: "Passkey"}
+		}
+		
+		return response;
 	}
 }
 

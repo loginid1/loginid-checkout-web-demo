@@ -15,28 +15,35 @@ import {
     Step,
     StepLabel,
 } from "@mui/material";
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { NavigateFunction, useNavigate } from "react-router-dom";
 import { VaultBase } from "../../../components/VaultBase";
 import { ReactComponent as ProfileDefault } from "../../../assets/sidemenu/DIDs/Default.svg";
 import { passesMap, NewPassController } from "./PassController";
 
 interface NewPassNameProps {
-    setActiveStep: React.Dispatch<React.SetStateAction<number>>;
     passType: string;
     name: string;
     setName: React.Dispatch<React.SetStateAction<string>>;
+    setActiveStep: React.Dispatch<React.SetStateAction<number>>;
 }
 
 // Step 1 - Setup the pass name
 const NewPassName = (props: NewPassNameProps) => {
-    const name = "My " + props.passType
-        .split("-")
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-        .join(" ");
-    if (props.name === "" || props.name === "My Drivers License" || props.name === "My Phone") {
-        props.setName(name);
-    }
+    const [sampleName, setSampleName] = useState('')
+    
+    useEffect(() => {
+        const name = "My " + props.passType
+            .split("-")
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+            .join(" ");
+        setSampleName(name);
+
+        if (props.name === "" || props.name === "My Drivers License" || props.name === "My Phone") {
+            props.setName(name);
+        }
+    }, [props])
+    
     return (
         <>
             <ProfileDefault width={50} height={50} />
@@ -47,7 +54,7 @@ const NewPassName = (props: NewPassNameProps) => {
             >
                 Create a new Pass
                 <Typography variant="body1" color="gray">
-                    Create a name for your new Pass, for example:  ‘{name}’.
+                    Create a name for your new Pass, for example:  ‘{sampleName}’.
                 </Typography>
             </Typography>
             <TextField
@@ -152,9 +159,6 @@ export default function NewPass(){
             component: <NewPassController {...{navigate, setActiveStep, name, passType: type}}/> 
         },
     ];
-
-	useEffect(() => {
-	}, []);
 
 	return (
         <VaultBase focus={"passes"}>

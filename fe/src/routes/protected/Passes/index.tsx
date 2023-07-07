@@ -1,5 +1,7 @@
 import { MoreVert, Add, Share, Delete, History } from "@mui/icons-material";
 import {
+	Avatar,
+	AvatarGroup,
 	Stack,
 	Button,
 	Grid,
@@ -25,6 +27,79 @@ import { AuthService } from "../../../services/auth";
 import { VaultBase } from "../../../components/VaultBase";
 import NewPass from "./new";
 import { Consent } from "../../../lib/VaultSDK/vault/user";
+
+function stringToColor(string: string) {
+	let hash = 0;
+	let i;
+
+	/* eslint-disable no-bitwise */
+	for (i = 0; i < string.length; i += 1) {
+		hash = string.charCodeAt(i) + ((hash << 5) - hash);
+	}
+
+	let color = '#';
+
+	for (i = 0; i < 3; i += 1) {
+		const value = (hash >> (i * 8)) & 0xff;
+		color += `00${value.toString(16)}`.slice(-2);
+	}
+	/* eslint-enable no-bitwise */
+
+	return color;
+}
+  
+function stringAvatar(name: string, image?: string) {
+	if (image !== undefined) {
+		return {
+			alt: name,
+			src: image,
+			sx: {
+				bgcolor: "#FFF",
+			},
+		};
+	}
+	return {
+		sx: {
+			bgcolor: stringToColor(name),
+		},
+		children: `${name[0]}`,
+	};
+}
+
+// TODO: Delete this
+function randomNoRepeats(array: any) {
+	var copy = array.slice(0);
+	return function() {
+	  if (copy.length < 1) { copy = array.slice(0); }
+	  var index = Math.floor(Math.random() * copy.length);
+	  var item = copy[index];
+	  copy.splice(index, 1);
+	  return item;
+	};
+  }
+
+// TODO: Delete this
+function getRandomCompanies() {
+	const companies = [
+		{name: "Binance", logo: "https://public.bnbstatic.com/20190405/eb2349c3-b2f8-4a93-a286-8f86a62ea9d8.png"},
+		{name: "Adidas", logo: "https://static.vecteezy.com/ti/vetor-gratis/t2/10994239-adidas-logotipo-preto-simbolo-design-de-roupas-icone-abstrato-futebol-ilustracaoial-com-fundo-branco-gratis-vetor.jpg"},
+		{name: "Spotify", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/84/Spotify_icon.svg/1982px-Spotify_icon.svg.png"},
+		{name: "Mailchimp", logo: "https://s3.amazonaws.com/www-inside-design/uploads/2018/10/mailchimp-sq-810x810.jpg"},
+		{name: "LoginID", logo: undefined},
+		{name: "Noxus", logo: undefined}
+	];
+	const chooser = randomNoRepeats(companies);
+
+	let amount = Math.floor((Math.random() * companies.length) + 1)
+	const result: Array<{name: string; logo?: string;}> = []
+
+	while (amount !== 0) {
+		result.push(chooser());
+		amount--;
+	}
+
+	return result
+}
 
 const PassMenu = (props: {passId: string; }) => {
 	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -121,7 +196,7 @@ const Passes = () => {
 					<Typography align="left" fontSize={14} color="rgba(0,0,0,0.5)">
 						Added {Moment(props.created_at).format("DD/MM/YYYY hh:mm A")}
 					</Typography>
-					<Tooltip title={"Expires at " + expiresAt.format("DD/MM/YYYY")}>
+					<Tooltip title={"Expires at " + expiresAt.format("DD/MM/YYYY")} arrow>
 						<History fontSize="small" sx={{ color: "rgba(15,190,0,0.8)"}}/>
 					</Tooltip>
 				</Stack>
@@ -133,7 +208,7 @@ const Passes = () => {
 				<Typography align="left" fontSize={14} color="rgba(0,0,0,0.5)">
 					Added {Moment(props.created_at).format("DD/MM/YYYY hh:mm A")}
 				</Typography>
-				<Tooltip title={"Expired at " + expiresAt.format("DD/MM/YYYY")}>
+				<Tooltip title={"Expired at " + expiresAt.format("DD/MM/YYYY")} arrow>
 					<History fontSize="small" sx={{ color: "rgba(255,0,0,0.8)"}}/>
 				</Tooltip>
 			</Stack>
@@ -150,9 +225,10 @@ const Passes = () => {
 					padding: { md: 4, xs: 2 },
 				}}
 			>
-				Your Passes
+				Passes
 			</Typography>
-			{ passes === null ? 
+			{ 
+				passes === null ? 
 				(
 					<Stack direction="row" justifyContent="center">
 						<CircularProgress />
@@ -191,10 +267,21 @@ const Passes = () => {
 											<CardContent>
 												{ pass.data }
 											</CardContent>
-											<CardActions disableSpacing>
-												<IconButton aria-label="share">
+											<CardActions sx={{justifyContent: "space-between"}}>
+												{/* <IconButton aria-label="share">
 													<Share />
-												</IconButton>
+												</IconButton> */}
+												<AvatarGroup max={4} spacing={1}>
+													{
+														getRandomCompanies().map(item => {
+															return ( 
+																<Tooltip title={`Shared with ${item.name}`} arrow>
+																	<Avatar {...stringAvatar(item.name, item.logo)} aria-label={item.name} />
+																</Tooltip>
+															)
+														})
+													}
+												</AvatarGroup>
 											</CardActions>
 										</Card>
 									</Grid>

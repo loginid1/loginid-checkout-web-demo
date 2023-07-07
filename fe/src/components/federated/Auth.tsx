@@ -194,7 +194,7 @@ export function LoginPage(props: {
 				</Alert>
 			)}
 			<Typography sx={{ m: 1 }} variant="body2" color="text.secondary">
-				Sign In or Sign Up
+				Sign in or Sign up
 			</Typography>
 			<TextField
 				fullWidth
@@ -227,17 +227,19 @@ export function LoginPage(props: {
 					handleClose={() => setTermOpen(false)}
 				/>
 			</Typography>
-			<Stack direction="row" justifyContent="center" alignItems="center">
+			<Stack direction="column" justifyContent="center" alignItems="center">
 				<Typography
 					sx={{ m: 1 }}
 					variant="caption"
 					color="text.secondary"
 				>
-					Sign up required:
+					This site requires below factors:
 				</Typography>
-				{attributes.map((attr) => (
-					<PassIcon key={attr} type={attr} color="info" />
-				))}
+				<div>
+					{
+						attributes.map(attr => <PassIcon key={attr} type={attr} color="info" />)
+					}
+				</div>
 			</Stack>
 			<EmailDialog
 				type={emailType}

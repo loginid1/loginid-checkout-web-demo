@@ -1,27 +1,26 @@
 import {
 	Button,
-	Chip,
 	Dialog,
 	DialogContentText,
-	IconButton,
 	Link,
 	Paper,
+	Snackbar,
 	Stack,
 	TextField,
 	Typography,
+	SnackbarCloseReason,
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthService } from "../../../services/auth";
-import AddImg from "../../../assets/AddCredential.png";
-import { ArrowBack, ContentCopy, InfoOutlined } from "@mui/icons-material";
+import { ArrowBack, InfoOutlined } from "@mui/icons-material";
 import vaultSDK from "../../../lib/VaultSDK";
 import { VaultBase } from "../../../components/VaultBase";
 import { HtmlTooltip } from "../../../components/HtmlTooltip";
 
 const AddCredential: React.FC = () => {
 	const navigate = useNavigate();
-
+	const [showCopyLinkMessage, setShowCopyLinkMessage] = useState(false);
 	const [credentialCode, setCredentialCode] = useState("");
 	const [credentialName, setCredentialName] = useState("");
 	const [isCodeGenerated, setIsCodeGenerated] = useState(false);
@@ -78,7 +77,7 @@ const AddCredential: React.FC = () => {
 	const handleCloseCredential = () => {
 		setOpenCredential(false);
 		setIsCodeGenerated(true);
-		navigate("/credential");
+		navigate("/passkeys");
 	};
 
 	const handleRestartCredential = () => {
@@ -88,10 +87,18 @@ const AddCredential: React.FC = () => {
 	};
 
 	const handleCompleteCredential = () => {
-		navigate("/credential");
+		navigate("/passkeys");
+	};
+
+	const handleCloseCopyLinkMessage = (event: Event | React.SyntheticEvent<any, Event>, reason: SnackbarCloseReason) => {
+		if (reason === 'clickaway') {
+			return;
+		}
+		setShowCopyLinkMessage(false);
 	};
 	
 	const copyLink = () => {
+		setShowCopyLinkMessage(true);
 		navigator.clipboard.writeText(link);
 	};
 
@@ -141,20 +148,23 @@ const AddCredential: React.FC = () => {
 							you to register a new credential with this account.
 						</Typography>
 
-						<Typography variant="body1" color="primary" >Go to following link on your new device: </Typography>
-						<Stack direction="row">
-						<Chip label={link}></Chip>
-									<IconButton
-										size="small"
-										onClick={copyLink}
-									>
-										<ContentCopy />
-									</IconButton>
-						</Stack>
-						<Typography variant="body1" color="primary">or use following QR code: </Typography>
+						<Typography variant="body1" color="primary">
+							Scan below QR code on your mobile device to easily add a new passkey
+						</Typography>
 						
 						<img src={qrcode} alt="Add Credential" />
-
+						<Button
+							color="primary"
+							onClick={copyLink}
+						>
+							Can't scan image?
+						</Button>
+						<Snackbar
+							open={showCopyLinkMessage}
+							autoHideDuration={3000}
+							onClose={handleCloseCopyLinkMessage}
+							message="Link copied to clipboard"
+						/>
 						<Typography variant="body1">
 							When you have your other device ready, select Get
 							Registration Code.

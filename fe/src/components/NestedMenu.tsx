@@ -75,7 +75,7 @@ function ExpandableMenuItem(props: { item: MenuData; focus: string }) {
 				setOpen(true);
 			}
 		});
-	}, []);
+	}, [props]);
 
 	return (
 		<List component="nav" key={props.item.id + "list"}>
@@ -96,10 +96,10 @@ function NestedMenuItem(props: { items: MenuData[]; focus: string }) {
 		props.items.map((menuItem) => {
 			if (Array.isArray(menuItem.items) && menuItem.items.length > 0) {
 				menu.push(
-					<ExpandableMenuItem  item={menuItem} focus={props.focus} />
+					<ExpandableMenuItem key={menuItem.id} item={menuItem} focus={props.focus} />
 				);
 			} else {
-				menu.push(<LinkMenuItem  item={menuItem} focus={props.focus} />);
+				menu.push(<LinkMenuItem key={menuItem.id} item={menuItem} focus={props.focus} />);
 			}
 		});
 		return menu.concat();

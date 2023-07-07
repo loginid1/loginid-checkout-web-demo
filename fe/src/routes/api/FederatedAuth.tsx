@@ -392,6 +392,15 @@ export default function FederatedAuth() {
 					powered by&nbsp;
 					<img src={LoginIDLogo} alt="something" />
 				</Typography>
+				<Link
+					target="_blank"
+					href="/faq"
+					sx={{ m: 1 }}
+					variant="caption"
+					color="text.secondary"
+				>
+					Learn more
+				</Link>
 			</Container>
 		</ThemeProvider>
 	);
