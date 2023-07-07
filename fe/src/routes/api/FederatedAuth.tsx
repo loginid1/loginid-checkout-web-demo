@@ -46,6 +46,7 @@ import { EmailDialog } from "../../components/dialogs/EmailDialog";
 import LoginIDLogo from "../../assets/sidemenu/LoginIDLogo.svg";
 import {
 	Consent,
+	DriverLicensePassPage,
 	ErrorPage,
 	PhonePassPage,
 } from "../../components/federated/Consent";
@@ -370,6 +371,22 @@ export default function FederatedAuth() {
 						}}
 					>
 						<PhonePassPage
+							session={sessionId}
+							username={username}
+						/>
+					</ConsentContext.Provider>
+				)}
+
+				{page === AuthPage.DRIVER_PASS && (
+					<ConsentContext.Provider
+						value={{
+							postMessageText,
+							setPage,
+							handleCancel,
+							setDisplayMessage,
+						}}
+					>
+						<DriverLicensePassPage
 							session={sessionId}
 							username={username}
 						/>

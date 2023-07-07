@@ -32,3 +32,14 @@ type PhonePassSchema struct {
 type EmailPassSchema struct {
 	Email string `json:"email"`
 }
+
+type DriversLicenseSchema struct {
+	DocumentNumber   string     `json:"document_number" validate:"required"`
+	DocumentCountry  string     `json:"document_country,omitempty"`
+	PersonalIdNumber string     `json:"personal_id_number,omitempty"`
+	FullName         string     `json:"full_name,omitempty"`
+	Address          string     `json:"address,omitempty"`
+	DateOfBirth      time.Time  `json:"date_of_birth" validate:"required"`
+	DateOfIssue      *time.Time `json:"date_of_issue,omitempty"`
+	DateOfExpiry     *time.Time `json:"date_of_expiry,omitempty"`
+}

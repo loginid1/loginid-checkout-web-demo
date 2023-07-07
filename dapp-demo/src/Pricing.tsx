@@ -19,10 +19,6 @@ import { createTheme } from "@mui/system";
 import { WalletSDK } from "@loginid/wallet-sdk";
 import { useNavigate } from "react-router-dom";
 
-const wallet = new WalletSDK(
-	process.env.REACT_APP_VAULT_URL || "",
-	process.env.REACT_APP_WALLET_API
-);
 function Copyright(props: any) {
 	return (
 		<Typography
@@ -112,8 +108,12 @@ const footers = [
 
 function PricingContent() {
 	const navigate = useNavigate();
-	
-  async function signup() {
+
+	async function signup() {
+		const wallet = new WalletSDK(
+			process.env.REACT_APP_VAULT_URL || "",
+			process.env.REACT_APP_WALLET_API
+		);
 		try {
 			console.log("Signup.....");
 			let result = await wallet.signup();
@@ -124,7 +124,25 @@ function PricingContent() {
 		}
 	}
 
+	async function signupDriver() {
+		const wallet = new WalletSDK(
+			process.env.REACT_APP_VAULT_URL || "",
+			process.env.REACT_APP_LICENSE_APP_API
+		);
+		try {
+			let result = await wallet.signup();
+			console.log("Result: ", result);
+			navigate("/dashboard");
+		} catch (e) {
+			console.log((e as Error).message);
+		}
+	}
+
 	async function signupPopup() {
+		const wallet = new WalletSDK(
+			process.env.REACT_APP_VAULT_URL || "",
+			process.env.REACT_APP_WALLET_API
+		);
 		try {
 			console.log("Signup.....");
 			let result = await wallet.signupPopup();
@@ -179,9 +197,10 @@ function PricingContent() {
 							variant="button"
 							color="text.primary"
 							href="#"
+              onClick={signupDriver}
 							sx={{ my: 1, mx: 1.5 }}
 						>
-							Support
+							Drivers
 						</Link>
 					</nav>
 					<Button

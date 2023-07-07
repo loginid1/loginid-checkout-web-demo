@@ -8,10 +8,11 @@ const (
 )
 
 const (
-	KEmailAttribute = "email"
-	KPhoneAttribute = "phone"
-	KAge18Attribute = "age18"
-	KBirthAttribute = "birth"
+	KEmailAttribute          = "email"
+	KPhoneAttribute          = "phone"
+	KDriversLicenseAttribute = "drivers-license"
+	KAge18Attribute          = "age18"
+	KBirthAttribute          = "birth"
 )
 
 type AppSession struct {

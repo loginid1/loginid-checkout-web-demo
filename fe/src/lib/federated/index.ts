@@ -9,6 +9,7 @@ export enum AuthPage {
 	FIDO_REG = "fido_register",
 	CONSENT = "consent",
 	PHONE_PASS = "phone_pass",
+	DRIVER_PASS = "driver_pass",
 	FINAL = "final",
 }
 
