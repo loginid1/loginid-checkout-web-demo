@@ -11,6 +11,11 @@ export interface Profile {
 export interface Credential {
     id: string;
     name: string;
+    user_agent: {
+        operating_system: string;
+        browser: string;
+        device: string;
+    } | null;
     public_key: string;
     key_alg: string;
     iat: string;

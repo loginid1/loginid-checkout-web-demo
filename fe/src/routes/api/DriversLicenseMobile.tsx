@@ -1,5 +1,5 @@
 import { ThemeProvider, Container, CssBaseline, Paper} from "@mui/material";
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import vaultSDK from "../../lib/VaultSDK";
 import { DriversLicensePass as BasePass } from "../../lib/VaultSDK/vault/pass";
@@ -8,7 +8,7 @@ import background from "../../assets/background.svg";
 import DocumentPass from "../../components/DocumentPass";
 
 const DriversLicenseMobile = () => {
-    const [pass, setPass] = React.useState<BasePass|null>(null);
+    const [pass, setPass] = useState<BasePass|null>(null);
     const [token, setToken] = useState<string>("");
     const [credentialId, setCredentialId] = useState<string>("");
     const [authToken, setAuthToken] = useState<string>("");
@@ -31,7 +31,7 @@ const DriversLicenseMobile = () => {
         };
         verifySession();
 
-    }, [session, setAuthToken, setPassName, setPassType, setFailed]);
+    }, [session]);
 
     const handleSuccess = async () => {
         try {

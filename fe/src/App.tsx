@@ -10,13 +10,13 @@ import AddDevice from './routes/AddDevice';
 import Home from './routes/protected/Home';
 import ProtectedRoute from './routes/util/ProtectedRoute';
 import { AuthService } from './services/auth';
-import ManageCredential from './routes/protected/ManageCredential';
+// import ManageCredential from './routes/protected/ManageCredential';
 import ManageAlgorand from './routes/protected/ManageAlgorand';
 import CreateAlgorand from './routes/protected/CreateAlgorand';
 import WalletEnable from './routes/api/WalletEnable';
 import DriversLicenseMobile from './routes/api/DriversLicenseMobile';
 import WalletTxnConfirmation from './routes/api/WalletTransaction';
-import Credentials from './routes/protected/Credentials/Credentials';
+import Passkeys from './routes/protected/Credentials';
 import AddCredential from './routes/protected/Credentials/AddCredential';
 import CompleteCredential from './routes/protected/Credentials/CompleteCredential';
 import AddRecovery from './routes/protected/Algorand/AddRecovery';
@@ -73,9 +73,8 @@ function App() {
         <Route path="/passes/new/drivers-license/mobile/:session" element={ <DriversLicenseMobile/> }/>
         <Route path="/" element={<ProtectedRoute />} >
           <Route path="/help" element={<Help />} />
-          <Route path="/home" element={<Credentials />} />
+          <Route path="/home" element={<Passkeys />} />
           <Route path="/home/algo" element={<AlgorandAccounts />} />
-          <Route path="/add_credential" element={<AddCredential />} />
           <Route path="/complete_credential" element={<CompleteCredential />} />
 
           <Route path="/algorand/accounts" element={<AlgorandAccounts />} />
@@ -93,9 +92,10 @@ function App() {
           <Route path="/oldhome" element={<Home />} /> 
           <Route path="/passes" element={<Passes />} /> 
           <Route path="/passes/new" element={<NewPass />} /> 
-          <Route path="/manage_credential" element={<ManageCredential />} />
+          {/* <Route path="/manage_credential" element={<ManageCredential />} /> */}
           <Route path="/manage_algorand" element={<ManageAlgorand />} />
-          <Route path="/credential" element={<Credentials />} />
+          <Route path="/passkeys" element={<Passkeys />} />
+          <Route path="/passkeys/new" element={<AddCredential />} />
           <Route path="/create_algorand" element={<CreateAlgorand />} />
           <Route path="/quick_add_algorand" element={<QuickAddAlgorand />} />
           <Route path="/rekey_algorand/:address" element={<RekeyAlgorand />} />

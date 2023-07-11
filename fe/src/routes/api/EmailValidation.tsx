@@ -107,7 +107,7 @@ export default function EmailValidation() {
 						{errorMessage.length > 0 && (
 							<Alert severity="error">{errorMessage}</Alert>
 						)}
-						<Typography variant="body2" align="left">
+						{/* <Typography variant="body2" align="left">
 							<Link href="/login">
 								Go to LoginID Wallet account{" "}
 							</Link>
@@ -116,7 +116,7 @@ export default function EmailValidation() {
 							<Link href="/faq">
 								Learn more about the LoginID Wallet{" "}
 							</Link>
-						</Typography>
+						</Typography> */}
 					</Stack>
 				</Paper>
 			</Container>

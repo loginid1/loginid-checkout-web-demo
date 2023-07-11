@@ -68,8 +68,13 @@ func (u *AuthHandler) RegisterInitHandler(w http.ResponseWriter, r *http.Request
 }
 
 type RegisterCompleteRequest struct {
-	Username        string `json:"username"`
-	DeviceName      string `json:"device_name"`
+	Username   string `json:"username"`
+	DeviceName string `json:"device_name"`
+	UserAgent  struct {
+		Browser string `json:"browser"`
+		Device  string `json:"device"`
+		OS      string `json:"operating_system"`
+	} `json:"user_agent"`
 	Challenge       string `json:"challenge"`
 	CredentialUuid  string `json:"credential_uuid"`
 	CredentialID    string `json:"credential_id"`
@@ -126,7 +131,8 @@ func (u *AuthHandler) RegisterCompleteHandler(w http.ResponseWriter, r *http.Req
 	}
 
 	// save user to database
-	userid, err := u.UserService.CreateUserAccount(request.Username, request.DeviceName, public_key, key_alg, request.Scope, false)
+	deviceInfo, _ := json.Marshal(request.UserAgent)
+	userid, err := u.UserService.CreateUserAccount(request.Username, request.DeviceName, deviceInfo, public_key, key_alg, request.Scope, false)
 	if err != nil {
 		http_common.SendErrorResponse(w, *err)
 		return
@@ -251,8 +257,13 @@ func (u *AuthHandler) AddCredentialInitHandler(w http.ResponseWriter, r *http.Re
 }
 
 type CredentialAddCompleteRequest struct {
-	Username        string `json:"username"`
-	DeviceName      string `json:"device_name"`
+	Username   string `json:"username"`
+	DeviceName string `json:"device_name"`
+	UserAgent  struct {
+		Browser string `json:"browser"`
+		Device  string `json:"device"`
+		OS      string `json:"operating_system"`
+	} `json:"user_agent"`
 	Challenge       string `json:"challenge"`
 	CredentialUuid  string `json:"credential_uuid"`
 	CredentialID    string `json:"credential_id"`
@@ -299,7 +310,8 @@ func (u *AuthHandler) AddCredentialCompleteHandler(w http.ResponseWriter, r *htt
 	}
 
 	// save user to database
-	err = u.UserService.AddUserCredential(request.Username, request.DeviceName, public_key, key_alg)
+	deviceInfo, _ := json.Marshal(request.UserAgent)
+	err = u.UserService.AddUserCredential(request.Username, request.DeviceName, deviceInfo, public_key, key_alg)
 	if err != nil {
 		http_common.SendErrorResponse(w, *err)
 		return
