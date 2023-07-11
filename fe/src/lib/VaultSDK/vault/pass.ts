@@ -125,12 +125,22 @@ export class VaultPass extends Base{
         );
     }
 
+    async driversLicenseMobileCancel(token: string | null, session: string ): Promise<any> {
+        const header = { "x-session-token": token };
+        return await utils.http.post(
+            this._baseURL,
+            `/api/protected/passes/drivers-license/mobile/cancel/${session}`,
+            { },
+            header
+        );
+    }
+
     async driversLicenseMobileVerify(session: string): Promise<any> {
         return await utils.http.get(
             this._baseURL,
             `/api/passes/drivers-license/mobile/${session}/verify`,
             undefined,
-            undefined
+            undefined 
         );
     }
 }

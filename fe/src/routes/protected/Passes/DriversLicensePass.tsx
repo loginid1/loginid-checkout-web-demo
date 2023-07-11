@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { isDesktop } from "react-device-detect";
-import { Stack, Typography, Chip, IconButton } from "@mui/material";
+import { Stack, Typography, Chip, IconButton, LinearProgress } from "@mui/material";
 import { AuthService } from "../../../services/auth";
 import vaultSDK from "../../../lib/VaultSDK";
 import { NewPassControllerProps } from "./PassController";
@@ -13,6 +13,7 @@ let wsurl = process.env.REACT_APP_VAULT_WS_URL
 const DriversLicenseDesktopComponent = (props: NewPassControllerProps): JSX.Element => {
     const [link, setLink] = useState<string>("");
     const [qrCode, setQrCode] = useState<string>("");
+	const [status, setStatus] = useState<string>("init");
 
     useEffect(() => {
         const token = AuthService.getToken();
@@ -32,7 +33,13 @@ const DriversLicenseDesktopComponent = (props: NewPassControllerProps): JSX.Elem
             // Check for a success message, otherwise retry the DocV and Livness (at least 3 times)
             ws.onmessage = (event) => {
                 console.log("On Message: ", event)
-                props.navigate("/passes")
+				if (event.data === "session.success") {
+                    props.navigate("/passes")
+				} else if (event.data === "session.begin") {
+					setStatus("scanning");
+				} else if (event.data === "session.cancel") {
+					setStatus("cancel");
+				}
             };
             
             // Retry the connection if the WS closes
@@ -42,19 +49,93 @@ const DriversLicenseDesktopComponent = (props: NewPassControllerProps): JSX.Elem
         };
         getSession();
 
-    }, [props, setLink, setQrCode]);
+    }, []);
 
     return (
         <>
-            <Typography variant="body1" color="primary" >Go to following link on your new device: </Typography>
-            <Stack direction="row">
-            <Chip label={link}></Chip>
-                <IconButton size="small" onClick={()=>{ navigator.clipboard.writeText(link); }}>
-                    <ContentCopy />
-                </IconButton>
-            </Stack>
-            <Typography variant="body1" color="primary">or use following QR code: </Typography>
-            <img src={qrCode} alt="Add Drivers License" />
+
+			{status === "init" && (
+				<>
+					<Typography
+						variant="caption"
+						color="text.secondary"
+						align="left"
+					>
+						Verify that government IDs are authentic and valid.
+					</Typography>
+					<Typography variant="caption" color="primary">
+						Ready your mobile device:{" "}
+					</Typography>
+					<img src={qrCode} alt="Add Drivers License" />
+					<Typography variant="caption" color="primary">
+						{" "}
+						Or using the following link:{" "}
+					</Typography>
+					<Stack
+						direction="row"
+						justifyContent="center"
+						alignItems="center"
+                        sx={{ maxWidth: 'sm' }}
+					>
+						<Chip label={link} size="small" ></Chip>
+						<IconButton
+							size="small"
+							onClick={() => {
+								navigator.clipboard.writeText(link);
+							}}
+						>
+							<ContentCopy />
+						</IconButton>
+					</Stack>
+				</>
+			)}
+
+			{status === "scanning" && (
+				<>
+					<LinearProgress />
+					<Typography
+						variant="caption"
+						sx={{ mt: 1, mb: 1 }}
+						color="text.secondary"
+						align="left"
+					>
+						Follow the instructions from you mobile device to
+						complete the verification process.
+					</Typography>
+
+					<Typography
+						variant="caption"
+						color="text.secondary"
+						align="left"
+					>
+						{" "}
+						1. Scan your driver license{" "}
+					</Typography>
+					<Typography
+						sx={{ mb: 2 }}
+						variant="caption"
+						color="text.secondary"
+						align="left"
+					>
+						{" "}
+						2. Match your ID with liveness detection{" "}
+					</Typography>
+				</>
+			)}
+
+			{status === "cancel" && (
+				<>
+					<Typography
+						variant="caption"
+						sx={{ mt: 1, mb: 1 }}
+						color="text.secondary"
+						align="left"
+					>
+                        You have canceled the document verification process.
+					</Typography>
+
+				</>
+			)}
         </>
     )
 }

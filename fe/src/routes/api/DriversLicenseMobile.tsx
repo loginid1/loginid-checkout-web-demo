@@ -1,4 +1,4 @@
-import { ThemeProvider, Container, CssBaseline, Paper} from "@mui/material";
+import { ThemeProvider, Container, CssBaseline, Paper, Typography} from "@mui/material";
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import vaultSDK from "../../lib/VaultSDK";
@@ -16,6 +16,7 @@ const DriversLicenseMobile = () => {
     const [passType, setPassType] = useState<string>("");
     const [failed, setFailed] = useState<boolean>(false);
     const { session } = useParams();
+    const [cancel, setCancel] = useState<boolean>(false);
 
     useEffect(() => {
         const verifySession = async () => {
@@ -31,11 +32,21 @@ const DriversLicenseMobile = () => {
         };
         verifySession();
 
-    }, [session, setAuthToken, setPassName, setPassType, setFailed]);
+    //}, [session, setAuthToken, setPassName, setPassType, setFailed]);
+    }, []);
 
     const handleSuccess = async () => {
         try {
             await vaultSDK.driversLicenseMobileComplete(authToken, session as string, credentialId, token, pass as BasePass);
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const handleCancel = async () => {
+        try {
+            setCancel(true);
+            await vaultSDK.driversLicenseMobileCancel(authToken, session as string);
         } catch (err) {
             console.error(err);
         }
@@ -93,11 +104,16 @@ const DriversLicenseMobile = () => {
 						borderRadius: "2%",
 					}}
 				>
+                    {cancel?  
+                    <Typography variant="body2">
+                        Document Verification Session Canceled
+                    </Typography>
+                    :
                     <DocumentPass 
                         token={token}
                         credentialId={credentialId}
                         authToken={authToken} 
-                        handleCancel={() => { }}
+                        handleCancel={handleCancel}
                         handleSuccess={handleSuccess}
                         passName={passName}
                         passType={passType}
@@ -105,6 +121,7 @@ const DriversLicenseMobile = () => {
                         setToken={setToken}
                         setCredentialId={setCredentialId}
                     />
+}
                 </Paper>
             </Container>
         </ThemeProvider>

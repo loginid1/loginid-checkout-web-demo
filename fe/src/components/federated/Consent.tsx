@@ -1,4 +1,19 @@
-import { Alert, AlertColor, Avatar, Button, Chip, Divider, IconButton, List, ListItem, ListItemAvatar, ListItemText, Stack, Typography } from "@mui/material";
+import {
+	Alert,
+	AlertColor,
+	Avatar,
+	Button,
+	Chip,
+	Divider,
+	IconButton,
+	LinearProgress,
+	List,
+	ListItem,
+	ListItemAvatar,
+	ListItemText,
+	Stack,
+	Typography,
+} from "@mui/material";
 import { useContext, useState, useEffect } from "react";
 import vaultSDK from "../../lib/VaultSDK";
 import { ConsentPass } from "../../lib/VaultSDK/vault/federated";
@@ -11,7 +26,11 @@ import AccountIcon from "@mui/icons-material/AccountCircle";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 import jwt_decode from "jwt-decode";
-import { ConsentContextType, ConsentContext, AuthPage } from "../../lib/federated";
+import {
+	ConsentContextType,
+	ConsentContext,
+	AuthPage,
+} from "../../lib/federated";
 import { PassIcon } from "./Icons";
 import { ArrowBack, ContentCopy, Refresh } from "@mui/icons-material";
 import { isDesktop } from "react-device-detect";
@@ -28,8 +47,8 @@ export function ErrorPage(props: { error: string }) {
 	);
 }
 
-export function Consent(props: {  session: string; username: string }) {
-	const { postMessageText,  setPage, setDisplayMessage, handleCancel } =
+export function Consent(props: { session: string; username: string }) {
+	const { postMessageText, setPage, setDisplayMessage, handleCancel } =
 		useContext<ConsentContextType | null>(
 			ConsentContext
 		) as ConsentContextType;
@@ -50,13 +69,15 @@ export function Consent(props: {  session: string; username: string }) {
 				consent.required_attributes == null ||
 				consent.required_attributes.length === 0
 			) {
-				postMessageText(JSON.stringify({token:consent.token}));
+				postMessageText(JSON.stringify({ token: consent.token }));
 				setPage(AuthPage.FINAL);
 			} else {
 				if (consent.missing_attributes.length > 0) {
 					if (consent.missing_attributes[0] === "phone") {
 						setPage(AuthPage.PHONE_PASS);
-					} else if (consent.missing_attributes[0] === "drivers-license") {
+					} else if (
+						consent.missing_attributes[0] === "drivers-license"
+					) {
 						setPage(AuthPage.DRIVER_PASS);
 					}
 				} else {
@@ -65,7 +86,7 @@ export function Consent(props: {  session: string; username: string }) {
 				}
 			}
 		} catch (e) {
-            console.log(e);
+			console.log(e);
 			setDisplayMessage({ type: "error", text: (e as Error).message });
 			setPage(AuthPage.ERROR);
 		}
@@ -75,7 +96,9 @@ export function Consent(props: {  session: string; username: string }) {
 		//console.log("save consent");
 		let consent = await vaultSDK.saveConsent(props.session);
 		//console.log(consent.token);
-		postMessageText(JSON.stringify({token:consent.token, vcs:consent.vcs}));
+		postMessageText(
+			JSON.stringify({ token: consent.token, vcs: consent.vcs })
+		);
 		setPage(AuthPage.FINAL);
 	}
 
@@ -108,7 +131,7 @@ export function Consent(props: {  session: string; username: string }) {
 						<Stack direction="column" justifyContent="center">
 							{passes?.map((pass) => (
 								<List
-                                    key={pass.type}
+									key={pass.type}
 									dense={true}
 									sx={{
 										width: "100%",
@@ -164,12 +187,12 @@ export function PhonePassPage(props: { session: string; username: string }) {
 			ConsentContext
 		) as ConsentContextType;
 
-    const [verifyInit, setVerifyInit] = useState(false);
-    const [timer, setTimer] = useState(45);
+	const [verifyInit, setVerifyInit] = useState(false);
+	const [timer, setTimer] = useState(45);
 
-    useEffect(() => {
-        timer > 0 && verifyInit && setTimeout(() => setTimer(timer - 1), 1000);
-    }, [timer, verifyInit]);
+	useEffect(() => {
+		timer > 0 && verifyInit && setTimeout(() => setTimer(timer - 1), 1000);
+	}, [timer, verifyInit]);
 
 	async function handleVerify() {
 		const token = AuthService.getToken();
@@ -177,7 +200,7 @@ export function PhonePassPage(props: { session: string; username: string }) {
 			try {
 				await vaultSDK.createPhonePassInit(token, "+" + phone);
 				setShowCode(true);
-                setVerifyInit(true);
+				setVerifyInit(true);
 			} catch (err) {
 				setError((err as Error).message);
 				console.error(err);
@@ -215,7 +238,7 @@ export function PhonePassPage(props: { session: string; username: string }) {
 	}
 	return (
 		<Stack>
-			<Typography sx={{ m: 2 }} variant="body2" >
+			<Typography sx={{ m: 2 }} variant="body2">
 				Add a phone number
 			</Typography>
 			{error && <Alert severity="error">{error}</Alert>}
@@ -246,34 +269,38 @@ export function PhonePassPage(props: { session: string; username: string }) {
 						inputName="code"
 						validateCode={validateCode}
 					></CodeInput>
-			<Stack direction="row" justifyContent="center" alignItems="center">
-
-                <Typography
-                    variant="caption"
-                    color="text.secondary"
-                >
-                    resend code in <strong>{timer} seconds</strong>
-                </Typography>
-                <Button
-                    variant="text"
-                    size="small"
-                    startIcon={<Refresh/>}
-                    disabled={verifyInit && timer !==0}
-                    onClick={async () => {
-                        const token = AuthService.getToken();
-                        if (token) {
-                            try {
-                                setTimer(45);
-                                await vaultSDK.createPhonePassInit(token, "+"+phone);
-                                setVerifyInit(true);
-                            } catch (err) {
-                                console.error(err);
-                            }
-                        }
-                    } }>
-                    Resend
-                </Button>
-            </Stack>
+					<Stack
+						direction="row"
+						justifyContent="center"
+						alignItems="center"
+					>
+						<Typography variant="caption" color="text.secondary">
+							resend code in <strong>{timer} seconds</strong>
+						</Typography>
+						<Button
+							variant="text"
+							size="small"
+							startIcon={<Refresh />}
+							disabled={verifyInit && timer !== 0}
+							onClick={async () => {
+								const token = AuthService.getToken();
+								if (token) {
+									try {
+										setTimer(45);
+										await vaultSDK.createPhonePassInit(
+											token,
+											"+" + phone
+										);
+										setVerifyInit(true);
+									} catch (err) {
+										console.error(err);
+									}
+								}
+							}}
+						>
+							Resend
+						</Button>
+					</Stack>
 				</>
 			)}
 
@@ -312,107 +339,203 @@ export function PhonePassPage(props: { session: string; username: string }) {
 	);
 }
 
-let wsurl = process.env.REACT_APP_VAULT_WS_URL
+let wsurl = process.env.REACT_APP_VAULT_WS_URL;
 
-function DriversLicenseDesktopComponent (props: { session: string; username: string }) {
-    const [link, setLink] = useState<string>("");
-    const [qrCode, setQrCode] = useState<string>("");
+function DriversLicenseDesktopComponent(props: {
+	session: string;
+	username: string;
+}) {
+	const [link, setLink] = useState<string>("");
+	const [qrCode, setQrCode] = useState<string>("");
+	const [status, setStatus] = useState<string>("init");
 	const { postMessageText, setPage, setDisplayMessage, handleCancel } =
 		useContext<ConsentContextType | null>(
 			ConsentContext
 		) as ConsentContextType;
 
-    useEffect(() => {
-        const token = AuthService.getToken();
-        const getSession = async () => {
-            const data = await vaultSDK.driversLicenseMobileInit(token, "Driver License", "drivers-license");
-            setLink(data.link);
-            setQrCode(data.qr_code);
-        
-            let ws = new WebSocket(
-                wsurl + "/api/passes/drivers-license/mobile/ws/" + data.session_id
-            );
-            // Only render the Link and QR code if the WS is open
-            // ws.onopen = (event) => {
-            //     console.log("On Open: ", event)
-            // };
+	useEffect(() => {
+		const token = AuthService.getToken();
+		const getSession = async () => {
+			const data = await vaultSDK.driversLicenseMobileInit(
+				token,
+				"Driver License",
+				"drivers-license"
+			);
+			setLink(data.link);
+			setQrCode(data.qr_code);
 
-            // Check for a success message, otherwise retry the DocV and Livness (at least 3 times)
-            ws.onmessage = (event) => {
-                console.log("On Message: ", event)
-				setPage(AuthPage.CONSENT);
-            };
-            
-            // Retry the connection if the WS closes
-            // ws.onclose = (event) => {
-            //     console.log("On Close: ", event)
-            // };
-        };
-        getSession();
+			let ws = new WebSocket(
+				wsurl +
+					"/api/passes/drivers-license/mobile/ws/" +
+					data.session_id
+			);
+			// Only render the Link and QR code if the WS is open
+			// ws.onopen = (event) => {
+			//     console.log("On Open: ", event)
+			// };
 
-    }, [props, setLink, setQrCode]);
+			// Check for a success message, otherwise retry the DocV and Livness (at least 3 times)
+			ws.onmessage = (event) => {
+				if (event.data === "session.success") {
+					setPage(AuthPage.CONSENT);
+				} else if (event.data === "session.begin") {
+					setStatus("scanning");
+				} else if (event.data === "session.cancel") {
+					setStatus("cancel");
+				}
+			};
 
-    return (
-        <>
-            <Typography variant="caption" color="primary">Ready your mobile device: </Typography>
-            <img src={qrCode} alt="Add Drivers License" />
-            <Typography variant="caption" color="primary" > Or using the following link: </Typography>
-            <Stack direction="row" justifyContent="center" alignItems="center">
-            <Chip label={link} size="small"></Chip>
-                <IconButton size="small" onClick={()=>{ navigator.clipboard.writeText(link); }}>
-                    <ContentCopy />
-                </IconButton>
-            </Stack>
-        </>
-    )
+			// Retry the connection if the WS closes
+			// ws.onclose = (event) => {
+			//     console.log("On Close: ", event)
+			// };
+		};
+		getSession();
+	}, []);
+
+	return (
+		<>
+			{status === "init" && (
+				<>
+					<Typography
+						variant="caption"
+						color="text.secondary"
+						align="left"
+					>
+						Verify that government IDs are authentic and valid.
+					</Typography>
+					<Typography variant="caption" color="primary">
+						Ready your mobile device:{" "}
+					</Typography>
+					<img src={qrCode} alt="Add Drivers License" />
+					<Typography variant="caption" color="primary">
+						{" "}
+						Or using the following link:{" "}
+					</Typography>
+					<Stack
+						direction="row"
+						justifyContent="center"
+						alignItems="center"
+					>
+						<Chip label={link} size="small"></Chip>
+						<IconButton
+							size="small"
+							onClick={() => {
+								navigator.clipboard.writeText(link);
+							}}
+						>
+							<ContentCopy />
+						</IconButton>
+					</Stack>
+				</>
+			)}
+
+			{status === "scanning" && (
+				<>
+					<LinearProgress />
+					<Typography
+						variant="caption"
+						sx={{ mt: 1, mb: 1 }}
+						color="text.secondary"
+						align="left"
+					>
+						Follow the instructions from you mobile device to
+						complete the verification process.
+					</Typography>
+
+					<Typography
+						variant="caption"
+						color="text.secondary"
+						align="left"
+					>
+						{" "}
+						1. Scan your driver license{" "}
+					</Typography>
+					<Typography
+						sx={{ mb: 2 }}
+						variant="caption"
+						color="text.secondary"
+						align="left"
+					>
+						{" "}
+						2. Match your ID with liveness detection{" "}
+					</Typography>
+				</>
+			)}
+
+			{status === "cancel" && (
+				<>
+					<Typography
+						variant="caption"
+						sx={{ mt: 1, mb: 1 }}
+						color="text.secondary"
+						align="left"
+					>
+                        You have canceled the document verification process.
+					</Typography>
+
+				</>
+			)}
+		</>
+	);
 }
 
-export function DriverLicensePassPage(props: { session: string; username: string }) {
-    const [pass, setPass] = useState<DriversLicensePass|null>(null);
-    const [token, setToken] = useState<string>("");
-    const [credentialId, setCredentialId] = useState<string>("");
-    const authToken = AuthService.getToken() as string
+export function DriverLicensePassPage(props: {
+	session: string;
+	username: string;
+}) {
+	const [pass, setPass] = useState<DriversLicensePass | null>(null);
+	const [token, setToken] = useState<string>("");
+	const [credentialId, setCredentialId] = useState<string>("");
+	const authToken = AuthService.getToken() as string;
 	const { postMessageText, setPage, setDisplayMessage, handleCancel } =
 		useContext<ConsentContextType | null>(
 			ConsentContext
 		) as ConsentContextType;
 
-    if (isDesktop) {
-        return (
-        
-		<Stack>
-			<Typography sx={{ m: 2 }} variant="body2" >
-            Add a Driver License 
-			</Typography>
-			<Typography variant="caption" color="text.secondary" align="left">
-            Verify that government IDs are authentic and valid.
-			</Typography>
-            <DriversLicenseDesktopComponent {...props}/>
-        </Stack>
-        )
-    }
+	if (isDesktop) {
+		return (
+			<Stack>
+				<Typography sx={{ m: 2 }} variant="body2">
+					Add a Driver License
+				</Typography>
+				<DriversLicenseDesktopComponent {...props} />
+			</Stack>
+		);
+	}
 
-    const handleSuccess = async () => {
-        if (authToken && pass) {
-            try {
-                await vaultSDK.createDriversLicensePass(authToken, "Driver License", credentialId, token, pass);
-                setPage(AuthPage.CONSENT);
-            } catch (err) {
-                console.error(err);
-                handleCancel();
-            }
-        }
-    };
+	const handleSuccess = async () => {
+		if (authToken && pass) {
+			try {
+				await vaultSDK.createDriversLicensePass(
+					authToken,
+					"Driver License",
+					credentialId,
+					token,
+					pass
+				);
+				setPage(AuthPage.CONSENT);
+			} catch (err) {
+				console.error(err);
+				handleCancel();
+			}
+		}
+	};
 
-    return <DocumentPass 
-        token={token}
-        credentialId={credentialId}
-        authToken={AuthService.getToken() as string} 
-        handleCancel={() => { handleCancel();}}
-        handleSuccess={handleSuccess}
-        passName="Driver License"
-        passType="drivers-license"
-        setPass={setPass}
-        setToken={setToken}
-        setCredentialId={setCredentialId}/>
+	return (
+		<DocumentPass
+			token={token}
+			credentialId={credentialId}
+			authToken={AuthService.getToken() as string}
+			handleCancel={() => {
+				handleCancel();
+			}}
+			handleSuccess={handleSuccess}
+			passName="Driver License"
+			passType="drivers-license"
+			setPass={setPass}
+			setToken={setToken}
+			setCredentialId={setCredentialId}
+		/>
+	);
 }

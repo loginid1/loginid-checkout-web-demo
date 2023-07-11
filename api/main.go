@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -212,6 +211,7 @@ func main() {
 	passes.HandleFunc("/drivers-license", passesHandler.DriversLicense).Methods("POST")
 	passes.HandleFunc("/drivers-license/mobile/init", passesHandler.DriversLicenseMobileInit).Methods("POST")
 	passes.HandleFunc("/drivers-license/mobile/complete/{session}", passesHandler.DriversLicenseMobileComplete).Methods("POST")
+	passes.HandleFunc("/drivers-license/mobile/cancel/{session}", passesHandler.DriversLicenseMobileCancel).Methods("POST")
 	api.HandleFunc("/passes/drivers-license/mobile/{session}/verify", passesHandler.DriversLicenseMobileVerify).Methods("GET")
 	api.HandleFunc("/passes/drivers-license/mobile/ws/{session}", passesHandler.DriversLicenseMobileWS)
 
@@ -228,16 +228,17 @@ func main() {
 	dispenser.HandleFunc("/sign", dispenserHandler.DispenserSignHandler)
 	dispenser.HandleFunc("/post", dispenserHandler.DispenserPostHandler)
 
-	cors_origins := goutil.GetEnv("CORS_ORIGINS", "http://localhost:3000,http://localhost:3010")
-	cor_array := strings.Split(cors_origins, ",")
+	//cors_origins := goutil.GetEnv("CORS_ORIGINS", "http://localhost:3000,http://localhost:3010")
+	//cor_array := strings.Split(cors_origins, ",")
 	//TODO: change CORS handling to middleware
 	c := cors.New(cors.Options{
-		AllowedOrigins:   cor_array,
+		//AllowedOrigins:   cor_array,
 		AllowCredentials: true,
-		AllowedHeaders:   []string{"Content-Type", "X-Session-Token", "x-api-token"},
-		AllowedMethods:   []string{"OPTIONS", "GET", "POST", "DELETE"},
+		//AllowedHeaders:   []string{"Content-Type", "X-Session-Token", "x-api-token", "Access-Control-Allow-Origin"},
+		AllowedHeaders: []string{"*"},
+		AllowedMethods: []string{"OPTIONS", "GET", "POST", "DELETE"},
 		// Enable Debugging for testing, consider disabling in production
-		Debug: false,
+		Debug: true,
 	})
 
 	corsHandler := c.Handler(r)
@@ -245,7 +246,8 @@ func main() {
 	port := goutil.GetEnv("PORT", "8000")
 	srv := &http.Server{
 		Handler: corsHandler,
-		Addr:    fmt.Sprintf(":%s", port),
+		//Handler: r,
+		Addr: fmt.Sprintf(":%s", port),
 		// Good practice: enforce timeouts for servers you create!
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,

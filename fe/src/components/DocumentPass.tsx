@@ -1,4 +1,4 @@
-import { Step, StepContent, StepLabel, Stepper } from "@mui/material";
+import { Box, Button, Step, StepContent, StepLabel, Stepper } from "@mui/material";
 import React, { useState } from "react";
 import DocumentScanning, { DocumentData } from "./DocumentScanning"
 import FacialScanning from "./FacialScanning"
@@ -103,6 +103,16 @@ const DocumentPass = (props: DocumentPassProps): JSX.Element => {
                     </Step>
                 ))}
             </Stepper>
+
+            <Box sx={{ mb: 2 }}>
+                <Button
+                    variant="text"
+                    onClick={props.handleCancel}
+                    sx={{ mt: 1, mr: 1 }}
+                >
+                    Cancel
+                </Button>
+            </Box>
             <div></div>
         </>
     )

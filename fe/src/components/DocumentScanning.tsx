@@ -139,6 +139,7 @@ const DocumentScanning = (props: DocumentScanningProps): JSX.Element => {
         return (
             <>
                 <BlinkId handleSuccess={handleSuccess} />
+                {/*
                 <Box sx={{ mb: 2 }}>
                     <Button
                         variant="text"
@@ -156,6 +157,7 @@ const DocumentScanning = (props: DocumentScanningProps): JSX.Element => {
                         Continue
                     </Button>
                 </Box>
+                 */}
             </>
         )
     }
@@ -198,6 +200,7 @@ const DocumentScanning = (props: DocumentScanningProps): JSX.Element => {
                 </Grid>
             </Grid>
             <Box sx={{ mb: 2 }}>
+                {/*
                 <Button
                     variant="text"
                     onClick={props.handleBack}
@@ -205,6 +208,7 @@ const DocumentScanning = (props: DocumentScanningProps): JSX.Element => {
                 >
                     Cancel
                 </Button>
+                 */}
                 <Button
                     variant="contained"
                     onClick={props.handleNext}

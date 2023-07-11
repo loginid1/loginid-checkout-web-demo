@@ -328,7 +328,37 @@ func (h *PassesHandler) DriversLicenseMobileVerify(w http.ResponseWriter, r *htt
 		return
 	}
 
+	// update mobile session to begin
+	if err := h.RedisClient.Publish(r.Context(), sessionId, "session.begin").Err(); err != nil {
+		log.Println(err)
+		http_common.SendErrorResponse(w, services.NewError("fail to update session channel"))
+		return
+	}
+
 	http_common.SendSuccessResponse(w, data)
+}
+
+func (h *PassesHandler) DriversLicenseMobileCancel(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	sessionId := vars["session"]
+	if sessionId == "" {
+		return
+	}
+
+	_, err := h.RedisClient.Get(r.Context(), sessionId).Bytes()
+	if err != nil {
+		http_common.SendErrorResponse(w, services.NewError("fail to verify session"))
+		return
+	}
+
+	// update mobile session to begin
+	if err := h.RedisClient.Publish(r.Context(), sessionId, "session.cancel").Err(); err != nil {
+		log.Println(err)
+		http_common.SendErrorResponse(w, services.NewError("fail to update session channel"))
+		return
+	}
+
+	http_common.SendSuccess(w)
 }
 
 type DriversLicenseCompleteRequest struct {
@@ -421,9 +451,9 @@ func (h *PassesHandler) DriversLicenseMobileComplete(w http.ResponseWriter, r *h
 		return
 	}
 
-	if err := h.RedisClient.Publish(r.Context(), sessionId, request.CredentialId).Err(); err != nil {
-		log.Println(err)
-		http_common.SendErrorResponse(w, services.NewError("fail to generate qr code"))
+	if err := h.RedisClient.Publish(r.Context(), sessionId, "session.success").Err(); err != nil {
+		//log.Println(err)
+		http_common.SendErrorResponse(w, services.NewError("fail to update session channel"))
 		return
 	}
 
@@ -457,6 +487,6 @@ func (h *PassesHandler) DriversLicenseMobileWS(w http.ResponseWriter, r *http.Re
 
 	for msg := range ch {
 		log.Println(msg.Channel, msg.Payload)
-		ws.WriteMessage(websocket.TextMessage, []byte("Done..."))
+		ws.WriteMessage(websocket.TextMessage, []byte(msg.Payload))
 	}
 }
