@@ -32,7 +32,6 @@ const DriversLicenseDesktopComponent = (props: NewPassControllerProps): JSX.Elem
 
             // Check for a success message, otherwise retry the DocV and Livness (at least 3 times)
             ws.onmessage = (event) => {
-                console.log("On Message: ", event)
 				if (event.data === "session.success") {
                     props.navigate("/passes")
 				} else if (event.data === "session.begin") {
@@ -48,7 +47,6 @@ const DriversLicenseDesktopComponent = (props: NewPassControllerProps): JSX.Elem
             // };
         };
         getSession();
-
     }, []);
 
     return (

@@ -8,7 +8,7 @@ import background from "../../assets/background.svg";
 import DocumentPass from "../../components/DocumentPass";
 
 const DriversLicenseMobile = () => {
-    const [pass, setPass] = React.useState<BasePass|null>(null);
+    const [pass, setPass] = useState<BasePass|null>(null);
     const [token, setToken] = useState<string>("");
     const [credentialId, setCredentialId] = useState<string>("");
     const [authToken, setAuthToken] = useState<string>("");

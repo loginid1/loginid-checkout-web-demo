@@ -30,6 +30,18 @@ declare module "@mui/material/styles/createPalette" {
 
 
 export const LoginID = createTheme({
+  components: {
+    MuiAvatarGroup: {
+      styleOverrides: {
+        avatar: {
+          width: 32,
+          height: 32,
+          color: "#FFF",
+          borderColor: "#FFF"
+        }
+      }
+    }
+  },
   palette: {
     primary: {
       main: "#1642DF",

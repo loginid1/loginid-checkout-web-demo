@@ -163,8 +163,13 @@ func (h *FederatedAuthHandler) FederatedRegisterInitHandler(w http.ResponseWrite
 }
 
 type FederatedRegisterCompleteRequest struct {
-	Username        string `json:"username"`
-	DeviceName      string `json:"device_name"`
+	Username   string `json:"username"`
+	DeviceName string `json:"device_name"`
+	UserAgent  struct {
+		Browser string `json:"browser"`
+		Device  string `json:"device"`
+		OS      string `json:"operating_system"`
+	} `json:"user_agent"`
 	Challenge       string `json:"challenge"`
 	CredentialUuid  string `json:"credential_uuid"`
 	CredentialID    string `json:"credential_id"`
@@ -226,7 +231,8 @@ func (h *FederatedAuthHandler) FederatedRegisterCompleteHandler(w http.ResponseW
 	}
 
 	// save user to database
-	userid, err := h.UserService.CreateUserAccount(request.Username, request.DeviceName, public_key, key_alg, "", true)
+	deviceInfo, _ := json.Marshal(request.UserAgent)
+	userid, err := h.UserService.CreateUserAccount(request.Username, request.DeviceName, deviceInfo, public_key, key_alg, "", true)
 	if err != nil {
 		http_common.SendErrorResponse(w, *err)
 		return

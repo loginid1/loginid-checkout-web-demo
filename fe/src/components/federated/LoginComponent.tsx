@@ -1,4 +1,4 @@
-import { Alert, AlertColor, Typography, TextField, Button, Stack, CircularProgress } from "@mui/material";
+import { Alert, AlertColor, Typography, TextField, Button, Stack, CircularProgress, Link } from "@mui/material";
 import { useState } from "react";
 import { DisplayMessage } from "../../lib/common/message";
 import { CodeInput } from "../CodeInput";
@@ -66,13 +66,14 @@ export function Login(props:{session: string, origin: string, handleLogin: ()=> 
 					Signup
 				</Button>
 				}
-				<Typography
+				<Link
+					href="/faq"
 					sx={{ m: 1 }}
 					variant="caption"
 					color="text.secondary"
 				>
-					Simple passwordless login with passkey or email
-				</Typography>
+					Learn more
+				</Link>
 				{waitingMessage && (
 					<Stack direction="row" alignItems="center">
 						<CircularProgress size="2rem" />

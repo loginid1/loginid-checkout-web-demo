@@ -46,10 +46,7 @@ export function EmailDialog(props: EmailProps) {
 					</Typography>
 					<Typography variant="body2">
 						<p>
-							Please follow the instruction sent to{" "}
-							<b>{props.email}</b>, and click on the confirm email
-							button. The code below should also be in the
-							confirmation email received.
+							Please follow the instruction sent to <b>{props.email}</b>, and click on the ‘Confirm Email’ button should below code match the one sent to your email address.
 						</p>
 					</Typography>
 					<Typography
@@ -78,10 +75,7 @@ export function EmailDialog(props: EmailProps) {
 					</Typography>
 					<Typography variant="body2">
 						<p>
-							Please follow the instruction sent to{" "}
-							<b>{props.email}</b>, and click on the confirm email
-							button. The code below should also be in the
-							confirmation email received.
+							Please follow the instruction sent to <b>{props.email}</b>, and click on the ‘Confirm Email’ button should below code match the one sent to your email address.
 						</p>
 					</Typography>
 					<Typography

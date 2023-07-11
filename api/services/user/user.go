@@ -28,6 +28,7 @@ type User struct {
 type UserCredential struct {
 	ID        string    `json:"id" gorm:"primary_key"`
 	UserID    string    `json:"user_id"`
+	UserAgent []byte    `json:"user_agent"`
 	User      User      `json:"-"`
 	Name      string    `json:"name"`
 	KeyHandle string    `json:"key_handle"`

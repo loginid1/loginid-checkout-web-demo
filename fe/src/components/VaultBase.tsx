@@ -22,8 +22,8 @@ const menuData: MenuData[] = [
 	{
 		id: "passkeys",
 		icon: <CredentialDefault />,
-		title: "My Passkeys",
-		link: "/credential",
+		title: "Passkeys",
+		link: "/passkeys",
 		items: [],
 		removable: false,
 	},
@@ -73,7 +73,7 @@ const menuData: MenuData[] = [
 		title: "Developer Console",
 		link: "/developer/console",
 		items: [],
-				removable: true,
+		removable: false,
 	},
 ];
 

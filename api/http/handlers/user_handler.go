@@ -24,7 +24,7 @@ type UserHandler struct {
 }
 
 type CredentialListResponse struct {
-	Credentials []user.UserCredential `json:"credentials"`
+	Credentials []user.CredentialResponse `json:"credentials"`
 }
 
 func (h *UserHandler) GetCredentialListHandler(w http.ResponseWriter, r *http.Request) {

@@ -1,7 +1,9 @@
 package user
 
 import (
+	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/algorand/go-algorand-sdk/crypto"
 	"github.com/algorand/go-algorand-sdk/mnemonic"
@@ -14,6 +16,22 @@ type UserService struct {
 	UserRepository *UserRepository
 }
 
+type CredentialUserAgentResponse struct {
+	Browser string `json:"browser"`
+	Device  string `json:"device"`
+	OS      string `json:"operating_system"`
+}
+type CredentialResponse struct {
+	ID        string                       `json:"id"`
+	UserID    string                       `json:"user_id"`
+	UserAgent *CredentialUserAgentResponse `json:"user_agent,omitempty"`
+	Name      string                       `json:"name"`
+	KeyHandle string                       `json:"key_handle"`
+	PublicKey string                       `json:"public_key"`
+	KeyAlg    string                       `json:"key_alg"`
+	Iat       time.Time                    `json:"iat"`
+}
+
 // NewUserService
 // initialize UserService struct
 func NewUserService(db *gorm.DB) (*UserService, error) {
@@ -22,7 +40,7 @@ func NewUserService(db *gorm.DB) (*UserService, error) {
 	return &userService, nil
 }
 
-func (u *UserService) CreateUserAccount(username string, device_name string, public_key string, key_alg string, scopes string, validatedEmail bool) (string, *services.ServiceError) {
+func (u *UserService) CreateUserAccount(username string, device_name string, device_info []byte, public_key string, key_alg string, scopes string, validatedEmail bool) (string, *services.ServiceError) {
 	user := User{
 		ID:             uuid.New().String(),
 		Username:       username,
@@ -35,6 +53,7 @@ func (u *UserService) CreateUserAccount(username string, device_name string, pub
 	}
 	credential := UserCredential{
 		Name:      device_name,
+		UserAgent: device_info,
 		PublicKey: public_key,
 		KeyAlg:    key_alg,
 	}
@@ -45,10 +64,11 @@ func (u *UserService) CreateUserAccount(username string, device_name string, pub
 	return user.ID, nil
 }
 
-func (u *UserService) AddUserCredential(username string, device_name string, public_key string, key_alg string) *services.ServiceError {
+func (u *UserService) AddUserCredential(username string, device_name string, device_info []byte, public_key string, key_alg string) *services.ServiceError {
 
 	credential := UserCredential{
 		Name:      device_name,
+		UserAgent: device_info,
 		PublicKey: public_key,
 		KeyAlg:    key_alg,
 	}
@@ -70,13 +90,30 @@ func (u *UserService) GetProfile(username string) (*UserProfile, *services.Servi
 	return profile, nil
 }
 
-func (u *UserService) GetCredentialList(username string) ([]UserCredential, *services.ServiceError) {
-	credentialList, err := u.UserRepository.GetCredentialsByUsername(username)
+func (u *UserService) GetCredentialList(username string) ([]CredentialResponse, *services.ServiceError) {
+	credentials, err := u.UserRepository.GetCredentialsByUsername(username)
 	if err != nil {
-		return credentialList, services.CreateError("failed to retrieve credentials - try again")
+		return nil, services.CreateError("failed to retrieve credentials - try again")
 	}
 
-	return credentialList, nil
+	var result []CredentialResponse
+	for _, credential := range credentials {
+		var userAgent *CredentialUserAgentResponse
+		json.Unmarshal(credential.UserAgent, &userAgent)
+		item := CredentialResponse{
+			ID:        credential.ID,
+			UserID:    credential.UserID,
+			Name:      credential.Name,
+			UserAgent: userAgent,
+			KeyHandle: credential.KeyHandle,
+			PublicKey: credential.PublicKey,
+			KeyAlg:    credential.KeyAlg,
+			Iat:       credential.Iat,
+		}
+		result = append(result, item)
+	}
+
+	return result, nil
 }
 
 func (u *UserService) UpdateCredential(id string, name string) *services.ServiceError {

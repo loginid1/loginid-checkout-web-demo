@@ -403,13 +403,15 @@ export default function FederatedAuthPopup() {
 					<img src={LoginIDLogo} alt="something" />
 				</Typography>
 
-				<Typography
-					sx={{ mt: 1 }}
+				<Link
+					target="_blank"
+					href="/faq"
+					sx={{ m: 1 }}
 					variant="caption"
 					color="text.secondary"
 				>
-					Simple passwordless login with passkey or email
-				</Typography>
+					Learn more
+				</Link>
 			</Container>
 		</ThemeProvider>
 	);
