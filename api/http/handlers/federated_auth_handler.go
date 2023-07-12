@@ -442,7 +442,7 @@ func (h *FederatedAuthHandler) CheckConsentHandler(w http.ResponseWriter, r *htt
 				}
 				cpasses = append(cpasses, c_pass)
 				missing = utils.Remove(missing, app.KPhoneAttribute)
-			} else if p.Attributes == app.KDriversLicenseAttribute {
+			} else if utils.Contains(strings.Split(p.Attributes, ","), app.KDriversLicenseAttribute) {
 				c_pass := ConsentPassResponse{
 					Type: app.KDriversLicenseAttribute,
 					Data: p.MaskedData,

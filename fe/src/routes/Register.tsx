@@ -50,6 +50,7 @@ export default function Register() {
 	const params = useParams();
 
 	useEffect(() => {
+		console.log(process.env);
 		let aEntry = params["entry"];
 		if (aEntry != null && aEntry === "algo") {
 			setEntry("algo");
@@ -70,6 +71,7 @@ export default function Register() {
 	async function emailRegister() {
 		try {
 			let appOrigin = window.origin;
+			
 			let result = await vaultSDK.sendEmailSession(
 				sessionId,
 				username,

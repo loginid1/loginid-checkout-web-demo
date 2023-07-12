@@ -57,15 +57,6 @@ const FacialScanning = (props: FacialScanningProps): JSX.Element => {
                     </Button>
                 </IProovWeb>
             </Box>
-            <Box sx={{ mb: 2 }}>
-                <Button
-                    variant="text"
-                    onClick={props.handleBack}
-                    sx={{ mt: 1, mr: 1 }}
-                >
-                    Cancel
-                </Button>
-            </Box>
         </>
     );
 }

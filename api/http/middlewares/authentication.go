@@ -48,6 +48,7 @@ func NewAuthService(clientID string, jwtUrl string) (*AuthService, error) {
 func (auth *AuthService) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		authHeader := r.Header.Get("x-session-token")
+		logger.ForRequest(r).Info("MIDDLE")
 		// get authorization header if present
 		if authHeader != "" {
 			authToken := strings.TrimSpace(authHeader)

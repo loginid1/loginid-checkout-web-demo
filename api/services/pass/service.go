@@ -194,7 +194,7 @@ func (s *PassService) AddDriversLicensePass(ctx context.Context, userId, credent
 	}
 	dataHash := sha256.Sum256([]byte(data.DocumentNumber))
 
-	attributes := []string{"document_number", "date_of_birth"}
+	attributes := []string{"drivers-license", "document_number", "date_of_birth"}
 	if data.DocumentCountry != "" {
 		attributes = append(attributes, "document_country")
 	}

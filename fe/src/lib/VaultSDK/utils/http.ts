@@ -1,7 +1,12 @@
 import { getErrorMessageByCode, SDKError } from "./errors";
 
 const defaultHeaders = {
-    "Content-Type": "application/json"
+    "Content-Type": "application/json",
+}
+
+const devHeaders = {
+    "ngrok-skip-browser-warning": "69420",
+    "Access-Control-Allow-Origin": '*'
 }
 
 /**
@@ -9,6 +14,9 @@ const defaultHeaders = {
  * */
 export const post = async (server: string, endpoint: string, payload: object, headers?: any) => {
     headers = Object.assign(defaultHeaders, headers);
+    if (process.env.NODE_ENV === "development") {
+        headers = Object.assign(devHeaders, headers);
+    }
     const payloadJSON = {
         method: "post",
         headers: headers,
@@ -48,6 +56,9 @@ export const postFormData = async (server: string, endpoint: string, payload: Fo
  * */
 export const get = async (server: string, endpoint: string, payload?: object, headers?: any) => {
     headers = Object.assign(defaultHeaders, headers);
+    if (process.env.NODE_ENV === "development") {
+        headers = Object.assign(devHeaders, headers);
+    }
     const headerJSON = {
         headers: headers,
     };
@@ -72,6 +83,9 @@ export const get = async (server: string, endpoint: string, payload?: object, he
  * */
 export const httpDelete = async (server: string, endpoint: string, headers?: any) => {
     headers = Object.assign(defaultHeaders, headers);
+    if (process.env.NODE_ENV === "development") {
+        headers = Object.assign(devHeaders, headers);
+    }
     const payloadJSON = {
         method: "delete",
         headers: headers,

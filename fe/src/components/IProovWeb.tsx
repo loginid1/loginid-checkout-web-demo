@@ -59,7 +59,7 @@ const IProovWeb = (props: React.PropsWithChildren<IProovWebProps>) => {
 
     return (
         <>
-            <Box key={props.token?.slice(0,8)} sx={{ display: ready && !failed ? 'flex' : 'none'}}>
+            <Box key={props.token?.slice(0,8)} sx={{ display:  !failed ? 'flex' : 'none'}}>
                 { el }
             </Box>
             <Stack mb={5} sx={{ display: failed ? 'flex' : 'none', alignContent: 'center', justifyContent: 'center' }}>
@@ -80,9 +80,11 @@ const IProovWeb = (props: React.PropsWithChildren<IProovWebProps>) => {
                     </Button>
                 </Box>
             </Stack>
+            {/**
             <Box mb={5} sx={{ display: ready ? 'none' : 'flex', alignContent: 'center', justifyContent: 'center' }}>
                 <CircularProgress />
             </Box>
+             */}
         </>
     )
 }
