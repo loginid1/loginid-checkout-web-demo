@@ -33,6 +33,8 @@ import (
 	"gitlab.com/loginid/software/services/loginid-vault/utils"
 )
 
+var EmailBaseUrl = goutil.GetEnv("EMAIL_BASEURL", "http://localhost:3000")
+
 type FederatedAuthHandler struct {
 	UserService     *user.UserService
 	Fido2Service    *fido2.Fido2Service
@@ -280,6 +282,13 @@ func (h *FederatedAuthHandler) FederatedRegisterCompleteHandler(w http.ResponseW
 	if err != nil {
 		http_common.SendErrorResponse(w, *err)
 		return
+	}
+
+	data := email.SignupMail{
+		Url: fmt.Sprintf("%s/login", EmailBaseUrl),
+	}
+	if err := email.SendSignupEmail(request.Username, data); err != nil {
+		logger.ForRequest(r).Error(err.Error())
 	}
 
 	resp := AuthCompleteResponse{
@@ -553,15 +562,20 @@ func (h *FederatedAuthHandler) FederatedSendEmailSessionHandler(w http.ResponseW
 		request_type = keystore.KEmailClaimsRegister
 	}
 
-	email_url := goutil.GetEnv("EMAIL_BASEURL", "http://localhost:3000")
 	token, serr := h.KeystoreService.GenerateEmailValidationJWT(request.Email, request_type, sessionId)
 	if serr != nil {
 		logger.ForRequest(r).Error(serr.Message)
 		http_common.SendErrorResponse(w, services.NewError("register failed - please try again "))
 		return
 	}
+
+	data := email.VerificationMail{
+		Origin:  request.Origin,
+		Url:     fmt.Sprintf("%s/sdk/email?token=%s", EmailBaseUrl, token),
+		Session: sessionId[0:6],
+	}
 	// send email confirmation first
-	mail_err := email.SendHtmlEmailValidation(request.Email, request.Type, email_url, request.Origin, token, sessionId[0:6])
+	mail_err := email.SendValidationEmail(request.Email, data)
 	if mail_err != nil {
 
 		logger.ForRequest(r).Error(mail_err.Error())

@@ -22,6 +22,7 @@ import (
 	"gitlab.com/loginid/software/libraries/goutil.git/logger"
 	http_common "gitlab.com/loginid/software/services/loginid-vault/http/common"
 	"gitlab.com/loginid/software/services/loginid-vault/services"
+	"gitlab.com/loginid/software/services/loginid-vault/services/email"
 	"gitlab.com/loginid/software/services/loginid-vault/services/fido2"
 	"gitlab.com/loginid/software/services/loginid-vault/services/keystore"
 	"gitlab.com/loginid/software/services/loginid-vault/services/pass"
@@ -154,6 +155,13 @@ func (u *AuthHandler) RegisterCompleteHandler(w http.ResponseWriter, r *http.Req
 	if err != nil {
 		http_common.SendErrorResponse(w, *err)
 		return
+	}
+
+	data := email.SignupMail{
+		Url: fmt.Sprintf("%s/login", EmailBaseUrl),
+	}
+	if err := email.SendSignupEmail(request.Username, data); err != nil {
+		logger.ForRequest(r).Error(err.Error())
 	}
 
 	resp := AuthCompleteResponse{
