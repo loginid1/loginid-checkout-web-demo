@@ -27,16 +27,22 @@ type PassService struct {
 	NotificationService notification.ProviderInterface
 }
 
+type PassApplicationResponse struct {
+	ID   string `json:"id"`
+	Icon string `json:"icon,omitempty"`
+	Name string `json:"name"`
+}
 type PassResponse struct {
-	ID         string         `json:"id"`
-	UserID     string         `json:"user_id"`
-	Name       string         `json:"name"`
-	Attributes string         `json:"attributes"`
-	SchemaType PassSchemaType `json:"schema"`
-	Issuer     string         `json:"issuer"`
-	Data       string         `json:"data"`
-	CreatedAt  time.Time      `json:"created_at"`
-	ExpiresAt  *time.Time     `json:"expires_at,omitempty"`
+	ID           string                    `json:"id"`
+	UserID       string                    `json:"user_id"`
+	Name         string                    `json:"name"`
+	Attributes   string                    `json:"attributes"`
+	SchemaType   PassSchemaType            `json:"schema"`
+	Issuer       string                    `json:"issuer"`
+	Data         string                    `json:"data"`
+	CreatedAt    time.Time                 `json:"created_at"`
+	ExpiresAt    *time.Time                `json:"expires_at,omitempty"`
+	Applications []PassApplicationResponse `json:"applications"`
 }
 
 var ISSUER_NAME = goutil.GetEnv("ISSUER_NAME", "LoginID Wallet")
@@ -69,6 +75,13 @@ func (s *PassService) List(ctx context.Context, username string) ([]interface{},
 			Issuer:     pass.Issuer,
 			CreatedAt:  pass.CreatedAt,
 			ExpiresAt:  pass.ExpiresAt,
+			Applications: goutil.Map(pass.Consent, func(consent AppConsent) PassApplicationResponse {
+				return PassApplicationResponse{
+					ID:   consent.DevApp.ID,
+					Icon: "",
+					Name: consent.DevApp.AppName,
+				}
+			}),
 		}
 
 		response = append(response, item)

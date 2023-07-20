@@ -66,41 +66,6 @@ function stringAvatar(name: string, image?: string) {
 	};
 }
 
-// TODO: Delete this
-function randomNoRepeats(array: any) {
-	var copy = array.slice(0);
-	return function() {
-	  if (copy.length < 1) { copy = array.slice(0); }
-	  var index = Math.floor(Math.random() * copy.length);
-	  var item = copy[index];
-	  copy.splice(index, 1);
-	  return item;
-	};
-  }
-
-// TODO: Delete this
-function getRandomCompanies() {
-	const companies = [
-		{name: "Binance", logo: "https://public.bnbstatic.com/20190405/eb2349c3-b2f8-4a93-a286-8f86a62ea9d8.png"},
-		{name: "Adidas", logo: "https://static.vecteezy.com/ti/vetor-gratis/t2/10994239-adidas-logotipo-preto-simbolo-design-de-roupas-icone-abstrato-futebol-ilustracaoial-com-fundo-branco-gratis-vetor.jpg"},
-		{name: "Spotify", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/84/Spotify_icon.svg/1982px-Spotify_icon.svg.png"},
-		{name: "Mailchimp", logo: "https://s3.amazonaws.com/www-inside-design/uploads/2018/10/mailchimp-sq-810x810.jpg"},
-		{name: "LoginID", logo: undefined},
-		{name: "Noxus", logo: undefined}
-	];
-	const chooser = randomNoRepeats(companies);
-
-	let amount = Math.floor((Math.random() * companies.length) + 1)
-	const result: Array<{name: string; logo?: string;}> = []
-
-	while (amount !== 0) {
-		result.push(chooser());
-		amount--;
-	}
-
-	return result
-}
-
 const PassMenu = (props: {passId: string; }) => {
 	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 	const open = Boolean(anchorEl);
@@ -166,7 +131,6 @@ const PassMenu = (props: {passId: string; }) => {
 const Passes = () => {
 	const navigate = useNavigate();
 	const [passes, setPasses] = useState<Pass[] | null>(null);
-	const [consents, setConsents] = useState<Consent[]>([]);
 	
 	useEffect(() => {
 		const fetchData = async () => {
@@ -251,7 +215,7 @@ const Passes = () => {
 						<>
 							<Grid container direction="row" >
 								{ passes.map(pass => (
-									<Grid item padding={2} xl={3} lg={4} md={6} xs={12}>
+									<Grid key={pass.id} item padding={2} xl={3} lg={4} md={6} xs={12}>
 										<Card sx={{ minHeight: 220, display:"flex", flexWrap:"wrap", flexDirection:"column", justifyContent:"space-between" }}>
 											<CardHeader
 												action={
@@ -267,16 +231,16 @@ const Passes = () => {
 											<CardContent>
 												{ pass.data }
 											</CardContent>
-											<CardActions sx={{justifyContent: "space-between"}}>
+											<CardActions sx={{justifyContent: "space-between", minHeight: 52}}>
 												{/* <IconButton aria-label="share">
 													<Share />
 												</IconButton> */}
 												<AvatarGroup max={4} spacing={1}>
 													{
-														getRandomCompanies().map(item => {
+														pass.applications?.map(item => {
 															return ( 
-																<Tooltip title={`Shared with ${item.name}`} arrow>
-																	<Avatar {...stringAvatar(item.name, item.logo)} aria-label={item.name} />
+																<Tooltip key={item.id} title={`Shared with ${item.name}`} arrow>
+																	<Avatar {...stringAvatar(item.name, item.icon)} aria-label={item.name} />
 																</Tooltip>
 															)
 														})
