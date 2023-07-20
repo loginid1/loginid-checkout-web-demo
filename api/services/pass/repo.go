@@ -26,9 +26,18 @@ func (r *PassRepository) ListByUsername(username string) ([]UserPass, error) {
 	return result, nil
 }
 
-func (r *PassRepository) ListByID(userid string) ([]UserPass, error) {
+func (r *PassRepository) ListByUserID(userid string) ([]UserPass, error) {
 	var result []UserPass
 	if err := r.DB.Model(UserPass{}).Select("user_passes.*").Where("user_id", userid).Find(&result).Error; err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func (r *PassRepository) ListByIDs(userId string, ids []string) ([]UserPass, error) {
+	var result []UserPass
+	if err := r.DB.Model(UserPass{}).Where("user_id", userId).Where(ids).Find(&result).Error; err != nil {
 		return nil, err
 	}
 

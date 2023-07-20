@@ -75,8 +75,8 @@ func (repo *AppRepository) CreateConsent(consent *AppConsent) error {
 	}
 
 	if err := tx.Clauses(clause.OnConflict{
-		Columns:   []clause.Column{{Name: "app_id"}, {Name: "user_id"}},    // key colume
-		DoUpdates: clause.AssignmentColumns([]string{"attributes", "uat"}), // column needed to be updated
+		Columns:   []clause.Column{{Name: "app_id"}, {Name: "user_id"}, {Name: "pass_id"}}, // key colume
+		DoUpdates: clause.AssignmentColumns([]string{"attributes", "uat"}),                 // column needed to be updated
 	}).Create(&consent).Error; err != nil {
 		tx.Rollback()
 		return err
@@ -112,17 +112,17 @@ func (repo *AppRepository) GetAppsByOwner(userid string) ([]DevApp, error) {
 	return apps, nil
 }
 
-func (repo *AppRepository) GetConsent(appid string, userid string) (*AppConsent, error) {
-	var consent AppConsent
-	err := repo.DB.Where("app_id = ? ", appid).Where("user_id = ?", userid).Take(&consent).Error
+func (repo *AppRepository) GetConsentPassesByAppID(appid string, userid string) ([]AppConsent, error) {
+	var consent []AppConsent
+	err := repo.DB.Joins("JOIN user_passes ON app_consents.pass_id = user_passes.id").Where("app_consents.user_id = ?", userid).Where("app_consents.app_id = ? ", appid).Find(&consent).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			// return empty record
-			return &consent, nil
+			return consent, nil
 		}
 		return nil, err
 	}
-	return &consent, nil
+	return consent, nil
 }
 
 func (repo *AppRepository) ListConsentsByUsername(username string) ([]CustomConsent, error) {

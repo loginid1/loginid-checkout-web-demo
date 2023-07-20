@@ -13,7 +13,6 @@ import (
 	"gitlab.com/loginid/software/libraries/goutil.git"
 	"gitlab.com/loginid/software/libraries/goutil.git/logger"
 	"gitlab.com/loginid/software/services/loginid-vault/services"
-	"gitlab.com/loginid/software/services/loginid-vault/services/app"
 	notification "gitlab.com/loginid/software/services/loginid-vault/services/notification/providers"
 	"gitlab.com/loginid/software/services/loginid-vault/services/user"
 	"gitlab.com/loginid/software/services/loginid-vault/specs"
@@ -155,7 +154,7 @@ func (s *PassService) PhoneComplete(ctx context.Context, username, name, phone_n
 		ID:         uuid.NewString(),
 		UserID:     usr.ID,
 		Name:       name,
-		Attributes: app.KPhoneAttribute,
+		Attributes: "phone",
 		SchemaType: PhonePassSchemaType,
 		Issuer:     ISSUER_NAME,
 		KeyId:      keyId,
@@ -284,8 +283,19 @@ func (s *PassService) ForceAddPass(ctx context.Context, userId, name, attributes
 	return nil
 }
 
+func (s *PassService) GetPassesByIDs(ctx context.Context, userId string, passIds []string) ([]UserPass, *services.ServiceError) {
+	passes, err := s.Repository.ListByIDs(userId, passIds)
+	if err != nil {
+		logger.ForContext(ctx).Error(err.Error())
+		return nil, services.CreateError("error - no passes found")
+	}
+
+	return passes, nil
+
+}
+
 func (s *PassService) GetPassesByUserID(ctx context.Context, user_id string, attributes string) ([]UserPass, *services.ServiceError) {
-	passes, err := s.Repository.ListByID(user_id)
+	passes, err := s.Repository.ListByUserID(user_id)
 	if err != nil {
 		logger.ForContext(ctx).Error(err.Error())
 		return passes, services.CreateError("error - no passes found")

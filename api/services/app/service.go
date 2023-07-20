@@ -12,17 +12,19 @@ import (
 	"gitlab.com/loginid/software/libraries/goutil.git"
 	"gitlab.com/loginid/software/libraries/goutil.git/logger"
 	"gitlab.com/loginid/software/services/loginid-vault/services"
+	"gitlab.com/loginid/software/services/loginid-vault/services/pass"
 	"gitlab.com/loginid/software/services/loginid-vault/utils"
 	"gorm.io/gorm"
 )
 
 type AppService struct {
-	repo  *AppRepository
-	redis *redis.Client
+	appRepo  *AppRepository
+	passRepo *pass.PassRepository
+	redis    *redis.Client
 }
 
 func NewAppService(db *gorm.DB, redis *redis.Client) *AppService {
-	return &AppService{repo: &AppRepository{DB: db}, redis: redis}
+	return &AppService{appRepo: &AppRepository{DB: db}, passRepo: &pass.PassRepository{DB: db}, redis: redis}
 }
 
 // CreateApp
@@ -35,7 +37,7 @@ func (s *AppService) CreateApp(userid string, name string, origin string, attrib
 		OwnerID:    userid,
 		Origins:    origin,
 	}
-	err := s.repo.CreateApp(app)
+	err := s.appRepo.CreateApp(app)
 	if err != nil {
 
 		return nil, services.CreateError("fail to create app")
@@ -45,7 +47,7 @@ func (s *AppService) CreateApp(userid string, name string, origin string, attrib
 
 // GetAppByIdWithOwner
 func (s *AppService) GetAppByIdWithOwner(ownerid string, appid string) (*DevApp, *services.ServiceError) {
-	app, err := s.repo.GetAppById(appid)
+	app, err := s.appRepo.GetAppById(appid)
 	if err != nil {
 		return nil, services.CreateError("app not found")
 	}
@@ -58,7 +60,7 @@ func (s *AppService) GetAppByIdWithOwner(ownerid string, appid string) (*DevApp,
 // GetAppsByOwner
 func (s *AppService) GetAppsByOwner(ownerid string) ([]DevApp, *services.ServiceError) {
 	var apps []DevApp
-	apps, err := s.repo.GetAppsByOwner(ownerid)
+	apps, err := s.appRepo.GetAppsByOwner(ownerid)
 	if err != nil {
 		logger.Global.Error(err.Error())
 		return apps, services.CreateError("app not found")
@@ -70,7 +72,7 @@ func (s *AppService) GetAppsByOwner(ownerid string) ([]DevApp, *services.Service
 // TODO clear app cache
 func (s *AppService) UpdateApp(appid string, ownerid string, name string, origins string, attributes string) *services.ServiceError {
 
-	app, err := s.repo.GetAppById(appid)
+	app, err := s.appRepo.GetAppById(appid)
 	if err != nil {
 		return services.CreateError("app not found")
 	}
@@ -81,7 +83,7 @@ func (s *AppService) UpdateApp(appid string, ownerid string, name string, origin
 	app.AppName = name
 	app.Attributes = attributes
 	app.Origins = origins
-	err = s.repo.UpdateApp(app)
+	err = s.appRepo.UpdateApp(app)
 	if err != nil {
 		return services.CreateError("update failed")
 	}
@@ -90,18 +92,18 @@ func (s *AppService) UpdateApp(appid string, ownerid string, name string, origin
 
 //TODO cache app to redis
 func (s *AppService) GetAppByOrigin(origin string) (*DevApp, *services.ServiceError) {
-	app, err := s.repo.GetAppByOwnerOrigin(origin, "system")
+	app, err := s.appRepo.GetAppByOwnerOrigin(origin, "system")
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			// create new record
 			app := &DevApp{
 				AppName:    origin,
-				Attributes: fmt.Sprintf("%s", KEmailAttribute),
+				Attributes: KEmailAttribute,
 				Status:     kStatusActive,
 				OwnerID:    "system",
 				Origins:    origin,
 			}
-			err = s.repo.CreateApp(app)
+			err = s.appRepo.CreateApp(app)
 			if err != nil {
 
 				return nil, services.CreateError("fail to create app")
@@ -117,43 +119,69 @@ func (s *AppService) GetAppByOrigin(origin string) (*DevApp, *services.ServiceEr
 //TODO cache app to redis
 func (s *AppService) GetAppById(id string) (*DevApp, *services.ServiceError) {
 
-	app, err := s.repo.GetAppById(id)
+	app, err := s.appRepo.GetAppById(id)
 	if err != nil {
 		return nil, services.CreateError("fail to retrieve app")
 	}
 	return app, nil
 }
 
-func (s *AppService) createConsent(appid string, userid string) bool {
+func (s *AppService) createConsent(appid string, userid string, passIDs []string) *services.ServiceError {
 	app, serr := s.GetAppById(appid)
 	if serr != nil {
-		return false
+		logger.Global.Error(fmt.Sprintf("createConsent: %s", serr.Message))
+		return serr
 	}
 
-	const RETRIES = 3
-	for i := 0; i < RETRIES; i++ {
+	attr := strings.Split(app.Attributes, ",")
+	if len(passIDs) == 0 {
+		logger.Global.Error("missing consent attribute")
+		return services.CreateError(fmt.Sprintf("you must consent to share the following passes: '%s'", strings.Join(attr, "', '")))
+	}
 
-		alias, err := utils.GenerateRandomString(16)
-		if err != nil {
-			return false
-		}
-		consent := &AppConsent{
-			AppID:      appid,
-			UserID:     userid,
-			Attributes: app.Attributes,
-			Status:     kStatusActive,
-			Alias:      alias,
-		}
+	passes, err := s.passRepo.ListByIDs(userid, passIDs)
+	if err != nil {
+		logger.Global.Error(fmt.Sprintf("createConsent: %s", err.Error()))
+		return services.CreateError("unable to find passes to consent")
+	}
 
-		err = s.repo.CreateConsent(consent)
-		if err != nil {
-			logger.Global.Error(err.Error())
-		} else {
-			// break out of retries
-			return true
+	passAttr := goutil.Map(passes, func(item pass.UserPass) string {
+		return string(item.SchemaType)
+	})
+
+	missingAttr := goutil.SubtractLists(attr, passAttr)
+	if len(missingAttr) != 0 {
+		logger.Global.Error("missing consent attribute")
+		return services.CreateError(fmt.Sprintf("you must consent to share the following passes: '%s'", strings.Join(missingAttr, "', '")))
+	}
+
+	for _, item := range passes {
+		var retries = 3
+		for retries > 0 {
+			alias, err := utils.GenerateRandomString(16)
+			if err != nil {
+				return services.CreateError("unable to save consent")
+			}
+			consent := &AppConsent{
+				AppID:      appid,
+				UserID:     userid,
+				PassID:     item.ID,
+				Schema:     string(item.SchemaType),
+				Attributes: string(item.Attributes),
+				Status:     kStatusActive,
+				Alias:      alias,
+			}
+
+			if err := s.appRepo.CreateConsent(consent); err != nil {
+				logger.Global.Error(err.Error())
+				retries--
+			} else {
+				// break out of retries
+				retries = 0
+			}
 		}
 	}
-	return false
+	return nil
 }
 
 func (s *AppService) SetupSession(appid string, origin string, ip string) (*AppSession, *services.ServiceError) {
@@ -254,32 +282,34 @@ func (s *AppService) CheckSessionConsent(id string) (session *AppSession, requir
 
 	required = strings.Split(session.Attributes, ",")
 
-	consent, err := s.repo.GetConsent(session.AppID, session.UserID)
+	consent, err := s.appRepo.GetConsentPassesByAppID(session.AppID, session.UserID)
 	if err != nil {
 		serr = &services.ServiceError{Error: err, Message: "failed to fetch app consent"}
 		logger.Global.Error(err.Error())
 		return nil, nil, serr
 	}
 
-	attrArr := strings.Split(consent.Attributes, ",")
+	attrArr := goutil.Map(consent, func(ac AppConsent) string {
+		return ac.Schema
+	})
 	required = goutil.SubtractLists(required, attrArr)
 
 	return session, required, nil
 }
 
-func (s *AppService) SaveSessionConsent(id string) (bool, *AppSession, *services.ServiceError) {
+func (s *AppService) SaveSessionConsent(id string, passesIDs []string) (*AppSession, *services.ServiceError) {
 
 	session, err := s.getSession(id)
 	if err != nil {
 		logger.Global.Error(err.Error())
-		return false, nil, services.CreateError("session error")
+		return nil, services.CreateError("session error")
 	}
-	result := s.createConsent(session.AppID, session.UserID)
-	return result, session, nil
+
+	return session, s.createConsent(session.AppID, session.UserID, passesIDs)
 }
 
 func (s *AppService) ListConsentsByUsername(ctx context.Context, username string) ([]CustomConsent, *services.ServiceError) {
-	consents, err := s.repo.ListConsentsByUsername(username)
+	consents, err := s.appRepo.ListConsentsByUsername(username)
 	if err != nil {
 		logger.ForContext(ctx).Error(err.Error())
 		return consents, services.CreateError("data error")
