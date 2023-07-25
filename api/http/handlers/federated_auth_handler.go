@@ -404,6 +404,7 @@ type CheckConsentResponse struct {
 }
 
 type ConsentPassResponse struct {
+	ID   string `json:"id"`
 	Type string `json:"type"`
 	Data string `json:"data"`
 }
@@ -439,6 +440,7 @@ func (h *FederatedAuthHandler) CheckConsentHandler(w http.ResponseWriter, r *htt
 		for _, p := range passes {
 			if p.Attributes == app.KEmailAttribute {
 				c_pass := ConsentPassResponse{
+					ID:   p.ID,
 					Type: app.KEmailAttribute,
 					Data: p.MaskedData,
 				}
@@ -446,6 +448,7 @@ func (h *FederatedAuthHandler) CheckConsentHandler(w http.ResponseWriter, r *htt
 				missing = utils.Remove(missing, app.KEmailAttribute)
 			} else if p.Attributes == app.KPhoneAttribute {
 				c_pass := ConsentPassResponse{
+					ID:   p.ID,
 					Type: app.KPhoneAttribute,
 					Data: p.MaskedData,
 				}
@@ -453,6 +456,7 @@ func (h *FederatedAuthHandler) CheckConsentHandler(w http.ResponseWriter, r *htt
 				missing = utils.Remove(missing, app.KPhoneAttribute)
 			} else if utils.Contains(strings.Split(p.Attributes, ","), app.KDriversLicenseAttribute) {
 				c_pass := ConsentPassResponse{
+					ID:   p.ID,
 					Type: app.KDriversLicenseAttribute,
 					Data: p.MaskedData,
 				}
@@ -473,7 +477,8 @@ func (h *FederatedAuthHandler) CheckConsentHandler(w http.ResponseWriter, r *htt
 }
 
 type SaveConsentRequest struct {
-	Session string
+	Session string   `json:"session"`
+	PassIDs []string `json:"pass_ids"`
 }
 
 type SaveConsentResponse struct {
@@ -491,17 +496,14 @@ func (h *FederatedAuthHandler) SaveConsentHandler(w http.ResponseWriter, r *http
 	}
 
 	// save consent session
-	result, session, serr := h.AppService.SaveSessionConsent(request.Session)
+	session, serr := h.AppService.SaveSessionConsent(request.Session, request.PassIDs)
 	if serr != nil {
 		http_common.SendErrorResponse(w, *serr)
 		return
 	}
-	if !result {
-		http_common.SendErrorResponse(w, services.NewError("fail to save consent"))
-	}
 
 	// get vc credentials
-	passes, serr := h.PassService.GetPassesByUserID(r.Context(), session.UserID, session.Attributes)
+	passes, serr := h.PassService.GetPassesByIDs(r.Context(), session.UserID, request.PassIDs)
 	if serr != nil {
 		http_common.SendErrorResponse(w, *serr)
 		return

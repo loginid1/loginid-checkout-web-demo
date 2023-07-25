@@ -13,7 +13,6 @@ import (
 	"gitlab.com/loginid/software/libraries/goutil.git"
 	"gitlab.com/loginid/software/libraries/goutil.git/logger"
 	"gitlab.com/loginid/software/services/loginid-vault/services"
-	"gitlab.com/loginid/software/services/loginid-vault/services/app"
 	notification "gitlab.com/loginid/software/services/loginid-vault/services/notification/providers"
 	"gitlab.com/loginid/software/services/loginid-vault/services/user"
 	"gitlab.com/loginid/software/services/loginid-vault/specs"
@@ -28,16 +27,22 @@ type PassService struct {
 	NotificationService notification.ProviderInterface
 }
 
+type PassApplicationResponse struct {
+	ID   string `json:"id"`
+	Icon string `json:"icon,omitempty"`
+	Name string `json:"name"`
+}
 type PassResponse struct {
-	ID         string         `json:"id"`
-	UserID     string         `json:"user_id"`
-	Name       string         `json:"name"`
-	Attributes string         `json:"attributes"`
-	SchemaType PassSchemaType `json:"schema"`
-	Issuer     string         `json:"issuer"`
-	Data       string         `json:"data"`
-	CreatedAt  time.Time      `json:"created_at"`
-	ExpiresAt  *time.Time     `json:"expires_at,omitempty"`
+	ID           string                    `json:"id"`
+	UserID       string                    `json:"user_id"`
+	Name         string                    `json:"name"`
+	Attributes   string                    `json:"attributes"`
+	SchemaType   PassSchemaType            `json:"schema"`
+	Issuer       string                    `json:"issuer"`
+	Data         string                    `json:"data"`
+	CreatedAt    time.Time                 `json:"created_at"`
+	ExpiresAt    *time.Time                `json:"expires_at,omitempty"`
+	Applications []PassApplicationResponse `json:"applications"`
 }
 
 var ISSUER_NAME = goutil.GetEnv("ISSUER_NAME", "LoginID Wallet")
@@ -70,6 +75,13 @@ func (s *PassService) List(ctx context.Context, username string) ([]interface{},
 			Issuer:     pass.Issuer,
 			CreatedAt:  pass.CreatedAt,
 			ExpiresAt:  pass.ExpiresAt,
+			Applications: goutil.Map(pass.Consent, func(consent PassConsent) PassApplicationResponse {
+				return PassApplicationResponse{
+					ID:   consent.DevApp.ID,
+					Icon: "",
+					Name: consent.DevApp.AppName,
+				}
+			}),
 		}
 
 		response = append(response, item)
@@ -155,7 +167,7 @@ func (s *PassService) PhoneComplete(ctx context.Context, username, name, phone_n
 		ID:         uuid.NewString(),
 		UserID:     usr.ID,
 		Name:       name,
-		Attributes: app.KPhoneAttribute,
+		Attributes: "phone",
 		SchemaType: PhonePassSchemaType,
 		Issuer:     ISSUER_NAME,
 		KeyId:      keyId,
@@ -284,8 +296,19 @@ func (s *PassService) ForceAddPass(ctx context.Context, userId, name, attributes
 	return nil
 }
 
+func (s *PassService) GetPassesByIDs(ctx context.Context, userId string, passIds []string) ([]UserPass, *services.ServiceError) {
+	passes, err := s.Repository.ListByIDs(userId, passIds)
+	if err != nil {
+		logger.ForContext(ctx).Error(err.Error())
+		return nil, services.CreateError("error - no passes found")
+	}
+
+	return passes, nil
+
+}
+
 func (s *PassService) GetPassesByUserID(ctx context.Context, user_id string, attributes string) ([]UserPass, *services.ServiceError) {
-	passes, err := s.Repository.ListByID(user_id)
+	passes, err := s.Repository.ListByUserID(user_id)
 	if err != nil {
 		logger.ForContext(ctx).Error(err.Error())
 		return passes, services.CreateError("error - no passes found")

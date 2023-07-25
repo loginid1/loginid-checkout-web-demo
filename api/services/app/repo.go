@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
+	"gitlab.com/loginid/software/services/loginid-vault/services/pass"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -60,7 +61,7 @@ func (repo *AppRepository) UpdateApp(a *DevApp) error {
 	return tx.Commit().Error
 }
 
-func (repo *AppRepository) CreateConsent(consent *AppConsent) error {
+func (repo *AppRepository) CreateConsent(appConsent *AppConsent, passConsent []pass.PassConsent) error {
 
 	tx := repo.DB.Begin()
 
@@ -77,7 +78,12 @@ func (repo *AppRepository) CreateConsent(consent *AppConsent) error {
 	if err := tx.Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: "app_id"}, {Name: "user_id"}},    // key colume
 		DoUpdates: clause.AssignmentColumns([]string{"attributes", "uat"}), // column needed to be updated
-	}).Create(&consent).Error; err != nil {
+	}).Create(&appConsent).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err := tx.Create(&passConsent).Error; err != nil {
 		tx.Rollback()
 		return err
 	}

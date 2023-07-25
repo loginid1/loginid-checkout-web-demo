@@ -30,6 +30,11 @@ export interface Pass {
     data: string;
     created_at: Date;
     expires_at?: Date;
+    applications?: {
+        id: string;
+        name: string;
+        icon?: string;
+    }[];
 }
 
 export class VaultPass extends Base{
