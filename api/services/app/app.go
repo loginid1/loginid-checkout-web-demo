@@ -41,9 +41,7 @@ type DevApp struct {
 type AppConsent struct {
 	AppID      string    `json:"app_id" gorm:"not null"`
 	UserID     string    `json:"user_id" gorm:"not null"`
-	PassID     string    `json:"pass_id"`
 	Alias      string    `json:"alias" gorm:"not null"`
-	Schema     string    `json:"schema"`
 	Attributes string    `json:"attributes" gorm:"not null"`
 	Status     int32     `json:"status" gorm:"not null"`
 	Uat        time.Time `json:"uat" gorm:"DEFAULT:current_timestamp"`

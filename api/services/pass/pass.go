@@ -18,11 +18,15 @@ type DevApp struct {
 	AppName string `gorm:"column:app_name;not null"`
 }
 
-type AppConsent struct {
-	UserPassID string   `gorm:"column:pass_id"`
-	UserPass   UserPass `gorm:"foreignKey:UserPassID;references:ID"`
-	DevAppID   string   `gorm:"column:app_id"`
-	DevApp     DevApp   `gorm:"foreignKey:DevAppID;references:ID"`
+type PassConsent struct {
+	UserID     string    `gorm:"cloumn:user_id"`
+	DevAppID   string    `gorm:"column:app_id"`
+	DevApp     DevApp    `gorm:"foreignKey:DevAppID;references:ID"`
+	UserPassID string    `gorm:"column:pass_id"`
+	UserPass   UserPass  `gorm:"foreignKey:UserPassID;references:ID"`
+	Schema     string    `gorm:"column:schema"`
+	CreatedAt  time.Time `gorm:"column:created_at"`
+	UpdatedAt  time.Time `gorm:"column:updated_at"`
 }
 
 type UserPass struct {
@@ -39,7 +43,7 @@ type UserPass struct {
 	CreatedAt  time.Time      `gorm:"column:created_at;not null; DEFAULT:current_timestamp"`
 	UpdatedAt  time.Time      `gorm:"column:updated_at;not null; DEFAULT:current_timestamp"`
 	ExpiresAt  *time.Time     `gorm:"column:expires_at"`
-	Consent    []AppConsent
+	Consent    []PassConsent
 }
 
 type PhonePassSchema struct {

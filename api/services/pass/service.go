@@ -75,7 +75,7 @@ func (s *PassService) List(ctx context.Context, username string) ([]interface{},
 			Issuer:     pass.Issuer,
 			CreatedAt:  pass.CreatedAt,
 			ExpiresAt:  pass.ExpiresAt,
-			Applications: goutil.Map(pass.Consent, func(consent AppConsent) PassApplicationResponse {
+			Applications: goutil.Map(pass.Consent, func(consent PassConsent) PassApplicationResponse {
 				return PassApplicationResponse{
 					ID:   consent.DevApp.ID,
 					Icon: "",

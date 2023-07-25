@@ -1,8 +1,5 @@
 BEGIN;
 
-
-BEGIN;
-
 CREATE TABLE IF NOT EXISTS app_consents (
     user_id uuid NOT NULL,
     app_id uuid NOT NULL,

@@ -155,30 +155,37 @@ func (s *AppService) createConsent(appid string, userid string, passIDs []string
 		return services.CreateError(fmt.Sprintf("you must consent to share the following passes: '%s'", strings.Join(missingAttr, "', '")))
 	}
 
-	for _, item := range passes {
-		var retries = 3
-		for retries > 0 {
-			alias, err := utils.GenerateRandomString(16)
-			if err != nil {
-				return services.CreateError("unable to save consent")
-			}
-			consent := &AppConsent{
-				AppID:      appid,
-				UserID:     userid,
-				PassID:     item.ID,
-				Schema:     string(item.SchemaType),
-				Attributes: string(item.Attributes),
-				Status:     kStatusActive,
-				Alias:      alias,
-			}
+	passConsent := goutil.Map(passes, func(item pass.UserPass) pass.PassConsent {
+		return pass.PassConsent{
+			UserID:     item.UserID,
+			DevAppID:   app.ID,
+			UserPassID: item.ID,
+			Schema:     string(item.SchemaType),
+			CreatedAt:  time.Now(),
+			UpdatedAt:  time.Now(),
+		}
+	})
 
-			if err := s.appRepo.CreateConsent(consent); err != nil {
-				logger.Global.Error(err.Error())
-				retries--
-			} else {
-				// break out of retries
-				retries = 0
-			}
+	var retries = 3
+	for retries > 0 {
+		alias, err := utils.GenerateRandomString(16)
+		if err != nil {
+			return services.CreateError("unable to save consent")
+		}
+		appConsent := &AppConsent{
+			AppID:      appid,
+			UserID:     userid,
+			Attributes: app.Attributes,
+			Status:     kStatusActive,
+			Alias:      alias,
+		}
+
+		if err := s.appRepo.CreateConsent(appConsent, passConsent); err != nil {
+			logger.Global.Error(err.Error())
+			retries--
+		} else {
+			// break out of retries
+			retries = 0
 		}
 	}
 	return nil
@@ -282,16 +289,14 @@ func (s *AppService) CheckSessionConsent(id string) (session *AppSession, requir
 
 	required = strings.Split(session.Attributes, ",")
 
-	consent, err := s.appRepo.GetConsentPassesByAppID(session.AppID, session.UserID)
+	consent, err := s.appRepo.GetConsent(session.AppID, session.UserID)
 	if err != nil {
 		serr = &services.ServiceError{Error: err, Message: "failed to fetch app consent"}
 		logger.Global.Error(err.Error())
 		return nil, nil, serr
 	}
 
-	attrArr := goutil.Map(consent, func(ac AppConsent) string {
-		return ac.Schema
-	})
+	attrArr := strings.Split(consent.Attributes, ",")
 	required = goutil.SubtractLists(required, attrArr)
 
 	return session, required, nil
