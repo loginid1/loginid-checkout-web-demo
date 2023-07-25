@@ -571,19 +571,13 @@ function ErrorPage(props: { error: string }) {
 	);
 }
 
-interface Passes {
-	email: ConsentPass[];
-	phone: ConsentPass[];
-	drivers_license: ConsentPass[];
-}
-
 function Consent(props: { session: string; username: string }) {
 	const {  setPage, setDisplayMessage, handleCancel } =
 		useContext<ConsentContextType | null>(
 			ConsentContext
 		) as ConsentContextType;
 	const [appName, setAppName] = useState<string>("");
-	const [passes, setPasses] = useState<Passes | null>(null);
+	const [passes, setPasses] = useState<{[key: string]: ConsentPass[]}>({});
 	const [checked, setChecked] = useState<string[]>([]);
 	const [load, setLoad] = useState<boolean>(false);
 
@@ -595,12 +589,16 @@ function Consent(props: { session: string; username: string }) {
 		try {
 			let consent = await vaultSDK.checkConsent(props.session);
 			if (consent.passes !== null) {
-				const passes: Passes = {
-					email: consent.passes.filter(pass => pass.type === 'email'), 
-					phone: consent.passes.filter(pass => pass.type === 'phone'), 
-					drivers_license: consent.passes.filter(pass => pass.type === 'drivers-license')
-				}
-				setPasses(passes);
+				const passesGroupByType = consent.passes.reduce(
+					(group: {[key: string]: ConsentPass[]}, product: ConsentPass) => {
+						const { type } = product;
+						group[type] = group[type] ?? [];
+						group[type].push(product);
+						return group;
+					}, 
+					{}
+				);
+				setPasses(passesGroupByType);
 				setChecked(consent.passes.map(pass => pass.id));
 			}
 			setAppName(consent.app_name);
@@ -674,78 +672,32 @@ function Consent(props: { session: string; username: string }) {
 							with <strong>{appName}</strong>?
 						</Typography>
 						<Stack direction="column" justifyContent="center">
-							{ passes.email.length > 0 && (
-								<>
-									<Typography textAlign="left"><b>Email address:</b></Typography>
-									<FormControl sx={{ mx: 3 }} component="fieldset" variant="standard">
-										<FormGroup>
-											{ passes.email.map(pass => 
-												<FormControlLabel 
-													key={pass.id}
-													sx={{fontSize: 14}}
-													control={
-														<Checkbox 
-															defaultChecked
-															value={pass.id}
-															size="small" 
-															onChange={handleChange} 
-														/>
-													} 
-													label={pass.data}
-												/>
-											)}
-										</FormGroup>
-									</FormControl>
-								</>
-							)}
-							{ passes.phone.length > 0 && (
-								<>
-									<Typography textAlign="left"><b>Phone number:</b></Typography>
-									<FormControl sx={{ mx: 3 }} component="fieldset" variant="standard">
-										<FormGroup>
-											{passes.phone.map(pass => 
-												<FormControlLabel 
-													key={pass.id}
-													sx={{fontSize: 14}}
-													control={
-														<Checkbox 
-															defaultChecked
-															value={pass.id}
-															size="small" 
-															onChange={handleChange} 
-														/>
-													} 
-													label={pass.data}
-												/>
-											)}
-										</FormGroup>
-									</FormControl>
-								</>
-							)}
-							{ passes.drivers_license.length > 0 && (
-								<>
-									<Typography textAlign="left"><b>Drivers license:</b></Typography>
-									<FormControl sx={{ mx: 3 }} component="fieldset" variant="standard">
-										<FormGroup>
-											{passes.drivers_license.map(pass => 
-												<FormControlLabel 
-													key={pass.id}
-													sx={{fontSize: 14}}
-													control={
-														<Checkbox 
-															defaultChecked
-															value={pass.id}
-															size="small" 
-															onChange={handleChange} 
-														/>
-													} 
-													label={pass.data}
-												/>
-											)}
-										</FormGroup>
-									</FormControl>
-								</>
-							)}
+							{ Object.keys(passes).map(index => {
+								return (
+									<>
+										<Typography textAlign="left"><b>{index.charAt(0).toUpperCase() + index.slice(1).replace('-', ' ')}:</b></Typography>
+										<FormControl sx={{ mx: 3 }} component="fieldset" variant="standard">
+											<FormGroup>
+												{ passes[index].map(pass => 
+													<FormControlLabel 
+														key={pass.id}
+														sx={{fontSize: 14}}
+														control={
+															<Checkbox 
+																defaultChecked
+																value={pass.id}
+																size="small" 
+																onChange={handleChange} 
+															/>
+														} 
+														label={pass.data}
+													/>
+												)}
+											</FormGroup>
+										</FormControl>
+									</>
+								)
+							})}
 						</Stack>
 						<Button
 							fullWidth
