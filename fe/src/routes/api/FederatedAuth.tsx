@@ -327,6 +327,16 @@ export default function FederatedAuth() {
 		<ThemeProvider theme={LoginID}>
 			{waitingIndicator && <LinearProgress />}
 			<Container component="main">
+				{displayMessage && (
+					<Alert
+						severity={
+							(displayMessage?.type as AlertColor) || "info"
+						}
+						sx={{ mt: 2 }}
+					>
+						{displayMessage.text}
+					</Alert>
+				)}
 				{/* 
 				<Box sx={{ m: 2 }}>
 					<img src={VaultLogo} width="160" height="30" />
@@ -339,7 +349,6 @@ export default function FederatedAuth() {
 						value={{
 							username,
 							setUsername,
-							postMessage,
 							setPage,
 							handleCancel,
 							setToken,
@@ -357,7 +366,6 @@ export default function FederatedAuth() {
 				{page === AuthPage.CONSENT && (
 					<ConsentContext.Provider
 						value={{
-							postMessageText,
 							setPage,
 							handleCancel,
 							handleSuccess,
@@ -372,7 +380,6 @@ export default function FederatedAuth() {
 				{page === AuthPage.PHONE_PASS && (
 					<ConsentContext.Provider
 						value={{
-							postMessageText,
 							setPage,
 							handleCancel,
 							handleSuccess,
@@ -389,7 +396,6 @@ export default function FederatedAuth() {
 				{page === AuthPage.DRIVER_PASS && (
 					<ConsentContext.Provider
 						value={{
-							postMessageText,
 							setPage,
 							handleCancel,
 							handleSuccess,
@@ -458,16 +464,6 @@ export default function FederatedAuth() {
 	function Fido() {
 		return (
 			<Stack>
-				{displayMessage && (
-					<Alert
-						severity={
-							(displayMessage?.type as AlertColor) || "info"
-						}
-						sx={{ mt: 2 }}
-					>
-						{displayMessage.text}
-					</Alert>
-				)}
 				<Typography
 					sx={{ m: 1 }}
 					variant="body2"

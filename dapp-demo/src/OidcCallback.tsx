@@ -2,26 +2,22 @@ import { useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import oidcService, { OidcService } from "./services/oidc";
 
-export function OidcCallback(){
-    const [searchParams, setSearchParams] = useSearchParams();
+export function OidcCallback() {
+	const [searchParams, setSearchParams] = useSearchParams();
 
 	const navigate = useNavigate();
-    useEffect(()=>{
-        handleCallback();
-    },[]);
+	useEffect(() => {
+		handleCallback();
+	}, []);
 
-    function handleCallback(){
-        
-            console.log("hash", document.location.hash);
-            oidcService.makeTokenRequest("" );
-        const code= searchParams.get("code")
-        if (code != null){
-            console.log("search", document.location.search);
-            oidcService.makeTokenRequest(code );
-            //navigate("/dashboard");
-        } else {
-            //navigate("/");
+	async function handleCallback() {
+		console.log("hash", document.location.hash);
+        try {
+		    let result = await oidcService.makeTokenRequest();
+            navigate("/dashboard");
+        } catch(error) {
+			navigate("/");
         }
-    }
-    return (<div></div>);
+	}
+	return <div></div>;
 }

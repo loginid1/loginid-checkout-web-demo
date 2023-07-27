@@ -120,49 +120,7 @@ export default function OidcAuth() {
 			setPage(AuthPage.ERROR);
 		}
 	}, []);
-	useEffect(() => {
-		let target = window.parent;
-		if (target != null) {
-			mService.onMessage((msg, origin) => onMessageHandle(msg, origin));
-		} else {
-			setDisplayMessage({ text: "Missing dApp origin", type: "error" });
-		}
-		//
-	}, []);
 
-	useEffect(() => {}, [page]);
-
-	// handle iframe message
-	function onMessageHandle(msg: Message, origin: string) {
-		try {
-			//mService.origin = origin;
-			// validate enable
-			if (msg.type === "register_cancel") {
-				setWaitingMessage(null);
-				setDisplayMessage({
-					text: "Passkey registration cancel!",
-					type: "error",
-				});
-			} else if (msg.type === "register_complete") {
-				// consent for first time user
-				// send token back
-				setPage(AuthPage.CONSENT);
-			} else if (msg.type === "init") {
-				mService.id = msg.id;
-				let api: WalletInit = JSON.parse(msg.data);
-				vaultSDK.sessionInit(origin, api.api).then((response) => {
-					setPage(AuthPage.LOGIN);
-					setAppOrigin(origin);
-					clearAlert();
-					setSessionId(response.id);
-					setSessionInit(response);
-				});
-				// check api
-			}
-		} catch (error) {
-			console.log(error);
-		}
-	}
 
 	function clearAlert() {
 		setWaitingIndicator(false);
@@ -170,47 +128,6 @@ export default function OidcAuth() {
 		setDisplayMessage(null);
 	}
 
-	function postMessageText(text: string) {
-		if (mService != null) {
-			mService.sendMessageText(text);
-		}
-	}
-
-	function postMessage(type: string, text: string) {
-		if (mService != null) {
-			if (type === "error") {
-				mService.sendErrorMessage(text);
-			} else {
-				mService.sendMessageText(text);
-			}
-		}
-	}
-
-	async function handleLogin() {
-		try {
-			if (!(await vaultSDK.checkUser(username))) {
-				emailRegister();
-			} else {
-				const response = await vaultSDK.federated_authenticate(
-					username,
-					sessionId
-				);
-				AuthService.storeSession({
-					username: username,
-					token: response.jwt,
-				});
-				setPage(AuthPage.CONSENT);
-			}
-		} catch (error) {
-			setDisplayMessage({
-				text: (error as Error).message,
-				type: "error",
-			});
-			//setCodeInput(true);
-			// show 6 digit code
-			emailLogin(username);
-		}
-	}
 
 	async function fidoRegister() {
 
@@ -344,7 +261,8 @@ export default function OidcAuth() {
 		}
 	}
 	async function handleCancel() {
-		mService.sendErrorMessage("user cancel");
+		//mService.sendErrorMessage("user cancel");
+		window.location.href = `${callback}#error=user_cancel&error_description=user_cancel`;
 		//window.close();
 		// need to redirect user back
 	}
@@ -395,7 +313,6 @@ export default function OidcAuth() {
 							value={{
 								username,
 								setUsername,
-								postMessage,
 								setPage,
 								handleCancel,
 								setToken,
@@ -413,7 +330,6 @@ export default function OidcAuth() {
 					{page === AuthPage.CONSENT && (
 						<ConsentContext.Provider
 							value={{
-								postMessageText,
 								setPage,
 								handleCancel,
 								handleSuccess,
@@ -428,7 +344,6 @@ export default function OidcAuth() {
 					{page === AuthPage.PHONE_PASS && (
 						<ConsentContext.Provider
 							value={{
-								postMessageText,
 								setPage,
 								handleCancel,
 								handleSuccess,
@@ -445,7 +360,6 @@ export default function OidcAuth() {
 					{page === AuthPage.DRIVER_PASS && (
 						<ConsentContext.Provider
 							value={{
-								postMessageText,
 								setPage,
 								handleCancel,
 								handleSuccess,
@@ -475,6 +389,17 @@ export default function OidcAuth() {
 						powered by&nbsp;
 						<img src={LoginIDLogo} alt="something" />
 					</Typography>
+					<Stack direction="row">
+
+					<Link
+						onClick={handleCancel}
+						href="#"
+						sx={{ m: 1 }}
+						variant="caption"
+						color="text.secondary"
+					>
+						Return to app
+					</Link>
 					<Link
 						target="_blank"
 						href="/faq"
@@ -484,6 +409,7 @@ export default function OidcAuth() {
 					>
 						Learn more
 					</Link>
+					</Stack>
 					</Stack>
 				</Paper>
 			</Container>

@@ -43,6 +43,7 @@ export interface ConsentResponse {
 }
 
 export interface ConsentPass {
+	id: string;
 	type: string;
 	data: string;
 }
@@ -113,12 +114,13 @@ export class VaultFederated extends Base {
 		);
 	}
 
-	async saveConsent(session: string): Promise<SaveConsentResponse> {
+	async saveConsent(session: string, pass_ids: string[]): Promise<SaveConsentResponse> {
 		return await utils.http.post(
 			this._baseURL,
 			"/api/federated/saveConsent",
 			{
-				session: session,
+				session,
+				pass_ids
 			}
 		);
 	}

@@ -1,6 +1,8 @@
 package pass
 
-import "time"
+import (
+	"time"
+)
 
 type PassSchemaType string
 
@@ -9,6 +11,23 @@ const (
 	EmailPassSchemaType          PassSchemaType = "email"
 	DriversLicensePassSchemaType PassSchemaType = "drivers-license"
 )
+
+type DevApp struct {
+	ID      string `gorm:"column:id;primaryKey"`
+	OwnerID string `gorm:"column:owner_id;not null"`
+	AppName string `gorm:"column:app_name;not null"`
+}
+
+type PassConsent struct {
+	UserID     string    `gorm:"cloumn:user_id"`
+	DevAppID   string    `gorm:"column:app_id"`
+	DevApp     DevApp    `gorm:"foreignKey:DevAppID;references:ID"`
+	UserPassID string    `gorm:"column:pass_id"`
+	UserPass   UserPass  `gorm:"foreignKey:UserPassID;references:ID"`
+	Schema     string    `gorm:"column:schema"`
+	CreatedAt  time.Time `gorm:"column:created_at"`
+	UpdatedAt  time.Time `gorm:"column:updated_at"`
+}
 
 type UserPass struct {
 	ID         string         `gorm:"column:id;primaryKey;not null"`
@@ -24,6 +43,7 @@ type UserPass struct {
 	CreatedAt  time.Time      `gorm:"column:created_at;not null; DEFAULT:current_timestamp"`
 	UpdatedAt  time.Time      `gorm:"column:updated_at;not null; DEFAULT:current_timestamp"`
 	ExpiresAt  *time.Time     `gorm:"column:expires_at"`
+	Consent    []PassConsent
 }
 
 type PhonePassSchema struct {

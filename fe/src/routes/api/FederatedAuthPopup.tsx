@@ -1,4 +1,5 @@
 import React, {
+	ChangeEvent,
 	ChangeEventHandler,
 	createContext,
 	useContext,
@@ -49,6 +50,8 @@ import {
 	ListItemAvatar,
 	ListItemText,
 	Grid,
+	FormControl,
+	FormGroup,
 } from "@mui/material";
 import { DisplayMessage } from "../../lib/common/message";
 import ParseUtil from "../../lib/util/parse";
@@ -357,7 +360,6 @@ export default function FederatedAuthPopup() {
 				{page === AuthPage.CONSENT && (
 					<ConsentContext.Provider
 						value={{
-							postMessageText,
 							setPage,
 							handleCancel,
 							handleSuccess,
@@ -371,7 +373,6 @@ export default function FederatedAuthPopup() {
 				{page === AuthPage.PHONE_PASS && (
 					<ConsentContext.Provider
 						value={{
-							postMessageText,
 							setPage,
 							handleCancel,
 							handleSuccess,
@@ -580,8 +581,10 @@ function Consent(props: { session: string; username: string }) {
 			ConsentContext
 		) as ConsentContextType;
 	const [appName, setAppName] = useState<string>("");
-	const [passes, setPasses] = useState<ConsentPass[]>([]);
+	const [passes, setPasses] = useState<{[key: string]: ConsentPass[]}>({});
+	const [checked, setChecked] = useState<string[]>([]);
 	const [load, setLoad] = useState<boolean>(false);
+
 	useEffect(() => {
 		checkConsent();
 	}, []);
@@ -589,8 +592,19 @@ function Consent(props: { session: string; username: string }) {
 	async function checkConsent() {
 		try {
 			let consent = await vaultSDK.checkConsent(props.session);
-			console.log(consent);
-			setPasses(consent.passes);
+			if (consent.passes !== null) {
+				const passesGroupByType = consent.passes.reduce(
+					(group: {[key: string]: ConsentPass[]}, product: ConsentPass) => {
+						const { type } = product;
+						group[type] = group[type] ?? [];
+						group[type].push(product);
+						return group;
+					}, 
+					{}
+				);
+				setPasses(passesGroupByType);
+				setChecked(consent.passes.map(pass => pass.id));
+			}
 			setAppName(consent.app_name);
 			if (
 				consent.required_attributes == null ||
@@ -615,11 +629,24 @@ function Consent(props: { session: string; username: string }) {
 	}
 
 	async function saveConsent() {
-		//console.log("save consent");
-		let consent = await vaultSDK.saveConsent(props.session);
-		//console.log(consent.token);
-		mService.sendMessageText(consent.token);
-		setPage(AuthPage.FINAL);
+		try {
+			let consent = await vaultSDK.saveConsent(props.session, checked);
+			mService.sendMessageText(consent.token);
+			setPage(AuthPage.FINAL);
+		} catch (e) {
+			setDisplayMessage({ type: "error", text: (e as Error).message });
+			setPage(AuthPage.ERROR);
+		}
+	}
+
+	const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+		var updatedList = [...checked];
+		if (event.target.checked) {
+			updatedList = [...checked, event.target.value];
+		} else {
+			updatedList.splice(checked.indexOf(event.target.value), 1);
+		}
+		setChecked(updatedList);
 	}
 
 	if (load) {
@@ -649,25 +676,32 @@ function Consent(props: { session: string; username: string }) {
 							with <strong>{appName}</strong>?
 						</Typography>
 						<Stack direction="column" justifyContent="center">
-							{passes?.map((pass) => (
-								<List
-									dense={true}
-									sx={{
-										width: "100%",
-										maxWidth: 300,
-										bgcolor: "background.paper",
-									}}
-								>
-									<ListItem>
-										<ListItemAvatar>
-											<Avatar>
-												<PassIcon type={pass.type} />
-											</Avatar>
-										</ListItemAvatar>
-										<ListItemText primary={pass.data} />
-									</ListItem>
-								</List>
-							))}
+							{ Object.keys(passes).map(index => {
+								return (
+									<>
+										<Typography textAlign="left"><b>{index.charAt(0).toUpperCase() + index.slice(1).replace('-', ' ')}:</b></Typography>
+										<FormControl sx={{ mx: 3 }} component="fieldset" variant="standard">
+											<FormGroup>
+												{ passes[index].map(pass => 
+													<FormControlLabel 
+														key={pass.id}
+														sx={{fontSize: 14}}
+														control={
+															<Checkbox 
+																defaultChecked
+																value={pass.id}
+																size="small" 
+																onChange={handleChange} 
+															/>
+														} 
+														label={pass.data}
+													/>
+												)}
+											</FormGroup>
+										</FormControl>
+									</>
+								)
+							})}
 						</Stack>
 						<Button
 							fullWidth
