@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -208,6 +209,63 @@ func (s *AppService) SetupSession(appid string, origin string, ip string) (*AppS
 	return &session, nil
 }
 
+func (s *AppService) GetSession(id string) (*AppSession, *services.ServiceError) {
+	session, err := s.getSession(id)
+	if err != nil {
+		return nil, services.CreateError("failed to retrieve session")
+	}
+	return session, nil
+}
+
+func (s *AppService) SetupOidcSession(appid string, redirect_uri string, code_challenge string, state string, ip string) (*AppSession, *services.ServiceError) {
+
+	app, serr := s.GetAppById(appid)
+	if serr != nil {
+		return nil, services.CreateError("invalid app id")
+	}
+
+	challenge := fmt.Sprintf("%s/%s", appid, code_challenge)
+	// lookup code challenge
+	_, err := s.getChallenge(challenge)
+	if err == nil {
+		return nil, services.CreateError("challenge is already existed")
+	}
+
+	// make sure redirect_uri within origin
+	if len(redirect_uri) > 0 && !strings.HasPrefix(redirect_uri, app.Origins) {
+		return nil, services.CreateError("invalid callback url")
+	}
+
+	// generate random code
+	code, err := utils.GenerateRandomBytes(32)
+	if err != nil {
+		return nil, services.CreateError("fail to generate session")
+	}
+
+	// store session with appID
+	session := AppSession{
+		AppID:      app.ID,
+		AppName:    app.AppName,
+		Attributes: app.Attributes,
+		ID:         appid,
+		Origin:     app.Origins,
+		IP:         ip,
+		Oidc:       &OidcExtras{RedirectUri: redirect_uri, Code: base64.RawURLEncoding.EncodeToString(code), State: state},
+	}
+
+	err = s.storeSession(session)
+	if err != nil {
+		return nil, services.CreateError("session error")
+	}
+
+	err = s.storeChallenge(challenge, session.ID)
+	if err != nil {
+		return nil, services.CreateError("session error")
+	}
+
+	return &session, nil
+}
+
 func (s *AppService) UpdateSession(sessionid string, userid string) (*AppSession, *services.ServiceError) {
 
 	logger.Global.Info(fmt.Sprintf("update session %s", sessionid))
@@ -316,5 +374,21 @@ func (s *AppService) getSession(id string) (*AppSession, error) {
 	}
 
 	return &session, nil
+
+}
+
+func (s *AppService) storeChallenge(key string, value string) error {
+	ctx := context.Background()
+	err := s.redis.Set(ctx, key, value, 30*time.Minute).Err()
+	if err != nil {
+		return err
+	}
+	return nil
+
+}
+
+func (s *AppService) getChallenge(key string) (string, error) {
+	ctx := context.Background()
+	return s.redis.Get(ctx, key).Result()
 
 }

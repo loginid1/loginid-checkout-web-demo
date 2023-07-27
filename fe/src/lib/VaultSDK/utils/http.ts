@@ -6,7 +6,6 @@ const defaultHeaders = {
 
 const devHeaders = {
     "ngrok-skip-browser-warning": "69420",
-    "Access-Control-Allow-Origin": '*'
 }
 
 /**

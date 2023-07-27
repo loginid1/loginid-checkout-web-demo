@@ -1,6 +1,7 @@
 import { createContext } from "react";
 import { MessagingService } from "../../services/messaging";
 import { DisplayMessage } from "../common/message";
+import { SaveConsentResponse } from "../VaultSDK/vault/federated";
 
 export enum AuthPage {
 	NONE = "none",
@@ -17,6 +18,7 @@ export interface ConsentContextType {
     postMessageText: (text: string) => void;
 	setPage: (page: AuthPage) => void;
 	handleCancel: () => void;
+    handleSuccess: (consent: SaveConsentResponse) => void;
 	setDisplayMessage: (msg: DisplayMessage) => void;
 }
 

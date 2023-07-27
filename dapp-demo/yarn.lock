@@ -1618,6 +1618,17 @@
     "@nodelib/fs.scandir" "2.1.5"
     "fastq" "^1.6.0"
 
+"@openid/appauth@file:../../AppAuth-JS":
+  "resolved" "file:../../AppAuth-JS"
+  "version" "1.3.2"
+  dependencies:
+    "@types/base64-js" "^1.3.0"
+    "@types/jquery" "^3.5.5"
+    "base64-js" "^1.5.1"
+    "follow-redirects" "^1.13.3"
+    "form-data" "^4.0.0"
+    "opener" "^1.5.2"
+
 "@pmmmwh/react-refresh-webpack-plugin@^0.5.3":
   "integrity" "sha512-zZbZeHQDnoTlt2AF+diQT0wsSXpvWiaIOZwBRdltNFhG1+I3ozyaw7U/nBiUwyJ0D+zwdXp0E3bWOl38Ag2BMw=="
   "resolved" "https://registry.npmjs.org/@pmmmwh/react-refresh-webpack-plugin/-/react-refresh-webpack-plugin-0.5.4.tgz"

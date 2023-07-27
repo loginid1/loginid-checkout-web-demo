@@ -12,6 +12,7 @@ import FingerprintIcon from "@mui/icons-material/Fingerprint";
 import styles from "../../styles/common.module.css";
 import jwt_decode from "jwt-decode";
 import AccountIcon from "@mui/icons-material/AccountCircle";
+import background from "../../assets/background.svg";
 import {
 	Container,
 	AppBar,
@@ -52,7 +53,6 @@ import {
 } from "../../components/federated/Consent";
 import { AuthContext, AuthPage, ConsentContext } from "../../lib/federated";
 import {
-	ConsentResponse,
 	SaveConsentResponse,
 	SessionInitResponse,
 } from "../../lib/VaultSDK/vault/federated";
@@ -69,7 +69,7 @@ let input: boolean = false;
 let wSession: WalletLoginSession | null = null;
 let ws: WebSocket | null = null;
 const mService = new MessagingService(window.parent);
-export default function FederatedAuth() {
+export default function OidcAuth() {
 	const [searchParams, setSearchParams] = useSearchParams();
 
 	const [waitingIndicator, setWaitingIndicator] = useState<boolean>(true);
@@ -96,7 +96,30 @@ export default function FederatedAuth() {
 	const [sessionInit, setSessionInit] = useState<SessionInitResponse | null>(
 		null
 	);
+	const [callback, setCallback] = useState<string>("");
 
+	useEffect(() => {
+		const sId = params["session"];
+		if (sId != null) {
+			vaultSDK
+				.getSession(sId)
+				.then((response) => {
+					setPage(AuthPage.LOGIN);
+					setAppOrigin(response.origin);
+					clearAlert();
+					setSessionId(response.id);
+					setSessionInit(response);
+					setCallback(response.callback);
+				})
+				.catch((error) => {
+					setGlobalError("Invalid session");
+					setPage(AuthPage.ERROR);
+				});
+		} else {
+			setGlobalError("Session not found");
+			setPage(AuthPage.ERROR);
+		}
+	}, []);
 	useEffect(() => {
 		let target = window.parent;
 		if (target != null) {
@@ -104,6 +127,7 @@ export default function FederatedAuth() {
 		} else {
 			setDisplayMessage({ text: "Missing dApp origin", type: "error" });
 		}
+		//
 	}, []);
 
 	useEffect(() => {}, [page]);
@@ -189,30 +213,27 @@ export default function FederatedAuth() {
 	}
 
 	async function fidoRegister() {
-		// need to handle safari blocking popup in async
+
 		try {
-			let popupW = openPopup(
-				`/sdk/register?username=${username}&session=${sessionId}&appOrigin=${appOrigin}&token=${token}`,
-				"register",
-				defaultOptions
+			const response = await vaultSDK.federated_register(
+				username,
+				token,
+				sessionId
 			);
-			popupW.focus();
-			window.addEventListener("focus", () => {
-				if (popupW != null) {
-					setTimeout(() => {
-						popupW.focus();
-					}, 1);
-				}
+
+			AuthService.storeSession({
+				username: username,
+				token: response.jwt,
 			});
-			setWaitingMessage("Waiting for new passkey registration ...");
-			return;
+			//navigate("/quick_add_algorand");
+			//handleAccountCreation();
+			AuthService.storePref({ username: username });
+			setPage(AuthPage.CONSENT);
 		} catch (error) {
 			setDisplayMessage({
-				text: "user not found - use sign up for new account",
+				text: (error as Error).message,
 				type: "error",
 			});
-			setShowRegister(true);
-			return;
 		}
 	}
 
@@ -313,121 +334,158 @@ export default function FederatedAuth() {
 
 	async function validateCode() {}
 
+	async function handleSuccess(consent: SaveConsentResponse) {
+		//postMessageText(JSON.stringify({ token: consent.token }));
+		//setPage(AuthPage.FINAL);
+
+		// need to redirect user back
+		if (consent.oidc) {
+			window.location.href = `${consent.oidc?.redirect_uri}#code=${consent.oidc.code}&state=${consent.oidc.state}`;
+		}
+	}
 	async function handleCancel() {
 		mService.sendErrorMessage("user cancel");
 		//window.close();
-	}
-
-	async function handleSuccess(consent: SaveConsentResponse) {
-		postMessageText(JSON.stringify({ token: consent.token }));
-		setPage(AuthPage.FINAL);
+		// need to redirect user back
 	}
 
 	return (
 		<ThemeProvider theme={LoginID}>
-			{waitingIndicator && <LinearProgress />}
-			<Container component="main">
-				{/* 
+			<CssBaseline />
+			<Container
+				component="main"
+				maxWidth={false}
+				sx={{
+					display: "flex",
+					justifyContent: "center",
+					alignItems: "center",
+					backgroundImage: `url(${background})`,
+					height: `${window.innerHeight}px`,
+				}}
+			>
+				<Paper
+					elevation={0}
+					sx={{
+						p: { md: 6, xs: 2 },
+						borderRadius: "2%",
+					}}
+				>
+					{waitingIndicator && <LinearProgress />}
+					<Stack
+						spacing={0}
+						sx={{
+							display: "flex",
+							flexDirection: "column",
+							justifyContent: "center",
+							alignItems: "center",
+						}}
+					>
+
+					{/* 
 				<Box sx={{ m: 2 }}>
 					<img src={VaultLogo} width="160" height="30" />
 				</Box>
 				*/}
 
-				{page === AuthPage.ERROR && <ErrorPage error={globalError} />}
-				{page === AuthPage.LOGIN && (
-					<AuthContext.Provider
-						value={{
-							username,
-							setUsername,
-							postMessage,
-							setPage,
-							handleCancel,
-							setToken,
-						}}
-					>
-						{sessionInit && (
-							<LoginPage
-								session={sessionInit}
+					{page === AuthPage.ERROR && (
+						<ErrorPage error={globalError} />
+					)}
+					{page === AuthPage.LOGIN && (
+						<AuthContext.Provider
+							value={{
+								username,
+								setUsername,
+								postMessage,
+								setPage,
+								handleCancel,
+								setToken,
+							}}
+						>
+							{sessionInit && (
+								<LoginPage
+									session={sessionInit}
+									username={username}
+								/>
+							)}
+						</AuthContext.Provider>
+					)}
+					{page === AuthPage.FIDO_REG && Fido()}
+					{page === AuthPage.CONSENT && (
+						<ConsentContext.Provider
+							value={{
+								postMessageText,
+								setPage,
+								handleCancel,
+								handleSuccess,
+								setDisplayMessage,
+							}}
+						>
+							{/*Consent ({session:sessionId, username})*/}
+							<Consent session={sessionId} username={username} />
+						</ConsentContext.Provider>
+					)}
+
+					{page === AuthPage.PHONE_PASS && (
+						<ConsentContext.Provider
+							value={{
+								postMessageText,
+								setPage,
+								handleCancel,
+								handleSuccess,
+								setDisplayMessage,
+							}}
+						>
+							<PhonePassPage
+								session={sessionId}
 								username={username}
 							/>
-						)}
-					</AuthContext.Provider>
-				)}
-				{page === AuthPage.FIDO_REG && Fido()}
-				{page === AuthPage.CONSENT && (
-					<ConsentContext.Provider
-						value={{
-							postMessageText,
-							setPage,
-							handleCancel,
-							handleSuccess,
-							setDisplayMessage,
+						</ConsentContext.Provider>
+					)}
+
+					{page === AuthPage.DRIVER_PASS && (
+						<ConsentContext.Provider
+							value={{
+								postMessageText,
+								setPage,
+								handleCancel,
+								handleSuccess,
+								setDisplayMessage,
+							}}
+						>
+							<DriverLicensePassPage
+								session={sessionId}
+								username={username}
+							/>
+						</ConsentContext.Provider>
+					)}
+					{page === AuthPage.FINAL && Final()}
+
+					<Divider variant="fullWidth" />
+					<Typography
+						variant="caption"
+						color="#1E2898"
+						sx={{
+							m: 1,
+							position: "relative",
+							display: "flex",
+							alignItems: "center",
+							justifyContent: "center",
 						}}
 					>
-						{/*Consent ({session:sessionId, username})*/}
-						<Consent session={sessionId} username={username} />
-					</ConsentContext.Provider>
-				)}
-
-				{page === AuthPage.PHONE_PASS && (
-					<ConsentContext.Provider
-						value={{
-							postMessageText,
-							setPage,
-							handleCancel,
-							handleSuccess,
-							setDisplayMessage,
-						}}
+						powered by&nbsp;
+						<img src={LoginIDLogo} alt="something" />
+					</Typography>
+					<Link
+						target="_blank"
+						href="/faq"
+						sx={{ m: 1 }}
+						variant="caption"
+						color="text.secondary"
 					>
-						<PhonePassPage
-							session={sessionId}
-							username={username}
-						/>
-					</ConsentContext.Provider>
-				)}
-
-				{page === AuthPage.DRIVER_PASS && (
-					<ConsentContext.Provider
-						value={{
-							postMessageText,
-							setPage,
-							handleCancel,
-							handleSuccess,
-							setDisplayMessage,
-						}}
-					>
-						<DriverLicensePassPage
-							session={sessionId}
-							username={username}
-						/>
-					</ConsentContext.Provider>
-				)}
-				{page === AuthPage.FINAL && Final()}
-
-				<Divider variant="fullWidth" />
-				<Typography
-					variant="caption"
-					color="#1E2898"
-					sx={{
-						m: 1,
-						position: "relative",
-						display: "flex",
-						alignItems: "center",
-						justifyContent: "center",
-					}}
-				>
-					powered by&nbsp;
-					<img src={LoginIDLogo} alt="something" />
-				</Typography>
-				<Link
-					target="_blank"
-					href="/faq"
-					sx={{ m: 1 }}
-					variant="caption"
-					color="text.secondary"
-				>
-					Learn more
-				</Link>
+						Learn more
+					</Link>
+					</Stack>
+				</Paper>
 			</Container>
 		</ThemeProvider>
 	);

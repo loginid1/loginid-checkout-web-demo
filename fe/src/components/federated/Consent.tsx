@@ -32,7 +32,7 @@ import {
 	AuthPage,
 } from "../../lib/federated";
 import { PassIcon } from "./Icons";
-import { ArrowBack, ContentCopy, Refresh } from "@mui/icons-material";
+import { ArrowBack, ContentCopy, Refresh, Save } from "@mui/icons-material";
 import { isDesktop } from "react-device-detect";
 import DocumentPass from "../DocumentPass";
 import { DriversLicensePass } from "../../lib/VaultSDK/vault/pass";
@@ -48,7 +48,7 @@ export function ErrorPage(props: { error: string }) {
 }
 
 export function Consent(props: { session: string; username: string }) {
-	const { postMessageText, setPage, setDisplayMessage, handleCancel } =
+	const { postMessageText, setPage, setDisplayMessage, handleCancel, handleSuccess } =
 		useContext<ConsentContextType | null>(
 			ConsentContext
 		) as ConsentContextType;
@@ -62,15 +62,16 @@ export function Consent(props: { session: string; username: string }) {
 	async function checkConsent() {
 		try {
 			let consent = await vaultSDK.checkConsent(props.session);
-			console.log(consent);
 			setPasses(consent.passes);
 			setAppName(consent.app_name);
 			if (
 				consent.required_attributes == null ||
 				consent.required_attributes.length === 0
 			) {
-				postMessageText(JSON.stringify({ token: consent.token }));
+				/*postMessageText(JSON.stringify({ token: consent.token }));
 				setPage(AuthPage.FINAL);
+                */
+                handleSuccess ({token: consent.token, oidc: consent.oidc});
 			} else {
 				if (consent.missing_attributes.length > 0) {
 					if (consent.missing_attributes[0] === "phone") {
@@ -96,10 +97,13 @@ export function Consent(props: { session: string; username: string }) {
 		//console.log("save consent");
 		let consent = await vaultSDK.saveConsent(props.session);
 		//console.log(consent.token);
+        handleSuccess(consent);
+        /*
 		postMessageText(
 			JSON.stringify({ token: consent.token, vcs: consent.vcs })
 		);
 		setPage(AuthPage.FINAL);
+        */
 	}
 
 	if (load) {

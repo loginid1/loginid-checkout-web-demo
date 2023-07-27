@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/rs/cors"
 	goutil "gitlab.com/loginid/software/libraries/goutil.git"
 	logger "gitlab.com/loginid/software/libraries/goutil.git/logger"
 	pgxx "gitlab.com/loginid/software/libraries/goutil.git/pgxx"
@@ -114,12 +113,14 @@ func main() {
 
 	// init http handlers & server
 	r := mux.NewRouter()
+	r.Use(mux.CORSMethodMiddleware(r))
 
 	// serve front-end SPA
 	spa := handlers.SpaHandler{StaticPath: "fe/build", IndexPath: "index.html", StripPrefix: "/fe"}
 	r.PathPrefix("/fe").Handler(spa)
 
 	api := r.PathPrefix("/api").Subrouter()
+	api.Use(middlewares.PrivateCORSMiddleware)
 	// inject request ID for logging
 	//api.Use(logger.InjectRequestIDMiddleware)
 
@@ -136,6 +137,7 @@ func main() {
 	federatedHandler := handlers.FederatedAuthHandler{UserService: userService, Fido2Service: fidoService, KeystoreService: keystoreService, RedisClient: db.GetCacheClient(), AppService: appService, PassService: passService}
 	api.HandleFunc("/federated/checkuser", federatedHandler.CheckUserHandler)
 	api.HandleFunc("/federated/sessionInit", federatedHandler.SessionInitHandler)
+	api.HandleFunc("/federated/getSession", federatedHandler.GetSessionHandler)
 	api.HandleFunc("/federated/register/init", federatedHandler.FederatedRegisterInitHandler)
 	api.HandleFunc("/federated/register/complete", federatedHandler.FederatedRegisterCompleteHandler)
 	api.HandleFunc("/federated/authenticate/init", federatedHandler.FederatedAuthInitHandler)
@@ -204,22 +206,22 @@ func main() {
 	// passes handlers
 	passesHandler := handlers.PassesHandler{PassService: passService, IProovService: iproveService, UserService: userService, RedisClient: db.GetCacheClient()}
 	passes := protected.PathPrefix("/passes").Subrouter()
-	passes.HandleFunc("", passesHandler.List).Methods("GET")
-	passes.HandleFunc("/{id}", passesHandler.Delete).Methods("DELETE")
-	passes.HandleFunc("/phone/init", passesHandler.PhoneInit).Methods("POST")
-	passes.HandleFunc("/phone/complete", passesHandler.PhoneComplete).Methods("POST")
-	passes.HandleFunc("/drivers-license", passesHandler.DriversLicense).Methods("POST")
-	passes.HandleFunc("/drivers-license/mobile/init", passesHandler.DriversLicenseMobileInit).Methods("POST")
-	passes.HandleFunc("/drivers-license/mobile/complete/{session}", passesHandler.DriversLicenseMobileComplete).Methods("POST")
-	passes.HandleFunc("/drivers-license/mobile/cancel/{session}", passesHandler.DriversLicenseMobileCancel).Methods("POST")
-	api.HandleFunc("/passes/drivers-license/mobile/{session}/verify", passesHandler.DriversLicenseMobileVerify).Methods("GET")
+	passes.HandleFunc("", passesHandler.List).Methods("GET", http.MethodOptions)
+	passes.HandleFunc("/{id}", passesHandler.Delete).Methods("DELETE", http.MethodOptions)
+	passes.HandleFunc("/phone/init", passesHandler.PhoneInit).Methods("POST", http.MethodOptions)
+	passes.HandleFunc("/phone/complete", passesHandler.PhoneComplete).Methods("POST", http.MethodOptions)
+	passes.HandleFunc("/drivers-license", passesHandler.DriversLicense).Methods("POST", http.MethodOptions)
+	passes.HandleFunc("/drivers-license/mobile/init", passesHandler.DriversLicenseMobileInit).Methods("POST", http.MethodOptions)
+	passes.HandleFunc("/drivers-license/mobile/complete/{session}", passesHandler.DriversLicenseMobileComplete).Methods("POST", http.MethodOptions)
+	passes.HandleFunc("/drivers-license/mobile/cancel/{session}", passesHandler.DriversLicenseMobileCancel).Methods("POST", http.MethodOptions)
+	api.HandleFunc("/passes/drivers-license/mobile/{session}/verify", passesHandler.DriversLicenseMobileVerify).Methods("GET", http.MethodOptions)
 	api.HandleFunc("/passes/drivers-license/mobile/ws/{session}", passesHandler.DriversLicenseMobileWS)
 
 	// passes handlers
 	iproovHandler := handlers.IProovHandler{IProovService: iproveService, UserService: userService}
 	iproovRouter := protected.PathPrefix("/iproov").Subrouter()
-	iproovRouter.HandleFunc("/enrolment/token", iproovHandler.EnrolmentToken).Methods("POST")
-	iproovRouter.HandleFunc("/verification/token/{credential_id}", iproovHandler.VerificationToken).Methods("GET")
+	iproovRouter.HandleFunc("/enrolment/token", iproovHandler.EnrolmentToken).Methods("POST", http.MethodOptions)
+	iproovRouter.HandleFunc("/verification/token/{credential_id}", iproovHandler.VerificationToken).Methods("GET", http.MethodOptions)
 
 	// dispenser handler
 	dispenserHandler := handlers.DispenserHandler{AlgoService: algoService}
@@ -228,26 +230,37 @@ func main() {
 	dispenser.HandleFunc("/sign", dispenserHandler.DispenserSignHandler)
 	dispenser.HandleFunc("/post", dispenserHandler.DispenserPostHandler)
 
-	//cors_origins := goutil.GetEnv("CORS_ORIGINS", "http://localhost:3000,http://localhost:3010")
-	//cor_array := strings.Split(cors_origins, ",")
-	//TODO: change CORS handling to middleware
-	c := cors.New(cors.Options{
-		//AllowedOrigins:   cor_array,
-		AllowCredentials: true,
-		//AllowedHeaders:   []string{"Content-Type", "X-Session-Token", "x-api-token", "Access-Control-Allow-Origin"},
-		AllowedHeaders: []string{"*"},
-		AllowedMethods: []string{"OPTIONS", "GET", "POST", "DELETE"},
-		// Enable Debugging for testing, consider disabling in production
-		Debug: true,
-	})
+	// oidc handler & public endpoints
+	oidcHandler := handlers.OidcHandler{UserService: userService, KeystoreService: keystoreService, AppService: appService, RedisClient: db.GetCacheClient()}
+	wellknown := r.PathPrefix("/.well-known").Subrouter()
+	wellknown.Use(middlewares.PublicCORSMiddleware)
+	wellknown.HandleFunc("/openid-configuration", oidcHandler.Configuration).Methods("GET", http.MethodOptions)
+	oidc := r.PathPrefix("/oidc").Subrouter()
+	oidc.Use(middlewares.PublicCORSMiddleware)
+	oidc.HandleFunc("/auth", oidcHandler.Authorization).Methods("GET", http.MethodOptions)
+	oidc.HandleFunc("/token", oidcHandler.Token).Methods(http.MethodPost, http.MethodOptions)
 
-	corsHandler := c.Handler(r)
+	/*
+		cors_origins := goutil.GetEnv("CORS_ORIGINS", "http://localhost:3000,http://localhost:3010")
+		cor_array := strings.Split(cors_origins, ",")
+		//TODO: change CORS handling to middleware
+		c := cors.New(cors.Options{
+			AllowedOrigins:   cor_array,
+			AllowCredentials: true,
+			AllowedHeaders:   []string{"Content-Type", "X-Session-Token", "x-api-token", "Ngrok-Skip-Browser-Warning"},
+			//AllowedHeaders: []string{"*"},
+			AllowedMethods: []string{"OPTIONS", "GET", "POST", "DELETE"},
+			// Enable Debugging for testing, consider disabling in production
+			Debug: true,
+		})
 
+		corsHandler := c.Handler(r)
+	*/
 	port := goutil.GetEnv("PORT", "8000")
 	srv := &http.Server{
-		Handler: corsHandler,
-		//Handler: r,
-		Addr: fmt.Sprintf(":%s", port),
+		//Handler: corsHandler,
+		Handler: r,
+		Addr:    fmt.Sprintf(":%s", port),
 		// Good practice: enforce timeouts for servers you create!
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,

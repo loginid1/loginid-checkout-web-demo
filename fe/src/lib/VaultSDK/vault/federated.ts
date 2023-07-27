@@ -25,6 +25,7 @@ export interface SessionInitResponse {
 	app_name: string;
 	origin: string;
 	attributes: string[];
+	callback: string;
 }
 
 export interface EmailSessionResponse {
@@ -38,6 +39,7 @@ export interface ConsentResponse {
 	missing_attributes: string[];
 	token: string;
 	passes: ConsentPass[];
+	oidc?: OidcExtras ;
 }
 
 export interface ConsentPass {
@@ -48,6 +50,13 @@ export interface ConsentPass {
 export interface SaveConsentResponse {
 	token: string;
 	vcs?: string[];
+	oidc?: OidcExtras ;
+}
+
+export interface OidcExtras {
+	redirect_uri: string;
+	code: string;
+	state: string;
 }
 
 export interface AuthResult {
@@ -73,6 +82,15 @@ export class VaultFederated extends Base {
 			{ api: api, origin: origin }
 		);
 	}
+
+	async getSession(sessionId: string): Promise<SessionInitResponse> {
+		return await utils.http.post(
+			this._baseURL,
+			"/api/federated/getSession",
+			{ session: sessionId }
+		);
+	}
+
 
 	async sendEmailSession(
 		session: string,
