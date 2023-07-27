@@ -46,6 +46,7 @@ import CreateApp from './routes/protected/Developer/CreateApp';
 import UpdateApp from './routes/protected/Developer/UpdateApp';
 import FederatedAuthPopup from './routes/api/FederatedAuthPopup';
 import AlgorandRecovery from './routes/protected/Algorand/AlgorandRecovery';
+import OidcAuth from './routes/api/OidcAuth';
 
 
 
@@ -63,6 +64,7 @@ function App() {
         <Route path="/:entry/register" element={<Register />} />
         <Route path="/sdk/auth_p" element={<FederatedAuthPopup />} />
         <Route path="/sdk/auth" element={<FederatedAuth />} />
+        <Route path="/sdk/oidc/:session" element={<OidcAuth />} />
         <Route path="/sdk/register" element={<FederatedRegister />} />
         <Route path="/sdk/email" element={<EmailValidation />} />
         <Route path="/add_device" element={<AddDevice />} />

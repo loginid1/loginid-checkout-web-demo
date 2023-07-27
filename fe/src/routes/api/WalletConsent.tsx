@@ -41,17 +41,16 @@ interface WalletLoginSession {
 const theme = createTheme();
 const mService = new MessagingService(window.opener);
 let input: boolean = false;
-let wSession : WalletLoginSession | null = null;
+let wSession: WalletLoginSession | null = null;
 
 export default function WalletLogin() {
-
 	const [searchParams, setSearchParams] = useSearchParams();
 	let redirect_error = searchParams.get("redirect_error");
 	let redirect_url = searchParams.get("redirect_url");
 	if (redirect_error == null) {
-	  redirect_error = "";
+		redirect_error = "";
 	}
-  
+
 	const [username, setUsername] = useState("");
 	const [errorMessage, setErrorMessage] = useState(redirect_error);
 
@@ -66,7 +65,6 @@ export default function WalletLogin() {
 		null
 	);
 	useEffect(() => {
-
 		let target = window.parent;
 		if (target != null) {
 			mService.onMessage((msg, origin) => onMessageHandle(msg, origin));
@@ -99,7 +97,7 @@ export default function WalletLogin() {
 			mService.id = wSession!.requestId;
 		}
 		const auth = AuthService.isLoggedIn();
-		if(!auth) {
+		if (!auth) {
 			console.log("no session");
 		}
 		/*
@@ -216,19 +214,22 @@ export default function WalletLogin() {
 		return modifiedArray;
 	}
 
-  async function handleLogin(){
-    try {
-      const response = await vaultSDK.authenticate(username);
-      AuthService.storeSession({ username: username, token: response.jwt });
-      if (redirect_url != null) {
-        navigate(redirect_url);
-      } else {
-        navigate("/home");
-      }
-    } catch (error) {
-      setErrorMessage((error as Error).message);
-    }
-  }
+	async function handleLogin() {
+		try {
+			const response = await vaultSDK.authenticate(username);
+			AuthService.storeSession({
+				username: username,
+				token: response.jwt,
+			});
+			if (redirect_url != null) {
+				navigate(redirect_url);
+			} else {
+				navigate("/home");
+			}
+		} catch (error) {
+			setErrorMessage((error as Error).message);
+		}
+	}
 	async function handleEnable() {
 		const token = AuthService.getToken();
 		if (token) {
@@ -288,7 +289,7 @@ export default function WalletLogin() {
 				<Box sx={{ m: 4 }}>
 					<img src={VaultLogo} width="160" height="30" />
 				</Box>
-{/*
+				{/*
 				{displayMessage && (
 					<Alert
 						severity={
@@ -312,12 +313,12 @@ export default function WalletLogin() {
 
 */}
 				<TextField
-				  fullWidth
-				  label="Username"
-				  value={username}
-				  size="small"
-				  onChange={(e) => setUsername(e.target.value)}
-				  focused
+					fullWidth
+					label="Username"
+					value={username}
+					size="small"
+					onChange={(e) => setUsername(e.target.value)}
+					focused
 				/>
 
 				<Button
@@ -327,7 +328,7 @@ export default function WalletLogin() {
 					size="small"
 					sx={{ mt: 1, mb: 1 }}
 				>
-					Login with Passkeys	
+					Login with Passkeys
 				</Button>
 				<Button
 					fullWidth
@@ -414,7 +415,7 @@ function Lgin(){
 }
 
 	*/
-function handleSubmit(){}
+function handleSubmit() {}
 function EnableLabel(alias: string, address: string, date: string) {
 	return (
 		<Stack sx={{ justifyContent: "flex-start" }}>

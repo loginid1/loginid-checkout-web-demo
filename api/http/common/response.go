@@ -20,8 +20,8 @@ func SendErrorResponse(w http.ResponseWriter, error services.ServiceError) {
 	if jsonError != nil {
 		logger.Global.Error("failed to encode error json")
 	}
-	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusBadRequest)
+	w.Header().Set("Content-Type", "application/json")
 	w.Write(jsonResponse)
 }
 
@@ -32,8 +32,8 @@ func SendErrorResponseWithCode(w http.ResponseWriter, code string, message strin
 	if jsonError != nil {
 		logger.Global.Error("failed to encode error json")
 	}
-	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusBadRequest)
+	w.Header().Set("Content-Type", "application/json")
 	w.Write(jsonResponse)
 }
 

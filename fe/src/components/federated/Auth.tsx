@@ -34,7 +34,6 @@ export function LoginPage(props: {
 	const {
 		username,
 		setUsername,
-		postMessage,
 		setPage,
 		handleCancel,
 		setToken,
@@ -194,7 +193,7 @@ export function LoginPage(props: {
 				</Alert>
 			)}
 			<Typography sx={{ m: 1 }} variant="body2" color="text.secondary">
-				Sign in or Sign up
+				Sign In or Sign Up
 			</Typography>
 			<TextField
 				fullWidth
@@ -227,19 +226,17 @@ export function LoginPage(props: {
 					handleClose={() => setTermOpen(false)}
 				/>
 			</Typography>
-			<Stack direction="column" justifyContent="center" alignItems="center">
+			<Stack direction="row" justifyContent="center" alignItems="center">
 				<Typography
 					sx={{ m: 1 }}
 					variant="caption"
 					color="text.secondary"
 				>
-					This site requires below factors:
+					Sign up required:
 				</Typography>
-				<div>
-					{
-						attributes.map(attr => <PassIcon key={attr} type={attr} color="info" />)
-					}
-				</div>
+				{attributes.map((attr) => (
+					<PassIcon key={attr} type={attr} color="info" />
+				))}
 			</Stack>
 			<EmailDialog
 				type={emailType}

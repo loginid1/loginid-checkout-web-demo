@@ -18,6 +18,7 @@ import { FederatedSDK } from "./lib/FederatedSDK";
 import { createTheme } from "@mui/system";
 import { WalletSDK } from "@loginid/wallet-sdk";
 import { useNavigate } from "react-router-dom";
+import oidcService, { OidcService } from "./services/oidc";
 
 function Copyright(props: any) {
 	return (
@@ -138,6 +139,11 @@ function PricingContent() {
 		}
 	}
 
+  async function signupOidc() {
+    //oidc.fetchServiceConfiguration();
+    oidcService.makeAuthorizationRequest();
+  }
+
 	async function signupPopup() {
 		const wallet = new WalletSDK(
 			process.env.REACT_APP_VAULT_URL || "",
@@ -189,9 +195,10 @@ function PricingContent() {
 							variant="button"
 							color="text.primary"
 							href="#"
+              onClick={signupOidc}
 							sx={{ my: 1, mx: 1.5 }}
 						>
-							Enterprise
+							OIDC
 						</Link>
 						<Link
 							variant="button"

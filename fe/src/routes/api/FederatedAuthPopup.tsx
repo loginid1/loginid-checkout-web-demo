@@ -64,7 +64,7 @@ import { CodeInput } from "../../components/CodeInput";
 import { EmailDialog } from "../../components/dialogs/EmailDialog";
 import LoginIDLogo from "../../assets/sidemenu/LoginIDLogo.svg";
 import { Check, MessageSharp } from "@mui/icons-material";
-import { ConsentPass } from "../../lib/VaultSDK/vault/federated";
+import { ConsentPass, SaveConsentResponse } from "../../lib/VaultSDK/vault/federated";
 import { Account } from "../../components/Account";
 import { TermDialog } from "../../components/dialogs/TermOfServiceDialog";
 import { AuthPage, ConsentContext, ConsentContextType } from "../../lib/federated";
@@ -312,6 +312,10 @@ export default function FederatedAuthPopup() {
 
 	async function validateCode() {}
 
+	async function handleSuccess(consent: SaveConsentResponse) {
+		postMessageText(JSON.stringify({ token: consent.token }));
+		setPage(AuthPage.FINAL);
+	}
 	async function handleCancel() {
 		mService.sendErrorMessage("user cancel");
 		window.close();
@@ -356,9 +360,9 @@ export default function FederatedAuthPopup() {
 				{page === AuthPage.CONSENT && (
 					<ConsentContext.Provider
 						value={{
-							postMessageText,
 							setPage,
 							handleCancel,
+							handleSuccess,
 							setDisplayMessage,
 						}}
 					>
@@ -369,9 +373,9 @@ export default function FederatedAuthPopup() {
 				{page === AuthPage.PHONE_PASS && (
 					<ConsentContext.Provider
 						value={{
-							postMessageText,
 							setPage,
 							handleCancel,
+							handleSuccess,
 							setDisplayMessage,
 						}}
 					>

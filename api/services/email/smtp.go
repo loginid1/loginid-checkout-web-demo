@@ -11,7 +11,8 @@ import (
 	"gitlab.com/loginid/software/libraries/goutil.git/logger"
 )
 
-const sender = "LoginID Wallet <no-reply@loginid.io>"
+//const sender = `"LoginID Wallet" <no-reply@loginid.io>`
+const sender = `no-reply@loginid.io`
 
 var (
 	smtpUser     = goutil.GetEnv("SMTP_USER", "")
@@ -43,21 +44,22 @@ func ComposeMsg(mail Mail) string {
 	}
 	// add subject
 	msg += fmt.Sprintf("Subject: %s\r\n", mail.Subject)
-	msg += "Content-Type: multipart/alternative; boundary=\"boundary-string\"\r\n\r\n"
-	msg += "--boundary-string\r\n" // set content type
-	msg += "Content-Type: text/plain; charset=\"utf-8\"\r\n"
-	msg += "Content-Transfer-Encoding: quoted-printable\r\n"
-	msg += "Content-Disposition: inline\r\n\r\n"
-	msg += fmt.Sprintf("%s\r\n\r\n", mail.TextBody)
-	msg += "--boundary-string\r\n"
-
+	/*
+		msg += "Content-Type: multipart/alternative; boundary=\"boundary-string\"\r\n\r\n"
+		msg += "--boundary-string\r\n" // set content type
+		msg += "Content-Type: text/plain; charset=\"utf-8\"\r\n"
+		msg += "Content-Transfer-Encoding: quoted-printable\r\n"
+		msg += "Content-Disposition: inline\r\n\r\n"
+		msg += fmt.Sprintf("%s\r\n\r\n", mail.TextBody)
+		msg += "--boundary-string\r\n"
+	*/
 	// set content type
 	msg += "Content-Type: text/html; charset=\"UTF-8\"\r\n"
 	msg += "Content-Transfer-Encoding: quoted-printable\r\n"
 	msg += "Content-Disposition: inline\r\n\r\n"
 	// add mail body
 	msg += fmt.Sprintf("%s\r\n\r\n", mail.HtmlBody)
-	msg += "--boundary-string--\r\n"
+	//msg += "--boundary-string--\r\n"
 	return msg
 }
 

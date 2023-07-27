@@ -55,6 +55,7 @@ type SessionInitResponse struct {
 	AppName    string   `json:"app_name"`
 	Origin     string   `json:"origin"`
 	Attributes []string `json:"attributes"`
+	Callback   string   `json:"callback"`
 }
 
 func (h *FederatedAuthHandler) SessionInitHandler(w http.ResponseWriter, r *http.Request) {
@@ -80,6 +81,40 @@ func (h *FederatedAuthHandler) SessionInitHandler(w http.ResponseWriter, r *http
 		AppName:    sesResp.AppName,
 		Origin:     request.Origin,
 		Attributes: strings.Split(sesResp.Attributes, ","),
+	}
+	http_common.SendSuccessResponse(w, session)
+}
+
+type SessionGetRequest struct {
+	Session string `json:"session"`
+}
+
+func (h *FederatedAuthHandler) GetSessionHandler(w http.ResponseWriter, r *http.Request) {
+
+	var request SessionGetRequest
+	defer r.Body.Close()
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		http_common.SendErrorResponse(w, services.NewError("failed to parse request"))
+		return
+	}
+
+	sesResp, serr := h.AppService.GetSession(request.Session)
+
+	if serr != nil {
+
+		http_common.SendErrorResponse(w, *serr)
+		return
+	}
+	// generated uuid
+
+	session := SessionInitResponse{
+		ID:         sesResp.ID,
+		AppName:    sesResp.AppName,
+		Origin:     sesResp.Origin,
+		Attributes: strings.Split(sesResp.Attributes, ","),
+	}
+	if sesResp.Oidc.RedirectUri != "" {
+		session.Callback = sesResp.Oidc.RedirectUri
 	}
 	http_common.SendSuccessResponse(w, session)
 }
@@ -401,6 +436,7 @@ type CheckConsentResponse struct {
 	MissingAttributes  []string              `json:"missing_attributes"`
 	Token              string                `json:"token"`
 	Passes             []ConsentPassResponse `json:"passes"`
+	Oidc               app.OidcExtras        `json:"oidc"`
 }
 
 type ConsentPassResponse struct {
@@ -466,14 +502,19 @@ func (h *FederatedAuthHandler) CheckConsentHandler(w http.ResponseWriter, r *htt
 		}
 	}
 
-	http_common.SendSuccessResponse(w, CheckConsentResponse{
+	result := CheckConsentResponse{
 		AppID:              session.AppID,
 		AppName:            session.AppName,
 		RequiredAttributes: required,
 		MissingAttributes:  missing,
 		Token:              session.Token,
 		Passes:             cpasses,
-	})
+		Oidc:               *session.Oidc,
+	}
+	if session.Oidc != nil {
+		result.Oidc = *session.Oidc
+	}
+	http_common.SendSuccessResponse(w, result)
 }
 
 type SaveConsentRequest struct {
@@ -482,8 +523,9 @@ type SaveConsentRequest struct {
 }
 
 type SaveConsentResponse struct {
-	Token string   `json:"token"`
-	VCS   []string `json:"vcs"`
+	Token string         `json:"token"`
+	VCS   []string       `json:"vcs"`
+	Oidc  app.OidcExtras `json:"oidc"`
 }
 
 func (h *FederatedAuthHandler) SaveConsentHandler(w http.ResponseWriter, r *http.Request) {
@@ -515,7 +557,11 @@ func (h *FederatedAuthHandler) SaveConsentHandler(w http.ResponseWriter, r *http
 		return
 	}
 
-	http_common.SendSuccessResponse(w, SaveConsentResponse{Token: session.Token, VCS: vcs})
+	res := SaveConsentResponse{Token: session.Token, VCS: vcs}
+	if session.Oidc != nil {
+		res.Oidc = *session.Oidc
+	}
+	http_common.SendSuccessResponse(w, res)
 }
 
 type FederatedEmailSessionRequest struct {

@@ -16,15 +16,22 @@ const (
 )
 
 type AppSession struct {
-	ID         string `json:"id"`
-	AppID      string `json:"app_id"`
-	AppName    string `json:"app_name"`
-	Attributes string `json:"attributes"`
-	UserID     string `json:"user_id"`
-	Origin     string `json:"origin"`
-	IP         string `json:"ip"`
-	Method     string `json:"method"`
-	Token      string `json:"token"`
+	ID         string      `json:"id"`
+	AppID      string      `json:"app_id"`
+	AppName    string      `json:"app_name"`
+	Attributes string      `json:"attributes"`
+	UserID     string      `json:"user_id"`
+	Origin     string      `json:"origin"`
+	IP         string      `json:"ip"`
+	Method     string      `json:"method"`
+	Token      string      `json:"token"`
+	Oidc       *OidcExtras `json:"oidc"`
+}
+
+type OidcExtras struct {
+	RedirectUri string `json:"redirect_uri"`
+	Code        string `json:"code"`
+	State       string `json:"state"`
 }
 
 type DevApp struct {

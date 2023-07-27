@@ -41,13 +41,13 @@ export function ErrorPage(props: { error: string }) {
 }
 
 export function Consent(props: { session: string; username: string }) {
-	const { postMessageText, setPage, setDisplayMessage, handleCancel } =
+	const { setPage, setDisplayMessage, handleCancel, handleSuccess } =
 		useContext<ConsentContextType | null>(
 			ConsentContext
 		) as ConsentContextType;
 	const [appName, setAppName] = useState<string>("");
 	const [checked, setChecked] = useState<string[]>([]);
-	const [passes, setPasses] = useState<{[key: string]: ConsentPass[]}>({});
+	const [passes, setPasses] = useState<{ [key: string]: ConsentPass[] }>({});
 	const [load, setLoad] = useState<boolean>(false);
 
 	useEffect(() => {
@@ -60,24 +60,29 @@ export function Consent(props: { session: string; username: string }) {
 
 			if (consent.passes !== null) {
 				const passesGroupByType = consent.passes.reduce(
-					(group: {[key: string]: ConsentPass[]}, product: ConsentPass) => {
+					(
+						group: { [key: string]: ConsentPass[] },
+						product: ConsentPass
+					) => {
 						const { type } = product;
 						group[type] = group[type] ?? [];
 						group[type].push(product);
 						return group;
-					}, 
+					},
 					{}
 				);
 				setPasses(passesGroupByType);
-				setChecked(consent.passes.map(pass => pass.id));
+				setChecked(consent.passes.map((pass) => pass.id));
 			}
 			setAppName(consent.app_name);
 			if (
 				consent.required_attributes == null ||
 				consent.required_attributes.length === 0
 			) {
-				postMessageText(JSON.stringify({ token: consent.token }));
+				/*postMessageText(JSON.stringify({ token: consent.token }));
 				setPage(AuthPage.FINAL);
+                */
+				handleSuccess({ token: consent.token, oidc: consent.oidc });
 			} else {
 				if (consent.missing_attributes.length > 0) {
 					if (consent.missing_attributes[0] === "phone") {
@@ -101,10 +106,13 @@ export function Consent(props: { session: string; username: string }) {
 	async function saveConsent() {
 		try {
 			let consent = await vaultSDK.saveConsent(props.session, checked);
-			postMessageText(
+			/*
+            postMessageText(
 				JSON.stringify({ token: consent.token, vcs: consent.vcs })
 			);
 			setPage(AuthPage.FINAL);
+            */
+			handleSuccess(consent);
 		} catch (e) {
 			setDisplayMessage({ type: "error", text: (e as Error).message });
 		}
@@ -118,7 +126,7 @@ export function Consent(props: { session: string; username: string }) {
 			updatedList.splice(checked.indexOf(event.target.value), 1);
 		}
 		setChecked(updatedList);
-	}
+	};
 
 	if (load) {
 		return (
@@ -147,31 +155,45 @@ export function Consent(props: { session: string; username: string }) {
 							with <strong>{appName}</strong>?
 						</Typography>
 						<Stack direction="column" justifyContent="center">
-							{ Object.keys(passes).map(index => {
+							{Object.keys(passes).map((index) => {
 								return (
 									<>
-										<Typography textAlign="left"><b>{index.charAt(0).toUpperCase() + index.slice(1).replace('-', ' ')}:</b></Typography>
-										<FormControl sx={{ mx: 3 }} component="fieldset" variant="standard">
+										<Typography textAlign="left">
+											<b>
+												{index.charAt(0).toUpperCase() +
+													index
+														.slice(1)
+														.replace("-", " ")}
+												:
+											</b>
+										</Typography>
+										<FormControl
+											sx={{ mx: 3 }}
+											component="fieldset"
+											variant="standard"
+										>
 											<FormGroup>
-												{ passes[index].map(pass => 
-													<FormControlLabel 
+												{passes[index].map((pass) => (
+													<FormControlLabel
 														key={pass.id}
-														sx={{fontSize: 14}}
+														sx={{ fontSize: 14 }}
 														control={
-															<Checkbox 
+															<Checkbox
 																defaultChecked
 																value={pass.id}
-																size="small" 
-																onChange={handleChange} 
+																size="small"
+																onChange={
+																	handleChange
+																}
 															/>
-														} 
+														}
 														label={pass.data}
 													/>
-												)}
+												))}
 											</FormGroup>
 										</FormControl>
 									</>
-								)
+								);
 							})}
 						</Stack>
 						<Button
@@ -206,7 +228,7 @@ export function PhonePassPage(props: { session: string; username: string }) {
 	const [allowConfirm, setAllowConfirm] = useState<boolean>(false);
 	const [code, setCode] = useState<string>("");
 	const [error, setError] = useState<string | null>(null);
-	const { postMessageText, setPage, setDisplayMessage, handleCancel } =
+	const { setPage, setDisplayMessage, handleCancel } =
 		useContext<ConsentContextType | null>(
 			ConsentContext
 		) as ConsentContextType;
@@ -372,7 +394,7 @@ function DriversLicenseDesktopComponent(props: {
 	const [link, setLink] = useState<string>("");
 	const [qrCode, setQrCode] = useState<string>("");
 	const [status, setStatus] = useState<string>("init");
-	const { postMessageText, setPage, setDisplayMessage, handleCancel } =
+	const { setPage, setDisplayMessage, handleCancel } =
 		useContext<ConsentContextType | null>(
 			ConsentContext
 		) as ConsentContextType;
@@ -440,8 +462,20 @@ function DriversLicenseDesktopComponent(props: {
 						direction="row"
 						justifyContent="center"
 						alignItems="center"
+						maxWidth="xs"
 					>
-						<Chip label={link} size="small"></Chip>
+						<Chip
+							label={link}
+							size="small"
+							sx={{
+								height: "auto",
+								"& .MuiChip-label": {
+									maxWidth: "400px",
+									display: "block",
+									whiteSpace: "normal",
+								},
+							}}
+						></Chip>
 						<IconButton
 							size="small"
 							onClick={() => {
@@ -495,9 +529,8 @@ function DriversLicenseDesktopComponent(props: {
 						color="text.secondary"
 						align="left"
 					>
-                        You have canceled the document verification process.
+						You have canceled the document verification process.
 					</Typography>
-
 				</>
 			)}
 		</>
@@ -512,7 +545,7 @@ export function DriverLicensePassPage(props: {
 	const [token, setToken] = useState<string>("");
 	const [credentialId, setCredentialId] = useState<string>("");
 	const authToken = AuthService.getToken() as string;
-	const { postMessageText, setPage, setDisplayMessage, handleCancel } =
+	const { setPage, setDisplayMessage, handleCancel } =
 		useContext<ConsentContextType | null>(
 			ConsentContext
 		) as ConsentContextType;
