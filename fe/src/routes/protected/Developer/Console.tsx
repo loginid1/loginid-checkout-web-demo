@@ -1,9 +1,10 @@
-import { Add, ContentCopy } from "@mui/icons-material";
+import { Add } from "@mui/icons-material";
 import {
-	Grid,
 	Typography,
 	Button,
 	Paper,
+	Stack,
+	CircularProgress,
 } from "@mui/material";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -15,69 +16,81 @@ import { AuthService } from "../../../services/auth";
 
 export default function DeveloperConsole() {
 	const navigate = useNavigate();
-	const [appList, setAppList] = useState<AppList | null>(null);
+	const [applications, setApplications] = useState<AppList | null>(null);
 
 	useEffect(() => {
-		getAppList();
-	}, []);
-
-	async function getAppList() {
-		const token = AuthService.getToken();
-		if (token) {
-			try {
-				const response = await vaultSDK.getAppList(token);
-				setAppList(response);
-			} catch (error) {}
-		} else {
-			// navigate to login
+		const fetchData = async () => {
+			const token = AuthService.getToken();
+			if (token) {
+				const result = await vaultSDK.getAppList(token);
+				setApplications(result);
+			}
 		}
-	}
+
+		fetchData();
+	}, []);
 
 	return (
 		<VaultBase focus={"developer"}>
-			<Paper
-				elevation={0}
+			<Stack 
+				direction="row" 
+				justifyContent="space-between"
 				sx={{
-					p: { md: 4, xs: 2 },
-					mb: 2,
-					display: "flex",
-					justifyContent: "center",
+					padding: { md: 4, xs: 2 },
 				}}
 			>
-				<Grid container spacing={{ md: 4, xs: 2 }} alignItems="center">
-					<Grid container item xs={6}>
-						<Typography variant="h2" color="secondary" align="left">
-							My Applications
-						</Typography>
-					</Grid>
-					<Grid container item xs={6} justifyContent="right">
-						<Button
-							onClick={() => navigate("/developer/createApp")}
-							color="primary"
-							variant="contained"
-							startIcon={<Add />}
-							size="small"
-						>
-							Create
-						</Button>
-					</Grid>
-					<Grid container item xs={12}>
-						<DisplayAppList appList={appList} />
-					</Grid>
-					<Grid container item xs={12}>
-						<Typography
-							variant="subtitle1"
-							align="left"
-							sx={{
-								pt: { md: 4, xs: 2 },
-								pl: { md: 4, xs: 2 },
-							}}
-						></Typography>
-					</Grid>
-					<Grid container item xs={12}>
-					</Grid>
-				</Grid>
-			</Paper>
+				<Typography
+					variant="h2"
+					color="secondary"
+					align="left"
+				>
+					Applications
+				</Typography>
+				{
+					(applications !== null && applications.apps.length !== 0) &&
+					<Button variant="text" onClick={() => {navigate('/developer/createApp')}}>
+						<Add/>
+						Add a new application
+					</Button>
+				}
+			</Stack>
+			{ 
+				applications === null ? 
+				(
+					<Stack direction="row" justifyContent="center">
+						<CircularProgress />
+					</Stack>
+				) : (
+					applications.apps.length === 0 ? 
+					(
+						<>
+							<Typography align="center" fontSize={30} fontWeight="bold" color="rgba(0,0,0,0.5)" sx={{pb: 5, pt: 10}}>
+								You don't have any application yet
+							</Typography>
+							<Stack direction="row" justifyContent="center" spacing={2}>
+								<Button variant="text" onClick={() => {navigate('/developer/createApp')}}>
+									<Add/>
+									Add your first application
+								</Button>
+							</Stack>
+						</>
+					) : (
+						<>
+							<Paper
+								elevation={0}
+								sx={{
+									p: { md: 4, xs: 2 },
+									mb: 2,
+									display: "flex",
+									justifyContent: "center",
+								}}
+							>
+								<DisplayAppList appList={applications} />
+							</Paper>
+						</>
+					)
+				)
+			}
 		</VaultBase>
 	);
 }

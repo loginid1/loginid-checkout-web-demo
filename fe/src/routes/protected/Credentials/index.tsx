@@ -154,16 +154,28 @@ const Passkeys = () => {
 
 	return (
 		<VaultBase focus={"passkeys"}>
-			<Typography
-				variant="h2"
-				color="secondary"
-				align="left"
+			<Stack 
+				direction="row" 
+				justifyContent="space-between"
 				sx={{
 					padding: { md: 4, xs: 2 },
 				}}
 			>
-				Passkeys
-			</Typography>
+				<Typography
+					variant="h2"
+					color="secondary"
+					align="left"
+				>
+					Passkeys
+				</Typography>
+				{
+					(credentials !== null && credentials.credentials.length !== 0) &&
+					<Button variant="text" onClick={() => {navigate('/passkeys/new')}}>
+						<Add/>
+						Add a new passkey
+					</Button>
+				}
+			</Stack>
 			{ 
 				credentials === null ? 
 				(
@@ -222,12 +234,6 @@ const Passkeys = () => {
 									</Grid>
 								))}
 							</Grid>
-							<Stack direction="row" spacing={2}>
-								<Button variant="text" onClick={() => {navigate('/passkeys/new')}}>
-									<Add/>
-									Add a new passkey
-								</Button>
-							</Stack>
 						</>
 					)
 				)

@@ -73,7 +73,7 @@ const menuData: MenuData[] = [
 		title: "Developer Console",
 		link: "/developer/console",
 		items: [],
-		removable: false,
+		removable: true,
 	},
 ];
 
