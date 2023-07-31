@@ -12,7 +12,6 @@ require (
 	github.com/gorilla/mux v1.8.0
 	github.com/gorilla/websocket v1.5.0
 	github.com/redis/go-redis/v9 v9.0.2
-	github.com/rs/cors v1.8.2
 	github.com/twilio/twilio-go v1.4.0
 	gitlab.com/loginid/software/libraries/gocrypto.git v0.6.0
 	gitlab.com/loginid/software/libraries/goutil.git v1.23.3
@@ -22,6 +21,8 @@ require (
 )
 
 require (
+	github.com/go-mail/mail v2.3.1+incompatible // indirect
+	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 	github.com/algorand/go-algorand v0.0.0-20220525014918-3c4c8fb0bd7a // indirect
 	github.com/algorand/go-codec/codec v1.1.8 // indirect
 	github.com/armon/go-radix v1.0.0 // indirect

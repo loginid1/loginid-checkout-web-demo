@@ -2,11 +2,9 @@ package email
 
 import (
 	"bytes"
-	"fmt"
 	"html/template"
-	"net/smtp"
-	"strings"
 
+	"github.com/go-mail/mail"
 	"gitlab.com/loginid/software/libraries/goutil.git"
 	"gitlab.com/loginid/software/libraries/goutil.git/logger"
 )
@@ -31,36 +29,20 @@ type Mail struct {
 	HtmlBody string
 }
 
-func ComposeMsg(mail Mail) string {
-	// empty string
-	msg := ""
-	// set sender
-	msg += fmt.Sprintf("From: %s\r\n", mail.Sender)
-	// set to
-	msg += fmt.Sprintf("To: %s\r\n", strings.Join(mail.To, ","))
-	// if more than 1 recipient
-	if len(mail.CC) > 0 {
-		msg += fmt.Sprintf("Cc: %s\r\n", strings.Join(mail.CC, ";"))
+func ComposeMsg(mailData Mail) *mail.Message {
+	m := mail.NewMessage()
+
+	m.SetHeader("From", mailData.Sender)
+	m.SetHeader("To", mailData.To...)
+	if len(mailData.CC) > 0 {
+		m.SetHeader("Cc", mailData.CC...)
 	}
-	// add subject
-	msg += fmt.Sprintf("Subject: %s\r\n", mail.Subject)
-	/*
-		msg += "Content-Type: multipart/alternative; boundary=\"boundary-string\"\r\n\r\n"
-		msg += "--boundary-string\r\n" // set content type
-		msg += "Content-Type: text/plain; charset=\"utf-8\"\r\n"
-		msg += "Content-Transfer-Encoding: quoted-printable\r\n"
-		msg += "Content-Disposition: inline\r\n\r\n"
-		msg += fmt.Sprintf("%s\r\n\r\n", mail.TextBody)
-		msg += "--boundary-string\r\n"
-	*/
-	// set content type
-	msg += "Content-Type: text/html; charset=\"UTF-8\"\r\n"
-	msg += "Content-Transfer-Encoding: quoted-printable\r\n"
-	msg += "Content-Disposition: inline\r\n\r\n"
-	// add mail body
-	msg += fmt.Sprintf("%s\r\n\r\n", mail.HtmlBody)
-	//msg += "--boundary-string--\r\n"
-	return msg
+
+	m.SetHeader("Subject", mailData.Subject)
+	m.SetBody("text/plain", mailData.TextBody)
+	m.AddAlternative("text/html", mailData.HtmlBody)
+
+	return m
 }
 
 const template_path = "services/email/templates/"
@@ -111,10 +93,9 @@ func SendValidationEmail(email string, data VerificationMail) error {
 	}
 
 	msg := ComposeMsg(req)
-	auth := smtp.PlainAuth("", smtpUser, smtpPassword, smtpUrl)
+	dialer := mail.NewDialer(smtpUrl, smtpPort, smtpUser, smtpPassword)
 
-	err = smtp.SendMail(fmt.Sprintf("%s:%d", smtpUrl, smtpPort), auth, sender, to, []byte(msg))
-	if err != nil {
+	if err = dialer.DialAndSend(msg); err != nil {
 		logger.Global.Error(err.Error())
 		return err
 	}
@@ -153,10 +134,9 @@ func SendSignupEmail(email string, data SignupMail) error {
 	}
 
 	msg := ComposeMsg(req)
-	auth := smtp.PlainAuth("", smtpUser, smtpPassword, smtpUrl)
+	dialer := mail.NewDialer(smtpUrl, smtpPort, smtpUser, smtpPassword)
 
-	err = smtp.SendMail(fmt.Sprintf("%s:%d", smtpUrl, smtpPort), auth, sender, to, []byte(msg))
-	if err != nil {
+	if err = dialer.DialAndSend(msg); err != nil {
 		logger.Global.Error(err.Error())
 		return err
 	}
