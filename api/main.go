@@ -235,6 +235,9 @@ func main() {
 	wellknown := r.PathPrefix("/.well-known").Subrouter()
 	wellknown.Use(middlewares.PublicCORSMiddleware)
 	wellknown.HandleFunc("/openid-configuration", oidcHandler.Configuration).Methods("GET", http.MethodOptions)
+	wellknown.HandleFunc("/_health", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "./static/_health")
+	})
 	oidc := r.PathPrefix("/oidc").Subrouter()
 	oidc.Use(middlewares.PublicCORSMiddleware)
 	oidc.HandleFunc("/auth", oidcHandler.Authorization).Methods("GET", http.MethodOptions)

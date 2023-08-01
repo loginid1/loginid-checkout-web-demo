@@ -49,7 +49,7 @@ import AlgorandRecovery from './routes/protected/Algorand/AlgorandRecovery';
 import OidcAuth from './routes/api/OidcAuth';
 
 
-
+const reload = () => window.location.reload();
 function App() {
   const [auth, setAuth] = useState(AuthService.isLoggedIn());
   
