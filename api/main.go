@@ -64,6 +64,8 @@ func main() {
 		os.Exit(0)
 	}
 
+	ENABLE_ALGO := goutil.GetEnvBool("ENABLE_ALGO", true)
+
 	apiClientID := goutil.GetEnv("FIDO_API_ID", "iBlHjpbHGYEp1JdCEn4ZMx-p6V9xBbwLbMn9R8sQNOqRgeLzCm5OxWhdEsVEv7q9lPyA32KuZqOpMaIVIsOiZA")
 	apiPem := goutil.GetEnv("API_PRIVATE_KEY", "LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JR0hBZ0VBTUJNR0J5cUdTTTQ5QWdFR0NDcUdTTTQ5QXdFSEJHMHdhd0lCQVFRZ0RDNHNHSnZNSjFUcjJtY0IKT05sUmJTRG9CWFRiak1ZdE1DTXNXRER6YURxaFJBTkNBQVRkV29qVEhCejZMVTlOMGhHYUhlTU9MZkdVZ0ZxUgpDOGRvMU1SL3pZL3YwSzVzYTJROXpmNUIxMUZNTm9UWXZwVCtqQmFVNTB5SkFwblN1VVhkVmJiUAotLS0tLUVORCBQUklWQVRFIEtFWS0tLS0t")
 	clientID := goutil.GetEnv("FIDO_CLIENT_ID", "3Tn8S4chICTf2cy6TdciBJXJFZgpcVJcFiRAIb0zuo21jaA_4W2BCnVrqBIoY04dr12W47bYGrZRlPlzyVD30Q")
@@ -96,8 +98,7 @@ func main() {
 
 	algoService, err := algo.NewAlgoService(db.GetConnection())
 	if err != nil {
-		logger.Global.Fatal(err.Error())
-		os.Exit(0)
+		logger.Global.Error(err.Error())
 	}
 
 	appService := app.NewAppService(db.GetConnection(), db.GetCacheClient())
@@ -167,28 +168,31 @@ func main() {
 	protected.HandleFunc("/user/getCodeLink", userHandler.GetCodeLink)
 	protected.HandleFunc("/user/generateCredentialCode", userHandler.GenerateCredentialCodeHandler)
 
-	protected.HandleFunc("/algo/getAccount", algoHandler.GetAccountHandler)
-	protected.HandleFunc("/algo/getAccountList", algoHandler.GetAccountListHandler)
-	protected.HandleFunc("/algo/createAccount", algoHandler.CreateAccountHandler)
-	protected.HandleFunc("/algo/renameAccount", algoHandler.RenameAccountHandler)
-	protected.HandleFunc("/algo/generateScript", algoHandler.GenerateScriptHandler)
-	protected.HandleFunc("/algo/quickAccountCreation", algoHandler.QuickAccountCreationHandler)
-	protected.HandleFunc("/algo/getEnableAccountList", algoHandler.GetEnableAccountListHandler)
-	protected.HandleFunc("/algo/revokeEnableAccount", algoHandler.RevokeEnableAccountHandler)
-	protected.HandleFunc("/algo/rekeyInit", algoHandler.RekeyInitHandler)
-	protected.HandleFunc("/algo/rekeyComplete", algoHandler.RekeyCompleteHandler)
+	if ENABLE_ALGO {
 
-	// algo internal transaction
-	protected.HandleFunc("/algo/createAssetOptin", algoHandler.AssetOptinHandler)
-	protected.HandleFunc("/algo/createSendPayment", algoHandler.SendPaymentHandler)
+		protected.HandleFunc("/algo/getAccount", algoHandler.GetAccountHandler)
+		protected.HandleFunc("/algo/getAccountList", algoHandler.GetAccountListHandler)
+		protected.HandleFunc("/algo/createAccount", algoHandler.CreateAccountHandler)
+		protected.HandleFunc("/algo/renameAccount", algoHandler.RenameAccountHandler)
+		protected.HandleFunc("/algo/generateScript", algoHandler.GenerateScriptHandler)
+		protected.HandleFunc("/algo/quickAccountCreation", algoHandler.QuickAccountCreationHandler)
+		protected.HandleFunc("/algo/getEnableAccountList", algoHandler.GetEnableAccountListHandler)
+		protected.HandleFunc("/algo/revokeEnableAccount", algoHandler.RevokeEnableAccountHandler)
+		protected.HandleFunc("/algo/rekeyInit", algoHandler.RekeyInitHandler)
+		protected.HandleFunc("/algo/rekeyComplete", algoHandler.RekeyCompleteHandler)
 
-	// algo purchase handler
-	protected.HandleFunc("/algo/algoPurchaseInit", algoHandler.AlgoPurchaseRequestHandler)
+		// algo internal transaction
+		protected.HandleFunc("/algo/createAssetOptin", algoHandler.AssetOptinHandler)
+		protected.HandleFunc("/algo/createSendPayment", algoHandler.SendPaymentHandler)
 
-	// balance & reporting
-	protected.HandleFunc("/algo/getAccountInfo", algoHandler.GetAccountInfoHandler)
-	protected.HandleFunc("/algo/getTransactions", algoHandler.GetTransactionHandler)
-	protected.HandleFunc("/algo/getAssets", algoHandler.GetAssetHandler)
+		// algo purchase handler
+		protected.HandleFunc("/algo/algoPurchaseInit", algoHandler.AlgoPurchaseRequestHandler)
+
+		// balance & reporting
+		protected.HandleFunc("/algo/getAccountInfo", algoHandler.GetAccountInfoHandler)
+		protected.HandleFunc("/algo/getTransactions", algoHandler.GetTransactionHandler)
+		protected.HandleFunc("/algo/getAssets", algoHandler.GetAssetHandler)
+	}
 
 	// dev handlers
 	protected.HandleFunc("/dev/createApp", devHandler.CreateApp)
