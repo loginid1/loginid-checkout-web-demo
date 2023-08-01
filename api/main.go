@@ -85,7 +85,7 @@ func main() {
 
 	wyreService, err := sendwyre.NewSendWyreService(wyreAccount, wyreSecret, wyreUrl, wyreRedirectUrl)
 	if err != nil {
-		logger.Global.Fatal(err.Error())
+		logger.Global.Error(err.Error())
 	}
 
 	/*
@@ -98,7 +98,8 @@ func main() {
 
 	algoService, err := algo.NewAlgoService(db.GetConnection())
 	if err != nil {
-		logger.Global.Error(err.Error())
+		logger.Global.Fatal(err.Error())
+		os.Exit(0)
 	}
 
 	appService := app.NewAppService(db.GetConnection(), db.GetCacheClient())
