@@ -106,12 +106,10 @@ const CRED_LENGTH_INDEX = 53
 
 func parseCoseData(authData []byte) ([]byte, error) {
 
-	logger.Global.Info(fmt.Sprintf("AUTH: %d %#v", len(authData), authData))
 	credLen := authData[CRED_LENGTH_INDEX : CRED_LENGTH_INDEX+2]
 	coseLength := binary.BigEndian.Uint16(credLen)
 	coseIndex := CRED_LENGTH_INDEX + 2 + coseLength
 	coseData := authData[coseIndex:]
-	logger.Global.Info(fmt.Sprintf("COSE: %#v %d %d %#v", credLen, coseLength, len(coseData), coseData))
 	return coseData, nil
 }
 

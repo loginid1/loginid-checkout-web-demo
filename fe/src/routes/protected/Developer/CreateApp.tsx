@@ -1,4 +1,3 @@
-import { Add, CheckBox, ContentCopy } from "@mui/icons-material";
 import {
 	Grid,
 	Typography,
@@ -17,13 +16,9 @@ import {
 } from "@mui/material";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { DisplayAppList } from "../../../components/AppList";
 import { VaultBase } from "../../../components/VaultBase";
 import { DisplayMessage } from "../../../lib/common/message";
-import { ArrayUtil } from "../../../lib/util/array";
-import ParseUtil from "../../../lib/util/parse";
 import vaultSDK from "../../../lib/VaultSDK";
-import { AppList } from "../../../lib/VaultSDK/vault/developer";
 import { AuthService } from "../../../services/auth";
 
 export default function CreateApp() {
@@ -36,8 +31,6 @@ export default function CreateApp() {
 	const [attributeList, setAttributeList] = useState<string[]>(["email"]);
 	const [email, setEmail] = useState<boolean>(true);
 	const [phone, setPhone] = useState<boolean>(false);
-	const [disable, setDisable] = useState<boolean>(false);
-	const [api, setApi] = useState<string>("");
 
 	useEffect(() => {}, []);
 
@@ -58,7 +51,7 @@ export default function CreateApp() {
 			}
 
 			try {
-				const response = await vaultSDK.createApp(token, {
+				await vaultSDK.createApp(token, {
 					app_name: name,
 					origins: origins,
 					attributes: attributeList.join(),
@@ -66,13 +59,7 @@ export default function CreateApp() {
 					uat: "",
 				});
 
-				// disable create button
-				setApi(response.id);
-				setDisplayMessage({
-					type: "info",
-					text: "created successful!",
-				});
-				setDisable(true);
+				navigate('/developer/console');
 			} catch (error) {
 				setDisplayMessage({
 					type: "error",
@@ -104,6 +91,16 @@ export default function CreateApp() {
 
 	return (
 		<VaultBase focus={"developer"}>
+			<Typography
+				variant="h2"
+				color="secondary"
+				align="left"
+				sx={{
+					padding: { md: 4, xs: 2 },
+				}}
+			>
+				Create Application
+			</Typography>
 			<Paper
 				elevation={0}
 				sx={{
@@ -114,11 +111,6 @@ export default function CreateApp() {
 				}}
 			>
 				<Grid container spacing={{ md: 2, xs: 1 }} alignItems="center">
-					<Grid container item xs={12}>
-						<Typography variant="h2" color="secondary" align="left">
-							Create Application
-						</Typography>
-					</Grid>
 					{displayMessage && (
 						<Grid container item xs={12}>
 							<Alert
@@ -131,24 +123,12 @@ export default function CreateApp() {
 							</Alert>
 						</Grid>
 					)}
-					{disable && (
-						<Grid container item xs={12}>
-							<TextField
-								fullWidth
-								label="API"
-								value={api}
-								size="small"
-								disabled
-							/>
-						</Grid>
-					)}
 					<Grid container item xs={12}>
 						<TextField
 							fullWidth
-							label="App Name"
+							label="Application Name"
 							value={name}
 							size="small"
-							focused
 							onChange={(e) => setName(e.target.value)}
 						/>
 					</Grid>
@@ -226,7 +206,6 @@ export default function CreateApp() {
 							variant="contained"
 							size="large"
 							onClick={handleCreateApp}
-							disabled={disable}
 						>
 							Create
 						</Button>
