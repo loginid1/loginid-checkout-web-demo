@@ -18,11 +18,13 @@ import {
 } from "@openid/appauth";
 
 /* an example open id connect provider */
-const openIdConnectUrl = "https://6fb2-45-72-195-110.ngrok-free.app";
+//const openIdConnectUrl = "https://6fb2-45-72-195-110.ngrok-free.app";
+const openIdConnectUrl = process.env.REACT_APP_OIDC_URL || "https://6fb2-45-72-195-110.ngrok-free.app";
 
 /* example client configuration */
 const clientId = process.env.REACT_APP_LICENSE_APP_API || "";
-const redirectUri = "https://91ff-45-72-195-110.ngrok-free.app/callback";
+//const redirectUri = "https://91ff-45-72-195-110.ngrok-free.app/callback";
+const redirectUri = process.env.REACT_APP_OIDC_CALLBACK || "https://91ff-45-72-195-110.ngrok-free.app/callback";
 const scope = "openid";
 
 /**
