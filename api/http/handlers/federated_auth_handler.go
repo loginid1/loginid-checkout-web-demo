@@ -509,7 +509,6 @@ func (h *FederatedAuthHandler) CheckConsentHandler(w http.ResponseWriter, r *htt
 		MissingAttributes:  missing,
 		Token:              session.Token,
 		Passes:             cpasses,
-		Oidc:               *session.Oidc,
 	}
 	if session.Oidc != nil {
 		result.Oidc = *session.Oidc
