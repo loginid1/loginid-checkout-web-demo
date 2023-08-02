@@ -214,6 +214,7 @@ func (s *AppService) SetupSession(appid string, origin string, ip string) (*AppS
 	} else if appid != "" {
 		app, serr = s.GetAppById(appid)
 		if serr != nil {
+			logger.Global.Error(serr.Message)
 			return nil, services.CreateError("invalid app id")
 		}
 		if app.Origins != origin {
@@ -223,6 +224,7 @@ func (s *AppService) SetupSession(appid string, origin string, ip string) (*AppS
 
 		app, serr = s.GetAppByOrigin(origin)
 		if serr != nil {
+			logger.Global.Error(serr.Message)
 			return nil, services.CreateError("invalid origin")
 		}
 
@@ -239,6 +241,7 @@ func (s *AppService) SetupSession(appid string, origin string, ip string) (*AppS
 
 	err := s.storeSession(session)
 	if err != nil {
+		logger.Global.Error(err.Error())
 		return nil, services.CreateError("session error")
 	}
 	return &session, nil
@@ -247,6 +250,7 @@ func (s *AppService) SetupSession(appid string, origin string, ip string) (*AppS
 func (s *AppService) GetSession(id string) (*AppSession, *services.ServiceError) {
 	session, err := s.getSession(id)
 	if err != nil {
+		logger.Global.Error(err.Error())
 		return nil, services.CreateError("failed to retrieve session")
 	}
 	return session, nil
@@ -256,6 +260,7 @@ func (s *AppService) SetupOidcSession(appid string, redirect_uri string, code_ch
 
 	app, serr := s.GetAppById(appid)
 	if serr != nil {
+		logger.Global.Error(serr.Message)
 		return nil, services.CreateError("invalid app id")
 	}
 
@@ -263,6 +268,7 @@ func (s *AppService) SetupOidcSession(appid string, redirect_uri string, code_ch
 	// lookup code challenge
 	_, err := s.getChallenge(challenge)
 	if err == nil {
+		logger.Global.Error(err.Error())
 		return nil, services.CreateError("challenge is already existed")
 	}
 
@@ -290,11 +296,13 @@ func (s *AppService) SetupOidcSession(appid string, redirect_uri string, code_ch
 
 	err = s.storeSession(session)
 	if err != nil {
+		logger.Global.Error(err.Error())
 		return nil, services.CreateError("session error")
 	}
 
 	err = s.storeChallenge(challenge, session.ID)
 	if err != nil {
+		logger.Global.Error(err.Error())
 		return nil, services.CreateError("session error")
 	}
 
@@ -384,7 +392,6 @@ func (s *AppService) storeSession(session AppSession) error {
 	ctx := context.Background()
 	sessionbyte, err := json.Marshal(session)
 	if err != nil {
-		logger.Global.Error(err.Error())
 		return err
 	}
 	err = s.redis.Set(ctx, session.ID, sessionbyte, 30*time.Minute).Err()
