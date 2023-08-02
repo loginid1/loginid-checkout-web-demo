@@ -25,7 +25,7 @@ import (
 	"gorm.io/gorm"
 )
 
-var KEYSTORE_TYPE = goutil.GetEnv("KEYSTORE_TYPE", "awskms")
+//var KEYSTORE_TYPE = goutil.GetEnv("KEYSTORE_TYPE", "awskms")
 var AWS_KMS_REGION = goutil.GetEnv("AWS_KMS_REGION", "us-west-2")
 var AWS_KMS_KEY_ID = goutil.GetEnv("AWS_KMS_KEY_ID", "")
 
@@ -51,7 +51,7 @@ func NewKeystoreService(db *gorm.DB) (*KeystoreService, error) {
 
 // init signing & session keystore
 func (s *KeystoreService) InitKeystore() error {
-	ksType := goutil.GetEnv(KEYSTORE_TYPE, "local")
+	ksType := goutil.GetEnv("KEYSTORE_TYPE", "local")
 	err := s.InitKeystoreScope(ksScopeSign, ksSignID, ksType)
 	if err != nil {
 		return err

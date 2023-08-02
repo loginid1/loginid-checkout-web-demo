@@ -17,7 +17,7 @@ var (
 	keyRotationDuration    = pgxx.NominalSeconds(goutil.GetEnvInt("KEY_ROTATION_DAYS", 30) * 24 * 3600)   // default 30 days
 	keyGraceDuration       = pgxx.NominalSeconds(goutil.GetEnvInt("KEY_GRACE_DAYS", 60) * 24 * 3600)      // default 60 days
 	keyRetentionDuration   = pgxx.NominalSeconds(goutil.GetEnvInt("KEY_RETENTION_DAYS", 365) * 24 * 3600) // default 365 days
-	kmsKeyId               = goutil.GetEnv("KMS_KEY_ID", goutil.GetEnv("GOCRYPTO_AWS_KMS_KEY_ID", ""))
+	kmsKeyId               = goutil.GetEnv("AWS_KMS_KEY_ID", goutil.GetEnv("GOCRYPTO_AWS_KMS_KEY_ID", ""))
 )
 
 var symmetricService symmetric.ServiceInterface
