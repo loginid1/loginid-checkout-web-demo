@@ -291,6 +291,34 @@ func (s *KeystoreService) VerifyFidoJWT(token string) (*FidoClaims, *services.Se
 	return &claims, nil
 }
 
+func (s *KeystoreService) GetJWKS() (*Jwks, *services.ServiceError) {
+	keystore := s.LoadKeystore(ksSignID)
+	if keystore == nil {
+		return nil, services.CreateError("fail to load key")
+	}
+	if keystore.Alg != "ES256" {
+		return nil, services.CreateError("invalid key")
+	}
+
+	public, err := utils.LoadPublicKeyFromPEM(keystore.PublicKey)
+	if err != nil {
+		return nil, services.CreateError("invalid key")
+	}
+
+	key := EccJwk{
+		Kid: keystore.ID,
+		Kty: "EC",
+		Crv: "P-256",
+		X:   base64.RawURLEncoding.EncodeToString(public.X.Bytes()),
+		Y:   base64.RawURLEncoding.EncodeToString(public.Y.Bytes()),
+	}
+	var keys []EccJwk
+	keys = append(keys, key)
+
+	return &Jwks{Keys: keys}, nil
+
+}
+
 func awsEncryption(data string) (string, error) {
 	sess, err := session.NewSession(&aws.Config{
 		Region:                        aws.String(AWS_KMS_REGION),

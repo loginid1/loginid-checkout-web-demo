@@ -165,6 +165,15 @@ func (h *OidcHandler) Token(w http.ResponseWriter, r *http.Request) {
 	http_common.SendSuccessResponse(w, TokenResponse{AccessToken: app.Token})
 }
 
+func (h *OidcHandler) GetJwks(w http.ResponseWriter, r *http.Request) {
+	jwks, serr := h.KeystoreService.GetJWKS()
+	if serr != nil {
+		http_common.SendErrorResponse(w, *serr)
+		return
+	}
+	http_common.SendSuccessResponse(w, jwks)
+}
+
 type OidcError struct {
 	Error            string `json:"error"`
 	ErrorDescription string `json:"error_description"`
