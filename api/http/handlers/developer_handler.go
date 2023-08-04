@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/gorilla/mux"
 	http_common "gitlab.com/loginid/software/services/loginid-vault/http/common"
 	"gitlab.com/loginid/software/services/loginid-vault/services"
 	"gitlab.com/loginid/software/services/loginid-vault/services/app"
@@ -64,6 +65,30 @@ func (h *DeveloperHandler) UpdateApp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	http_common.SendSuccess(w)
+}
+
+func (h *DeveloperHandler) GetApp(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	appId := vars["id"]
+
+	if appId == "" {
+		http_common.SendErrorResponse(w, services.NewError("missing app id parameter"))
+		return
+	}
+
+	app, serr := h.AppService.GetAppById(appId)
+	if serr != nil {
+		http_common.SendErrorResponse(w, *serr)
+		return
+	}
+
+	session := r.Context().Value("session").(services.UserSession)
+	if app.OwnerID != session.UserID {
+		http_common.SendErrorResponse(w, services.NewError("app not found"))
+		return
+	}
+
+	http_common.SendSuccessResponse(w, app)
 }
 
 func (h *DeveloperHandler) GetAppList(w http.ResponseWriter, r *http.Request) {

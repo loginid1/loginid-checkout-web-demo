@@ -15,6 +15,16 @@ export interface VaultApp {
 
 export class VaultDeveloper extends Base {
 
+    async getApp(token: string, app_id: string | undefined): Promise<VaultApp> {
+        const header = { "x-session-token": token };
+        return await utils.http.get(
+            this._baseURL,
+            `/api/protected/dev/getApp/${app_id}`,
+            {},
+            header
+        );
+    }
+
     async getAppList(token: string): Promise<AppList> {
         const header = { "x-session-token": token };
         return await utils.http.get(
