@@ -198,6 +198,7 @@ func main() {
 	// dev handlers
 	protected.HandleFunc("/dev/createApp", devHandler.CreateApp)
 	protected.HandleFunc("/dev/updateApp", devHandler.UpdateApp)
+	protected.HandleFunc("/dev/getApp/{id}", devHandler.GetApp)
 	protected.HandleFunc("/dev/getAppList", devHandler.GetAppList)
 
 	// open transaction api handlers

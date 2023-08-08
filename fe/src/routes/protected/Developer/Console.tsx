@@ -48,7 +48,7 @@ export default function DeveloperConsole() {
 				</Typography>
 				{
 					(applications !== null && applications.apps.length !== 0) &&
-					<Button variant="text" onClick={() => {navigate('/developer/createApp')}}>
+					<Button variant="text" onClick={() => {navigate('/developer/app/create')}}>
 						<Add/>
 						Add a new application
 					</Button>
@@ -68,7 +68,7 @@ export default function DeveloperConsole() {
 								You don't have any application yet
 							</Typography>
 							<Stack direction="row" justifyContent="center" spacing={2}>
-								<Button variant="text" onClick={() => {navigate('/developer/createApp')}}>
+								<Button variant="text" onClick={() => {navigate('/developer/app/create')}}>
 									<Add/>
 									Add your first application
 								</Button>

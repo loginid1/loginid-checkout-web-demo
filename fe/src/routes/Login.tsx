@@ -100,7 +100,6 @@ const Login: React.FC = () => {
               label="Username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              focused
             />
             <Button
               type="submit"
@@ -112,10 +111,7 @@ const Login: React.FC = () => {
             </Button>
             <Typography variant="body1">
               Don't have an account yet?{" "}
-              <Link href={redirect_url?"./register?redirect_url="+redirect_url:"./register"}>Create Account Now</Link>
-            </Typography>
-            <Typography variant="body1">
-              Returned user with a new device? <Link href={redirect_url?"./add_device?redirect_url="+redirect_url:"./add_device"}>Click Here</Link>
+              <Link href={redirect_url?"./register?redirect_url="+redirect_url:"./register"}>Register</Link>
             </Typography>
           </Stack>
         </Paper>

@@ -51,7 +51,7 @@ export default function CreateApp() {
 			}
 
 			try {
-				await vaultSDK.createApp(token, {
+				const result = await vaultSDK.createApp(token, {
 					app_name: name,
 					origins: origins,
 					attributes: attributeList.join(),
@@ -59,7 +59,7 @@ export default function CreateApp() {
 					uat: "",
 				});
 
-				navigate('/developer/console');
+				navigate(`/developer/app/${result.id}`);
 			} catch (error) {
 				setDisplayMessage({
 					type: "error",
@@ -160,13 +160,15 @@ export default function CreateApp() {
 								<FormControlLabel
 									control={
 										<Checkbox
+											readOnly
+											disabled
 											checked={email}
-											onChange={(e) =>
-												handleAttributeChange(
-													"email",
-													e.target.checked
-												)
-											}
+											// onChange={(e) =>
+											// 	handleAttributeChange(
+											// 		"email",
+											// 		e.target.checked
+											// 	)
+											// }
 											name="email"
 										/>
 									}
