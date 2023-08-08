@@ -209,8 +209,7 @@ export default function Register() {
 							marginTop={2}
 							maxWidth="400px"
 						>
-							Create a LoginID Wallet Account and manage your
-							Identities with Security and Ease.
+							The seamless way to introduce passwordless passkey login to your site or app. Get started in a few minutes. No credit card needed.
 						</Typography>
 						{errorMessage.length > 0 && (
 							<Alert severity="error">{errorMessage}</Alert>
@@ -219,7 +218,6 @@ export default function Register() {
 							fullWidth
 							label="Username"
 							value={username}
-							focused
 							onChange={(e) => setUsername(e.target.value)}
 						/>
 						<Typography variant="body1">
@@ -251,19 +249,6 @@ export default function Register() {
 								}
 							>
 								Login
-							</Link>
-						</Typography>
-						<Typography variant="body1">
-							Returned user with a new device?{" "}
-							<Link
-								href={
-									redirect_url
-										? "./add_device?redirect_url=" +
-										  redirect_url
-										: "./add_device"
-								}
-							>
-								Click Here
 							</Link>
 						</Typography>
 					</Stack>

@@ -60,7 +60,7 @@ export function DisplayApp(app: VaultApp) {
 	return (
 		<>
 			<Grid item container xs={4}>
-				<Link to="/developer/updateApp" state={app}>{app.app_name}</Link>
+				<Link to={`/developer/app/${app.id}`}>{app.app_name}</Link>
 			</Grid>
 			<Grid item container xs={5}>
 				{app.origins}

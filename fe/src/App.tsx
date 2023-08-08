@@ -104,8 +104,8 @@ function App() {
           <Route path="/algo/order/:address" element={<SendWyreOrder />} />
           <Route path="/sendwyre/callback" element={<SendWyreCallback />} />
           <Route path="/developer/console" element={<DeveloperConsole />} />
-          <Route path="/developer/createApp" element={<CreateApp />} />
-          <Route path="/developer/updateApp" element={<UpdateApp />} />
+          <Route path="/developer/app/create" element={<CreateApp />} />
+          <Route path="/developer/app/:app_id" element={<UpdateApp />} />
         </Route>
         <Route path="*" element={<Navigate replace to="/login" />} />
       </Routes>
