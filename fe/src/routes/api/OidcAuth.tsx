@@ -6,7 +6,7 @@ import { EnableOpts, EnableResult, WalletInit } from "../../lib/common/api";
 import vaultSDK from "../../lib/VaultSDK";
 import { AccountList, Genesis } from "../../lib/VaultSDK/vault/algo";
 import { ThemeProvider } from "@emotion/react";
-import VaultLogo from "../../assets/logo_light.svg";
+import VaultLogo from "../../assets/logo.svg";
 import EmailIcon from "@mui/icons-material/Email";
 import FingerprintIcon from "@mui/icons-material/Fingerprint";
 import styles from "../../styles/common.module.css";

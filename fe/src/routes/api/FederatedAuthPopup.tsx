@@ -13,7 +13,7 @@ import { EnableOpts, EnableResult, WalletInit } from "../../lib/common/api";
 import vaultSDK from "../../lib/VaultSDK";
 import { AccountList, Genesis } from "../../lib/VaultSDK/vault/algo";
 import { ThemeProvider } from "@emotion/react";
-import VaultLogo from "../../assets/logo_dark.svg";
+import VaultLogo from "../../assets/logo-inverted.svg";
 import EmailIcon from "@mui/icons-material/Email";
 import PhoneIcon from "@mui/icons-material/Phone";
 import AccountIcon from "@mui/icons-material/AccountCircle";

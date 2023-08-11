@@ -12,7 +12,7 @@ import React, { useEffect } from "react";
 import { LoginID } from "../theme/theme";
 import { MenuItem } from "./MenuItem";
 import menuHeader from "../assets/sidemenu/MenuHeader.png";
-import { ReactComponent as VaultLogo } from "../assets/logoContrast.svg";
+import { ReactComponent as VaultLogo } from "../assets/logo-inverted.svg";
 import LoginIDLogo from "../assets/sidemenu/LoginIDLogo.svg";
 import { useNavigate } from "react-router-dom";
 

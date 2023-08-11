@@ -240,13 +240,13 @@ export default function UpdateApp() {
 							</Grid>
 							<Grid item xs={12}>
 								<FormControl
-									sx={{ m: 1 }}
+									sx={{ m: 1, textAlign: "left" }}
 									component="fieldset"
 									variant="standard"
 									fullWidth
 								>
 									<FormLabel component="legend">
-										Identification Requirements
+										<strong>User Identifiers</strong>
 									</FormLabel>
 									<FormGroup>
 										<FormControlLabel
@@ -266,7 +266,7 @@ export default function UpdateApp() {
 											}
 											label="Email Verification"
 										/>
-										<FormControlLabel
+										{/* <FormControlLabel
 											control={
 												<Checkbox
 													checked={phone}
@@ -280,10 +280,10 @@ export default function UpdateApp() {
 												/>
 											}
 											label="Phone Verification"
-										/>
+										/> */}
 									</FormGroup>
 									<FormHelperText>
-										Attribute will required user to consent
+										Choose how users will identify themselves on your app or site. If an option is chosen, our wallet will then require users to verify these options prior in order for their account to be created. We are continuously adding more identifiers with each release.
 									</FormHelperText>
 								</FormControl>
 							</Grid>

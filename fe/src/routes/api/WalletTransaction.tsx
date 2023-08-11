@@ -25,7 +25,7 @@ import { EnableOpts, WalletTransaction } from "../../lib/common/api";
 import { DisplayMessage } from "../../lib/common/message";
 import ParseUtil from "../../lib/util/parse";
 import vaultSDK from "../../lib/VaultSDK";
-import VaultLogo from "../../assets/logo_dark.svg";
+import VaultLogo from "../../assets/logo-inverted.svg";
 import TxConfirmLogo from "../../assets/icon-1-exclamation.svg";
 import TxApproveLogo from "../../assets/icon-2-checkmark.svg";
 import AlgorandLogo from "../../assets/AlgorandLogo.svg";
