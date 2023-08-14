@@ -12,10 +12,21 @@ import (
 	qrcode "github.com/skip2/go-qrcode"
 )
 
-var email_regex = regexp.MustCompile(`^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$`)
+// email validation regular expression
+// https://www.w3.org/TR/2016/REC-html51-20161101/sec-forms.html#valid-e-mail-address
+var emailRegex = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 
-func IsEmail(value string) bool {
-	return email_regex.MatchString(value)
+// IsEmailValid checks if the email provided passes the required structure
+// and length test.
+// https://www.w3.org/TR/2016/REC-html51-20161101/sec-forms.html#valid-e-mail-address
+func IsEmailValid(e string) bool {
+	if len(e) < 3 || len(e) > 256 {
+		return false
+	}
+	if !emailRegex.MatchString(e) {
+		return false
+	}
+	return true
 }
 
 func Contains[T comparable](s []T, e T) bool {

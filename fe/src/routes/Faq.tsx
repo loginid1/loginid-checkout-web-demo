@@ -17,7 +17,7 @@ import Icon32 from "../assets/marketing/m_icon_3_2.svg";
 import Icon33 from "../assets/marketing/m_icon_3_3.svg";
 import IconFAQ from "../assets/marketing/m_faq.svg";
 import LoginIDLogo from "../assets/sidemenu/LoginIDLogo.svg";
-import VaultLogo from "../assets/logoContrast.svg";
+import VaultLogo from "../assets/logo-inverted.svg";
 import FaqCard from "../components/FaqCard";
 import { useNavigate } from "react-router-dom";
 

@@ -60,6 +60,7 @@ func ParseTemplate(templateFileName string, data interface{}) (string, error) {
 }
 
 type VerificationMail struct {
+	UUID    string
 	Origin  string
 	Url     string
 	Session string
