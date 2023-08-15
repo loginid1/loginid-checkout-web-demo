@@ -177,6 +177,24 @@ export default function CreateApp() {
 								<FormControlLabel
 									control={
 										<Checkbox
+											disabled
+											checked={phone}
+											onChange={(e) =>
+												handleAttributeChange(
+													"phone",
+													e.target.checked
+												)
+											}
+											name="phone"
+										/>
+									}
+									label="Phone Verification (contact support@loginid.io)"
+								/>
+
+								<FormControlLabel
+									control={
+										<Checkbox
+											disabled
 											checked={phone}
 											onChange={(e) =>
 												handleAttributeChange(

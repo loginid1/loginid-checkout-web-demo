@@ -47,6 +47,7 @@ import UpdateApp from './routes/protected/Developer/UpdateApp';
 import FederatedAuthPopup from './routes/api/FederatedAuthPopup';
 import AlgorandRecovery from './routes/protected/Algorand/AlgorandRecovery';
 import OidcAuth from './routes/api/OidcAuth';
+import WebflowCallback from './routes/api/WebflowCallback';
 
 
 const reload = () => window.location.reload();
@@ -72,6 +73,7 @@ function App() {
         <Route path="/sdk/enable" element={<WalletEnable />} />
         <Route path="/sdk/enable/:data" element={<WalletEnable />} />
         <Route path="/sdk/transaction" element={<WalletTxnConfirmation />} />
+        <Route path="/sdk/webflow" element={<WebflowCallback />} />
         <Route path="/passes/new/drivers-license/mobile/:session" element={ <DriversLicenseMobile/> }/>
         <Route path="/" element={<ProtectedRoute />} >
           <Route path="/help" element={<Help />} />
