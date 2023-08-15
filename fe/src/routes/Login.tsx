@@ -13,22 +13,28 @@ import {
   ThemeProvider,
   Typography,
 } from "@mui/material";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, useParams } from "react-router-dom";
 import React, { useEffect, useState } from "react";
 import { LoginID } from "../theme/theme";
 import background from "../assets/background.svg";
 import { ReactComponent as VaultLogo } from "../assets/logo.svg";
+import { ReactComponent as VaultLogoDev } from "../assets/logo-dev.svg";
 import vaultSDK from "../lib/VaultSDK";
 import { AuthService } from "../services/auth";
+import useWindowDimensions from "../hooks/useWindowDimensions";
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+	const { height } = useWindowDimensions();
   let redirect_error = searchParams.get("redirect_error");
   let redirect_url = searchParams.get("redirect_url");
   if (redirect_error == null) {
     redirect_error = "";
   }
+
+  const params = useParams();
+  const isDeveloper = params["entry"] === 'developer';
 
   const [username, setUsername] = useState("");
   const [errorMessage, setErrorMessage] = useState(redirect_error);
@@ -67,14 +73,15 @@ const Login: React.FC = () => {
           justifyContent: "center",
           alignItems: "center",
           backgroundImage: `url(${background})`,
-          height: `${window.innerHeight}px`,
+          height: `${height}px`,
         }}
       >
         <Paper
           elevation={0}
           sx={{
-            p: { md: 6, xs: 2 },
+            p: { sm: 4, xs: 2 },
             borderRadius: "2%",
+            width: { sm: '400px', xs: '100%' }
           }}
         >
           <Stack
@@ -88,7 +95,7 @@ const Login: React.FC = () => {
               alignItems: "center",
             }}
           >
-            <VaultLogo />
+            { isDeveloper ? <VaultLogoDev /> : <VaultLogo /> }
             <Typography variant="body1" marginTop={2}>
               Login securely to your LoginID Wallet Account.
             </Typography>
