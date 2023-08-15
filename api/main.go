@@ -23,6 +23,7 @@ import (
 	"gitlab.com/loginid/software/services/loginid-vault/services/pass"
 	"gitlab.com/loginid/software/services/loginid-vault/services/sendwyre"
 	"gitlab.com/loginid/software/services/loginid-vault/services/user"
+	"gitlab.com/loginid/software/services/loginid-vault/services/webflow"
 )
 
 func main() {
@@ -87,6 +88,15 @@ func main() {
 	if err != nil {
 		logger.Global.Error(err.Error())
 	}
+
+	// initialize webflow
+
+	webflowID := goutil.GetEnv("WEBFLOW_CLIENT_ID", "")
+	webflowSecret := goutil.GetEnv("WEBFLOW_CLIENT_SECRET", "")
+	webflowUrl := goutil.GetEnv("WEBFLOW_BASEURL", "")
+	webflowApiUrl := goutil.GetEnv("WEBFLOW_API_BASEURL", "")
+
+	webflowService := webflow.NewWebflowService(webflowID, webflowSecret, webflowUrl, webflowApiUrl)
 
 	/*
 		authService, err := middlewares.NewAuthService(clientID, jwtURL)
@@ -241,6 +251,7 @@ func main() {
 	wellknown := r.PathPrefix("/.well-known").Subrouter()
 	wellknown.Use(middlewares.PublicCORSMiddleware)
 	wellknown.HandleFunc("/openid-configuration", oidcHandler.Configuration).Methods("GET", http.MethodOptions)
+	wellknown.HandleFunc("/jwks", oidcHandler.GetJwks).Methods("GET", http.MethodOptions)
 	wellknown.HandleFunc("/_health", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "./static/_health")
 	})
@@ -248,6 +259,15 @@ func main() {
 	oidc.Use(middlewares.PublicCORSMiddleware)
 	oidc.HandleFunc("/auth", oidcHandler.Authorization).Methods("GET", http.MethodOptions)
 	oidc.HandleFunc("/token", oidcHandler.Token).Methods(http.MethodPost, http.MethodOptions)
+
+	// webflow handler
+	webflowHandler := handlers.WebflowHandler{Service: webflowService}
+	webflow := r.PathPrefix("/webflow").Subrouter()
+	webflow.Use(middlewares.PublicCORSMiddleware)
+	webflow.HandleFunc("/auth", webflowHandler.Authorization)
+	webflow.HandleFunc("/token", webflowHandler.GetToken)
+	webflow.HandleFunc("/upload", webflowHandler.UploadScript)
+	webflow.HandleFunc("/sites", webflowHandler.GetSites)
 
 	/*
 		cors_origins := goutil.GetEnv("CORS_ORIGINS", "http://localhost:3000,http://localhost:3010")

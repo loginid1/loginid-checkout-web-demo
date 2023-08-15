@@ -17,23 +17,65 @@
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <script src="https://loginid-wallet-cdn.s3.us-east-2.amazonaws.com/loginid-wallet-sdk.min.js"></script>
     <script>
-        window.onload = function () {
-            let login = document.getElementById("loginid-button");
-            login.onclick = onSignup;
-        }
-        async function onSignup() {
-            const wallet = new loginid.WalletSDK("https://vault.testnet.loginid.io", null, null)
-            try {
+window.onload = function () {
+        const loginidDom = document.getElementById('loginid-button');
+        loginidDom.addEventListener('click', async function(event){
+            event.preventDefault();
+            let api = loginidDom.getAttribute("loginid-api");
+            if(api == null) {
+                api = '';
+            }
+            const wallet = new loginid.WalletSDK('https://wallet.loginid.io', api, null);
+            const response = await wallet.signup();
+            document.cookie = 'loginid-token='+response.token;
+                
+            let redirect_success = loginidDom.getAttribute("loginid-success");
+            if (redirect_success) {
+                document.location.href=redirect_success;
+            } else {
+                redirect_success = loginidDom.getAttribute("href");
+                document.location.href=redirect_success;
+            }
+        });
+    }
 
+    /*
+        window.onload = function () {
+            let loginidDom = document.getElementById("loginid-button");
+            loginidDom.addEventListener('click', function(event){
+                event.preventDefault();
+                onSignup();
+            });
+
+        }
+        async function onSignup(button) {
+            let loginidDom = document.getElementById("loginid-button");
+            let api = loginidDom.getAttribute("loginid-api");
+            if(api == null) {
+                api = "";
+            }
+            const wallet = new loginid.WalletSDK("https://vault.testnet.loginid.io", api, null)
+            try {
                 let result = await wallet.signup();
+	            document.cookie = 'loginid-token='+response.token;
+                
+                let redirect_success = loginidDom.getAttribute("loginid-success");
+                if (redirect_success) {
+                    document.location.href=redirect_success;
+                } else {
+                    redirect_success = loginidDom.getAttribute("href");
+                    document.location.href=redirect_success;
+                }
+
             } catch (error) {
                 console.log(error);
             }
         }
+        */
 
     </script>
     <div id="root">
-        <button id="loginid-button">Login Button</button>
+        <a id="loginid-button" href="test" loginid-success="test" loginid-api="">Login Button</a>
     </div>
 </body>
 

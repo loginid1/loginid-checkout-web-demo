@@ -174,9 +174,10 @@ export default function CreateApp() {
 									}
 									label="Email Verification"
 								/>
-								{/* <FormControlLabel
+								<FormControlLabel
 									control={
 										<Checkbox
+											disabled
 											checked={phone}
 											onChange={(e) =>
 												handleAttributeChange(
@@ -187,8 +188,9 @@ export default function CreateApp() {
 											name="phone"
 										/>
 									}
-									label="Phone Verification"
-								/> */}
+									label="Phone Verification (contact support@loginid.io)"
+								/>
+
 							</FormGroup>
 							<FormHelperText>
 								Choose how users will identify themselves on your app or site. If an option is chosen, our wallet will then require users to verify these options prior in order for their account to be created. We are continuously adding more identifiers with each release.
