@@ -6,7 +6,7 @@ import { EnableOpts, EnableResult } from "../../lib/common/api";
 import vaultSDK from "../../lib/VaultSDK";
 import { AccountList, Genesis } from "../../lib/VaultSDK/vault/algo";
 import { ThemeProvider } from "@emotion/react";
-import VaultLogo from "../../assets/logo_light.svg";
+import VaultLogo from "../../assets/logo.svg";
 import styles from "../../styles/common.module.css";
 import {
 	Container,

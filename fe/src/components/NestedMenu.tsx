@@ -18,7 +18,7 @@ import {
 import { OverridableComponent } from "@mui/material/OverridableComponent";
 import { useEffect, useState } from "react";
 import { LoginID } from "../theme/theme";
-import { ReactComponent as VaultLogo } from "../assets/logo_dark.svg";
+import { ReactComponent as VaultLogo } from "../assets/logo-inverted.svg";
 import menuHeader from "../assets/sidemenu/MenuHeader.png";
 import LoginIDLogo from "../assets/sidemenu/LoginIDLogo.svg";
 import { useNavigate } from "react-router-dom";
@@ -120,6 +120,7 @@ export function NestedMenu(props: NestedMenuProps) {
 			<Box>
 				<Toolbar
 					sx={{
+						maxHeight: 100,
 						display: "flex",
 						alignItems: "center",
 						justifyContent: "center",
@@ -128,10 +129,7 @@ export function NestedMenu(props: NestedMenuProps) {
 						zIndex: "-1",
 					}}
 				>
-					{/* Hard Coded */}
-					<Box sx={{ mt: "34px", mb: "34px" }}>
-						<VaultLogo />
-					</Box>
+					<VaultLogo />
 				</Toolbar>
 
 				<Box

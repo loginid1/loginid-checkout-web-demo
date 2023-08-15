@@ -17,6 +17,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 	"github.com/redis/go-redis/v9"
@@ -167,7 +168,7 @@ func (h *FederatedAuthHandler) FederatedRegisterInitHandler(w http.ResponseWrite
 		return
 	}
 
-	if !utils.IsEmail(request.Username) {
+	if !utils.IsEmailValid(request.Username) {
 		http_common.SendErrorResponse(w, services.NewError("invalid email format"))
 		return
 	}
@@ -584,7 +585,7 @@ func (h *FederatedAuthHandler) FederatedSendEmailSessionHandler(w http.ResponseW
 		return
 	}
 
-	if !utils.IsEmail(request.Email) {
+	if !utils.IsEmailValid(request.Email) {
 		http_common.SendErrorResponse(w, services.NewError("invalid email format"))
 		return
 	}
@@ -617,6 +618,7 @@ func (h *FederatedAuthHandler) FederatedSendEmailSessionHandler(w http.ResponseW
 	}
 
 	data := email.VerificationMail{
+		UUID:    uuid.NewString(),
 		Origin:  request.Origin,
 		Url:     fmt.Sprintf("%s/sdk/email?token=%s", EmailBaseUrl, token),
 		Session: sessionId[0:6],

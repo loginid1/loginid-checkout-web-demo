@@ -20,7 +20,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ReactComponent as AlgoLogo } from "../../assets/AlgoLogo.svg";
 import menuHeader from "../../assets/background.svg";
-import VaultLogo from "../../assets/logo_dark.svg";
+import VaultLogo from "../../assets/logo-inverted.svg";
 import { WalletTransaction } from "../../lib/common/api";
 import { DisplayMessage } from "../../lib/common/message";
 import ParseUtil from "../../lib/util/parse";
