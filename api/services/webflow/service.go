@@ -8,6 +8,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 
@@ -158,6 +159,8 @@ func (s *WebflowService) getRegisterScripts(token string, siteId string) (*Webfl
 
 }
 
+const INLINE_DEFAULT_VERSION = "1.0.4"
+
 func (s *WebflowService) RegisterScripts(token string, siteId string, source string) (*WebflowRegisteredScriptsResult, *services.ServiceError) {
 
 	// get current registered script
@@ -168,7 +171,7 @@ func (s *WebflowService) RegisterScripts(token string, siteId string, source str
 
 	// make sure script already
 
-	sdk_script := searchScripts(current_scripts.RegisteredScripts, "loginidwalletsdk", "1.0.0")
+	sdk_script := searchScriptVersion(current_scripts.RegisteredScripts, "loginidwalletsdk", "1.0.0")
 	if sdk_script == nil {
 		sdk_script, err = s.registerSDKScript(token, siteId)
 		if err != nil {
@@ -176,22 +179,31 @@ func (s *WebflowService) RegisterScripts(token string, siteId string, source str
 		}
 	}
 
-	inline_script := searchScripts(current_scripts.RegisteredScripts, "loginidbuttonscript", "1.0.4")
+	inline_script := searchScript(current_scripts.RegisteredScripts, "loginidbuttonscript")
 	if inline_script == nil {
-		inline_script, err = s.registerInline(token, siteId, source)
+		inline_script, err = s.registerInline(token, siteId, source, INLINE_DEFAULT_VERSION)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		// increase version
+		version := increaseVersion(inline_script.Version)
+
+		inline_script, err = s.registerInline(token, siteId, source, version)
 		if err != nil {
 			return nil, err
 		}
 	}
+
 	return &WebflowRegisteredScriptsResult{RegisteredScripts: []WebflowRegisteredScript{*sdk_script, *inline_script}}, nil
 }
 
-func (s *WebflowService) registerInline(token string, siteId string, source string) (*WebflowRegisteredScript, *services.ServiceError) {
+func (s *WebflowService) registerInline(token string, siteId string, source string, version string) (*WebflowRegisteredScript, *services.ServiceError) {
 	path := fmt.Sprintf("%s/%s/%s/registered_scripts/inline", s.ApiBaseURL, "beta/sites", siteId)
 
 	request := map[string]interface{}{
 		"sourceCode":  source,
-		"version":     "1.0.4",
+		"version":     version,
 		"displayName": "LoginidButtonScript",
 		"canCopy":     true,
 	}
@@ -441,11 +453,53 @@ func decodeApiError(body []byte) ApiErrorMessage {
 	return eMesg
 }
 
-func searchScripts(scripts []WebflowRegisteredScript, id string, version string) *WebflowRegisteredScript {
+func searchScriptVersion(scripts []WebflowRegisteredScript, id string, version string) *WebflowRegisteredScript {
 	for _, script := range scripts {
 		if script.ID == id && script.Version == version {
 			return &script
 		}
 	}
 	return nil
+}
+
+func searchScript(scripts []WebflowRegisteredScript, id string) *WebflowRegisteredScript {
+	for _, script := range scripts {
+		if script.ID == id {
+			return &script
+		}
+	}
+	return nil
+}
+
+func increaseVersion(version string) string {
+	version_array := strings.Split(version, ".")
+	if len(version_array) == 3 {
+		build, err := strconv.ParseInt(version_array[0], 10, 32)
+		if err != nil {
+			return INLINE_DEFAULT_VERSION
+		}
+		major, err := strconv.ParseInt(version_array[1], 10, 32)
+		if err != nil {
+			return INLINE_DEFAULT_VERSION
+		}
+		minor, err := strconv.ParseInt(version_array[2], 10, 32)
+		if err != nil {
+			return INLINE_DEFAULT_VERSION
+		}
+
+		if minor < 100 {
+			minor = minor + 1
+		} else if major < 100 {
+			major = major + 1
+			minor = 0
+		} else {
+			build = build + 1
+			major = 0
+			minor = 0
+		}
+
+		return fmt.Sprintf("%d.%d.%d", build, major, minor)
+
+	}
+	return INLINE_DEFAULT_VERSION
 }
