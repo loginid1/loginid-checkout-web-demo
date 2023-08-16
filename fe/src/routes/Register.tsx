@@ -19,6 +19,7 @@ import React, { useEffect, useState } from "react";
 import { LoginID } from "../theme/theme";
 import background from "../assets/background.svg";
 import { ReactComponent as VaultLogo } from "../assets/logo.svg";
+import { ReactComponent as VaultLogoDev } from "../assets/logo-dev.svg";
 import vaultSDK from "../lib/VaultSDK";
 import { AuthService } from "../services/auth";
 import { CodeInput } from "../components/CodeInput";
@@ -28,6 +29,7 @@ import { AuthPage } from "../lib/federated";
 import jwt_decode from "jwt-decode";
 import FingerprintIcon from "@mui/icons-material/Fingerprint";
 import ValidateUtil from "../lib/util/validate";
+import useWindowDimensions from "../hooks/useWindowDimensions";
 
 //export const Register: React.FC = () => {
 let wsurl = process.env.REACT_APP_VAULT_WS_URL || "ws://localhost:3001";
@@ -35,6 +37,7 @@ let ws: WebSocket | null = null;
 export default function Register() {
 	const navigate = useNavigate();
 	const [searchParams, setSearchParams] = useSearchParams();
+	const { height } = useWindowDimensions();
 	let redirect_url = searchParams.get("redirect_url");
 
 	const [username, setUsername] = useState("");
@@ -166,7 +169,7 @@ export default function Register() {
 					justifyContent: "center",
 					alignItems: "center",
 					backgroundImage: `url(${background})`,
-					height: `${window.innerHeight}px`,
+					height: `${height}px`,
 				}}
 			>
 				{page === AuthPage.NONE && MainPage()}
@@ -189,9 +192,10 @@ export default function Register() {
 				<Paper
 					elevation={0}
 					sx={{
-						p: { md: 6, xs: 2 },
+						p: { sm: 4, xs: 2 },
 						borderRadius: "2%",
-					}}
+						width: { sm: '400px', xs: '100%' }
+					  }}
 				>
 					<Stack
 						spacing={2}
@@ -202,7 +206,7 @@ export default function Register() {
 							alignItems: "center",
 						}}
 					>
-						<VaultLogo />
+						{ entry === 'developer' ? <VaultLogoDev /> : <VaultLogo /> }
 
 						<Typography
 							variant="body1"
