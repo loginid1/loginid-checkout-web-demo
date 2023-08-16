@@ -26,7 +26,7 @@ export default function WebflowCallback (){
             if (nav) {
                 navigate(nav);
             } else {
-                navigate("/developer/register");
+                navigate("/developer/register?redirect_url=/developer/console");
             }
         } catch (error) {
             console.log(error);

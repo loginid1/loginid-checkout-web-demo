@@ -37,9 +37,7 @@ export default function UpdateApp() {
 	const [searchParams, setSearchParams] = useSearchParams();
 	const [showCopyCodeMessage, setShowCopyCodeMessage] = useState(false);
 	const [application, setApplication] = useState<VaultApp>();
-	const [displayMessage, setDisplayMessage] = useState<DisplayMessage | null>(
-		null
-	);
+	const [displayMessage, setDisplayMessage] = useState<DisplayMessage | null>( null);
 	const [attributeList, setAttributeList] = useState<string[]>([]);
 	const [email, setEmail] = useState<boolean>(true);
 	const [phone, setPhone] = useState<boolean>(false);

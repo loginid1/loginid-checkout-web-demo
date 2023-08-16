@@ -217,7 +217,10 @@ func (s *AppService) SetupSession(appid string, origin string, ip string) (*AppS
 			logger.Global.Error(serr.Message)
 			return nil, services.CreateError("invalid app id")
 		}
-		if app.Origins != origin {
+
+		origins := strings.Split(app.Origins, ",")
+
+		if utils.Contains(origins, origin) {
 			return nil, services.CreateError("invalid origin")
 		}
 	} else {
