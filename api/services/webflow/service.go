@@ -160,6 +160,7 @@ func (s *WebflowService) getRegisterScripts(token string, siteId string) (*Webfl
 }
 
 const INLINE_DEFAULT_VERSION = "1.0.4"
+const SDK_DEFAULT_VERSION = "1.1.0"
 
 func (s *WebflowService) RegisterScripts(token string, siteId string, source string) (*WebflowRegisteredScriptsResult, *services.ServiceError) {
 
@@ -171,7 +172,7 @@ func (s *WebflowService) RegisterScripts(token string, siteId string, source str
 
 	// make sure script already
 
-	sdk_script := searchScriptVersion(current_scripts.RegisteredScripts, "loginidwalletsdk", "1.1.0")
+	sdk_script := searchScriptVersion(current_scripts.RegisteredScripts, "loginidwalletsdk", SDK_DEFAULT_VERSION)
 	if sdk_script == nil {
 		sdk_script, err = s.registerSDKScript(token, siteId)
 		if err != nil {
@@ -244,7 +245,7 @@ func (s *WebflowService) registerSDKScript(token string, siteId string) (*Webflo
 	path := fmt.Sprintf("%s/%s/%s/registered_scripts/hosted", s.ApiBaseURL, "beta/sites", siteId)
 
 	request := map[string]interface{}{
-		"version":        "1.0.1",
+		"version":        SDK_DEFAULT_VERSION,
 		"displayName":    "LoginidWalletSDK",
 		"canCopy":        true,
 		"hostedLocation": "https://sdk-cdn.wallet.loginid.io/loginid-wallet-sdk.0.45.06-beta.min.js",
