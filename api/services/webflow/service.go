@@ -171,7 +171,7 @@ func (s *WebflowService) RegisterScripts(token string, siteId string, source str
 
 	// make sure script already
 
-	sdk_script := searchScriptVersion(current_scripts.RegisteredScripts, "loginidwalletsdk", "1.0.0")
+	sdk_script := searchScriptVersion(current_scripts.RegisteredScripts, "loginidwalletsdk", "1.1.0")
 	if sdk_script == nil {
 		sdk_script, err = s.registerSDKScript(token, siteId)
 		if err != nil {
