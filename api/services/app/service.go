@@ -220,7 +220,7 @@ func (s *AppService) SetupSession(appid string, origin string, ip string) (*AppS
 
 		origins := strings.Split(app.Origins, ",")
 
-		if utils.Contains(origins, origin) {
+		if !utils.Contains(origins, origin) {
 			return nil, services.CreateError("invalid origin")
 		}
 	} else {
