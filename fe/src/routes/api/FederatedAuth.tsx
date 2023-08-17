@@ -191,7 +191,7 @@ export default function FederatedAuth() {
 		// need to handle safari blocking popup in async
 		try {
 			let popupW = openPopup(
-				`/sdk/register?username=${username}&session=${sessionId}&appOrigin=${appOrigin}&token=${token}`,
+				`/sdk/register?username=${encodeURIComponent(username)}&session=${encodeURIComponent(sessionId)}&appOrigin=${encodeURIComponent(appOrigin)}&token=${encodeURIComponent(token)}`,
 				"register",
 				defaultOptions
 			);
@@ -227,7 +227,7 @@ export default function FederatedAuth() {
 			setWaitingIndicator(true);
 			setEmailType("register");
 			setOpenEmailDialog(true);
-			ws = new WebSocket(wsurl + "/api/federated/email/ws/" + sessionId);
+			ws = new WebSocket(wsurl + "/api/federated/email/ws/" + encodeURIComponent(sessionId));
 			ws.onopen = () => {
 				ws?.send(JSON.stringify({ email: username, type: "register" }));
 			};
@@ -257,7 +257,7 @@ export default function FederatedAuth() {
 	async function handleSignup() {
 		try {
 			openPopup(
-				`/sdk/register?username=${username}&session=${sessionId}&appOrigin=${appOrigin}`,
+				`/sdk/register?username=${encodeURIComponent(username)}&session=${encodeURIComponent(sessionId)}&appOrigin=${encodeURIComponent(appOrigin)}`,
 				"regiser",
 				defaultOptions
 			);
