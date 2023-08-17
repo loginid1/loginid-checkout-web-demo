@@ -28,15 +28,29 @@ func NewAppService(db *gorm.DB, redis *redis.Client) *AppService {
 	return &AppService{appRepo: &AppRepository{DB: db}, passRepo: &pass.PassRepository{DB: db}, redis: redis}
 }
 
+func trimOrigins(origins string) string {
+	originsArr := strings.Split(origins, ",")
+	resultArr := []string{}
+
+	for _, origin := range originsArr {
+		origin = strings.TrimSpace(origin)
+		for origin[len(origin)-1:] == "/" {
+			origin = origin[:len(origin)-1]
+		}
+		resultArr = append(resultArr, origin)
+	}
+
+	return strings.Join(resultArr, ",")
+}
+
 // CreateApp
 func (s *AppService) CreateApp(userid string, name string, origin string, attributes string) (*DevApp, *services.ServiceError) {
-
 	app := &DevApp{
 		AppName:    name,
 		Attributes: attributes,
 		Status:     kStatusActive,
 		OwnerID:    userid,
-		Origins:    origin,
+		Origins:    trimOrigins(origin),
 	}
 	err := s.appRepo.CreateApp(app)
 	if err != nil {
@@ -83,7 +97,7 @@ func (s *AppService) UpdateApp(appid string, ownerid string, name string, origin
 
 	app.AppName = name
 	app.Attributes = attributes
-	app.Origins = origins
+	app.Origins = trimOrigins(origins)
 	err = s.appRepo.UpdateApp(app)
 	if err != nil {
 		return services.CreateError("update failed")
