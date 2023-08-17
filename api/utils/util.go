@@ -23,10 +23,8 @@ func IsEmailValid(e string) bool {
 	if len(e) < 3 || len(e) > 256 {
 		return false
 	}
-	if !emailRegex.MatchString(e) {
-		return false
-	}
-	return true
+
+	return emailRegex.MatchString(e)
 }
 
 func Contains[T comparable](s []T, e T) bool {

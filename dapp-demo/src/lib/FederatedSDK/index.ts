@@ -31,6 +31,7 @@ export class FederatedSDK {
 		main.style.top = "16px";
 		main.style.boxShadow = "0 4px 8px 0 rgba(0,0,0,0.2)";
 		main.style.width = "300px";
+		main.style.height = "420px";
 
 		var close = document.createElement("span");
 		close.innerHTML = "&times;";
@@ -51,7 +52,7 @@ export class FederatedSDK {
 		iframe.style.border = "none";
 		iframe.style.position = "relative";
 		iframe.width = "300px";
-		iframe.height = "320px";
+		iframe.height = "420px";
 		iframe.id = "loginid-auth";
         iframe.allow= "publickey-credentials-get *; ";
         
