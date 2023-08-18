@@ -46,9 +46,7 @@ export function WebflowQuickIntegrationDialog(
 	const [wfToken, setWFToken] = useState<string>("");
 	const [sites, setSites] = useState<WebflowSite[]>([]);
 	const [selectedSite, setSelectedSite] = useState<string>("");
-	const [displayMessage, setDisplayMessage] = useState<DisplayMessage | null>(
-		null
-	);
+	const [displayMessage, setDisplayMessage] = useState<DisplayMessage | null>( null);
 
 	useEffect(() => {
 		// check if access token
@@ -131,7 +129,7 @@ export function WebflowQuickIntegrationDialog(
 					type: "error",
 					text: "Please select a Webflow site to integrate!",
 				});
-				console.log("no site selected");
+				//console.log("no site selected");
 				return;
 			}
 			if (token) {
@@ -203,7 +201,7 @@ export function WebflowQuickIntegrationDialog(
 				siteid,
 				source
 			);
-			console.log(response);
+			//console.log(response);
 			setPage(WebflowDialogPage.Button);
 		} catch (error) {
 			setDisplayMessage({

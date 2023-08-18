@@ -1,5 +1,7 @@
 import { ContentCopy } from "@mui/icons-material";
 import {
+	Alert,
+	AlertColor,
 	Box,
 	Button,
 	Checkbox,
@@ -19,6 +21,7 @@ import { WebflowDomain, WebflowSite } from "../../lib/VaultSDK/vault/webflow";
 import { WebflowService } from "../../services/webflow";
 import { KeyDisplay } from "../KeyDisplay";
 import styles from "../../styles/common.module.css";
+import { DisplayMessage } from "../../lib/common/message";
 
 interface WebflowIntegrationProps extends DialogProps {
 	app: VaultApp;
@@ -38,6 +41,7 @@ export function WebflowIntegrationDialog(props: WebflowIntegrationProps) {
 	const [token, setToken] = useState<string>("");
 	const [sites, setSites] = useState<WebflowSite[]>([]);
 	const [selectedSite, setSelectedSite] = useState<string>("");
+	const [displayMessage, setDisplayMessage] = useState<DisplayMessage | null>( null);
 
 	useEffect(()=> {
 		// check if access token
@@ -62,25 +66,22 @@ export function WebflowIntegrationDialog(props: WebflowIntegrationProps) {
 				WebflowService.saveNavigation(window.location.pathname + "?webflow=true");
 				window.location.assign(response.url);
 			} catch (error) {
-				/*
 				setDisplayMessage({
 					type: "error",
 					text: (error as Error).message,
 				});
-				*/
 			}
 	}
 
 	async function getSites(token: string) {
 		try {
-			console.log("get sites");
 			let wf_sites = await vaultSDK.getWebflowSites(token);
-			console.log("set sites");
 			setToken(token);
 			setSites(wf_sites.sites);
 			setPage(WebflowDialogPage.Upload);
 		} catch (error) {
 			// set error
+			console.log(error);
 			setPage(WebflowDialogPage.Auth); 
 		}
 	}
@@ -89,15 +90,14 @@ export function WebflowIntegrationDialog(props: WebflowIntegrationProps) {
 
 		try {
 			let response = await vaultSDK.uploadWebflowScript(token, selectedSite,props.source);
-			console.log(response);
+			//console.log(response);
 			setPage(WebflowDialogPage.Button);	
 		} catch(error) {
-			/*
+			console.log(error);
 			setDisplayMessage({
 				type: "error",
 				text: (error as Error).message,
 			});
-			*/
 		}
 	}
 
@@ -160,6 +160,15 @@ export function WebflowIntegrationDialog(props: WebflowIntegrationProps) {
 						Webflow Integration!
 					</Typography>
 
+					{displayMessage && (
+						<Alert
+							severity={
+								(displayMessage?.type as AlertColor) || "info"
+							}
+						>
+							{displayMessage.text}
+						</Alert>
+					)}
 					
 					<Typography align="center" variant="body1" sx={{ p: 2 }}>
 						Select a site to integrate:

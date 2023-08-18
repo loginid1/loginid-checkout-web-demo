@@ -20,6 +20,7 @@ import AssetOptionDialog from "./TxConfirmation/AssetOptinDialog";
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { AppList, VaultApp } from "../lib/VaultSDK/vault/developer";
 import { Link, useNavigate } from "react-router-dom";
+import React from "react";
 
 export function DisplayAppList(props: {appList: AppList | null}) {
 	const [open, setOpen] = useState(false);
@@ -58,7 +59,7 @@ export function DisplayAppList(props: {appList: AppList | null}) {
 
 export function DisplayApp(app: VaultApp) {
 	return (
-		<>
+		<React.Fragment key={app.id}>
 			<Grid item container xs={4}>
 				<Link to={`/developer/app/${app.id}`}>{app.app_name}</Link>
 			</Grid>
@@ -71,6 +72,6 @@ export function DisplayApp(app: VaultApp) {
 			<Grid item xs={12}>
 				<Divider variant="fullWidth"></Divider>
 			</Grid>
-		</>
+		</React.Fragment>
 	);
 }

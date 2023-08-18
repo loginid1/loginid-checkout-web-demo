@@ -220,7 +220,7 @@ export default function Register() {
 						)}
 						<TextField
 							fullWidth
-							label="Username"
+							label="Email"
 							value={username}
 							onChange={(e) => setUsername(e.target.value)}
 						/>

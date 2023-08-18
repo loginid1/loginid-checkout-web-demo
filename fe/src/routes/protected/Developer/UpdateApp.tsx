@@ -201,40 +201,6 @@ export default function UpdateApp() {
 		}
 	};
 
-	async function uploadWebflow() {
-		let access_token = WebflowService.getToken();
-		if (access_token == null) {
-			try {
-				let response = await vaultSDK.getWebflowAuthorizeUrl();
-				console.log(window.location.pathname);
-				WebflowService.saveNavigation(window.location.pathname + "?webflow=true");
-				window.location.assign(response.url);
-			} catch (error) {
-				setDisplayMessage({
-					type: "error",
-					text: (error as Error).message,
-				});
-			}
-		} else {
-			// upload script
-			let sites = WebflowService.getSites();
-			console.log(sites);
-			try {
-				let response = await vaultSDK.uploadWebflowScript(
-					access_token,
-					sites[1].id,
-					webflow_custom_source
-				);
-				console.log(response);
-			} catch (error) {
-				setDisplayMessage({
-					type: "error",
-					text: (error as Error).message,
-				});
-			}
-		}
-	}
-
 	return (
 		<VaultBase focus={"developer"}>
 			<Typography
