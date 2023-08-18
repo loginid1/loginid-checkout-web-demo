@@ -12,6 +12,8 @@ export default function WebflowCallback (){
         let state= searchParams.get("state");
         if(code) {
             getToken(code);
+        } else {
+            navigate("/developer/register?redirect_url=/developer/console");
         }
 
     });

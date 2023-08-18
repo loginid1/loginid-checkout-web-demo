@@ -145,7 +145,7 @@ func (s *WebflowService) getRegisterScripts(token string, siteId string) (*Webfl
 		return nil, &services.ServiceError{Message: "invalid response"}
 	}
 
-	logger.Global.Info(string(respBody))
+	//logger.Global.Info(string(respBody))
 	if response.StatusCode != http.StatusOK {
 		msg := decodeApiError(respBody)
 		return nil, &services.ServiceError{Message: msg.Message}
@@ -226,7 +226,7 @@ func (s *WebflowService) registerInline(token string, siteId string, source stri
 		return nil, &services.ServiceError{Message: "invalid response"}
 	}
 
-	logger.Global.Info(string(respBody))
+	//logger.Global.Info(string(respBody))
 	if response.StatusCode != http.StatusCreated {
 		msg := decodeApiError(respBody)
 		return nil, &services.ServiceError{Message: msg.Message}
@@ -269,7 +269,7 @@ func (s *WebflowService) registerSDKScript(token string, siteId string) (*Webflo
 		return nil, &services.ServiceError{Message: "invalid response"}
 	}
 
-	logger.Global.Info(string(respBody))
+	//logger.Global.Info(string(respBody))
 	if response.StatusCode != http.StatusCreated {
 		msg := decodeApiError(respBody)
 		return nil, &services.ServiceError{Message: msg.Message}
@@ -344,7 +344,7 @@ func (s *WebflowService) addScripts(token string, siteId string, reg_scripts []W
 		return nil, &services.ServiceError{Message: "authorization failed"}
 	}
 
-	logger.Global.Info(string(respBody))
+	//logger.Global.Info(string(respBody))
 	if response.StatusCode != http.StatusOK {
 		msg := decodeApiError(respBody)
 		return nil, &services.ServiceError{Message: msg.Message}
