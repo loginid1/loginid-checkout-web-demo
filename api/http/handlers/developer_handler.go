@@ -28,7 +28,7 @@ type UpdateAppRequest struct {
 }
 
 type AppListResponse struct {
-	Apps []app.DevApp `json:"apps"`
+	Apps []app.CustomAppInfo `json:"apps"`
 }
 
 func (h *DeveloperHandler) CreateApp(w http.ResponseWriter, r *http.Request) {
@@ -104,4 +104,53 @@ func (h *DeveloperHandler) GetAppList(w http.ResponseWriter, r *http.Request) {
 		Apps: apps,
 	}
 	http_common.SendSuccessResponse(w, appList)
+}
+
+type AppUserListRequest struct {
+	AppID  string `json:"app_id"`
+	Offset int    `json:"offset"`
+}
+
+type AppUserListResponse struct {
+	Users  []app.CustomAppUser `json:"users"`
+	Count  int64               `json:"count"`
+	Offset int                 `json:"offset"`
+	Limit  int                 `json:"limit"`
+}
+
+func (h *DeveloperHandler) GetAppUserList(w http.ResponseWriter, r *http.Request) {
+
+	session := r.Context().Value("session").(services.UserSession)
+	var request AppUserListRequest
+	defer r.Body.Close()
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		http_common.SendErrorResponse(w, services.NewError("failed to parse request"))
+		return
+	}
+
+	m_app, serr := h.AppService.GetAppById(request.AppID)
+	if serr != nil {
+		http_common.SendErrorResponse(w, *serr)
+		return
+	}
+
+	if m_app.OwnerID != session.UserID {
+		http_common.SendErrorResponse(w, services.NewError("data not authorized"))
+		return
+	}
+
+	users, count, serr := h.AppService.ListConsentsByApp(r.Context(), m_app.ID, request.Offset)
+
+	if serr != nil {
+		http_common.SendErrorResponse(w, *serr)
+		return
+	}
+
+	userList := AppUserListResponse{
+		Users:  users,
+		Count:  count,
+		Offset: request.Offset,
+		Limit:  app.KAppUserConsentLimit,
+	}
+	http_common.SendSuccessResponse(w, userList)
 }

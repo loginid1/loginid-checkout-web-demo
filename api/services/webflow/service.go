@@ -97,7 +97,7 @@ func (s *WebflowService) GetSites(token string) (*WebflowSitesResult, *services.
 		return nil, &services.ServiceError{Message: "authorization failed"}
 	}
 
-	logger.Global.Info(string(respBody))
+	//logger.Global.Info(string(respBody))
 	if response.StatusCode != http.StatusOK {
 		msg := decodeError(respBody)
 		return nil, &services.ServiceError{Message: msg.Error}

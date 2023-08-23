@@ -46,6 +46,7 @@ func (u *UserService) CreateUserAccount(username string, device_name string, dev
 		Username:       username,
 		EmailValidated: validatedEmail,
 		Scopes:         scopes,
+		Status:         KStatusFido,
 	}
 
 	if validatedEmail {
@@ -58,6 +59,28 @@ func (u *UserService) CreateUserAccount(username string, device_name string, dev
 		KeyAlg:    key_alg,
 	}
 	err := u.UserRepository.CreateAccount(user, credential)
+	if err != nil {
+		return "", services.CreateError("failed to create account")
+	}
+	return user.ID, nil
+}
+
+func (u *UserService) CreateUserAccountWithoutEmail(username string, scopes string, validatedEmail bool) (string, *services.ServiceError) {
+
+	if !validatedEmail {
+		return "", services.CreateError("invalid email")
+	}
+
+	user := User{
+		ID:             uuid.New().String(),
+		Username:       username,
+		EmailValidated: validatedEmail,
+		Scopes:         scopes,
+		Status:         KStatusEmailOnly,
+		Email:          username,
+	}
+
+	err := u.UserRepository.CreateUserWithoutCredential(user)
 	if err != nil {
 		return "", services.CreateError("failed to create account")
 	}

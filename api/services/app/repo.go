@@ -141,3 +141,36 @@ func (repo *AppRepository) ListConsentsByUsername(username string) ([]CustomCons
 	}
 	return consents, nil
 }
+
+/** check if the user owner the app */
+
+func (repo *AppRepository) CheckAppByOwner(id string, owner string) (*DevApp, error) {
+	var app DevApp
+	err := repo.DB.Where("id = ? ", id).Where("owner_id = ?", owner).Take(&app).Error
+	if err != nil {
+		return nil, err
+	}
+	return &app, nil
+}
+
+func (repo *AppRepository) ListUserConsentsByApp(app_id string, offset int, limit int) ([]CustomAppUser, error) {
+	var users []CustomAppUser
+	if err := repo.DB.Model(AppConsent{}).Order("users.username").Limit(limit).Offset(offset).Select("users.id, users.username, app_consents.attributes, app_consents.status, app_consents.uat").Joins("JOIN users ON users.id = app_consents.user_id").Where("app_consents.app_id = ?", app_id).Scan(&users).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return users, nil
+		}
+		return nil, err
+	}
+	return users, nil
+}
+
+func (repo *AppRepository) CountUserConsentsByApp(app_id string) (int64, error) {
+	var count int64
+	if err := repo.DB.Model(AppConsent{}).Where("app_consents.app_id = ?", app_id).Count(&count).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return 0, nil
+		}
+		return 0, err
+	}
+	return count, nil
+}

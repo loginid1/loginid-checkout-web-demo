@@ -210,6 +210,7 @@ func main() {
 	protected.HandleFunc("/dev/updateApp", devHandler.UpdateApp)
 	protected.HandleFunc("/dev/getApp/{id}", devHandler.GetApp)
 	protected.HandleFunc("/dev/getAppList", devHandler.GetAppList)
+	protected.HandleFunc("/dev/getAppUserList", devHandler.GetAppUserList)
 
 	// open transaction api handlers
 	walletHandler := handlers.WalletHandler{UserService: userService, Fido2Service: fidoService, AlgoService: algoService, AuthService: authService}

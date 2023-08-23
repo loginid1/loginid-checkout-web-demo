@@ -6,6 +6,10 @@ const KScopePass = "pass"
 const KScopeDeveloper = "developer"
 const KScopeAlgo = "algo"
 
+const KStatusFido = 1
+const KStatusEmailOnly = 13
+const KStatusDisable = 100
+
 type PendingUser struct {
 	Username   string
 	PublicKey  string
@@ -20,6 +24,7 @@ type User struct {
 	Email          string    `json:"email" `
 	Scopes         string    `json:"scopes" `
 	EmailValidated bool      `json:"email_validated" `
+	Status         int32     `json:"status" gorm:"not null"`
 	Iat            time.Time `json:"iat" gorm:"DEFAULT:current_timestamp"`
 }
 

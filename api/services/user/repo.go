@@ -47,6 +47,32 @@ func (repo *UserRepository) CreateAccount(user User, credential UserCredential) 
 	return tx.Commit().Error
 }
 
+func (repo *UserRepository) CreateUserWithoutCredential(user User) error {
+
+	tx := repo.DB.Begin()
+
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	if err := tx.Error; err != nil {
+		return err
+	}
+
+	if user.ID == "" {
+		user.ID = uuid.New().String()
+	}
+
+	if err := tx.Create(&user).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	return tx.Commit().Error
+}
+
 func (repo *UserRepository) UpdateScopes(username string, scope string) error {
 	var user User
 	return repo.DB.Model(&user).Where("username=?", username).Update("scopes", scope).Error

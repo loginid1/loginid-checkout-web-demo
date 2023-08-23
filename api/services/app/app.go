@@ -3,8 +3,9 @@ package app
 import "time"
 
 const (
-	kStatusActive   = 1
-	ksStatusDisable = 0
+	kStatusActive        = 1
+	ksStatusDisable      = 0
+	ksStatusDisableByApp = 13
 )
 
 const (
@@ -14,6 +15,8 @@ const (
 	KAge18Attribute          = "age18"
 	KBirthAttribute          = "birth"
 )
+
+const KAppUserConsentLimit = 20
 
 type AppSession struct {
 	ID         string      `json:"id"`
@@ -62,4 +65,23 @@ type CustomConsent struct {
 	Origins    string    `json:"origins"`
 	Status     int32     `json:"status"`
 	Uat        time.Time `json:"uat"`
+}
+
+type CustomAppUser struct {
+	ID         string    `json:"id"`
+	Username   string    `json:"username"`
+	Attributes string    `json:"attributes"`
+	Status     int32     `json:"status"`
+	Uat        time.Time `json:"uat"`
+}
+
+type CustomAppInfo struct {
+	ID         string    `json:"id" `
+	AppName    string    `json:"app_name" `
+	Origins    string    `json:"origins"`
+	Attributes string    `json:"attributes" `
+	Status     int32     `json:"status" `
+	UserCount  int64     `json:"user_count" `
+	Iat        time.Time `json:"iat" `
+	Uat        time.Time `json:"uat" `
 }

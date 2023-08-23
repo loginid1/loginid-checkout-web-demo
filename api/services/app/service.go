@@ -73,13 +73,33 @@ func (s *AppService) GetAppByIdWithOwner(ownerid string, appid string) (*DevApp,
 }
 
 // GetAppsByOwner
-func (s *AppService) GetAppsByOwner(ownerid string) ([]DevApp, *services.ServiceError) {
-	var apps []DevApp
-	apps, err := s.appRepo.GetAppsByOwner(ownerid)
+func (s *AppService) GetAppsByOwner(ownerid string) ([]CustomAppInfo, *services.ServiceError) {
+	//var apps []DevApp
+	apps := make([]CustomAppInfo, 0)
+	db_apps, err := s.appRepo.GetAppsByOwner(ownerid)
 	if err != nil {
 		logger.Global.Error(err.Error())
 		return apps, services.CreateError("app not found")
 	}
+	// get user count per app
+	for _, db_app := range db_apps {
+		count, err := s.appRepo.CountUserConsentsByApp(db_app.ID)
+		if err != nil {
+			logger.Global.Error(err.Error())
+		}
+		app := CustomAppInfo{
+			ID:         db_app.ID,
+			AppName:    db_app.AppName,
+			Attributes: db_app.Attributes,
+			Origins:    db_app.Origins,
+			UserCount:  count,
+			Status:     db_app.Status,
+			Iat:        db_app.Iat,
+			Uat:        db_app.Uat,
+		}
+		apps = append(apps, app)
+	}
+
 	return apps, nil
 }
 
@@ -403,6 +423,22 @@ func (s *AppService) ListConsentsByUsername(ctx context.Context, username string
 		return consents, services.CreateError("data error")
 	}
 	return consents, nil
+}
+
+func (s *AppService) ListConsentsByApp(ctx context.Context, app_id string, offset int) ([]CustomAppUser, int64, *services.ServiceError) {
+	consents, err := s.appRepo.ListUserConsentsByApp(app_id, offset, KAppUserConsentLimit)
+	if err != nil {
+		logger.ForContext(ctx).Error(err.Error())
+		return consents, 0, services.CreateError("data error")
+	}
+
+	count, err := s.appRepo.CountUserConsentsByApp(app_id)
+	if err != nil {
+		logger.ForContext(ctx).Error(err.Error())
+		return consents, 0, services.CreateError("data error")
+	}
+
+	return consents, count, nil
 }
 
 func (s *AppService) storeSession(session AppSession) error {
