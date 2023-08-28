@@ -112,7 +112,7 @@ func main() {
 		os.Exit(0)
 	}
 
-	appService := app.NewAppService(db.GetConnection(), db.GetCacheClient())
+	appService := app.NewAppService(db.GetConnection(), db.GetCacheClient(), webflowService)
 
 	notificationService := notification.NewTwillioProvider()
 	passService := pass.NewPassService(db.GetConnection(), db.GetCacheClient(), notificationService)
@@ -163,7 +163,7 @@ func main() {
 	// protected usesr handler
 	userHandler := handlers.UserHandler{UserService: userService, Fido2Service: fidoService, AppService: appService}
 	algoHandler := handlers.AlgoHandler{UserService: userService, AlgoService: algoService, FidoService: fidoService, SendWyreService: wyreService}
-	devHandler := handlers.DeveloperHandler{AppService: appService}
+	devHandler := handlers.DeveloperHandler{AppService: appService, KeystoreService: keystoreService}
 	protected := api.PathPrefix("/protected").Subrouter()
 	protected.Use(authService.Middleware)
 	protected.HandleFunc("/user/profile", userHandler.GetUserProfileHandler)
@@ -211,6 +211,10 @@ func main() {
 	protected.HandleFunc("/dev/getApp/{id}", devHandler.GetApp)
 	protected.HandleFunc("/dev/getAppList", devHandler.GetAppList)
 	protected.HandleFunc("/dev/getAppUserList", devHandler.GetAppUserList)
+
+	protected.HandleFunc("/dev/setupIntegration", devHandler.SetupIntegration)
+	protected.HandleFunc("/dev/updateIntegration", devHandler.UpdateIntegration)
+	protected.HandleFunc("/dev/getIntegration", devHandler.GetIntegration)
 
 	// open transaction api handlers
 	walletHandler := handlers.WalletHandler{UserService: userService, Fido2Service: fidoService, AlgoService: algoService, AuthService: authService}
@@ -269,6 +273,8 @@ func main() {
 	webflow.HandleFunc("/token", webflowHandler.GetToken)
 	webflow.HandleFunc("/upload", webflowHandler.UploadScript)
 	webflow.HandleFunc("/sites", webflowHandler.GetSites)
+	webflow.HandleFunc("/pages", webflowHandler.GetPages)
+	webflow.HandleFunc("/validateToken", devHandler.ValidateToken)
 
 	/*
 		cors_origins := goutil.GetEnv("CORS_ORIGINS", "http://localhost:3000,http://localhost:3010")

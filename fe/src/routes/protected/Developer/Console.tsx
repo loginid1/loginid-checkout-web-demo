@@ -108,8 +108,7 @@ export default function DeveloperConsole() {
 							},
 						}}
 					>
-						For Webflow developer, you can create and integrate
-						here.
+						For Webflow developer, you can create a new integration here.
 					</Alert>
 				</>
 			) : (

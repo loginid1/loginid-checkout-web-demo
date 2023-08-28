@@ -174,3 +174,64 @@ func (repo *AppRepository) CountUserConsentsByApp(app_id string) (int64, error) 
 	}
 	return count, nil
 }
+
+/**
+* App Integration section - supporting Webflow integration
+ */
+
+func (repo *AppRepository) GetIntegrationByAppId(app_id string, vendor string) (*AppIntegration, error) {
+	var app AppIntegration
+	err := repo.DB.Where("app_id = ? ", app_id).Take(&app).Error
+	if err != nil {
+		return nil, err
+	}
+	return &app, nil
+}
+
+func (repo *AppRepository) CreateIntegration(a *AppIntegration) error {
+
+	tx := repo.DB.Begin()
+
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	if err := tx.Error; err != nil {
+		return err
+	}
+
+	if a.ID == "" {
+		a.ID = uuid.New().String()
+	}
+
+	if err := tx.Create(&a).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	return tx.Commit().Error
+}
+
+func (repo *AppRepository) UpdateIntegration(a *AppIntegration) error {
+
+	tx := repo.DB.Begin()
+
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	if err := tx.Error; err != nil {
+		return err
+	}
+
+	if err := tx.Save(&a).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	return tx.Commit().Error
+}

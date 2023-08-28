@@ -178,7 +178,7 @@ func (s *KeystoreService) GenerateEmailValidationJWT(email string, request_type 
 	return token, nil
 }
 
-func (s *KeystoreService) GenerateIDTokenJWT(claims IDTokenClains) (string, *services.ServiceError) {
+func (s *KeystoreService) GenerateIDTokenJWT(claims IDTokenClaims) (string, *services.ServiceError) {
 
 	keystore := s.LoadKeystore(ksSignID)
 	if keystore == nil {
@@ -269,6 +269,24 @@ func (s *KeystoreService) VerifyDashboardJWT(token string) (*DashboardClaims, *s
 	err = utils.VerifyClaims(token, publicKey, &claims)
 	if err != nil {
 		return nil, services.CreateError("fail to load key in pem format")
+	}
+	return &claims, nil
+}
+
+func (s *KeystoreService) VerifyIDJWT(token string) (*IDTokenClaims, *services.ServiceError) {
+	keystore := s.LoadKeystore(ksSignID)
+	if keystore == nil {
+		return nil, services.CreateError("fail to load key")
+	}
+
+	publicKey, err := utils.LoadPublicKeyFromPEM(keystore.PublicKey)
+	if err != nil {
+		return nil, services.CreateError("fail to load key in pem format")
+	}
+	var claims IDTokenClaims
+	err = utils.VerifyClaims(token, publicKey, &claims)
+	if err != nil {
+		return nil, services.CreateError("fail to verify claims")
 	}
 	return &claims, nil
 }

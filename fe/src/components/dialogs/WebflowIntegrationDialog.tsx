@@ -22,6 +22,7 @@ import { WebflowService } from "../../services/webflow";
 import { KeyDisplay } from "../KeyDisplay";
 import styles from "../../styles/common.module.css";
 import { DisplayMessage } from "../../lib/common/message";
+import { AuthService } from "../../services/auth";
 
 interface WebflowIntegrationProps extends DialogProps {
 	app: VaultApp;
@@ -35,10 +36,11 @@ export enum WebflowDialogPage {
 	Button = "button-design"
 }
 
+const wallet_url = process.env.REACT_APP_WALLET_URL || "https://wallet.loginid.io";
 export function WebflowIntegrationDialog(props: WebflowIntegrationProps) {
 	const [step, setStep] = useState<number>(0);
 	const [page, setPage] = useState<WebflowDialogPage> (WebflowDialogPage.Auth);
-	const [token, setToken] = useState<string>("");
+	const [wfToken, setWfToken] = useState<string>("");
 	const [sites, setSites] = useState<WebflowSite[]>([]);
 	const [selectedSite, setSelectedSite] = useState<string>("");
 	const [displayMessage, setDisplayMessage] = useState<DisplayMessage | null>( null);
@@ -59,6 +61,35 @@ export function WebflowIntegrationDialog(props: WebflowIntegrationProps) {
 		event.target.checked;
 	}
 
+	function updateSourceAppID(app_id: string): string {
+		return `
+    window.onload = function () {
+        const loginidDom = document.getElementById('loginid-button');
+        loginidDom.addEventListener('click', async function(event){
+            event.preventDefault();
+            let api = loginidDom.getAttribute("loginid-api");
+            if(api == null) {
+                api = '${app_id}';
+            }
+            const wallet = new loginid.WalletSDK(
+				'${wallet_url}', api, null
+				);
+            const response = await wallet.signup();
+            document.cookie = 'loginid-token='+response.token;
+                
+            let redirect_success = loginidDom.getAttribute("loginid-success");
+            if (redirect_success) {
+                document.location.href=redirect_success;
+            } else {
+                redirect_success = loginidDom.getAttribute("href");
+                document.location.href=redirect_success;
+            }
+        });
+    }
+
+	`;
+	}
+
 	async function handleConnectWebflow(){
 
 			try {
@@ -76,7 +107,7 @@ export function WebflowIntegrationDialog(props: WebflowIntegrationProps) {
 	async function getSites(token: string) {
 		try {
 			let wf_sites = await vaultSDK.getWebflowSites(token);
-			setToken(token);
+			setWfToken(token);
 			setSites(wf_sites.sites);
 			setPage(WebflowDialogPage.Upload);
 		} catch (error) {
@@ -86,6 +117,58 @@ export function WebflowIntegrationDialog(props: WebflowIntegrationProps) {
 		}
 	}
 
+	async function integrateApp() {
+		try {
+			const token = AuthService.getToken();
+			if (selectedSite === "") {
+				setDisplayMessage({
+					type: "error",
+					text: "Please select a Webflow site to integrate!",
+				});
+				//console.log("no site selected");
+				return;
+			}
+			if (token) {
+				for (const site of sites) {
+					if (site.id == selectedSite) {
+						// check if app haven't created yet
+						// update snippet
+						const settings = {site_id: site.id, site_name: site.displayName, site_shortname: site.shortName, login_page:"/", protected_pages:[]};
+						const i_result = await vaultSDK.setupWebflowIntegration(token, props.app.id, settings, wfToken );						
+
+						//let source = updateSourceAppID(props.app.id);
+						//uploadScript(site.id, props.app.id);
+						handleClose();
+						break;
+					}
+				}
+			}
+		} catch (error) {
+			setDisplayMessage({
+				type: "error",
+				text: (error as Error).message,
+			});
+		}
+	}
+/*
+	async function uploadScript(siteid: string, appId: string) {
+		try {
+			let response = await vaultSDK.uploadWebflowScript(
+				token,
+				siteid,
+				appId
+			);
+			//console.log(response);
+			setPage(WebflowDialogPage.Button);
+		} catch (error) {
+			setDisplayMessage({
+				type: "error",
+				text: (error as Error).message,
+			});
+		}
+	}
+*/
+	/*
 	async function uploadScript() {
 
 		try {
@@ -100,6 +183,7 @@ export function WebflowIntegrationDialog(props: WebflowIntegrationProps) {
 			});
 		}
 	}
+	*/
 
 
 	function handleClose() {
@@ -206,8 +290,8 @@ export function WebflowIntegrationDialog(props: WebflowIntegrationProps) {
 					<Button variant="text" onClick={() => handleClose()}>
 						Cancel	
 					</Button>
-					<Button variant="contained" onClick={() => uploadScript()}>
-						Upload
+					<Button variant="contained" onClick={() => integrateApp()}>
+						Integrate
 					</Button>
 				</DialogActions>
 			</>

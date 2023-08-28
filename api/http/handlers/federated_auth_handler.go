@@ -294,7 +294,7 @@ func (h *FederatedAuthHandler) FederatedRegisterCompleteHandler(w http.ResponseW
 	}
 
 	// send ID token
-	token := keystore.IDTokenClains{
+	token := keystore.IDTokenClaims{
 		Client: sess.AppID,
 		Sub:    request.Username,
 		Iat:    time.Now().Unix(),
@@ -393,7 +393,7 @@ func (h *FederatedAuthHandler) FederatedAuthCompleteHandler(w http.ResponseWrite
 	}
 
 	// send ID token
-	token := keystore.IDTokenClains{
+	token := keystore.IDTokenClaims{
 		Client: sess.AppID,
 		Sub:    request.Username,
 		Iat:    time.Now().Unix(),
@@ -784,7 +784,7 @@ func (h *FederatedAuthHandler) subscribeChannel(r *http.Request, ws *websocket.C
 				}
 
 				// send ID token
-				token := keystore.IDTokenClains{
+				token := keystore.IDTokenClaims{
 					Client: sess.AppID,
 					Sub:    request.Email,
 					Iat:    time.Now().Unix(),

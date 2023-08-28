@@ -1,6 +1,11 @@
 package app
 
-import "time"
+import (
+	"encoding/json"
+	"time"
+
+	"gitlab.com/loginid/software/services/loginid-vault/services/webflow"
+)
 
 const (
 	kStatusActive        = 1
@@ -84,4 +89,31 @@ type CustomAppInfo struct {
 	UserCount  int64     `json:"user_count" `
 	Iat        time.Time `json:"iat" `
 	Uat        time.Time `json:"uat" `
+}
+
+/*** external integration */
+
+type AppIntegration struct {
+	ID       string    `json:"id"`
+	Vendor   string    `json:"vendor"`
+	AppID    string    `json:"app_id"`
+	Schema   string    `json:"schema"`
+	Settings []byte    `json:"settings"`
+	Keystore []byte    `json:"keystore"`
+	Iat      time.Time `json:"iat" `
+	Uat      time.Time `json:"uat" `
+}
+
+func (t *AppIntegration) santizedResult() IntegrationResult {
+	var wfsettings webflow.WebflowSettings
+	json.Unmarshal(t.Settings, &wfsettings)
+	return IntegrationResult{ID: t.ID, AppID: t.AppID, Settings: wfsettings, Iat: t.Iat, Uat: t.Uat}
+}
+
+type IntegrationResult struct {
+	ID       string      `json:"id"`
+	AppID    string      `json:"app_id"`
+	Settings interface{} `json:"settings"`
+	Iat      time.Time   `json:"iat" `
+	Uat      time.Time   `json:"uat" `
 }

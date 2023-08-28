@@ -55,7 +55,7 @@ export function DisplayAppList(props: { appList: AppList | null }) {
 				<Typography variant="medium">Updated At</Typography>
 			</Grid>
 			<Grid item container xs={2}>
-				<Typography variant="medium">No. of Users</Typography>
+				<Typography variant="medium"># Users</Typography>
 			</Grid>
 			<Grid item xs={12}>
 				<Divider variant="fullWidth"></Divider>

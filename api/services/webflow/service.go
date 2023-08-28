@@ -12,8 +12,10 @@ import (
 	"strings"
 	"time"
 
+	"gitlab.com/loginid/software/libraries/goutil.git"
 	"gitlab.com/loginid/software/libraries/goutil.git/logger"
 	"gitlab.com/loginid/software/services/loginid-vault/services"
+	"gitlab.com/loginid/software/services/loginid-vault/utils"
 )
 
 type WebflowService struct {
@@ -23,6 +25,9 @@ type WebflowService struct {
 	ClientID     string
 	clientSecret string
 }
+
+var WALLET_BASEURL = goutil.GetEnv("WALLET_BASEURL", "https://wallet.loginid.io")
+var WALLET_API_BASEURL = goutil.GetEnv("WALLET_API_BASEURL", "https://api.wallet.loginid.io")
 
 func NewWebflowService(clientID string, clientSecret string, baseURL string, apiBaseURL string) *WebflowService {
 	var netTransport = &http.Transport{
@@ -65,7 +70,7 @@ func (s *WebflowService) GetToken(code string) (string, *services.ServiceError) 
 		return "", &services.ServiceError{Message: "authorization failed"}
 	}
 
-	logger.Global.Info(string(respBody))
+	//logger.Global.Info(string(respBody))
 	if response.StatusCode != http.StatusOK {
 		msg := decodeError(respBody)
 		return "", &services.ServiceError{Message: msg.Error}
@@ -110,8 +115,41 @@ func (s *WebflowService) GetSites(token string) (*WebflowSitesResult, *services.
 	return &sites, nil
 }
 
-func (s *WebflowService) UploadScript(token string, siteId string, source string) (bool, *services.ServiceError) {
-	scripts, err := s.RegisterScripts(token, siteId, source)
+func (s *WebflowService) GetPages(token string, siteid string) (*WebflowPagesResult, *services.ServiceError) {
+
+	path := fmt.Sprintf("%s/%s/%s/pages", s.ApiBaseURL, "beta/sites", siteid)
+
+	response, err := s.get(path, token)
+
+	if err != nil {
+		return nil, &services.ServiceError{Message: "authorization failed"}
+	}
+
+	// handle response
+	defer response.Body.Close()
+	respBody, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return nil, &services.ServiceError{Message: "authorization failed"}
+	}
+
+	if response.StatusCode != http.StatusOK {
+		msg := decodeError(respBody)
+		return nil, &services.ServiceError{Message: msg.Error}
+	}
+	var result WebflowPagesResult
+	err = json.Unmarshal(respBody, &result)
+	if err != nil {
+		return nil, &services.ServiceError{Message: "invalid pages"}
+	}
+
+	// populate full path
+	pages := populatePaths(result.Pages)
+	result.Pages = pages
+	return &result, nil
+}
+
+func (s *WebflowService) UploadScript(token string, siteId string, appId string) (bool, *services.ServiceError) {
+	scripts, err := s.RegisterScripts(token, siteId, appId)
 	if err != nil {
 		return false, err
 	}
@@ -120,15 +158,101 @@ func (s *WebflowService) UploadScript(token string, siteId string, source string
 		return false, err
 	}
 
-	/*
-		for _, script := range scripts.RegisteredScripts {
-			_, err := s.addScript(token, siteId, script)
-			if err != nil {
-				return false, err
-			}
-		}*/
 	return true, nil
 
+}
+
+func (s *WebflowService) UpdateIntegrationScript(token string, appId string, settings WebflowSettings, publicKey string) *services.ServiceError {
+
+	siteId := settings.SiteID
+	// get current registered script
+	current_scripts, err := s.getRegisterScripts(token, siteId)
+	if err != nil {
+		return err
+	}
+	authorized_script := searchScript(current_scripts.RegisteredScripts, "loginidauthorizedscript")
+
+	// get source from template
+
+	protectedPages, loginPage := getWebflowSettingInfo(settings)
+
+	buttonData := WebflowProtectedPagesTemplate{
+		WalletApiURL:   WALLET_API_BASEURL,
+		AppID:          appId,
+		PublicKey:      publicKey,
+		ProtectedPages: protectedPages,
+		LoginPage:      loginPage,
+	}
+	source, e := utils.ParseTemplate("services/webflow/templates", "check_authorized_template.js", buttonData)
+	if e != nil {
+		logger.Global.Error(e.Error())
+		return services.CreateError("failed to update script")
+	}
+
+	if authorized_script == nil {
+
+		authorized_script, err = s.registerInline(token, siteId, source, "LoginidAuthorizedScript", CHECK_AUTHORIZED_DEFAULT_VERSION)
+		if err != nil {
+			return err
+		}
+	} else {
+		// increase version
+		version := increaseVersion(authorized_script.Version, CHECK_AUTHORIZED_DEFAULT_VERSION)
+
+		authorized_script, err = s.registerInline(token, siteId, source, "LoginidAuthorizedScript", version)
+		if err != nil {
+			return err
+		}
+	}
+
+	// make sure script already
+
+	sdk_script := searchScriptVersion(current_scripts.RegisteredScripts, "loginidwalletsdk", SDK_DEFAULT_VERSION)
+	if sdk_script == nil {
+		sdk_script, err = s.registerSDKScript(token, siteId)
+		if err != nil {
+			return err
+		}
+	}
+
+	inline_script := searchScript(current_scripts.RegisteredScripts, "loginidbuttonscript")
+
+	if inline_script == nil {
+		// get source from template
+
+		buttonData := WebflowButtonTemplate{
+			WalletURL: WALLET_BASEURL,
+			AppID:     appId,
+		}
+		source, e := utils.ParseTemplate("services/webflow/templates", "loginid_button_template.js", buttonData)
+		if e != nil {
+			return services.CreateError("failed to create button script")
+		}
+
+		inline_script, err = s.registerInline(token, siteId, source, "LoginidButtonScript", BUTTON_DEFAULT_VERSION)
+		if err != nil {
+			return err
+		}
+	}
+	// add script
+
+	_, err = s.addScripts(token, siteId, []WebflowRegisteredScript{*sdk_script, *inline_script, *authorized_script})
+	if err != nil {
+		return err
+	}
+	return nil
+
+}
+
+func getWebflowSettingInfo(settings WebflowSettings) (string, string) {
+	var protected_arr []string
+	for _, page := range settings.ProjectedPages {
+		protected_arr = append(protected_arr, page.Path)
+	}
+
+	data, _ := json.Marshal(protected_arr)
+
+	return string(data), settings.LoginPage
 }
 
 func (s *WebflowService) getRegisterScripts(token string, siteId string) (*WebflowRegisteredScriptsResult, *services.ServiceError) {
@@ -159,10 +283,11 @@ func (s *WebflowService) getRegisterScripts(token string, siteId string) (*Webfl
 
 }
 
-const INLINE_DEFAULT_VERSION = "1.0.4"
-const SDK_DEFAULT_VERSION = "1.1.0"
+const BUTTON_DEFAULT_VERSION = "1.0.4"
+const CHECK_AUTHORIZED_DEFAULT_VERSION = "1.0.4"
+const SDK_DEFAULT_VERSION = "1.1.10"
 
-func (s *WebflowService) RegisterScripts(token string, siteId string, source string) (*WebflowRegisteredScriptsResult, *services.ServiceError) {
+func (s *WebflowService) RegisterScripts(token string, siteId string, appId string) (*WebflowRegisteredScriptsResult, *services.ServiceError) {
 
 	// get current registered script
 	current_scripts, err := s.getRegisterScripts(token, siteId)
@@ -180,17 +305,44 @@ func (s *WebflowService) RegisterScripts(token string, siteId string, source str
 		}
 	}
 
+	/*
+		utils_script := searchScriptVersion(current_scripts.RegisteredScripts, "loginidwebflowutil", UTILS_DEFAULT_VERSION)
+		utils_source, e := utils.ParseTemplate("services/webflow/templates", "webflow_utils_template.js", nil)
+		if e != nil {
+			return nil, services.CreateError("failed to create utils script")
+		}
+		if utils_script == nil {
+			utils_script, err = s.registerInline(token, siteId, utils_source, "LoginidUtilsScript", UTILS_DEFAULT_VERSION)
+			if err != nil {
+				return nil, err
+			}
+		}
+	*/
+
 	inline_script := searchScript(current_scripts.RegisteredScripts, "loginidbuttonscript")
+
+	// get source from template
+
+	buttonData := WebflowButtonTemplate{
+		WalletURL: WALLET_BASEURL,
+		AppID:     appId,
+	}
+	source, e := utils.ParseTemplate("services/webflow/templates", "loginid_button_template.js", buttonData)
+	if e != nil {
+		return nil, services.CreateError("failed to create button script")
+	}
+
 	if inline_script == nil {
-		inline_script, err = s.registerInline(token, siteId, source, INLINE_DEFAULT_VERSION)
+
+		inline_script, err = s.registerInline(token, siteId, source, "LoginidButtonScript", BUTTON_DEFAULT_VERSION)
 		if err != nil {
 			return nil, err
 		}
 	} else {
 		// increase version
-		version := increaseVersion(inline_script.Version)
+		version := increaseVersion(inline_script.Version, BUTTON_DEFAULT_VERSION)
 
-		inline_script, err = s.registerInline(token, siteId, source, version)
+		inline_script, err = s.registerInline(token, siteId, source, "LoginidButtonScript", version)
 		if err != nil {
 			return nil, err
 		}
@@ -199,14 +351,14 @@ func (s *WebflowService) RegisterScripts(token string, siteId string, source str
 	return &WebflowRegisteredScriptsResult{RegisteredScripts: []WebflowRegisteredScript{*sdk_script, *inline_script}}, nil
 }
 
-func (s *WebflowService) registerInline(token string, siteId string, source string, version string) (*WebflowRegisteredScript, *services.ServiceError) {
+func (s *WebflowService) registerInline(token string, siteId string, source string, name string, version string) (*WebflowRegisteredScript, *services.ServiceError) {
 	path := fmt.Sprintf("%s/%s/%s/registered_scripts/inline", s.ApiBaseURL, "beta/sites", siteId)
 
 	request := map[string]interface{}{
 		"sourceCode":  source,
 		"version":     version,
-		"displayName": "LoginidButtonScript",
-		"canCopy":     true,
+		"displayName": name,
+		"canCopy":     false,
 	}
 
 	data, err := json.Marshal(request)
@@ -247,9 +399,9 @@ func (s *WebflowService) registerSDKScript(token string, siteId string) (*Webflo
 	request := map[string]interface{}{
 		"version":        SDK_DEFAULT_VERSION,
 		"displayName":    "LoginidWalletSDK",
-		"canCopy":        true,
-		"hostedLocation": "https://sdk-cdn.wallet.loginid.io/loginid-wallet-sdk.0.45.06-beta.min.js",
-		"integrityHash":  "sha384-M8k1SpoWvXNsHai/rjetBM0/kxsuYqZYMyS2gbKejdgV1kD9BFf1o+5RIwdner/v",
+		"canCopy":        false,
+		"hostedLocation": "https://sdk-cdn.wallet.loginid.io/loginid-wallet-sdk.0.45.40-beta.min.js",
+		"integrityHash":  "sha384-RdEgziOWLvMDtZtgJzkiTKDmDzHH8h2cesd4H1Yib4pWbTjV+PQ9BE3N0FiONZvF",
 	}
 
 	data, err := json.Marshal(request)
@@ -472,20 +624,20 @@ func searchScript(scripts []WebflowRegisteredScript, id string) *WebflowRegister
 	return nil
 }
 
-func increaseVersion(version string) string {
+func increaseVersion(version string, defaultVersion string) string {
 	version_array := strings.Split(version, ".")
 	if len(version_array) == 3 {
 		build, err := strconv.ParseInt(version_array[0], 10, 32)
 		if err != nil {
-			return INLINE_DEFAULT_VERSION
+			return defaultVersion
 		}
 		major, err := strconv.ParseInt(version_array[1], 10, 32)
 		if err != nil {
-			return INLINE_DEFAULT_VERSION
+			return defaultVersion
 		}
 		minor, err := strconv.ParseInt(version_array[2], 10, 32)
 		if err != nil {
-			return INLINE_DEFAULT_VERSION
+			return defaultVersion
 		}
 
 		if minor < 100 {
@@ -502,5 +654,38 @@ func increaseVersion(version string) string {
 		return fmt.Sprintf("%d.%d.%d", build, major, minor)
 
 	}
-	return INLINE_DEFAULT_VERSION
+	return defaultVersion
+}
+
+func populatePaths(pages []WebflowPage) []WebflowPage {
+
+	parentPathSet := make(map[string]WebflowPage)
+	for _, page := range pages {
+		parentPathSet[page.ID] = page
+	}
+
+	var result []WebflowPage
+	for _, page := range pages {
+		path := fmt.Sprintf("/%s", page.Slug)
+		if page.ParentID != "" {
+			path = prependPath(parentPathSet, page.ParentID, path)
+			//logger.Global.Info(fmt.Sprintf("parent %s %d", path, len(parentPathSet)))
+		}
+		page.Path = path
+		result = append(result, page)
+	}
+	return result
+}
+
+func prependPath(set map[string]WebflowPage, parentId string, path string) string {
+	parent, ok := set[parentId]
+	if ok {
+		fullPath := fmt.Sprintf("/%s%s", parent.Slug, path)
+		if parent.ParentID != "" {
+			fullPath = prependPath(set, parent.ParentID, fullPath)
+		}
+
+		return fullPath
+	}
+	return path
 }

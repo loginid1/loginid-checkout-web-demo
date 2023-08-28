@@ -14,18 +14,20 @@ import (
 	"gitlab.com/loginid/software/libraries/goutil.git/logger"
 	"gitlab.com/loginid/software/services/loginid-vault/services"
 	"gitlab.com/loginid/software/services/loginid-vault/services/pass"
+	"gitlab.com/loginid/software/services/loginid-vault/services/webflow"
 	"gitlab.com/loginid/software/services/loginid-vault/utils"
 	"gorm.io/gorm"
 )
 
 type AppService struct {
-	appRepo  *AppRepository
-	passRepo *pass.PassRepository
-	redis    *redis.Client
+	appRepo        *AppRepository
+	passRepo       *pass.PassRepository
+	webflowService *webflow.WebflowService
+	redis          *redis.Client
 }
 
-func NewAppService(db *gorm.DB, redis *redis.Client) *AppService {
-	return &AppService{appRepo: &AppRepository{DB: db}, passRepo: &pass.PassRepository{DB: db}, redis: redis}
+func NewAppService(db *gorm.DB, redis *redis.Client, webflow *webflow.WebflowService) *AppService {
+	return &AppService{appRepo: &AppRepository{DB: db}, passRepo: &pass.PassRepository{DB: db}, redis: redis, webflowService: webflow}
 }
 
 func trimOrigins(origins string) string {
@@ -160,6 +162,144 @@ func (s *AppService) GetAppById(id string) (*DevApp, *services.ServiceError) {
 	}
 	return app, nil
 }
+
+// APP Integration sections
+
+func (s *AppService) GetIntegrationAppId(appid string, ownerid string, vendor string) (*IntegrationResult, *services.ServiceError) {
+	app, err := s.appRepo.GetAppById(appid)
+	if err != nil {
+		return nil, services.CreateError("app not found")
+	}
+	if ownerid != app.OwnerID {
+		return nil, services.CreateError("permission denied")
+	}
+
+	integration, err := s.appRepo.GetIntegrationByAppId(appid, vendor)
+	if err != nil {
+		return nil, services.CreateError("fail to retrieve app")
+	}
+	result := integration.santizedResult()
+	return &result, nil
+}
+
+func (s *AppService) SignIntegrationToken(app_id string, vendor string, token string) (string, *services.ServiceError) {
+	integration, serr := s.appRepo.GetIntegrationByAppId(app_id, vendor)
+	if serr != nil {
+		return "", services.CreateError("no integration found")
+	}
+
+	signature, err := utils.JWKSign(integration.Keystore, token)
+	if err != nil {
+		logger.Global.Error(err.Error())
+		return "", services.CreateError("signing error")
+	}
+	return signature, nil
+}
+
+// SetupIntegration will create or update integration
+func (s *AppService) SetupIntegration(appid string, ownerid string, vendor string, schema string, settings webflow.WebflowSettings, webflowToken string) (*IntegrationResult, *services.ServiceError) {
+
+	app, err := s.appRepo.GetAppById(appid)
+	if err != nil {
+		return nil, services.CreateError("app not found")
+	}
+	if ownerid != app.OwnerID {
+		return nil, services.CreateError("permission denied")
+	}
+
+	// setup webflow script
+	if vendor == "webflow" {
+		_, serr := s.webflowService.UploadScript(webflowToken, settings.SiteID, appid)
+		if serr != nil {
+			return nil, serr
+		}
+	}
+	// check if integration existed
+	integration, _ := s.appRepo.GetIntegrationByAppId(appid, vendor)
+
+	if integration != nil {
+		//return nil, services.CreateError("integration existed")
+
+		settings_raw, _ := json.Marshal(settings)
+		integration.Settings = settings_raw
+
+		err = s.appRepo.UpdateIntegration(integration)
+		if err != nil {
+			return nil, services.CreateError("update failed")
+		}
+		result := integration.santizedResult()
+		return &result, nil
+	} else {
+		// generate JWK ECC keystore
+		keystore, err := utils.GenerateRawJWKKeystore()
+		if err != nil {
+			logger.Global.Error(err.Error())
+			return nil, services.CreateError("key creation failed")
+		}
+
+		keystore_raw, err := keystore.MarshalJSON()
+		if err != nil {
+			return nil, services.CreateError("key creation failed")
+		}
+
+		settings_raw, _ := json.Marshal(settings)
+		integration := AppIntegration{
+			AppID:    appid,
+			Vendor:   vendor,
+			Schema:   schema,
+			Settings: settings_raw,
+			Keystore: keystore_raw,
+		}
+		err = s.appRepo.CreateIntegration(&integration)
+		if err != nil {
+			return nil, services.CreateError("failed to create app integration")
+		}
+
+		result := integration.santizedResult()
+		return &result, nil
+	}
+}
+
+func (s *AppService) UpdateIntegration(appid string, ownerid string, vendor string, settings webflow.WebflowSettings, webflowToken string) (*IntegrationResult, *services.ServiceError) {
+
+	app, err := s.appRepo.GetAppById(appid)
+	if err != nil {
+		return nil, services.CreateError("app not found")
+	}
+	if ownerid != app.OwnerID {
+		return nil, services.CreateError("permission denied")
+	}
+
+	integration, err := s.appRepo.GetIntegrationByAppId(appid, vendor)
+	if err != nil {
+		return nil, services.CreateError("no integration found")
+	}
+
+	publicKey, err := utils.GetPublicKeyJWK(integration.Keystore)
+	if err != nil {
+		return nil, services.CreateError("integration secure key error")
+	}
+	publicKeyStr, _ := json.Marshal(publicKey)
+
+	settings_raw, _ := json.Marshal(settings)
+	integration.Settings = settings_raw
+
+	err = s.appRepo.UpdateIntegration(integration)
+	if err != nil {
+		return nil, services.CreateError("update failed")
+	}
+	result := integration.santizedResult()
+	//logger.Global.Info(fmt.Sprintf("Setting: %#v", settings))
+	// update webflow script here
+	serr := s.webflowService.UpdateIntegrationScript(webflowToken, appid, settings, string(publicKeyStr))
+	if serr != nil {
+		return nil, serr
+	}
+
+	return &result, nil
+}
+
+// END App Integration sections
 
 func (s *AppService) createConsent(appid string, userid string, passIDs []string) *services.ServiceError {
 	app, serr := s.GetAppById(appid)

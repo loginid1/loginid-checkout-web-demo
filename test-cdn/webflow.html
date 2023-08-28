@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<link
+			rel="stylesheet"
+			href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap"
+		/>
+		<link
+			rel="stylesheet"
+			href="https://fonts.googleapis.com/icon?family=Material+Icons"
+		/>
+		<meta
+			http-equiv="Permissions-Policy"
+			content="publickey-credentials-get=*"
+		/>
+
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="theme-color" content="#000000" />
+		<meta
+			name="description"
+			content="A simple shopping cart created using the Material UI framework"
+		/>
+		<title>CDN Test</title>
+	</head>
+
+	<body>
+		<noscript>You need to enable JavaScript to run this app.</noscript>
+
+		<script src="https://loginid-wallet-cdn.s3.us-east-2.amazonaws.com/loginid-wallet-sdk.min.js" async defer></script>
+		<script>
+			const PUBLIC_KEY = {
+				x: "Ggyohh3_jONLEJYWEraykHnZrJyJdwAg-12gc3VvY9w",
+				y: "ovaMeCM3lDHQfMJt5e8SHCy9fnZOf4apjgiL6FKu5zo",
+				crv: "P-256",
+				kty: "EC",
+				use: "sig",
+			};
+
+			const API_BASEURL = "https://0c5a-104-247-246-171.ngrok-free.app";
+			const PROTECTED_PAGES = [
+				"/Users/loginid/workspace/loginid-algo/test-cdn/webflow.html",
+			];
+			const LOGIN_PAGE = "/Users/loginid/workspace/loginid-algo/test-cdn/index.html";
+
+			window.onload = function () {
+
+					const wallet = new loginid.WalletSDK(
+						"https://7aaf-104-247-246-171.ngrok-free.app",
+						null,
+						null
+					);
+				loginid.WebflowSDK.checkAuthorizePage(API_BASEURL, PUBLIC_KEY, PROTECTED_PAGES, LOGIN_PAGE);
+			}
+		</script>
+		<div id="root">
+			<a
+				id="loginid-button"
+				href="test"
+				loginid-success="test"
+				loginid-api=""
+				>Crypto Button</a
+			>
+		</div>
+	</body>
+</html>

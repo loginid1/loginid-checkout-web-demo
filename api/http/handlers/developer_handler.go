@@ -3,15 +3,20 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/mux"
+	"gitlab.com/loginid/software/libraries/goutil.git/logger"
 	http_common "gitlab.com/loginid/software/services/loginid-vault/http/common"
 	"gitlab.com/loginid/software/services/loginid-vault/services"
 	"gitlab.com/loginid/software/services/loginid-vault/services/app"
+	"gitlab.com/loginid/software/services/loginid-vault/services/keystore"
+	"gitlab.com/loginid/software/services/loginid-vault/services/webflow"
 )
 
 type DeveloperHandler struct {
-	AppService *app.AppService
+	AppService      *app.AppService
+	KeystoreService *keystore.KeystoreService
 }
 
 type CreateAppRequest struct {
@@ -153,4 +158,141 @@ func (h *DeveloperHandler) GetAppUserList(w http.ResponseWriter, r *http.Request
 		Limit:  app.KAppUserConsentLimit,
 	}
 	http_common.SendSuccessResponse(w, userList)
+}
+
+type SetupIntegrationRequest struct {
+	AppID        string                  `json:"app_id"`
+	Vendor       string                  `json:"vendor"`
+	Settings     webflow.WebflowSettings `json:"settings"`
+	WebflowToken string                  `json:"webflow_token"`
+}
+
+type SetupIntegrationResponse struct {
+	ID    string `json:"id"`
+	AppID string `json:"app_id"`
+}
+
+func (h *DeveloperHandler) SetupIntegration(w http.ResponseWriter, r *http.Request) {
+
+	session := r.Context().Value("session").(services.UserSession)
+	var request SetupIntegrationRequest
+	defer r.Body.Close()
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		http_common.SendErrorResponse(w, services.NewError("failed to parse request"))
+		return
+	}
+
+	schema := "webflow_v1"
+	integration, serr := h.AppService.SetupIntegration(request.AppID, session.UserID, request.Vendor, schema, request.Settings, request.WebflowToken)
+	if serr != nil {
+		http_common.SendErrorResponse(w, *serr)
+		return
+	}
+
+	http_common.SendSuccessResponse(w, integration)
+}
+
+type UpdateIntegrationRequest struct {
+	AppID        string                  `json:"app_id"`
+	ID           string                  `json:"id"`
+	Vendor       string                  `json:"vendor"`
+	Settings     webflow.WebflowSettings `json:"settings"`
+	WebflowToken string                  `json:"webflow_token"`
+}
+
+type UpdateIntegrationResponse struct {
+	ID    string `json:"id"`
+	AppID string `json:"app_id"`
+}
+
+func (h *DeveloperHandler) UpdateIntegration(w http.ResponseWriter, r *http.Request) {
+
+	session := r.Context().Value("session").(services.UserSession)
+	var request UpdateIntegrationRequest
+	defer r.Body.Close()
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		http_common.SendErrorResponse(w, services.NewError("failed to parse request"))
+		return
+	}
+
+	integration, serr := h.AppService.UpdateIntegration(request.AppID, session.UserID, request.Vendor, request.Settings, request.WebflowToken)
+	if serr != nil {
+		http_common.SendErrorResponse(w, *serr)
+		return
+	}
+
+	http_common.SendSuccessResponse(w, integration)
+}
+
+type GetIntegrationRequest struct {
+	AppID  string `json:"app_id"`
+	Vendor string `json:"vendor"`
+}
+
+type GetIntegrationResponse struct {
+	ID       string      `json:"id"`
+	AppID    string      `json:"app_id"`
+	Settings interface{} `json:"settings"`
+	Iat      time.Time   `json:"iat"`
+	Uat      time.Time   `json:"uat"`
+}
+
+func (h *DeveloperHandler) GetIntegration(w http.ResponseWriter, r *http.Request) {
+
+	session := r.Context().Value("session").(services.UserSession)
+	var request UpdateIntegrationRequest
+	defer r.Body.Close()
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		http_common.SendErrorResponse(w, services.NewError("failed to parse request"))
+		return
+	}
+
+	integration, serr := h.AppService.GetIntegrationAppId(request.AppID, session.UserID, request.Vendor)
+	if serr != nil {
+		http_common.SendErrorResponse(w, *serr)
+		return
+	}
+	response := GetIntegrationResponse{
+		ID:       integration.ID,
+		AppID:    integration.AppID,
+		Settings: integration.Settings,
+		Iat:      integration.Iat,
+		Uat:      integration.Uat,
+	}
+
+	http_common.SendSuccessResponse(w, response)
+}
+
+type ValidateTokenRequest struct {
+	Token  string `json:"token"`
+	Vendor string `json:"vendor"`
+}
+
+type ValidateTokenResponse struct {
+	Signature string `json:"signature"`
+}
+
+func (h *DeveloperHandler) ValidateToken(w http.ResponseWriter, r *http.Request) {
+
+	var request ValidateTokenRequest
+	defer r.Body.Close()
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		logger.ForRequest(r).Error(err.Error())
+		http_common.SendErrorResponse(w, services.NewError("failed to parse request"))
+		return
+	}
+
+	claims, serr := h.KeystoreService.VerifyIDJWT(request.Token)
+
+	if serr != nil {
+		http_common.SendErrorResponse(w, *serr)
+		return
+	}
+	signature, serr := h.AppService.SignIntegrationToken(claims.Client, request.Vendor, request.Token)
+	if serr != nil {
+		http_common.SendErrorResponse(w, *serr)
+		return
+	}
+	http_common.SendSuccessResponse(w, ValidateTokenResponse{Signature: signature})
+
 }

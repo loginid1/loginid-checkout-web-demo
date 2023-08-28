@@ -1,12 +1,14 @@
 package utils
 
 import (
+	"bytes"
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
 	"regexp"
 	"strings"
+	"text/template"
 	"time"
 
 	qrcode "github.com/skip2/go-qrcode"
@@ -103,4 +105,16 @@ func MaskEmailAddress(email string) (string, error) {
 	}
 
 	return maskedEmail, nil
+}
+
+func ParseTemplate(templatePath string, templateFileName string, data interface{}) (string, error) {
+	t, err := template.ParseFiles(fmt.Sprintf("%s/%s", templatePath, templateFileName))
+	if err != nil {
+		return "", err
+	}
+	buf := new(bytes.Buffer)
+	if err = t.Execute(buf, data); err != nil {
+		return "", err
+	}
+	return buf.String(), nil
 }

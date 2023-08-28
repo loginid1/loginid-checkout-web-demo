@@ -20,9 +20,9 @@ require (
 	gorm.io/gorm v1.23.5
 )
 
+require gopkg.in/mail.v2 v2.3.1 // indirect
+
 require (
-	github.com/go-mail/mail v2.3.1+incompatible // indirect
-	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 	github.com/algorand/go-algorand v0.0.0-20220525014918-3c4c8fb0bd7a // indirect
 	github.com/algorand/go-codec/codec v1.1.8 // indirect
 	github.com/armon/go-radix v1.0.0 // indirect
@@ -48,6 +48,8 @@ require (
 	github.com/elastic/go-licenser v0.4.0 // indirect
 	github.com/elastic/go-sysinfo v1.7.1 // indirect
 	github.com/elastic/go-windows v1.0.1 // indirect
+	github.com/go-jose/go-jose/v3 v3.0.0
+	github.com/go-mail/mail v2.3.1+incompatible
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/golang/mock v1.6.0 // indirect
@@ -93,6 +95,7 @@ require (
 	golang.org/x/sys v0.6.0 // indirect
 	golang.org/x/text v0.8.0 // indirect
 	golang.org/x/tools v0.6.0 // indirect
+	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	howett.net/plist v1.0.0 // indirect
 )
