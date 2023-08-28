@@ -11,6 +11,18 @@ type WebflowSite struct {
 	CustomDomains []WebflowDomain `json:"customDomains"`
 }
 
+type WebflowPagesResult struct {
+	Pages []WebflowPage `json:"pages"`
+}
+
+type WebflowPage struct {
+	ID       string `json:"id"`
+	ParentID string `json:"parentId"`
+	Title    string `json:"title"`
+	Slug     string `json:"slug"`
+	Path     string `json:"path"`
+}
+
 type WebflowDomain struct {
 	ID  string `json:"id"`
 	Url string `json:"url"`
@@ -38,4 +50,25 @@ type WebflowAddScript struct {
 
 type WebflowAddScriptsResult struct {
 	Scripts []WebflowAddScript `json:"scripts"`
+}
+
+type WebflowButtonTemplate struct {
+	WalletURL string
+	AppID     string
+}
+
+type WebflowProtectedPagesTemplate struct {
+	WalletApiURL   string
+	AppID          string
+	PublicKey      string
+	ProtectedPages string
+	LoginPage      string
+}
+
+type WebflowSettings struct {
+	SiteID         string        `json:"site_id"`
+	SiteName       string        `json:"site_name"`
+	SiteShortName  string        `json:"site_shortname"`
+	LoginPage      string        `json:"login_page"`
+	ProjectedPages []WebflowPage `json:"protected_pages"`
 }

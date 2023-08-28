@@ -1,10 +1,16 @@
 package app
 
-import "time"
+import (
+	"encoding/json"
+	"time"
+
+	"gitlab.com/loginid/software/services/loginid-vault/services/webflow"
+)
 
 const (
-	kStatusActive   = 1
-	ksStatusDisable = 0
+	kStatusActive        = 1
+	ksStatusDisable      = 0
+	ksStatusDisableByApp = 13
 )
 
 const (
@@ -14,6 +20,8 @@ const (
 	KAge18Attribute          = "age18"
 	KBirthAttribute          = "birth"
 )
+
+const KAppUserConsentLimit = 20
 
 type AppSession struct {
 	ID         string      `json:"id"`
@@ -62,4 +70,50 @@ type CustomConsent struct {
 	Origins    string    `json:"origins"`
 	Status     int32     `json:"status"`
 	Uat        time.Time `json:"uat"`
+}
+
+type CustomAppUser struct {
+	ID         string    `json:"id"`
+	Username   string    `json:"username"`
+	Attributes string    `json:"attributes"`
+	Status     int32     `json:"status"`
+	Uat        time.Time `json:"uat"`
+}
+
+type CustomAppInfo struct {
+	ID         string    `json:"id" `
+	AppName    string    `json:"app_name" `
+	Origins    string    `json:"origins"`
+	Attributes string    `json:"attributes" `
+	Status     int32     `json:"status" `
+	UserCount  int64     `json:"user_count" `
+	Iat        time.Time `json:"iat" `
+	Uat        time.Time `json:"uat" `
+}
+
+/*** external integration */
+
+type AppIntegration struct {
+	ID       string    `json:"id"`
+	Vendor   string    `json:"vendor"`
+	AppID    string    `json:"app_id"`
+	Schema   string    `json:"schema"`
+	Settings []byte    `json:"settings"`
+	Keystore []byte    `json:"keystore"`
+	Iat      time.Time `json:"iat" `
+	Uat      time.Time `json:"uat" `
+}
+
+func (t *AppIntegration) santizedResult() IntegrationResult {
+	var wfsettings webflow.WebflowSettings
+	json.Unmarshal(t.Settings, &wfsettings)
+	return IntegrationResult{ID: t.ID, AppID: t.AppID, Settings: wfsettings, Iat: t.Iat, Uat: t.Uat}
+}
+
+type IntegrationResult struct {
+	ID       string      `json:"id"`
+	AppID    string      `json:"app_id"`
+	Settings interface{} `json:"settings"`
+	Iat      time.Time   `json:"iat" `
+	Uat      time.Time   `json:"uat" `
 }

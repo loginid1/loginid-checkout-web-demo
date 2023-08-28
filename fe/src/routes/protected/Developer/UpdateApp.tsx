@@ -17,15 +17,25 @@ import {
 	CircularProgress,
 	Snackbar,
 	SnackbarCloseReason,
+	ListItem,
+	ListItemText,
+	List,
+	ListItemIcon,
 } from "@mui/material";
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import SyntaxHighlighter from "react-syntax-highlighter";
 import { WebflowIntegrationDialog } from "../../../components/dialogs/WebflowIntegrationDialog";
+import { WebflowPagesDialog } from "../../../components/dialogs/WebflowPagesDialog";
+import { SectionCard } from "../../../components/SectionCard";
 import { VaultBase } from "../../../components/VaultBase";
 import { DisplayMessage } from "../../../lib/common/message";
+import WebIcon from "@mui/icons-material/Web";
 import vaultSDK from "../../../lib/VaultSDK";
-import { VaultApp } from "../../../lib/VaultSDK/vault/developer";
+import {
+	IntegrationResult,
+	VaultApp,
+} from "../../../lib/VaultSDK/vault/developer";
 import { AuthService } from "../../../services/auth";
 import { WebflowService } from "../../../services/webflow";
 
@@ -37,15 +47,21 @@ export default function UpdateApp() {
 	const [searchParams, setSearchParams] = useSearchParams();
 	const [showCopyCodeMessage, setShowCopyCodeMessage] = useState(false);
 	const [application, setApplication] = useState<VaultApp>();
-	const [displayMessage, setDisplayMessage] = useState<DisplayMessage | null>( null);
+	const [displayMessage, setDisplayMessage] = useState<DisplayMessage | null>(
+		null
+	);
 	const [attributeList, setAttributeList] = useState<string[]>([]);
 	const [email, setEmail] = useState<boolean>(true);
 	const [phone, setPhone] = useState<boolean>(false);
 	const { app_id } = useParams();
+	const [integration, setIntegration] = useState<IntegrationResult | null>(
+		null
+	);
 
 	const [onSuccessUrl, setOnSuccessUrl] = useState<string>("");
 
 	const [openWebflow, setOpenWebflow] = useState<boolean>(false);
+	const [openPagesDialog, setOpenPagesDialog] = useState<boolean>(false);
 
 	const redirect_block_template = `document.location.href='${onSuccessUrl}';`;
 
@@ -59,7 +75,9 @@ export default function UpdateApp() {
                 api = '${app_id}';
             }
             const wallet = new loginid.WalletSDK(
-				'${wallet_url}', api, null
+				'${wallet_url}', 
+				api, 
+				null
 				);
             const response = await wallet.signup();
             document.cookie = 'loginid-token='+response.token;
@@ -73,11 +91,13 @@ export default function UpdateApp() {
             }
         });
     }
-
 	`;
 
 	var snippet = `
-<script src='https://sdk-cdn.wallet.loginid.io/loginid-wallet-sdk.min.js' async defer></script>
+<script 
+    src='https://sdk-cdn.wallet.loginid.io/loginid-wallet-sdk.min.js' 
+	async defer>
+</script>
 <script>
 		${webflow_custom_source}
 </script>
@@ -95,13 +115,17 @@ export default function UpdateApp() {
 `;
 	useEffect(() => {
 		let webflow = searchParams.get("webflow");
-		if(webflow) {
+		if (webflow) {
 			setOpenWebflow(true);
 		}
 
 		const fetchData = async () => {
 			const token = AuthService.getToken();
 			if (token) {
+				if (app_id == null) {
+					navigate("/developer");
+					return;
+				}
 				const result = await vaultSDK.getApp(token, app_id);
 				setApplication(result);
 
@@ -118,6 +142,14 @@ export default function UpdateApp() {
 				});
 
 				setAttributeList(mattrs);
+
+				// get integration
+				const inResult = await vaultSDK.getWebflowIntegration(
+					token,
+					app_id
+				);
+				setIntegration(inResult);
+				console.log("integration: ", inResult);
 			}
 		};
 
@@ -332,14 +364,19 @@ export default function UpdateApp() {
 										/>
 									</FormGroup>
 									<FormHelperText>
-										Choose how users will identify themselves on your app or site. If an option is chosen, our wallet will then require users to verify these options prior in order for their account to be created. We are continuously adding more identifiers with each release.
+										Choose how users will identify
+										themselves on your app or site. If an
+										option is chosen, our wallet will then
+										require users to verify these options
+										prior in order for their account to be
+										created. We are continuously adding more
+										identifiers with each release.
 									</FormHelperText>
 								</FormControl>
 							</Grid>
 							<Grid item xs={12}>
 								<Button
 									variant="text"
-									size="large"
 									sx={{ mr: 2 }}
 									onClick={() =>
 										navigate("/developer/console")
@@ -349,33 +386,120 @@ export default function UpdateApp() {
 								</Button>
 								<Button
 									variant="contained"
-									size="large"
 									onClick={handleUpdateApp}
 								>
-									Update
+									Update Settings
 								</Button>
 							</Grid>
 						</Grid>
 					</Paper>
-					<Typography
-						variant="h2"
-						color="secondary"
-						align="left"
-						sx={{
-							padding: { md: 4, xs: 2 },
-						}}
-					>
-						Quick Code Setup
-					</Typography>
-					<Paper
-						elevation={0}
-						sx={{
-							p: { md: 4, xs: 2 },
-							mb: 2,
-							display: "inline",
-							justifyContent: "center",
-						}}
-					>
+					{integration ? (
+						<SectionCard
+							title="Webflow Integration"
+							expandable={false}
+						>
+							<Grid container spacing={{ md: 2, xs: 1 }}>
+								<Grid item xs={3} sx={{ textAlign: "left" }}>
+									{" "}
+									<Typography variant="title">
+										Site ID:
+									</Typography>
+								</Grid>
+								<Grid item xs={9} sx={{ textAlign: "left" }}>
+									{integration.settings.site_id}
+								</Grid>
+								<Grid item xs={3} sx={{ textAlign: "left" }}>
+									{" "}
+									<Typography variant="title">
+										Display Name:
+									</Typography>
+								</Grid>
+								<Grid item xs={9} sx={{ textAlign: "left" }}>
+									{integration.settings.site_name}
+								</Grid>
+								<Grid item xs={3} sx={{ textAlign: "left" }}>
+									{" "}
+									<Typography variant="title">
+										Short Name:
+									</Typography>
+								</Grid>
+								<Grid item xs={9} sx={{ textAlign: "left" }}>
+									{integration.settings.site_shortname}
+								</Grid>
+								<Grid item xs={3} sx={{ textAlign: "left" }}>
+									{" "}
+									<Typography variant="title">
+										Login Button Page:
+									</Typography>
+								</Grid>
+								<Grid item xs={9} sx={{ textAlign: "left" }}>
+									{integration.settings.login_page}
+								</Grid>
+								<Grid item xs={12} sx={{ textAlign: "left" }}>
+									<Typography variant="title">
+										Protected Pages:
+									</Typography>
+								</Grid>
+								<Grid container item xs={12}>
+									<List dense={true}>
+										{integration.settings.protected_pages.map(
+											(page) => (
+												<ListItem key={"pp" + page.id}>
+													<ListItemIcon>
+														<WebIcon />
+													</ListItemIcon>
+													<ListItemText
+														primary={page.title}
+														secondary={page.path}
+													/>
+												</ListItem>
+											)
+										)}
+									</List>
+								</Grid>
+								<Grid item xs={12} sx={{ textAlign: "left" }}>
+									<Button
+										variant="outlined"
+										sx={{ m: 2 }}
+										onClick={() => setOpenPagesDialog(true)}
+									>
+										Update Protected Pages
+									</Button>
+								</Grid>
+
+								<WebflowPagesDialog
+									app={application}
+									settings={integration?.settings}
+									open={openPagesDialog}
+									siteId={integration?.settings.site_id}
+									protected={
+										integration?.settings.protected_pages
+									}
+									handleClose={() => {
+										setOpenPagesDialog(false);
+									}}
+								></WebflowPagesDialog>
+							</Grid>
+						</SectionCard>
+					) : (
+						<Alert
+							severity="info"
+							action={
+								<Button
+									color="inherit"
+									size="small"
+									onClick={() => setOpenWebflow(true)}
+								>
+									Add to Webflow
+								</Button>
+							}
+						>
+							For Webflow integration, you can connect and upload
+							the scripts here.
+						</Alert>
+					)}
+
+					<SectionCard title="Quick Code Setup" expandable={false}>
 						<Grid container spacing={{ md: 2, xs: 1 }}>
 							<Grid item xs={12} sx={{ textAlign: "left" }}>
 								<Typography
@@ -393,21 +517,6 @@ export default function UpdateApp() {
 									<strong>loginid-button</strong> to call up
 									the Wallet "sign up or sign in" window.
 								</Typography>
-								<Alert
-									severity="info"
-									action={
-										<Button
-											color="inherit"
-											size="small"
-											onClick={() => setOpenWebflow(true)}
-										>
-											Add to Webflow
-										</Button>
-									}
-								>
-									For Webflow integration, you can connect and
-									upload the scripts here.
-								</Alert>
 							</Grid>
 							<Grid item xs={12} sx={{ textAlign: "left" }}>
 								<SyntaxHighlighter
@@ -437,15 +546,15 @@ export default function UpdateApp() {
 								/>
 							</Grid>
 						</Grid>
-						<WebflowIntegrationDialog
-							open={openWebflow}
-							app={application}
-							source={webflow_custom_source}
-							handleClose={() => {
-								setOpenWebflow(false);
-							}}
-						></WebflowIntegrationDialog>
-					</Paper>
+					</SectionCard>
+					<WebflowIntegrationDialog
+						open={openWebflow}
+						app={application}
+						source={webflow_custom_source}
+						handleClose={() => {
+							setOpenWebflow(false);
+						}}
+					></WebflowIntegrationDialog>
 				</>
 			)}
 		</VaultBase>

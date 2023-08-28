@@ -119,6 +119,7 @@ function PricingContent() {
 			console.log("Signup.....");
 			let result = await wallet.signup();
 			console.log("Result: ", result);
+			console.log("Token: ", result.token);
 			navigate("/dashboard");
 		} catch (e) {
 			console.log((e as Error).message);

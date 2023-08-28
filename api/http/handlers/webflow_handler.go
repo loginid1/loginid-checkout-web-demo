@@ -126,13 +126,41 @@ func (h *WebflowHandler) GetSites(w http.ResponseWriter, r *http.Request) {
 
 	//http_common.SendSuccessResponseRaw(w, []byte(result))
 	http_common.SendSuccessResponse(w, WebflowSitesResponse{Sites: sites_result.Sites})
+}
 
+type WebflowPagesRequest struct {
+	Token  string `json:"token"`
+	SiteID string `json:"site_id"`
+}
+type WebflowPagesResponse struct {
+	Pages []webflow.WebflowPage `json:"pages"`
+}
+
+func (h *WebflowHandler) GetPages(w http.ResponseWriter, r *http.Request) {
+
+	var request WebflowPagesRequest
+	defer r.Body.Close()
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		logger.ForRequest(r).Error(err.Error())
+		http_common.SendErrorResponse(w, services.NewError("failed to parse request"))
+		return
+	}
+
+	pages_result, serr := h.Service.GetPages(request.Token, request.SiteID)
+	if serr != nil {
+		logger.ForRequest(r).Error(serr.Message)
+		http_common.SendErrorResponse(w, *serr)
+		return
+	}
+
+	//http_common.SendSuccessResponseRaw(w, []byte(result))
+	http_common.SendSuccessResponse(w, WebflowPagesResponse{Pages: pages_result.Pages})
 }
 
 type WebflowUploadScriptRequest struct {
 	Token  string `json:"token"`
 	SiteId string `json:"site_id"`
-	Source string `json:"source"`
+	AppId  string `json:"app_id"`
 }
 
 type WebflowUploadScriptResponse struct {
@@ -148,7 +176,7 @@ func (h *WebflowHandler) UploadScript(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, serr := h.Service.UploadScript(request.Token, request.SiteId, request.Source)
+	_, serr := h.Service.UploadScript(request.Token, request.SiteId, request.AppId)
 	if serr != nil {
 		logger.ForRequest(r).Error(serr.Message)
 		http_common.SendErrorResponse(w, *serr)

@@ -48,6 +48,7 @@ import FederatedAuthPopup from './routes/api/FederatedAuthPopup';
 import AlgorandRecovery from './routes/protected/Algorand/AlgorandRecovery';
 import OidcAuth from './routes/api/OidcAuth';
 import WebflowCallback from './routes/api/WebflowCallback';
+import Member from './routes/protected/Developer/Member';
 
 
 const reload = () => window.location.reload();
@@ -108,6 +109,7 @@ function App() {
           <Route path="/developer/console" element={<DeveloperConsole />} />
           <Route path="/developer/app/create" element={<CreateApp />} />
           <Route path="/developer/app/:app_id" element={<UpdateApp />} />
+          <Route path="/developer/member/:app_id" element={<Member />} />
         </Route>
         <Route path="*" element={<Navigate replace to="/login" />} />
       </Routes>

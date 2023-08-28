@@ -28,6 +28,19 @@ export interface WebflowDomain {
 }
 
 
+export interface WebflowPagesResponse {
+    pages: WebflowPage[];
+}
+
+export interface WebflowPage {
+    id : string;
+    title : string;
+    slug: string;
+    parentId: string; 
+    path: string; 
+}
+
+
 export class VaultWebflow extends Base {
 
     async getWebflowAuthorizeUrl(): Promise<WebflowAuthResponse> {
@@ -50,6 +63,15 @@ export class VaultWebflow extends Base {
         );
     }
 
+    async getWebflowPages(token: string, siteid: string): Promise<WebflowPagesResponse> {
+        return await utils.http.post(
+            this._baseURL,
+            `/webflow/pages`,
+            {token: token, site_id: siteid},
+            undefined
+        );
+    }
+
     async getWebflowToken(code: string): Promise<WebflowTokenResponse> {
         //const header = { "x-session-token": token };
         return await utils.http.post(
@@ -60,11 +82,12 @@ export class VaultWebflow extends Base {
         );
     }
 
-    async uploadWebflowScript ( token : string, siteId : string, source: string) : Promise<boolean> {
+
+    async uploadWebflowScript ( token : string, siteId : string, app_id: string) : Promise<boolean> {
         return await utils.http.post(
             this._baseURL,
             `/webflow/upload`,
-            {token: token, site_id: siteId, source: source},
+            {token: token, site_id: siteId, app_id: app_id},
             undefined
         );
     }

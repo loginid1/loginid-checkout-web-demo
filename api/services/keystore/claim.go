@@ -39,7 +39,7 @@ type AuthSessionClaims struct {
 /**
 * return to federated apps after successful login
  */
-type IDTokenClains struct {
+type IDTokenClaims struct {
 	Client string       `json:"client"`
 	Nonce  string       `json:"nonce,omitempty"`
 	Sub    string       `json:"sub"`

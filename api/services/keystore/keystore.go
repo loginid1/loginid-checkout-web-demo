@@ -9,10 +9,11 @@ const (
 )
 
 const (
-	ksScopeSign    = 2
-	ksScopeSession = 1
-	ksSignID       = "SIGN"
-	ksSessionID    = "SESSION"
+	ksScopeSign         = 2
+	ksScopeSession      = 1
+	ksVendorIntegration = 100
+	ksSignID            = "SIGN"
+	ksSessionID         = "SESSION"
 )
 
 type Keystore struct {

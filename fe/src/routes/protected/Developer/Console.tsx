@@ -51,7 +51,7 @@ export default function DeveloperConsole() {
 				<Typography variant="h2" color="secondary" align="left">
 					Applications
 				</Typography>
-				{applications !== null && applications.apps.length !== 0 && (
+				{applications && applications.apps.length !== 0 && (
 					<>
 						<Button
 							variant="text"
@@ -108,8 +108,7 @@ export default function DeveloperConsole() {
 							},
 						}}
 					>
-						For Webflow developer, you can create and integrate
-						here.
+						For Webflow developer, you can create a new integration here.
 					</Alert>
 				</>
 			) : (

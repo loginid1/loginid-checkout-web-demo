@@ -16,14 +16,25 @@ import {
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import vaultSDK from "../../lib/VaultSDK";
-import { AppList, VaultApp } from "../../lib/VaultSDK/vault/developer";
-import { WebflowDomain, WebflowSite } from "../../lib/VaultSDK/vault/webflow";
+import {
+	AppList,
+	VaultApp,
+	WebflowSettings,
+} from "../../lib/VaultSDK/vault/developer";
+import {
+	WebflowDomain,
+	WebflowPage,
+	WebflowSite,
+} from "../../lib/VaultSDK/vault/webflow";
 import { WebflowService } from "../../services/webflow";
 import { KeyDisplay } from "../KeyDisplay";
 import styles from "../../styles/common.module.css";
 import { AuthService } from "../../services/auth";
 import { DisplayMessage } from "../../lib/common/message";
 import { ArrayUtil } from "../../lib/util/array";
+import { useNavigate } from "react-router-dom";
+import { WebflowAddPagesIntegration } from "../WebflowAddPageIntegration";
+import { randomInt } from "crypto";
 
 interface WebflowQuickIntegrationProps extends DialogProps {
 	appList: AppList | null;
@@ -34,6 +45,7 @@ export enum WebflowDialogPage {
 	Auth = "auth",
 	Upload = "upload",
 	Button = "button-design",
+	Member = "member",
 }
 
 const wallet_url =
@@ -41,12 +53,18 @@ const wallet_url =
 export function WebflowQuickIntegrationDialog(
 	props: WebflowQuickIntegrationProps
 ) {
-	const [step, setStep] = useState<number>(0);
 	const [page, setPage] = useState<WebflowDialogPage>(WebflowDialogPage.Auth);
 	const [wfToken, setWFToken] = useState<string>("");
 	const [sites, setSites] = useState<WebflowSite[]>([]);
 	const [selectedSite, setSelectedSite] = useState<string>("");
-	const [displayMessage, setDisplayMessage] = useState<DisplayMessage | null>( null);
+	const [displayMessage, setDisplayMessage] = useState<DisplayMessage | null>(
+		null
+	);
+	const navigate = useNavigate();
+	const [appId, setAppId] = useState<string>("");
+	const [app, setApp] = useState<VaultApp | null>(null);
+	const [settings, setSettings] = useState<WebflowSettings | null>(null);
+	const [pages, setPages] = useState<WebflowPage[]>([]);
 
 	useEffect(() => {
 		// check if access token
@@ -109,6 +127,10 @@ export function WebflowQuickIntegrationDialog(
 		}
 	}
 
+	async function getPages(token: string, siteId: string) {
+		return await vaultSDK.getWebflowPages(token, siteId);
+	}
+
 	async function getSites(token: string) {
 		try {
 			let wf_sites = await vaultSDK.getWebflowSites(token);
@@ -135,6 +157,7 @@ export function WebflowQuickIntegrationDialog(
 			if (token) {
 				for (const site of sites) {
 					if (site.id == selectedSite) {
+						let appname = site.displayName;
 						// check if app haven't created yet
 						if (searchAppExists(props.appList, site)) {
 							setDisplayMessage({
@@ -143,23 +166,48 @@ export function WebflowQuickIntegrationDialog(
 							});
 
 							return;
+							//appname = appname + "test " +Math.random(); 
 						}
 						let domain = `https://${site.shortName}.webflow.io`;
 						if (site.customDomains.length > 0) {
 							domain = site.customDomains[0].url;
 						}
-						const result = await vaultSDK.createApp(token, {
-							app_name: site.displayName,
+						const app_result = await vaultSDK.createApp(token, {
+							app_name: appname,
 							origins: domain,
 							attributes: "email",
 							id: "",
 							uat: "",
 						});
 						// update snippet
-						let source = updateSourceAppID(result.id);
+						const settings = {
+							site_id: site.id,
+							site_name: site.displayName,
+							site_shortname: site.shortName,
+							login_page: "/",
+							protected_pages: [],
+						};
+						setAppId(app_result.id);
+						const i_result = await vaultSDK.setupWebflowIntegration(
+							token,
+							app_result.id,
+							settings,
+							wfToken
+						);
+						const wfPages = await vaultSDK.getWebflowPages(
+							wfToken,
+							site.id
+						);
+						setApp(app_result);
+						setSettings(i_result.settings);
+						setPages(wfPages.pages);
 
-						uploadScript(site.id, source);
-						break;
+						setPage(WebflowDialogPage.Member);
+
+						//let source = updateSourceAppID(result.id);
+						//await uploadScript(site.id, result.id);
+
+						// navigate to UpdateApp?
 					}
 				}
 			}
@@ -194,12 +242,12 @@ export function WebflowQuickIntegrationDialog(
 		return false;
 	}
 
-	async function uploadScript(siteid: string, source: string) {
+	async function uploadScript(siteid: string, appId: string) {
 		try {
 			let response = await vaultSDK.uploadWebflowScript(
 				wfToken,
 				siteid,
-				source
+				appId
 			);
 			//console.log(response);
 			setPage(WebflowDialogPage.Button);
@@ -212,7 +260,13 @@ export function WebflowQuickIntegrationDialog(
 	}
 
 	function handleClose() {
+		// navigate
+		setPage(WebflowDialogPage.Upload);
 		props.handleClose();
+	}
+
+	function handleComplete() {
+		navigate("/developer/app/" + appId);
 	}
 
 	function copy(text: string) {
@@ -230,6 +284,23 @@ export function WebflowQuickIntegrationDialog(
 				return <DisplayAuth />;
 			case WebflowDialogPage.Upload:
 				return <DisplayUpload />;
+			case WebflowDialogPage.Member:
+				if (app != null && settings != null) {
+					return (
+						<WebflowAddPagesIntegration
+							app={app}
+							settings={settings}
+							pages={pages}
+							webflowToken={wfToken}
+							handleSkip = {()=>{setPage(WebflowDialogPage.Button);}}
+							handleComplete={() => {
+								setPage(WebflowDialogPage.Button);
+							}}
+						></WebflowAddPagesIntegration>
+					);
+				} else {
+					return <DisplayButton />;
+				}
 			case WebflowDialogPage.Button:
 				return <DisplayButton />;
 			default:
@@ -356,7 +427,10 @@ export function WebflowQuickIntegrationDialog(
 					</Typography>
 				</DialogContent>
 				<DialogActions sx={{ justifyContent: "center", mb: 2 }}>
-					<Button variant="contained" onClick={() => handleClose()}>
+					<Button
+						variant="contained"
+						onClick={() => handleComplete()}
+					>
 						Setup Complete
 					</Button>
 				</DialogActions>
