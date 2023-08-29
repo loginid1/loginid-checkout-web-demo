@@ -11,6 +11,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { DisplayAppList } from "../../../components/AppList";
 import { WebflowQuickIntegrationDialog } from "../../../components/dialogs/WebflowQuickIntegrationDialog";
+import { SectionCard } from "../../../components/SectionCard";
 import { VaultBase } from "../../../components/VaultBase";
 import vaultSDK from "../../../lib/VaultSDK";
 import { AppList } from "../../../lib/VaultSDK/vault/developer";
@@ -91,24 +92,23 @@ export default function DeveloperConsole() {
 							Add your first application
 						</Button>
 					</Stack>
+
 					<Alert
 						severity="info"
 						action={
 							<Button
+								variant="outlined"
+								color="inherit"
 								size="small"
 								onClick={() => setOpenWebflow(true)}
 							>
 								Integrate with Webflow
 							</Button>
 						}
-						sx={{
-							"& .MuiAlert-message": {
-								textAlign: "left",
-								width: "inherit",
-							},
-						}}
+						sx={{ p: 2 }}
 					>
-						For Webflow developer, you can create a new integration here.
+						For Webflow developer, you can create a new integration
+						application here.
 					</Alert>
 				</>
 			) : (
@@ -117,21 +117,18 @@ export default function DeveloperConsole() {
 						severity="info"
 						action={
 							<Button
+								variant="outlined"
+								color="inherit"
 								size="small"
 								onClick={() => setOpenWebflow(true)}
 							>
 								Integrate with Webflow
 							</Button>
 						}
-						sx={{
-							"& .MuiAlert-message": {
-								textAlign: "left",
-								width: "inherit",
-							},
-						}}
+						sx={{ p: 2 }}
 					>
-						For Webflow developer, you can create and integrate
-						here.
+						For Webflow developer, you can create a new integration
+						application here.
 					</Alert>
 					<Paper
 						elevation={0}

@@ -206,8 +206,10 @@ export default function Register() {
 							alignItems: "center",
 						}}
 					>
-						{ entry === 'developer' ? <VaultLogoDev /> : <VaultLogo /> }
-
+						{ entry === 'developer' ? (
+						
+							<>
+						<VaultLogoDev />
 						<Typography
 							variant="body1"
 							marginTop={2}
@@ -215,6 +217,21 @@ export default function Register() {
 						>
 							The seamless way to introduce passwordless passkey login to your site or app. Get started in a few minutes. No credit card needed.
 						</Typography>
+							</>
+						
+						) : (
+							<>
+						<VaultLogo />
+						<Typography
+							variant="body1"
+							marginTop={2}
+							maxWidth="400px"
+						>
+							<strong>Sign up</strong>
+						</Typography>
+							</>
+						) }
+
 						{errorMessage.length > 0 && (
 							<Alert severity="error">{errorMessage}</Alert>
 						)}
@@ -227,7 +244,7 @@ export default function Register() {
 						<Typography variant="body1">
 							By clicking 'Create Account', I agree to the{" "}
 							<Link onClick={() => setTermOpen(true)}>
-								terms of service
+								Terms of Service
 							</Link>
 							<TermDialog
 								open={termOpen}

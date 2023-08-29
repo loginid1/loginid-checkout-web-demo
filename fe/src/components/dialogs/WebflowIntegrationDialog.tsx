@@ -16,13 +16,15 @@ import {
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import vaultSDK from "../../lib/VaultSDK";
-import { VaultApp } from "../../lib/VaultSDK/vault/developer";
-import { WebflowDomain, WebflowSite } from "../../lib/VaultSDK/vault/webflow";
+import { VaultApp, WebflowSettings } from "../../lib/VaultSDK/vault/developer";
+import { WebflowDomain, WebflowPage, WebflowSite } from "../../lib/VaultSDK/vault/webflow";
 import { WebflowService } from "../../services/webflow";
 import { KeyDisplay } from "../KeyDisplay";
 import styles from "../../styles/common.module.css";
 import { DisplayMessage } from "../../lib/common/message";
 import { AuthService } from "../../services/auth";
+import { WebflowAddPagesIntegration } from "../WebflowAddPageIntegration";
+import { useNavigate } from "react-router-dom";
 
 interface WebflowIntegrationProps extends DialogProps {
 	app: VaultApp;
@@ -33,7 +35,8 @@ interface WebflowIntegrationProps extends DialogProps {
 export enum WebflowDialogPage {
 	Auth = "auth",
 	Upload = "upload",
-	Button = "button-design"
+	Button = "button-design",
+	Member = "member",
 }
 
 const wallet_url = process.env.REACT_APP_WALLET_URL || "https://wallet.loginid.io";
@@ -44,6 +47,9 @@ export function WebflowIntegrationDialog(props: WebflowIntegrationProps) {
 	const [sites, setSites] = useState<WebflowSite[]>([]);
 	const [selectedSite, setSelectedSite] = useState<string>("");
 	const [displayMessage, setDisplayMessage] = useState<DisplayMessage | null>( null);
+	const [settings, setSettings] = useState<WebflowSettings | null>(null);
+	const [pages, setPages] = useState<WebflowPage[]>([]);
+	const navigate=useNavigate();
 
 	useEffect(()=> {
 		// check if access token
@@ -61,34 +67,6 @@ export function WebflowIntegrationDialog(props: WebflowIntegrationProps) {
 		event.target.checked;
 	}
 
-	function updateSourceAppID(app_id: string): string {
-		return `
-    window.onload = function () {
-        const loginidDom = document.getElementById('loginid-button');
-        loginidDom.addEventListener('click', async function(event){
-            event.preventDefault();
-            let api = loginidDom.getAttribute("loginid-api");
-            if(api == null) {
-                api = '${app_id}';
-            }
-            const wallet = new loginid.WalletSDK(
-				'${wallet_url}', api, null
-				);
-            const response = await wallet.signup();
-            document.cookie = 'loginid-token='+response.token;
-                
-            let redirect_success = loginidDom.getAttribute("loginid-success");
-            if (redirect_success) {
-                document.location.href=redirect_success;
-            } else {
-                redirect_success = loginidDom.getAttribute("href");
-                document.location.href=redirect_success;
-            }
-        });
-    }
-
-	`;
-	}
 
 	async function handleConnectWebflow(){
 
@@ -136,9 +114,16 @@ export function WebflowIntegrationDialog(props: WebflowIntegrationProps) {
 						const settings = {site_id: site.id, site_name: site.displayName, site_shortname: site.shortName, login_page:"/", protected_pages:[]};
 						const i_result = await vaultSDK.setupWebflowIntegration(token, props.app.id, settings, wfToken );						
 
+						const wfPages = await vaultSDK.getWebflowPages(
+							wfToken,
+							site.id
+						);
+						setSettings(i_result.settings);
+						setPages(wfPages.pages);
+
+						setPage(WebflowDialogPage.Member);
 						//let source = updateSourceAppID(props.app.id);
 						//uploadScript(site.id, props.app.id);
-						handleClose();
 						break;
 					}
 				}
@@ -150,46 +135,16 @@ export function WebflowIntegrationDialog(props: WebflowIntegrationProps) {
 			});
 		}
 	}
-/*
-	async function uploadScript(siteid: string, appId: string) {
-		try {
-			let response = await vaultSDK.uploadWebflowScript(
-				token,
-				siteid,
-				appId
-			);
-			//console.log(response);
-			setPage(WebflowDialogPage.Button);
-		} catch (error) {
-			setDisplayMessage({
-				type: "error",
-				text: (error as Error).message,
-			});
-		}
-	}
-*/
-	/*
-	async function uploadScript() {
-
-		try {
-			let response = await vaultSDK.uploadWebflowScript(token, selectedSite,props.source);
-			//console.log(response);
-			setPage(WebflowDialogPage.Button);	
-		} catch(error) {
-			console.log(error);
-			setDisplayMessage({
-				type: "error",
-				text: (error as Error).message,
-			});
-		}
-	}
-	*/
 
 
 	function handleClose() {
 		props.handleClose();
 	}
 
+	function handleComplete() {
+		navigate("/developer/app/" + props.app.id);
+		props.handleClose();
+	}
 
 	function copy(text: string) {
 		navigator.clipboard.writeText(text);
@@ -208,6 +163,23 @@ export function WebflowIntegrationDialog(props: WebflowIntegrationProps) {
 				return <DisplayUpload />;
 			case WebflowDialogPage.Button:
 				return <DisplayButton />;
+			case WebflowDialogPage.Member:
+				if (settings != null) {
+					return (
+						<WebflowAddPagesIntegration
+							app={props.app}
+							settings={settings}
+							pages={pages}
+							webflowToken={wfToken}
+							handleSkip = {()=>{setPage(WebflowDialogPage.Button);}}
+							handleComplete={() => {
+								setPage(WebflowDialogPage.Button);
+							}}
+						></WebflowAddPagesIntegration>
+					);
+				} else {
+					return <DisplayButton />;
+				}
 			default:
 				return <DisplayAuth></DisplayAuth>;
 		}
@@ -321,7 +293,7 @@ export function WebflowIntegrationDialog(props: WebflowIntegrationProps) {
 				</DialogContent>
 				<DialogActions sx={{ justifyContent: "center", mb: 2 }}>
 
-					<Button variant="contained" onClick={() => handleClose()}>
+					<Button variant="contained" onClick={() => handleComplete()}>
 						Setup Complete	
 					</Button>
 				</DialogActions>

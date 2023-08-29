@@ -72,7 +72,7 @@ export function WebflowAddPagesIntegration(
 		<>
 			<DialogContent>
 				<Typography align="center" variant="h2" color="secondary">
-					Page Access Control!
+					Page Access Control
 				</Typography>
 
 				{displayMessage && (
@@ -112,7 +112,7 @@ export function WebflowAddPagesIntegration(
 			<DialogActions sx={{ justifyContent: "center", mb: 2 }}>
 				{props.handleSkip && (
 					<Button variant="text" onClick={props.handleSkip}>
-						Skip Later	
+						Skip For Now	
 					</Button>
 				)}
 				{props.handleCancel && (
