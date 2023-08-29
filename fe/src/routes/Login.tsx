@@ -97,7 +97,7 @@ const Login: React.FC = () => {
           >
             { isDeveloper ? <VaultLogoDev /> : <VaultLogo /> }
             <Typography variant="body1" marginTop={2}>
-              Login securely to your LoginID Wallet Account.
+              Access securely to your LoginID Wallet Account.
             </Typography>
             {errorMessage.length > 0 && (
               <Alert severity="error">{errorMessage}</Alert>
@@ -119,6 +119,10 @@ const Login: React.FC = () => {
             <Typography variant="body1">
               Don't have an account yet?{" "}
               <Link href={redirect_url?"./register?redirect_url="+redirect_url:"./register"}>Register</Link>
+            </Typography>
+            <Typography variant="body1">
+              Are you a developer?{" "}
+              <Link href={redirect_url?"./developer/register?redirect_url="+redirect_url:"./developer/register"}>Developer Account</Link>
             </Typography>
           </Stack>
         </Paper>

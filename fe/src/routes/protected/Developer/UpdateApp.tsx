@@ -142,19 +142,22 @@ export default function UpdateApp() {
 				});
 
 				setAttributeList(mattrs);
-
-				// get integration
-				const inResult = await vaultSDK.getWebflowIntegration(
-					token,
-					app_id
-				);
-				setIntegration(inResult);
-				console.log("integration: ", inResult);
+				getIntegration();
 			}
 		};
 
 		fetchData();
 	}, []);
+
+	async function getIntegration() {
+		const token = AuthService.getToken();
+		// get integration
+		if (token && app_id) {
+
+		const inResult = await vaultSDK.getWebflowIntegration(token, app_id);
+		setIntegration(inResult);
+		}
+	}
 
 	async function handleUpdateApp() {
 		const token = AuthService.getToken();
@@ -477,11 +480,18 @@ export default function UpdateApp() {
 									}
 									handleClose={() => {
 										setOpenPagesDialog(false);
+									
 									}}
 								></WebflowPagesDialog>
 							</Grid>
 						</SectionCard>
 					) : (
+
+						<SectionCard
+							title="Webflow Integration"
+							expandable={false}
+						>
+
 						<Alert
 							severity="info"
 							action={
@@ -494,10 +504,13 @@ export default function UpdateApp() {
 								</Button>
 							}
 						>
-							For Webflow integration, you can connect and upload
-							the scripts here.
+							For Webflow integratoin, you can connect and integrate with your site here. 
 						</Alert>
+
+						</SectionCard>
 					)}
+
+					{ integration == null &&
 
 					<SectionCard title="Quick Code Setup" expandable={false}>
 						<Grid container spacing={{ md: 2, xs: 1 }}>
@@ -547,12 +560,14 @@ export default function UpdateApp() {
 							</Grid>
 						</Grid>
 					</SectionCard>
+	}
 					<WebflowIntegrationDialog
 						open={openWebflow}
 						app={application}
 						source={webflow_custom_source}
 						handleClose={() => {
 							setOpenWebflow(false);
+							getIntegration();
 						}}
 					></WebflowIntegrationDialog>
 				</>
