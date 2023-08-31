@@ -53,7 +53,6 @@ export default function Register() {
 	const params = useParams();
 
 	useEffect(() => {
-		console.log(process.env);
 		let aEntry = params["entry"];
 		if (aEntry != null && aEntry === "algo") {
 			setEntry("algo");
