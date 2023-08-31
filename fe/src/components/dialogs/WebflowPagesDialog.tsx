@@ -40,6 +40,7 @@ interface WebflowPagesDialogProps extends DialogProps {
 export enum WebflowDialogPage {
 	Auth = "auth",
 	Page = "page",
+	Publish = "publish",
 }
 
 const wallet_url =
@@ -104,10 +105,20 @@ export function WebflowPagesDialog(props: WebflowPagesDialogProps) {
 			case WebflowDialogPage.Auth:
 				return <DisplayAuth />;
 			case WebflowDialogPage.Page:
-				return <WebflowAddPagesIntegration
-				app={props.app} settings={props.settings} pages={pages} webflowToken={token} handleCancel={props.handleClose}
-				handleComplete={props.handleClose}
-				></WebflowAddPagesIntegration>
+				return (
+					<WebflowAddPagesIntegration
+						app={props.app}
+						settings={props.settings}
+						pages={pages}
+						webflowToken={token}
+						handleCancel={props.handleClose}
+						handleComplete={() => {
+							setPage(WebflowDialogPage.Publish);
+						}}
+					></WebflowAddPagesIntegration>
+				);
+			case WebflowDialogPage.Publish:
+				return <DisplayPublish />;
 			default:
 				return <DisplayAuth></DisplayAuth>;
 		}
@@ -135,6 +146,42 @@ export function WebflowPagesDialog(props: WebflowPagesDialogProps) {
 						onClick={() => handleConnectWebflow()}
 					>
 						Connect
+					</Button>
+				</DialogActions>
+			</>
+		);
+	}
+
+	function DisplayPublish() {
+		return (
+			<>
+				<DialogContent>
+					<Typography align="center" variant="h2" color="secondary">
+						Publish Using Webflow Designer
+					</Typography>
+					<Typography
+						align="left"
+						variant="body1"
+						component="div"
+						sx={{ p: 2 }}
+					>
+						Your changes have successfully uploaded to Webflow! You
+						need to <strong>publish</strong> the site on your Webflow designer for
+						the changes to go live.
+					</Typography>
+					<Box
+						component="img"
+						alignItems="center"
+						src="/webflow/webflow-publish.png"
+						sx={{ width: "100%" }}
+					/>
+				</DialogContent>
+				<DialogActions sx={{ justifyContent: "center", mb: 2 }}>
+					<Button
+						variant="contained"
+						onClick={() => handleClose()}
+					>
+						Complete	
 					</Button>
 				</DialogActions>
 			</>

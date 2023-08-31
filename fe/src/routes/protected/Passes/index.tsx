@@ -28,6 +28,8 @@ import { VaultBase } from "../../../components/VaultBase";
 import NewPass from "./new";
 import { Consent } from "../../../lib/VaultSDK/vault/user";
 
+const DISABLE_NEW_PASS = process.env.REACT_APP_DISABLE_NEW_PASS || "false";
+
 function stringToColor(string: string) {
 	let hash = 0;
 	let i;
@@ -196,7 +198,7 @@ const Passes = () => {
 					Passes
 				</Typography>
 				{
-					(passes !== null && passes.length !== 0) &&
+					(passes !== null && passes.length !== 0 && DISABLE_NEW_PASS === "false") &&
 					<Button variant="text" onClick={() => {navigate('/passes/new')}}>
 						<Add/>
 						Add a new pass
@@ -216,12 +218,14 @@ const Passes = () => {
 							<Typography align="center" fontSize={30} fontWeight="bold" color="rgba(0,0,0,0.5)" sx={{pb: 5, pt: 10}}>
 								You don't have any passes yet
 							</Typography>
+							{ DISABLE_NEW_PASS === "false" &&
 							<Stack direction="row" justifyContent="center" spacing={2}>
 								<Button variant="text" onClick={() => {navigate('/passes/new')}}>
 									<Add/>
 									Add your first pass
 								</Button>
 							</Stack>
+							}
 						</>
 					) : (
 						<>
