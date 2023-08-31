@@ -120,6 +120,8 @@ export default function Register() {
 			//navigate("/quick_add_algorand");
 			if (entry === "algo") {
 				handleAccountCreation();
+			} else if (redirect_url != null) {
+				navigate(redirect_url);
 			} else {
 				navigate("/home");
 			}
