@@ -242,7 +242,7 @@ func (h *FederatedAuthHandler) FederatedRegisterCompleteHandler(w http.ResponseW
 		return
 	}
 
-	if claims.Email != request.Username || claims.Session != request.SessionID || utils.IsExpired(claims.IssuedAt, 5*time.Minute) {
+	if claims.Email != request.Username || claims.Type != keystore.KEmailClaimsRegister || claims.Session != request.SessionID || utils.IsExpired(claims.IssuedAt, 5*time.Minute) {
 		http_common.SendErrorResponse(w, services.NewError("invalid email validation"))
 		return
 	}
@@ -315,6 +315,98 @@ func (h *FederatedAuthHandler) FederatedRegisterCompleteHandler(w http.ResponseW
 	}
 
 	db_jwt, err := h.KeystoreService.GenerateDashboardJWT(fidoData.User.Username, userid, fidoData.User.ID, "")
+	if err != nil {
+		http_common.SendErrorResponse(w, *err)
+		return
+	}
+
+	data := email.SignupMail{
+		Url: fmt.Sprintf("%s/login", EmailBaseUrl),
+	}
+	if err := email.SendSignupEmail(request.Username, data); err != nil {
+		logger.ForRequest(r).Error(err.Error())
+	}
+
+	resp := AuthCompleteResponse{
+		Jwt: db_jwt,
+	}
+
+	http_common.SendSuccessResponse(w, resp)
+}
+
+type RegisterWithoutFidoRequest struct {
+	Username   string `json:"username"`
+	SessionID  string `json:"session_id"`
+	EmailToken string `json:"email_token"`
+	Scopes     string `json:"scopes"`
+}
+
+func (h *FederatedAuthHandler) FederatedRegisterWithoutFidoHandler(w http.ResponseWriter, r *http.Request) {
+	var request RegisterWithoutFidoRequest
+	defer r.Body.Close()
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		http_common.SendErrorResponse(w, services.NewError("failed to parse request"))
+		return
+	}
+
+	// validate token
+	claims, err := h.KeystoreService.VerifyEmailJWT(request.EmailToken)
+	if err != nil {
+		http_common.SendErrorResponse(w, services.NewError("invalid email validation"))
+		return
+	}
+
+	if claims.Email != request.Username || claims.Type != keystore.KEmailClaimsRegister || claims.Session != request.SessionID || utils.IsExpired(claims.IssuedAt, 5*time.Minute) {
+		http_common.SendErrorResponse(w, services.NewError("invalid email validation"))
+		return
+	}
+
+	// save user to database
+	userid, err := h.UserService.CreateUserAccountWithoutFido(request.Username, request.Scopes, true)
+	if err != nil {
+		http_common.SendErrorResponse(w, *err)
+		return
+	}
+
+	// create email pass
+	passData := pass.EmailPassSchema{
+		Email: claims.Email,
+	}
+	maskedData, _ := utils.MaskEmailAddress(claims.Email)
+	if err := h.PassService.ForceAddPass(r.Context(), userid, "My e-mail", "email", maskedData, pass.EmailPassSchemaType, passData); err != nil {
+		http_common.SendErrorResponse(w, *err)
+		return
+	}
+
+	// update session
+	sess, err := h.AppService.UpdateSession(request.SessionID, userid)
+	if err != nil {
+		http_common.SendErrorResponse(w, *err)
+		return
+	}
+
+	// send ID token
+	token := keystore.IDTokenClaims{
+		Client: sess.AppID,
+		Sub:    request.Username,
+		Iat:    time.Now().Unix(),
+		Nonce:  "",
+		Passes: []keystore.PassClaims{},
+	}
+	jwt, err := h.KeystoreService.GenerateIDTokenJWT(token)
+	if err != nil {
+		logger.ForRequest(r).Error(err.Message)
+		http_common.SendErrorResponse(w, *err)
+		return
+	}
+	// update token session
+	_, err = h.AppService.UpdateSessionToken(request.SessionID, jwt)
+	if err != nil {
+		http_common.SendErrorResponse(w, *err)
+		return
+	}
+
+	db_jwt, err := h.KeystoreService.GenerateDashboardJWT(request.Username, userid, "", "")
 	if err != nil {
 		http_common.SendErrorResponse(w, *err)
 		return
@@ -590,6 +682,15 @@ func (h *FederatedAuthHandler) FederatedSendEmailSessionHandler(w http.ResponseW
 		return
 	}
 
+	if request.Type == "login" {
+		// verify if user existed!
+		user, serr := h.UserService.GetUser(request.Email)
+		if serr != nil || user == nil {
+			http_common.SendErrorResponse(w, services.NewError("invalid user"))
+			return
+		}
+	}
+
 	var sessionId = request.Session
 
 	if sessionId == "" {
@@ -803,8 +904,14 @@ func (h *FederatedAuthHandler) subscribeChannel(r *http.Request, ws *websocket.C
 					logger.ForRequest(r).Error(serr.Message)
 					break
 				}
+				// generate dashboard token
+				db_jwt, serr := h.KeystoreService.GenerateDashboardJWT(user.Username, user.ID, "", user.Scopes)
+				if serr != nil {
+					logger.ForRequest(r).Error(serr.Message)
+					break
+				}
 
-				err := ws.WriteMessage(websocket.TextMessage, []byte(jwt))
+				err := ws.WriteMessage(websocket.TextMessage, []byte(db_jwt))
 				if err != nil {
 					logger.ForRequest(r).Error(err.Error())
 					break

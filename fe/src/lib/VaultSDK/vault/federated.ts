@@ -135,6 +135,17 @@ export class VaultFederated extends Base {
 		);
 	}
 
+	async federated_register_nofido( username: string, sessionId: string, email_token: string
+	): Promise<AuthResult> {
+		return await utils.http.post(
+			this._baseURL,
+			"/api/federated/register/nofido",
+			{ username: username, session_id: sessionId, email_token: email_token, scopes: "" }
+		);
+	}
+
+
+
 	/**
 	 * Sign up a user for FIDO2 authentication.
 	 * @returns {Promise<Result>}

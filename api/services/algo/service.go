@@ -56,7 +56,10 @@ func (algo *AlgoService) CreateAccount(username string, alias string, verify_add
 		return services.CreateError("failed to validate credentials list")
 	}
 
-	credential_list := extractCredentialPKs(credentials)
+	credential_list := extractCredentialPKs(credentials, "P-256")
+	if len(credential_list) == 0 {
+		return services.CreateError("no supported credential")
+	}
 
 	contractAccount, err := algo.AlgoNet.GenerateContractAccount(credential_list, recovery, true)
 	if err != nil {
@@ -108,7 +111,10 @@ func (algo *AlgoService) RekeyAccountInit(username string, rekey_address string,
 		return nil, nil, services.CreateError("failed to validate credentials list")
 	}
 
-	credential_list := extractCredentialPKs(credentials)
+	credential_list := extractCredentialPKs(credentials, "P-256")
+	if len(credential_list) == 0 {
+		return nil, nil, services.CreateError("no supported credential")
+	}
 
 	contractAccount, err := algo.AlgoNet.GenerateContractAccount(credential_list, recovery, false)
 	if err != nil {
@@ -369,7 +375,11 @@ func (algo *AlgoService) QuickAccountCreation(username string, recovery_pk strin
 	}
 
 	credential_id_list := extractCredentialIDs(credentials)
-	credential_list := extractCredentialPKs(credentials)
+	// only allow P-256 to be use
+	credential_list := extractCredentialPKs(credentials, "P-256")
+	if len(credential_list) == 0 {
+		return nil, services.CreateError("no supported credential")
+	}
 
 	if recovery_pk != "" {
 
@@ -714,10 +724,12 @@ func (s *AlgoService) GetAssetInfo(id uint64) (*models.Asset, *services.ServiceE
 	return result, nil
 }
 
-func extractCredentialPKs(credentials []user.UserCredential) []string {
+func extractCredentialPKs(credentials []user.UserCredential, alg string) []string {
 	var credList []string
 	for _, cred := range credentials {
-		credList = append(credList, cred.PublicKey)
+		if cred.KeyAlg == alg {
+			credList = append(credList, cred.PublicKey)
+		}
 	}
 	return credList
 }

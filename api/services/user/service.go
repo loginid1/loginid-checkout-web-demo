@@ -65,7 +65,7 @@ func (u *UserService) CreateUserAccount(username string, device_name string, dev
 	return user.ID, nil
 }
 
-func (u *UserService) CreateUserAccountWithoutEmail(username string, scopes string, validatedEmail bool) (string, *services.ServiceError) {
+func (u *UserService) CreateUserAccountWithoutFido(username string, scopes string, validatedEmail bool) (string, *services.ServiceError) {
 
 	if !validatedEmail {
 		return "", services.CreateError("invalid email")

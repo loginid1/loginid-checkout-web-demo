@@ -150,6 +150,7 @@ func main() {
 	api.HandleFunc("/federated/checkuser", federatedHandler.CheckUserHandler)
 	api.HandleFunc("/federated/sessionInit", federatedHandler.SessionInitHandler)
 	api.HandleFunc("/federated/getSession", federatedHandler.GetSessionHandler)
+	api.HandleFunc("/federated/register/nofido", federatedHandler.FederatedRegisterWithoutFidoHandler)
 	api.HandleFunc("/federated/register/init", federatedHandler.FederatedRegisterInitHandler)
 	api.HandleFunc("/federated/register/complete", federatedHandler.FederatedRegisterCompleteHandler)
 	api.HandleFunc("/federated/authenticate/init", federatedHandler.FederatedAuthInitHandler)

@@ -20,7 +20,7 @@ import {
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import vaultSDK from "../../../lib/VaultSDK";
-import { Credentials } from "../../../lib/VaultSDK/vault/user";
+import { Credentials, Credential } from "../../../lib/VaultSDK/vault/user";
 import { AuthService } from "../../../services/auth";
 import { VaultBase } from "../../../components/VaultBase";
 import Moment from "moment";
@@ -137,7 +137,7 @@ const PasskeyMenu = (props: {id: string; name: string; refreshCredentials: () =>
 const Passkeys = () => {
 	const navigate = useNavigate();
 
-	const [credentials, setCredentials] = useState<Credentials | null>(null);
+	const [credentials, setCredentials] = useState<Credential[] | null>(null);
 
 	useEffect(() => {
 		retrieveCredentials();
@@ -147,7 +147,9 @@ const Passkeys = () => {
 		const token = AuthService.getToken();
 		if (token) {
 			const myCredentials = await vaultSDK.getCredentials(token);
-			setCredentials(myCredentials);
+			if(myCredentials != null) {
+				setCredentials(myCredentials.credentials);
+			}
 		} else {
 		}
 	}
@@ -169,7 +171,7 @@ const Passkeys = () => {
 					Passkeys
 				</Typography>
 				{
-					(credentials !== null && credentials.credentials.length !== 0) &&
+					(credentials !== null  && credentials.length !== 0) &&
 					<Button variant="text" onClick={() => {navigate('/passkeys/new')}}>
 						<Add/>
 						Add a new passkey
@@ -177,29 +179,17 @@ const Passkeys = () => {
 				}
 			</Stack>
 			{ 
-				credentials === null ? 
-				(
-					<Stack direction="row" justifyContent="center">
-						<CircularProgress />
-					</Stack>
-				) : (
-					credentials.credentials.length === 0 ? 
+					credentials === null || credentials.length === 0 ? 
 					(
 						<>
-							<Typography align="center" fontSize={30} fontWeight="bold" color="rgba(0,0,0,0.5)" sx={{pb: 5, pt: 10}}>
-								You don't have any passes yet
+							<Typography align="center" fontSize={24} fontWeight="bold" color="rgba(0,0,0,0.5)" sx={{pb: 5, pt: 10}}>
+								You don't have any passkey yet! 
 							</Typography>
-							<Stack direction="row" justifyContent="center" spacing={2}>
-								<Button variant="text" onClick={() => {navigate('/passes/new')}}>
-									<Add/>
-									Add your first pass
-								</Button>
-							</Stack>
 						</>
 					) : (
 						<>
 							<Grid container direction="row" >
-								{ credentials.credentials.map(credential => (
+								{ credentials.map(credential => (
 									<Grid item padding={2} xl={4} lg={4} md={6} xs={12}>
 										<Card sx={{ display:"flex", flexWrap:"wrap", flexDirection:"column", justifyContent:"space-between" }}>
 											<CardHeader
@@ -236,7 +226,6 @@ const Passkeys = () => {
 							</Grid>
 						</>
 					)
-				)
 			}
 		</VaultBase>
 	);
