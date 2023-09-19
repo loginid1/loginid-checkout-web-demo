@@ -488,7 +488,7 @@ func (s *AppService) SetupOidcSession(appid string, redirect_uri string, code_ch
 
 func (s *AppService) UpdateSession(sessionid string, userid string) (*AppSession, *services.ServiceError) {
 
-	logger.Global.Info(fmt.Sprintf("update session %s", sessionid))
+	//logger.Global.Info(fmt.Sprintf("update session %s", sessionid))
 	session, err := s.getSession(sessionid)
 	if err != nil {
 		logger.Global.Error(err.Error())
@@ -505,7 +505,7 @@ func (s *AppService) UpdateSession(sessionid string, userid string) (*AppSession
 
 func (s *AppService) UpdateSessionToken(sessionid string, token string) (*AppSession, *services.ServiceError) {
 
-	logger.Global.Info(fmt.Sprintf("update session %s", sessionid))
+	//logger.Global.Info(fmt.Sprintf("update session %s", sessionid))
 	session, err := s.getSession(sessionid)
 	if err != nil {
 		logger.Global.Error(err.Error())

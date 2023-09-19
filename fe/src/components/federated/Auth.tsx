@@ -31,13 +31,8 @@ export function LoginPage(props: {
 	session: SessionInitResponse;
 	username: string;
 }) {
-	const {
-		username,
-		setUsername,
-		setPage,
-		handleCancel,
-		setToken,
-	} = useContext<AuthContextType | null>(AuthContext) as AuthContextType;
+	const { username, setUsername, setPage, handleCancel, setToken } =
+		useContext<AuthContextType | null>(AuthContext) as AuthContextType;
 
 	const [displayMessage, setDisplayMessage] = useState<DisplayMessage | null>(
 		null
@@ -102,12 +97,30 @@ export function LoginPage(props: {
 				let decoded = jwt_decode(token);
 				if (decoded != null) {
 					closeEmailDialog();
-					//registerFido(token);
 					setToken(token);
-					setPage(AuthPage.FIDO_REG);
-					clearAlert();
-					//ws?.close();
-					// register fido
+					window.PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable().then(
+						(enabled) => {
+							clearAlert();
+							if (enabled) {
+								/// check if FIDO capability
+								setPage(AuthPage.FIDO_REG);
+							} else {
+								vaultSDK
+									.federated_register_nofido(
+										username,
+										props.session.id,
+										token
+									)
+									.then((result) => {
+										AuthService.storeSession({
+											username: username,
+											token: result.jwt,
+										});
+										setPage(AuthPage.CONSENT);
+									});
+							}
+						}
+					);
 				}
 			};
 			ws.onclose = () => {
