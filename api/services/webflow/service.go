@@ -50,7 +50,7 @@ type WebflowTokenResponse struct {
 
 func (s *WebflowService) GetToken(code string) (string, *services.ServiceError) {
 
-	path := fmt.Sprintf("%s/%s", s.ApiBaseURL, "/oauth/access_token")
+	path := fmt.Sprintf("%s/%s", s.ApiBaseURL, "oauth/access_token")
 
 	data := url.Values{}
 	data.Set("code", code)
