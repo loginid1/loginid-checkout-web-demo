@@ -266,6 +266,12 @@ func main() {
 	oidc.HandleFunc("/auth", oidcHandler.Authorization).Methods("GET", http.MethodOptions)
 	oidc.HandleFunc("/token", oidcHandler.Token).Methods(http.MethodPost, http.MethodOptions)
 
+	cognitoHandler := handlers.CognitoOidcHandler{UserService: userService, KeystoreService: keystoreService, AppService: appService, RedisClient: db.GetCacheClient()}
+	cognito := r.PathPrefix("/cognito").Subrouter()
+	cognito.Use(middlewares.PublicCORSMiddleware)
+	cognito.HandleFunc("/auth", cognitoHandler.Authorization).Methods("GET", http.MethodOptions)
+	cognito.HandleFunc("/token", cognitoHandler.Token).Methods(http.MethodPost, http.MethodOptions)
+
 	// webflow handler
 	webflowHandler := handlers.WebflowHandler{Service: webflowService}
 	webflow := r.PathPrefix("/webflow").Subrouter()

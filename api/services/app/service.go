@@ -486,6 +486,64 @@ func (s *AppService) SetupOidcSession(appid string, redirect_uri string, code_ch
 	return &session, nil
 }
 
+func (s *AppService) SetupOidcSessionSecret(appid string, redirect_uri string, state string, ip string) (*AppSession, *services.ServiceError) {
+
+	app, serr := s.GetAppById(appid)
+	if serr != nil {
+		logger.Global.Error(serr.Message)
+		return nil, services.CreateError("invalid app id")
+	}
+
+	// generate random code
+	code, err := utils.GenerateRandomBytes(32)
+	if err != nil {
+		return nil, services.CreateError("fail to generate session")
+	}
+
+	code_key := fmt.Sprintf("%s/%s", appid, base64.RawURLEncoding.EncodeToString(code))
+	// lookup code challenge
+	_, err = s.getCode(code_key)
+	if err == nil {
+		logger.Global.Error(err.Error())
+		return nil, services.CreateError("code is already existed")
+	}
+
+	logger.Global.Info(fmt.Sprintf("redirect: %s state: %s", redirect_uri, state))
+	// make sure redirect_uri within origin
+	/*
+		if len(redirect_uri) > 0 && !strings.HasPrefix(redirect_uri, app.Origins) {
+			return nil, services.CreateError("invalid callback url")
+		}
+	*/
+
+	// store session with appID
+	session := AppSession{
+		AppID:      app.ID,
+		AppName:    app.AppName,
+		Attributes: app.Attributes,
+		ID:         appid,
+		Origin:     app.Origins,
+		IP:         ip,
+		Oidc:       &OidcExtras{RedirectUri: redirect_uri, Code: base64.RawURLEncoding.EncodeToString(code), State: state},
+	}
+
+	err = s.storeSession(session)
+	if err != nil {
+		logger.Global.Error(err.Error())
+		return nil, services.CreateError("session error")
+	}
+
+	logger.Global.Info(fmt.Sprintf("store code: %s", code_key))
+
+	err = s.storeCode(code_key, session.ID)
+	if err != nil {
+		logger.Global.Error(err.Error())
+		return nil, services.CreateError("session error")
+	}
+
+	return &session, nil
+}
+
 func (s *AppService) UpdateSession(sessionid string, userid string) (*AppSession, *services.ServiceError) {
 
 	//logger.Global.Info(fmt.Sprintf("update session %s", sessionid))
@@ -623,6 +681,22 @@ func (s *AppService) storeChallenge(key string, value string) error {
 }
 
 func (s *AppService) getChallenge(key string) (string, error) {
+	ctx := context.Background()
+	return s.redis.Get(ctx, key).Result()
+
+}
+
+func (s *AppService) storeCode(key string, value string) error {
+	ctx := context.Background()
+	err := s.redis.Set(ctx, key, value, 30*time.Minute).Err()
+	if err != nil {
+		return err
+	}
+	return nil
+
+}
+
+func (s *AppService) getCode(key string) (string, error) {
 	ctx := context.Background()
 	return s.redis.Get(ctx, key).Result()
 
