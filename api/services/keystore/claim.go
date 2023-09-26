@@ -40,10 +40,13 @@ type AuthSessionClaims struct {
 * return to federated apps after successful login
  */
 type IDTokenClaims struct {
+	Issuer string       `json:"iss"`
 	Client string       `json:"client"`
+	Aud    string       `json:"aud"`
 	Nonce  string       `json:"nonce,omitempty"`
 	Sub    string       `json:"sub"`
 	Iat    int64        `json:"iat"`
+	Exp    int64        `json:"exp"`
 	Passes []PassClaims `json:"passes,omitempty"`
 }
 

@@ -49,6 +49,9 @@ import AlgorandRecovery from './routes/protected/Algorand/AlgorandRecovery';
 import OidcAuth from './routes/api/OidcAuth';
 import WebflowCallback from './routes/api/WebflowCallback';
 import Member from './routes/protected/Developer/Member';
+import { CognitoAuth } from './routes/cognito/auth';
+import { CognitoPasswordless } from './routes/cognito/passwordless';
+import CognitoOidc from './routes/cognito/CognitoOidc';
 
 
 const reload = () => window.location.reload();
@@ -76,6 +79,9 @@ function App() {
         <Route path="/sdk/transaction" element={<WalletTxnConfirmation />} />
         <Route path="/sdk/webflow" element={<WebflowCallback />} />
         <Route path="/passes/new/drivers-license/mobile/:session" element={ <DriversLicenseMobile/> }/>
+        <Route path="/cognito/auth" element={<CognitoAuth />} />
+        <Route path="/cognito/passwordless" element={<CognitoPasswordless />} />
+        <Route path="/cognito/oidc/:session" element={<CognitoOidc />} />
         <Route path="/" element={<ProtectedRoute />} >
           <Route path="/help" element={<Help />} />
           <Route path="/home" element={<Passkeys />} />

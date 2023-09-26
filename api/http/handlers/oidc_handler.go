@@ -111,6 +111,7 @@ type TokenRequest struct {
 type TokenResponse struct {
 	AccessToken string `json:"access_token"`
 	IDToken     string `json:"id_token,omitemty"`
+	TokenType   string `json:"token_type"`
 }
 
 func (h *OidcHandler) Token(w http.ResponseWriter, r *http.Request) {
@@ -162,10 +163,12 @@ func (h *OidcHandler) Token(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http_common.SendSuccessResponse(w, TokenResponse{AccessToken: app.Token})
+	http_common.SendSuccessResponse(w, TokenResponse{AccessToken: app.Token, IDToken: app.Token, TokenType: "Bearer"})
 }
 
 func (h *OidcHandler) GetJwks(w http.ResponseWriter, r *http.Request) {
+
+	logger.ForRequest(r).Info("GET JWKS")
 	jwks, serr := h.KeystoreService.GetJWKS()
 	if serr != nil {
 		http_common.SendErrorResponse(w, *serr)

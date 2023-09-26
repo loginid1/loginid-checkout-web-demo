@@ -57,6 +57,7 @@ import {
 	SessionInitResponse,
 } from "../../lib/VaultSDK/vault/federated";
 import { LoginPage } from "../../components/federated/Auth";
+import { CognitoLoginPage } from "../../components/federated/CognitoAuth";
 
 interface WalletLoginSession {
 	network: string;
@@ -69,7 +70,7 @@ let input: boolean = false;
 let wSession: WalletLoginSession | null = null;
 let ws: WebSocket | null = null;
 const mService = new MessagingService(window.parent);
-export default function OidcAuth() {
+export default function CognitoOidc() {
 	const [searchParams, setSearchParams] = useSearchParams();
 
 	const [waitingIndicator, setWaitingIndicator] = useState<boolean>(true);
@@ -272,20 +273,10 @@ export default function OidcAuth() {
 			<CssBaseline />
 			<Container
 				component="main"
-				maxWidth={false}
-				sx={{
-					display: "flex",
-					justifyContent: "center",
-					alignItems: "center",
-					backgroundImage: `url(${background})`,
-					height: `${window.innerHeight}px`,
-				}}
 			>
 				<Paper
 					elevation={0}
 					sx={{
-						p: { md: 6, xs: 2 },
-						borderRadius: "2%",
 					}}
 				>
 					{waitingIndicator && <LinearProgress />}
@@ -319,7 +310,7 @@ export default function OidcAuth() {
 							}}
 						>
 							{sessionInit && (
-								<LoginPage
+								<CognitoLoginPage
 									session={sessionInit}
 									username={username}
 								/>
@@ -374,6 +365,7 @@ export default function OidcAuth() {
 					)}
 					{page === AuthPage.FINAL && Final()}
 
+					{/*
 					<Divider variant="fullWidth" />
 					<Typography
 						variant="caption"
@@ -410,6 +402,7 @@ export default function OidcAuth() {
 						Learn more
 					</Link>
 					</Stack>
+					 */}
 					</Stack>
 				</Paper>
 			</Container>

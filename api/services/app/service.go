@@ -500,7 +500,7 @@ func (s *AppService) SetupOidcSessionSecret(appid string, redirect_uri string, s
 		return nil, services.CreateError("fail to generate session")
 	}
 
-	code_key := fmt.Sprintf("%s/%s", appid, code)
+	code_key := fmt.Sprintf("%s/%s", appid, base64.RawURLEncoding.EncodeToString(code))
 	// lookup code challenge
 	_, err = s.getCode(code_key)
 	if err == nil {
@@ -532,6 +532,8 @@ func (s *AppService) SetupOidcSessionSecret(appid string, redirect_uri string, s
 		logger.Global.Error(err.Error())
 		return nil, services.CreateError("session error")
 	}
+
+	logger.Global.Info(fmt.Sprintf("store code: %s", code_key))
 
 	err = s.storeCode(code_key, session.ID)
 	if err != nil {

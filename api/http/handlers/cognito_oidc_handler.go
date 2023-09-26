@@ -93,7 +93,7 @@ func (h *CognitoOidcHandler) Authorization(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	redirectUrl := fmt.Sprintf("%s/sdk/oidc/%s", BASEURL, sesResp.ID)
+	redirectUrl := fmt.Sprintf("%s/cognito/oidc/%s", BASEURL, sesResp.ID)
 	// redirect
 	http.Redirect(w, r, redirectUrl, http.StatusSeeOther)
 }
@@ -109,6 +109,7 @@ type CognitoTokenRequest struct {
 type CognitoTokenResponse struct {
 	AccessToken string `json:"access_token"`
 	IDToken     string `json:"id_token,omitemty"`
+	TokenType   string `json:"token_type"`
 }
 
 func (h *CognitoOidcHandler) Token(w http.ResponseWriter, r *http.Request) {
@@ -140,7 +141,7 @@ func (h *CognitoOidcHandler) Token(w http.ResponseWriter, r *http.Request) {
 		hash.Write([]byte(codeVerifier))
 		code_challenge := base64.RawURLEncoding.EncodeToString(hash.Sum(nil))
 	*/
-	//logger.ForRequest(r).Info(fmt.Sprintf("challenge2 : %s, clientId : %s", code_challenge, clientId))
+	logger.ForRequest(r).Info(fmt.Sprintf("challenge2 : %s, clientId : %s", code, clientId))
 	key := fmt.Sprintf("%s/%s", clientId, code)
 
 	sessionid, err := h.RedisClient.Get(r.Context(), key).Result()
@@ -167,7 +168,9 @@ func (h *CognitoOidcHandler) Token(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http_common.SendSuccessResponse(w, TokenResponse{AccessToken: app.Token})
+	logger.ForRequest(r).Info(fmt.Sprintf("token %s", app.Token))
+
+	http_common.SendSuccessResponse(w, TokenResponse{AccessToken: app.Token, IDToken: app.Token, TokenType: "Bearer"})
 }
 
 func (h *CognitoOidcHandler) GetJwks(w http.ResponseWriter, r *http.Request) {

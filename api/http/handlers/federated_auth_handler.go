@@ -295,9 +295,12 @@ func (h *FederatedAuthHandler) FederatedRegisterCompleteHandler(w http.ResponseW
 
 	// send ID token
 	token := keystore.IDTokenClaims{
+		Issuer: API_BASEURL,
 		Client: sess.AppID,
+		Aud:    sess.AppID,
 		Sub:    request.Username,
 		Iat:    time.Now().Unix(),
+		Exp:    time.Now().Add(time.Hour * 24).Unix(),
 		Nonce:  "",
 		Passes: []keystore.PassClaims{},
 	}
@@ -387,9 +390,12 @@ func (h *FederatedAuthHandler) FederatedRegisterWithoutFidoHandler(w http.Respon
 
 	// send ID token
 	token := keystore.IDTokenClaims{
+		Issuer: API_BASEURL,
 		Client: sess.AppID,
+		Aud:    sess.AppID,
 		Sub:    request.Username,
 		Iat:    time.Now().Unix(),
+		Exp:    time.Now().Add(time.Hour * 24).Unix(),
 		Nonce:  "",
 		Passes: []keystore.PassClaims{},
 	}
@@ -486,9 +492,12 @@ func (h *FederatedAuthHandler) FederatedAuthCompleteHandler(w http.ResponseWrite
 
 	// send ID token
 	token := keystore.IDTokenClaims{
+		Issuer: API_BASEURL,
 		Client: sess.AppID,
+		Aud:    sess.AppID,
 		Sub:    request.Username,
 		Iat:    time.Now().Unix(),
+		Exp:    time.Now().Add(time.Hour * 24).Unix(),
 		Nonce:  "",
 		Passes: []keystore.PassClaims{},
 	}
@@ -886,9 +895,12 @@ func (h *FederatedAuthHandler) subscribeChannel(r *http.Request, ws *websocket.C
 
 				// send ID token
 				token := keystore.IDTokenClaims{
+					Issuer: API_BASEURL,
 					Client: sess.AppID,
+					Aud:    sess.AppID,
 					Sub:    request.Email,
 					Iat:    time.Now().Unix(),
+					Exp:    time.Now().Add(time.Hour * 24).Unix(),
 					Nonce:  "",
 					Passes: []keystore.PassClaims{},
 				}
