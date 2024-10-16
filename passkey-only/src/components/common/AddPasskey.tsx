@@ -40,6 +40,7 @@ export function AddPasskey(props: AddPasskeyProps) {
       const token = LoginidService.client.getSessionInfo().idToken;
       if(token){
         const session = await LoginidService.client.createPasskey(props.email, token);
+        localStorage.setItem("preid-email",props.email);
         props.onComplete(true);
       } else {
         setError("error create passkey - not authorized")
