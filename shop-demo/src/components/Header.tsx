@@ -1,3 +1,20 @@
+/*
+ *   Copyright (c) 2024 LoginID Inc
+ *   All rights reserved.
+
+ *   Licensed under the Apache License, Version 2.0 (the "License");
+ *   you may not use this file except in compliance with the License.
+ *   You may obtain a copy of the License at
+
+ *   http://www.apache.org/licenses/LICENSE-2.0
+
+ *   Unless required by applicable law or agreed to in writing, software
+ *   distributed under the License is distributed on an "AS IS" BASIS,
+ *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *   See the License for the specific language governing permissions and
+ *   limitations under the License.
+ */
+
 import {
   makeStyles,
   Theme,
@@ -17,12 +34,12 @@ import React, { useContext, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import AppContext from '../context/app-context'
-import { WalletSDK } from '@loginid/wallet-sdk'
 import ShoppingCartIcon from '@material-ui/icons/ShoppingCart'
 import AccountCircleIcon from '@material-ui/icons/AccountCircle'
 import { useHistory } from 'react-router-dom'
+import CheckoutSDK, { CheckoutRequest } from '../lib/CheckoutSDK/checkout'
 
-const wallet = new WalletSDK(process.env.REACT_APP_VAULT_URL || '', process.env.REACT_APP_WALLET_API )
+const wallet = new CheckoutSDK(process.env.REACT_APP_CHECKOUT_BASEURL || '', true, "checkout")
 /**
  * Page app bar component
  *
@@ -33,7 +50,8 @@ const Header = (props: any) => {
   const context = useContext(AppContext)
   const [username, setUsername] = useState<string>('')
   const [logout, setLogout] = useState(false)
-  const [anchorLogout, setAnchorLogout] = useState<any|null>(null)
+  const [anchorLogout, setAnchorLogout] = useState<any | null>(null)
+  const [preid, setPreid] = useState<string>("");
   const navigate = useHistory()
   // Make the JSS styles
   const classes = makeStyles((theme: Theme) =>
@@ -49,30 +67,42 @@ const Header = (props: any) => {
   )()
 
   useEffect(() => {
-    let account = wallet.getAccount()
+
+    getPreID();
+    let account = ""
     setUsername(account)
   }, [])
 
-  const handleCart = async () => {
-    let account = wallet.getAccount()
-    if (account != '') {
-      navigate.push('/cart')
-    } else {
-      let result = await wallet.signup();
-      console.log(result);
-      setUsername(result.claims.sub)
-    }
+  const getPreID = async () => {
+    const id = await wallet.preID();
+    setPreid(id.token);
   }
 
-  const handleSignin = async()=>{
-      let result = await wallet.signup()
-      console.log(result);
-      setUsername(result.claims.sub)
+  const handleCart = async () => {
+  }
+
+  const handleSignin = async () => {
+    try {
+      const callback_url = window.location.origin + "/callback";
+      const request: CheckoutRequest = {
+        preid: preid,
+        subtotal: "100.00",
+        tax: "0.00",
+        total: "100.00",
+        shipping: "0.0",
+        desc: "item",
+        callback: callback_url,
+      }
+      const result = await wallet.checkout(request);
+      console.log("checkout result: ", result);
+
+    } catch (e) {
+      console.log(e);
+    }
   }
 
   const handleLogout = () => {
     setUsername('')
-    wallet.logout()
     setLogout(false)
   }
 
@@ -94,14 +124,14 @@ const Header = (props: any) => {
             </Badge>
           </IconButton>
           {username === '' &&
-          <IconButton
-            edge="start"
-            color="inherit"
-            aria-label="account"
-            onClick={handleSignin}
-          >
+            <IconButton
+              edge="start"
+              color="inherit"
+              aria-label="account"
+              onClick={handleSignin}
+            >
               <AccountCircleIcon />
-          </IconButton>
+            </IconButton>
           }
           {username != '' && (
             <>
@@ -110,7 +140,7 @@ const Header = (props: any) => {
                 aria-controls="logout-menu"
                 aria-haspopup="true"
                 label={username}
-                onClick={(e ) => {
+                onClick={(e) => {
                   setLogout(true)
                   setAnchorLogout(e.currentTarget)
                 }}
