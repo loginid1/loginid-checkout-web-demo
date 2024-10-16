@@ -100,14 +100,10 @@ export function CheckoutConfirmPrompt(props: CheckoutConfirmPromptProps) {
         }
         clear()
         try {
-            const username = LoginidService.client.getCurrentUsername()
-            if (username) {
-                const result = await LoginidService.client.confirmTransaction(username, JSON.stringify(payData))
+            console.log(props.username);
+                const result = await LoginidService.client.confirmTransaction(props.username, JSON.stringify(payData))
                 setTxRef(result.token)
-                return props.onComplete(username, result.token, "checkout");
-            } else {
-                setError("not authorized")
-            }
+                return props.onComplete(props.username, result.token, "checkout");
         } catch (e: any) {
             setError(e.message || e.msg || e)
         }

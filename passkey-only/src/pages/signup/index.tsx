@@ -60,7 +60,7 @@ export default function SignupPage() {
 
     return (
         <Center h="100vh" w="100%">
-            <Card shadow="sm" w={{ base: 356, md: 480, lg: 550 }} mih={460} p="sm">
+            <Card shadow="sm" w={{ base: 356, md: 480, lg: 550 }} mih={480} p="sm">
                 <Flex justify="center" align="center" direction="column" w="100%">
                     <Image
                         h={48}

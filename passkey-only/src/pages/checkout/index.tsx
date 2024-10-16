@@ -155,7 +155,8 @@ export function CheckoutPage() {
     function onCheckoutConfirmHandle(email: string, token: string, next: string) {
         localStorage.setItem("preid-email",email);
         const baseCallback = payload?.callback || `http://localhost:3001/callback`;
-        const callback = baseCallback + `?data={"email":"${email}","token":"${token}","passkey":"true"}`;
+        const base64=btoa(`{"email":"${email}","token":"${token}","passkey":"true"}`);
+        const callback = baseCallback + `?data=${base64}`;
         if(redirect) {
             document.location.href = callback;
         } else {
