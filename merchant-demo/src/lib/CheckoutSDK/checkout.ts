@@ -40,7 +40,7 @@ export interface CheckoutRequest {
 	desc: string;
 	callback: string;
 	merchant: string;
-	
+
 }
 
 export interface IDResult {
@@ -76,13 +76,13 @@ export default class CheckoutSDK {
 	prepareIframe(): Window | null {
 		const height = 420;
 		let width = window.innerWidth;
-		if(width > 480) {
+		if (width > 480) {
 			width = 480;
 		}
 		var link = this.baseURL + "/checkout";
 
 		var main = document.createElement("div");
-		console.log("height: ", window.screen.height, window.screen.availHeight );
+		console.log("height: ", window.screen.height, window.screen.availHeight);
 
 		main.style.display = "block";
 		main.style.border = "none";
@@ -90,14 +90,14 @@ export default class CheckoutSDK {
 		main.style.zIndex = "9998";
 		main.style.backgroundColor = "#fff";
 		//main.style.right = "0";
-		main.style.left = "" + (window.innerWidth/2 - width/2 ) + "px" ;
-		main.style.top = "" +  (window.innerHeight - (height + 32)) + "px"  ;
+		main.style.left = "" + (window.innerWidth / 2 - width / 2) + "px";
+		main.style.top = "" + (window.innerHeight - (height + 32)) + "px";
 		main.style.boxShadow = "0 4px 8px 0 rgba(0,0,0,0.2)";
-		main.style.width = ""+width + "px";
+		main.style.width = "" + width + "px";
 
 
 		var image = document.createElement("img");
-		image.setAttribute("src", "data:image/svg+xml;base64,"+base64logo) ;
+		image.setAttribute("src", "data:image/svg+xml;base64," + base64logo);
 		image.style.display = "relative";
 		image.style.left = "8px";
 		image.style.top = "8px";
@@ -113,7 +113,7 @@ export default class CheckoutSDK {
 		close.style.display = "block";
 		close.style.fontSize = "12px";
 		close.style.fontWeight = "500";
-		close.style.fontFamily =  "sans-serif";
+		close.style.fontFamily = "sans-serif";
 		close.style.float = "right";
 		close.style.color = "#0d70d2";
 		close.style.position = "relative";
@@ -128,8 +128,8 @@ export default class CheckoutSDK {
 		iframe.style.border = "none";
 		iframe.style.position = "relative";
 		//iframe.width = "320px";
-		iframe.width = ""+width + "px";
-		iframe.height = ""+height + "px";
+		iframe.width = "" + width + "px";
+		iframe.height = "" + height + "px";
 		//iframe.height = "420px";
 		iframe.id = "loginid-auth";
 		iframe.allow = "publickey-credentials-get *; publickey-credentials-create * ";
@@ -140,7 +140,7 @@ export default class CheckoutSDK {
 		main.appendChild(iframe);
 
 		document.body.appendChild(main);
-		main.animate([{ transform: "translateY(100%)" }, { transform: "translateY(0)" }], {duration:500});
+		main.animate([{ transform: "translateY(100%)" }, { transform: "translateY(0)" }], { duration: 500 });
 		this.mMain = main;
 		return iframe.contentWindow;
 	}
@@ -251,21 +251,24 @@ export default class CheckoutSDK {
 	async checkout(request: CheckoutRequest): Promise<void> {
 		//const id = await this.preID();
 		//console.log("pre-id: ", id.token);
-		if(request.preid == "") {
-			const url = this.baseURL + "/checkout?data="+JSON.stringify(request);
+		if (request.preid == "") {
+			const url = this.baseURL + "/checkout?data=" + JSON.stringify(request);
 			document.location.href = url;
 		} else {
 			const result = await this.checkoutFrame(request);
-			document.location.href = result.callback + `?data={"email":"${result.email}","token":"${result.token}"}` 
+			const baseCallback = result.callback;
+			const base64 = btoa(`{"email":"${result.email}","token":"${result.token}","passkey":"true"}`);
+			const callback = baseCallback + `?data=${base64}`;
+			document.location.href = callback;
 
 		}
 	}
 
 	async preID(): Promise<IDResult> {
 		const preid = localStorage.getItem("preid-token");
-		if (preid && preid.length > 0 ) {
+		if (preid && preid.length > 0) {
 			console.log("preid ", preid);
-			return Promise.resolve ({token:preid});
+			return Promise.resolve({ token: preid });
 		}
 
 		const target = this.preparePreIDIframe();

@@ -27,7 +27,8 @@ export function CallbackPage() {
     useEffect(()=>{
         const query_data = searchParams.get("data");
         if(query_data){
-            const resp : CheckoutResult = JSON.parse(query_data);
+            const base64 = atob(query_data);
+            const resp : CheckoutResult = JSON.parse(base64);
 		    localStorage.setItem("preid-token", resp.email);
         }
     },[]);
