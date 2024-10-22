@@ -29,7 +29,10 @@ export function CallbackPage() {
         if(query_data){
             const base64 = atob(query_data);
             const resp : CheckoutResult = JSON.parse(base64);
-		    localStorage.setItem("preid-token", resp.email);
+            // only save token if passkey exist
+            if(resp.passkey){
+		        localStorage.setItem("preid-token", resp.email);
+            }
         }
     },[]);
 

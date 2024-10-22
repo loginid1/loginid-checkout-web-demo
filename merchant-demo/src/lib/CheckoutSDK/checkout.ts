@@ -23,6 +23,7 @@ export interface CheckoutResult {
 	email: string;
 	token: string;
 	callback: string;
+	passkey?: string;
 }
 
 export interface CheckoutResponse {
@@ -58,6 +59,7 @@ export default class CheckoutSDK {
 	//mMessage: MessagingService;
 	mTarget: Window | null = null;
 	mMain: HTMLDivElement | null = null;
+	mBackground: HTMLDivElement | null = null;
 	mApi?: string | null = null;
 	autoClose: boolean = true;
 	constructor(
@@ -79,10 +81,24 @@ export default class CheckoutSDK {
 		if (width > 480) {
 			width = 480;
 		}
+		let largeScreen = true;
+		if(window.innerWidth < 600) {
+			largeScreen = false;
+		} 
 		var link = this.baseURL + "/checkout";
 
 		var main = document.createElement("div");
 		console.log("height: ", window.screen.height, window.screen.availHeight);
+
+		var background = document.createElement("div");
+		background.style.display = "block";
+		background.style.position = "fixed";
+		background.style.backgroundColor = "#cccccccc";
+		background.style.top="0";
+		background.style.left="0";
+		background.style.width = "100%";
+		background.style.height = "100%";
+		main.style.zIndex = "9997";
 
 		main.style.display = "block";
 		main.style.border = "none";
@@ -90,8 +106,13 @@ export default class CheckoutSDK {
 		main.style.zIndex = "9998";
 		main.style.backgroundColor = "#fff";
 		//main.style.right = "0";
-		main.style.left = "" + (window.innerWidth / 2 - width / 2) + "px";
-		main.style.top = "" + (window.innerHeight - (height + 32)) + "px";
+		if(largeScreen) {
+			main.style.left = "" + (window.innerWidth/2  - width/2 ) + "px";
+			main.style.top = "" + (window.innerHeight/2 - (height + 32)/2) + "px";
+		} else {
+			main.style.left = "" + (window.innerWidth / 2 - width / 2) + "px";
+			main.style.top = "" + (window.innerHeight - (height + 32)) + "px";
+		}
 		main.style.boxShadow = "0 4px 8px 0 rgba(0,0,0,0.2)";
 		main.style.width = "" + width + "px";
 
@@ -122,6 +143,7 @@ export default class CheckoutSDK {
 		close.onclick = function () {
 			//main.style.display="none";
 			main.remove();
+			background.remove();
 		};
 
 		var iframe = document.createElement("iframe");
@@ -139,9 +161,13 @@ export default class CheckoutSDK {
 		main.appendChild(close);
 		main.appendChild(iframe);
 
+		document.body.appendChild(background);
 		document.body.appendChild(main);
-		main.animate([{ transform: "translateY(100%)" }, { transform: "translateY(0)" }], { duration: 500 });
+		if(!largeScreen){
+			main.animate([{ transform: "translateY(100%)" }, { transform: "translateY(0)" }], { duration: 500 });
+		}
 		this.mMain = main;
+		this.mBackground = background;
 		return iframe.contentWindow;
 	}
 	/**
@@ -161,10 +187,17 @@ export default class CheckoutSDK {
 		if (this.mMain != null) {
 			this.mMain?.remove();
 		}
+		if (this.mBackground != null) {
+			this.mBackground.remove();
+		}
+
 		let mMessage = new MessagingService("*");
 		mMessage.closeEvent = () => {
 			if (this.mMain != null) {
 				this.mMain.remove();
+			}
+			if (this.mBackground != null) {
+				this.mBackground.remove();
 			}
 		};
 		this.mTarget = this.prepareIframe();
@@ -252,7 +285,7 @@ export default class CheckoutSDK {
 		//const id = await this.preID();
 		//console.log("pre-id: ", id.token);
 		if (request.preid == "") {
-			const url = this.baseURL + "/checkout?data=" + JSON.stringify(request);
+			const url = this.baseURL + "/checkout?data=" + btoa(JSON.stringify(request));
 			document.location.href = url;
 		} else {
 			const result = await this.checkoutFrame(request);

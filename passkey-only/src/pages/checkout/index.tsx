@@ -55,12 +55,13 @@ export function CheckoutPage() {
     const [token, setToken] = useState<string>("");
     const [view, setView] = useState<CheckoutViewEnum>(CheckoutViewEnum.Wait)
     const [searchParams, setSearchParams] = useSearchParams();
+    const [regPasskey, setRegPasskey] = useState<boolean>(false);
     
     
 	useEffect(() => {
         const query_data = searchParams.get("data")
         if(query_data) {
-            payload = JSON.parse(query_data);
+            payload = JSON.parse(atob(query_data));
             setView(CheckoutViewEnum.Login);
             redirect = true;
         } else {
@@ -76,30 +77,6 @@ export function CheckoutPage() {
         }
 	}, []);
 
-	// check if account is authorized to interac with dDapp
-	async function checkSession() {
-		let result = await waitForInput();
-		if (result == true) {
-			// check signer permission
-			try {
-			} catch (error) {
-				console.log("txValidation error: " + error);
-				mService.sendErrorMessage(
-					"Invalid Transaction request: " + error
-				);
-				setDisplayMessage({
-					text: "Invalid transaction request: " + error,
-					type: "error",
-				});
-			}
-		} else {
-			mService.sendErrorMessage("Missing transaction request - timeout");
-			setDisplayMessage({
-				text: "Missing transaction request - timeout",
-				type: "error",
-			});
-		}
-	}
 
 	const INTERVAL = 100;
 	const TIMEOUT = 10000;
@@ -136,7 +113,7 @@ export function CheckoutPage() {
 
     function renderView(view: CheckoutViewEnum) {
             if(view == CheckoutViewEnum.Confirmation && payload != null) {
-                return <CheckoutConfirmPrompt username={username} token={token} request={payload} onComplete={onCheckoutConfirmHandle}/>;
+                return <CheckoutConfirmPrompt username={username} token={token} request={payload} regPasskey={regPasskey} onComplete={onCheckoutConfirmHandle}/>;
 
             } else if(view == CheckoutViewEnum.Wait) {
                 return <></>
@@ -150,6 +127,9 @@ export function CheckoutPage() {
         setUsername(email);
         setToken(token);
         setView(CheckoutViewEnum.Confirmation);
+        if(next === "passkey") {
+            setRegPasskey(true);
+        }
     }
 
     function onCheckoutConfirmHandle(email: string, token: string, next: string) {
