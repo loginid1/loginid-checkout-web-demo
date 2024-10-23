@@ -73,4 +73,29 @@ export default class ParseUtil {
 		return JSON.parse(jsonPayload);
 	}
 
+    static isWebview(): boolean {
+
+        const navigator : any = window.navigator;
+        const userAgent = navigator.userAgent;
+        const normalizedUserAgent = userAgent.toLowerCase();
+
+        const isIos = /ip(ad|hone|od)/.test(normalizedUserAgent) || navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1;
+        const isAndroid = /android/.test(normalizedUserAgent);
+        const isSafari = /safari/.test(normalizedUserAgent);
+        // ios only
+        let standalone = false;
+        if (isIos  ) {
+            standalone = navigator.standalone;
+        }
+        const isWebview = (isAndroid && /; wv\)/.test(normalizedUserAgent)) || (isIos && !standalone && !isSafari);
+        return isWebview;
+    }
+    static isIPhone(): boolean {
+
+        const navigator : any = window.navigator;
+        const userAgent = navigator.userAgent;
+        const normalizedUserAgent = userAgent.toLowerCase();
+        const isIphone = /iphone/.test(normalizedUserAgent) || navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1;
+        return isIphone;
+    }
 }

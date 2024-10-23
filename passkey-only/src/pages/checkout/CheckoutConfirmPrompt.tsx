@@ -17,10 +17,10 @@
 
 import ParseUtil from "@/lib/parse";
 import { LoginidService } from "@/services/loginid";
-import { Button, Grid, Modal, Text, Divider, Card, Group, Image, Title, Container, NativeSelect, rem } from "@mantine/core";
+import { Button, Grid, Modal, Text, Divider, Card, Group, Image, Title, Container, NativeSelect, rem, Checkbox } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { IconCreditCard } from "@tabler/icons-react";
-import { useState } from "react";
+import { Icon, IconCreditCard, IconFaceId, IconFingerprint } from "@tabler/icons-react";
+import { useEffect, useState } from "react";
 import { CheckoutRequest } from ".";
 
 export interface TxPayload {
@@ -48,7 +48,8 @@ export interface CheckoutConfirmPromptProps {
     username: string;
     token: string;
     request: CheckoutRequest;
-    onComplete: (email: string, token: string,  next: string) => void;
+    regPasskey: boolean;
+    onComplete: (email: string, token: string, next: string) => void;
 }
 export function CheckoutConfirmPrompt(props: CheckoutConfirmPromptProps) {
 
@@ -80,7 +81,9 @@ export function CheckoutConfirmPrompt(props: CheckoutConfirmPromptProps) {
 
     const [sendAmount, setSendAmount] = useState("");
     const [sendTo, setSendTo] = useState("");
+    const [regPK, setRegPK] = useState<boolean>(props.regPasskey);
 
+    const [buttonIcon, setButtonIcon] = useState<Icon>(IconCreditCard);
 
     function clearPay() {
         clear();
@@ -93,17 +96,52 @@ export function CheckoutConfirmPrompt(props: CheckoutConfirmPromptProps) {
         setSendTo("");
     }
 
+    useEffect(()=>{
+        if(props.token != "") {
+            setButtonIcon(IconCreditCard);
+        } else {
+            if(ParseUtil.isIPhone()) {
+                setButtonIcon(IconFaceId);
+            } else {
+                setButtonIcon(IconFingerprint);
+            }
+        }
+    },[]);
+
+    function ButtonIcon(){
+        const SIZE=24;
+        if(props.token != "") {
+            return <IconCreditCard size={SIZE}></IconCreditCard>;
+        } else {
+            if(ParseUtil.isIPhone()) {
+                return <IconFaceId size={SIZE}></IconFaceId>
+            } else {
+                return <IconFingerprint size={SIZE}></IconFingerprint>
+            }
+        }
+    }
+
     async function confirmPayTranstion() {
         // clear prior result
-        if(props.token != "") {
-            return props.onComplete(props.username, props.token, "checkout");
+        if (props.token != "") {
+            if( regPK) {
+                try {
+                    const session = await LoginidService.client.createPasskey(props.username, props.token);
+                    localStorage.setItem("preid-email",props.username);
+                } catch(e:any) {
+                    console.log(e);
+                }
+                return props.onComplete(props.username, props.token, "checkout");
+            } else {
+                return props.onComplete(props.username, props.token, "checkout");
+            }
         }
         clear()
         try {
             console.log(props.username);
-                const result = await LoginidService.client.confirmTransaction(props.username, JSON.stringify(payData))
-                setTxRef(result.token)
-                return props.onComplete(props.username, result.token, "checkout");
+            const result = await LoginidService.client.confirmTransaction(props.username, JSON.stringify(payData))
+            setTxRef(result.token)
+            return props.onComplete(props.username, result.token, "checkout");
         } catch (e: any) {
             setError(e.message || e.msg || e)
         }
@@ -145,7 +183,7 @@ export function CheckoutConfirmPrompt(props: CheckoutConfirmPromptProps) {
             }
             {error && <Text c="red.5">{error}</Text>}
             <Grid >
-                <Grid.Col span={4} style={{alignItems:"flex-end"}} ><Image  h={36} w={64} src="/assets/my-bank.png" /></Grid.Col>
+                <Grid.Col span={4} style={{display: "flex", justifyContent: "flex-end" }} ><Image h={36} w={64} src="/assets/my-bank.png" /></Grid.Col>
                 <Grid.Col span={8}>
                     <Text size="sm" ta="left">
                         My Bank Rewards<br />
@@ -192,9 +230,16 @@ export function CheckoutConfirmPrompt(props: CheckoutConfirmPromptProps) {
                 <Grid.Col span={8} ><Text fw={700} ta="right">PAY {payData.Merchant} </Text></Grid.Col>
                 <Grid.Col span={4} ta="left">${payData.Total}</Grid.Col>
             </Grid>
-
             <Divider mb="xs" mt="xs"></Divider>
-                    <Button onClick={confirmPayTranstion}>Confirm</Button>
+            {props.regPasskey &&
+
+                <Grid justify="center">
+                    <Grid.Col span={12}  ><Checkbox checked={regPK} label="Create a passkey for faster future checkout"
+                    /></Grid.Col>
+                </Grid>
+            }
+
+            <Button leftSection={ButtonIcon()} onClick={confirmPayTranstion}>Confirm</Button>
 
 
         </Container>
