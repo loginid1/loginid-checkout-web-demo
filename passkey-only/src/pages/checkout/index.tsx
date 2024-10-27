@@ -150,7 +150,8 @@ export function CheckoutPage() {
         const callback = baseCallback + `?data=${base64}`;
         if (redirect) {
             if(webview){
-                document.location.href = "abcbank://callback" + `?data=${base64}`;
+                const wbase64 = stringToBase64Url(`{"email":"${email}","token":"${token}"}`);
+                document.location.href = "abcbank://callback" + `?data=${wbase64}`;
             } else {
                 document.location.href = callback;
             }
