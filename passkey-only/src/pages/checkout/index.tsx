@@ -80,6 +80,10 @@ export function CheckoutPage() {
         const query_webview = searchParams.get("webview");
         if(query_webview) {
             setWebview(true);
+            if(query_webview != "null") {
+                setView(CheckoutViewEnum.Confirmation);
+                setUsername(query_webview);
+            }
         }
 
     }, []);
