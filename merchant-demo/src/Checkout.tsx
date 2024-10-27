@@ -16,11 +16,39 @@
  */
 
 import { useState, useEffect } from "react";
-import { BuildingStorefrontIcon, TruckIcon } from "@heroicons/react/24/outline";
 import CheckoutSDK, { CheckoutRequest } from "./lib/CheckoutSDK/checkout";
+import { AppBar, Badge, Button, Container, createTheme, Divider, Stack, ThemeProvider, Toolbar, Typography } from "@mui/material";
+import ShoppingCart from '@mui/icons-material/ShoppingCart';
+import Grid from '@mui/material/Grid2';
 
 const wallet = new CheckoutSDK(process.env.REACT_APP_CHECKOUT_BASEURL || '', true, "checkout")
+const callback_url = window.location.origin + "/callback";
+
+//const merchant_template = process.env.REACT_APP_MERCHANT || "a";
+let merchant_template = process.env.REACT_APP_MERCHANT || "b";
+
 export function CheckoutPage() {
+    const merchantA_request: CheckoutRequest = {
+        merchant: "EStore",
+        preid: "",
+        subtotal: "624.99",
+        tax: "81.24",
+        total: "718.29",
+        shipping: "12.00",
+        desc: "item",
+        callback: callback_url,
+    }
+    const merchantB_request: CheckoutRequest = {
+        merchant: "ZSports",
+        preid: "",
+        subtotal: "120.33",
+        tax: "7.24",
+        total: "127.57",
+        shipping: "0.00",
+        desc: "item",
+        callback: callback_url,
+
+    }
     const [screenwidth, setScreenWidth] = useState(600);
     const [username, setUsername] = useState<string>('');
     const [preid, setPreid] = useState<string>("");
@@ -34,24 +62,19 @@ export function CheckoutPage() {
 
 
 
+
     const getPreID = async () => {
         const id = await wallet.preID();
         setPreid(id.token);
     }
     async function checkout() {
         try {
-            const callback_url = window.location.origin + "/callback";
-            const request: CheckoutRequest = {
-                merchant: process.env.REACT_APP_MERCHANT || "Merchant",
-                preid: preid,
-                subtotal: "100.00",
-                tax: "0.00",
-                total: "100.00",
-                shipping: "20.00",
-                desc: "item",
-                callback: callback_url,
+            let c_request = merchantB_request;
+            if (merchant_template === "a") {
+                c_request = merchantA_request;
             }
-            const result = await wallet.checkout(request);
+            c_request.preid = preid;
+            const result = await wallet.checkout(c_request);
             console.log("checkout result: ", result);
 
         } catch (e) {
@@ -59,92 +82,195 @@ export function CheckoutPage() {
         }
 
     }
+    function RenderMerchant() {
+
+        if (merchant_template === "a") {
+            return <CheckoutA screenwidth={screenwidth} request={merchantA_request} submit={checkout} />
+        } else {
+            return <CheckoutB screenwidth={screenwidth} request={merchantB_request} submit={checkout} />
+        }
+    }
 
     return (<>
-
-        <div className="flex flex-col min-h-screen bg-white md:max-w-[675px] md:ml-auto md:mr-auto">
-            <div className="p-3 border-b">
-                <img src="/merchant-com.png" width={200} height={32} alt="MerchantCom Logo" />
-            </div>
-            <div className="grow flex flex-col p-3">
-
-                <div className="flex flex-col md:flex-row justify-between items-center mb-4">
-                </div>
-
-
-                <div className="flex flex-row">
-                    <div className="basis-1/4 font-bold m-1">Subtotal:</div>
-                    <div className="m-1">$100.00</div>
-                </div>
-                <div className="flex flex-row">
-                    <div className="basis-1/4 font-bold m-1">Shipping:</div>
-                    <div className="m-1">$20.00</div>
-                </div>
-                <div className="flex flex-row">
-                    <div className="basis-1/4 font-bold m-1">Tax:</div>
-                    <div className="m-1">$0</div>
-                </div>
-                <hr className="solid w-full m-2"></hr>
-                <div className="flex flex-row">
-                    <div className="basis-1/4 font-bold m-1">Total:</div>
-                    <div className="m-1">$120.00</div>
-                </div>
-
-                <p className="text-l mt-8 mb-3">Delivery method</p>
-
-                <div className="px-3 border rounded-lg">
-                    <label className="flex gap-3 items-center py-3 border-b">
-                        <input type="radio" name="ship" value="ship" defaultChecked={true} />
-                        <TruckIcon className="h-5 w-5" /> Ship
-                    </label>
-
-                    <label className="flex gap-3 items-center py-3">
-                        <input type="radio" name="ship" value="ship" />
-                        <BuildingStorefrontIcon className="h-5 w-5" /> Local Portland, OR Pickup: Thursdays only, 10am - 4pm
-                    </label>
-                </div>
-
-                {screenwidth > 768 &&
-                    <>
-                <p className="text-l mt-8 mb-3">Shipping address</p>
-
-                <div className="flex align-center rounded-lg border py-4 px-3">
-                    <select className="w-full">
-                        <option defaultValue={'United States'}>United States</option>
-                    </select>
-                </div>
-
-                        <input
-                            className="flex align-center rounded-lg border py-2 px-3 w-full mt-3"
-                            type="text"
-                            name="firstname"
-                            defaultValue={'John'}
-                            placeholder="First name"
-                        />
-
-                        <input
-                            className="flex align-center rounded-lg border py-2 px-3 w-full mt-3"
-                            type="text"
-                            name="lastname"
-                            defaultValue={'Smith'}
-                            placeholder="Last name"
-                        />
-                    </>
-                }
-
-                <div className="mt-2">
-                    <button
-                        className="button-blank text-white rounded-lg w-full "
-                        onClick={e => checkout()}
-                    >
-                        <img src="/logo.svg" className="align-center" alt="Checkout" width="80" height="24" />
-                    </button>
-                </div>
-            </div>
-        </div>
+        <RenderMerchant />
     </>);
 }
 
-function CheckoutComp() {
+export interface CheckoutProps {
+    screenwidth: number;
+    request: CheckoutRequest;
+    submit: () => void;
+}
+function CheckoutA(props: CheckoutProps) {
+    const theme = createTheme({
+        palette: {
+            primary: {
+                main: "#003BD1",
+                contrastText: "#fff",
+            },
+            secondary: {
+                main: "#FFF176",
+            },
+        },
+    });
+    return (<>
+        <ThemeProvider theme={theme}>
+            <AppBar position="static">
+                <Toolbar>
+                    <Typography variant="h6" component="div" sx={{ flexGrow: 1 }} align="left">
+                        {props.request.merchant}
+                    </Typography>
+                    <Badge badgeContent={2} color="secondary">
+                        <ShoppingCart />
+                    </Badge>
+
+                </Toolbar>
+            </AppBar>
+            <Container maxWidth="sm">
+                <div>
+
+                    <Typography variant="h6" component="h6" align="left" sx={{ mt: 4, textDecoration: "underline 2px #FFF176", textUnderlineOffset: "8px" }} noWrap>
+                        Order Summary
+                    </Typography>
+                </div>
+                <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }} sx={{ m: 2 }}>
+                    <Grid size={2}>
+                        <img src="/items/tablet.jpg" width="64" height="64"></img>
+                    </Grid>
+                    <Grid size={8} display="flex" justifyContent="start" alignItems="center">
+                        <Stack>
+                            <Typography variant="body1">Chromebook tablet</Typography>
+                            <Typography variant="caption" align="left">$499.00 x 1</Typography>
+                        </Stack>
+                    </Grid>
+                    <Grid size={2} display="flex" justifyContent="center" alignItems="end" justifyItems="end">
+                        <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>$499.00</Typography>
+                    </Grid>
+                </Grid>
+                <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }} sx={{ m: 2 }}>
+                    <Grid size={2}>
+                        <img src="/items/headset.jpg" width="64" height="64"></img>
+                    </Grid>
+                    <Grid size={8} display="flex" justifyContent="start" alignItems="center">
+                        <Stack>
+                            <Typography variant="body1">Noice canceling headphone</Typography>
+                            <Typography variant="caption" align="left">$125.00 x 1</Typography>
+                        </Stack>
+                    </Grid>
+                    <Grid size={2} display="flex" justifyContent="center" alignItems="end" justifyItems="end">
+                        <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>$125.00</Typography>
+                    </Grid>
+                </Grid>
+                <Divider sx={{ mt: 4, mb: 4 }} />
+                <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }} sx={{ m: 2, mt: 4 }}>
+                    <Grid size={10} display="flex" justifyContent="start" alignItems="center">
+                        <Typography variant="caption">Subtotal</Typography>
+                    </Grid>
+                    <Grid size={2} display="flex" justifyContent="end" alignItems="end" justifyItems="end">
+                        <Typography variant="subtitle2" >${props.request.subtotal}</Typography>
+                    </Grid>
+                    <Grid size={10} display="flex" justifyContent="start" alignItems="center">
+                        <Typography variant="caption">Tax</Typography>
+                    </Grid>
+                    <Grid size={2} display="flex" justifyContent="end" alignItems="end" justifyItems="end">
+                        <Typography variant="subtitle2" >${props.request.tax}</Typography>
+                    </Grid>
+                    <Grid size={10} display="flex" justifyContent="start" alignItems="center">
+                        <Typography variant="caption">Shipping Fee</Typography>
+                    </Grid>
+                    <Grid size={2} display="flex" justifyContent="end" alignItems="end" justifyItems="end">
+                        <Typography variant="subtitle2" >${props.request.shipping}</Typography>
+                    </Grid>
+                    <Grid size={10} display="flex" justifyContent="start" alignItems="center">
+                        <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>Total</Typography>
+                    </Grid>
+                    <Grid size={2} display="flex" justifyContent="end" alignItems="end" justifyItems="end">
+                        <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>${props.request.total}</Typography>
+                    </Grid>
+                </Grid>
+                <Button variant="contained" sx={{ textTransform: "none" }} fullWidth onClick={props.submit}>Pay with ABC Bank</Button>
+            </Container>
+        </ThemeProvider>
+    </>);
 
 }
+
+function CheckoutB(props: CheckoutProps) {
+    const theme = createTheme({
+        palette: {
+            primary: {
+                main: "#30b0c7",
+                contrastText: "#fff",
+            },
+            secondary: {
+                main: "#3700b3",
+                contrastText: "#fff",
+            },
+        },
+    });
+    return (<>
+        <ThemeProvider theme={theme}>
+
+            <AppBar position="static">
+                <Toolbar>
+                    <Typography variant="h6" component="div" sx={{ flexGrow: 1 }} align="left">
+                        {props.request.merchant}
+                    </Typography>
+                    <Badge badgeContent={1} color="secondary">
+                        <ShoppingCart />
+                    </Badge>
+
+                </Toolbar>
+            </AppBar>
+            <Container maxWidth="sm">
+                <Typography variant="h6" component="h6" align="left" sx={{ mt: 4 }}>
+                    Order Summary
+                </Typography>
+                <Divider />
+                <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }} sx={{ m: 2 }}>
+                    <Grid size={2}>
+                        <img src="/items/running-shoe.jpg" width="64" height="64"></img>
+                    </Grid>
+                    <Grid size={8} display="flex" justifyContent="start" alignItems="center">
+                        <Stack>
+                            <Typography variant="body1">Running windbreaker</Typography>
+                            <Typography variant="caption" align="left" >$120.33 x 1</Typography>
+                        </Stack>
+                    </Grid>
+                    <Grid size={2} display="flex" justifyContent="end" alignItems="end" justifyItems="end">
+                        <Typography variant="subtitle2" >$120.33</Typography>
+                    </Grid>
+                </Grid>
+                <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }} sx={{ m: 2, mt: 4 }}>
+                    <Grid size={10} display="flex" justifyContent="start" alignItems="center">
+                        <Typography variant="caption">Subtotal</Typography>
+                    </Grid>
+                    <Grid size={2} display="flex" justifyContent="end" alignItems="end" justifyItems="end">
+                        <Typography variant="subtitle2" sx={{ fontWeight: 500 }}>${props.request.subtotal}</Typography>
+                    </Grid>
+                    <Grid size={10} display="flex" justifyContent="start" alignItems="center">
+                        <Typography variant="caption">Tax</Typography>
+                    </Grid>
+                    <Grid size={2} display="flex" justifyContent="end" alignItems="end" justifyItems="end">
+                        <Typography variant="subtitle2" sx={{ fontWeight: 500 }}>${props.request.tax}</Typography>
+                    </Grid>
+                    <Grid size={10} display="flex" justifyContent="start" alignItems="center">
+                        <Typography variant="caption">Shipping Fee</Typography>
+                    </Grid>
+                    <Grid size={2} display="flex" justifyContent="end" alignItems="end" justifyItems="end">
+                        <Typography variant="subtitle2" sx={{ fontWeight: 500 }}>${props.request.shipping}</Typography>
+                    </Grid>
+                    <Grid size={10} display="flex" justifyContent="start" alignItems="center">
+                        <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>Total</Typography>
+                    </Grid>
+                    <Grid size={2} display="flex" justifyContent="end" alignItems="end" justifyItems="end">
+                        <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>${props.request.total}</Typography>
+                    </Grid>
+                </Grid>
+                <Button variant="outlined" sx={{ textTransform: "none" }} fullWidth onClick={props.submit}>Pay with ABC Bank</Button>
+            </Container>
+        </ThemeProvider>
+    </>);
+
+}
+

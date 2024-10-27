@@ -15,76 +15,140 @@
  *   limitations under the License.
  */
 
-import { FormEvent, useEffect } from "react";
+import { useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { CheckoutResult } from "./lib/CheckoutSDK/checkout";
+import { ThemeProvider } from "@emotion/react";
+import { createTheme, AppBar, Toolbar, Typography, Container, Button } from "@mui/material";
+import CheckCircle from '@mui/icons-material/CheckCircle';
+
+let merchant_template = process.env.REACT_APP_MERCHANT || "b";
+//let merchant_template =  "b";
 
 export function CallbackPage() {
     const currentdate = new Date().toISOString();
 
     const [searchParams, setSearchParams] = useSearchParams();
-    
-    useEffect(()=>{
+
+    useEffect(() => {
         const query_data = searchParams.get("data");
-        if(query_data){
+        if (query_data) {
             const base64 = atob(query_data);
-            const resp : CheckoutResult = JSON.parse(base64);
+            const resp: CheckoutResult = JSON.parse(base64);
             // only save token if passkey exist
-            if(resp.passkey){
-		        localStorage.setItem("preid-token", resp.email);
+            if (resp.passkey) {
+                localStorage.setItem("preid-token", resp.email);
             }
         }
-    },[]);
+    }, []);
 
-    const checkout = async (e: FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
+    function handleBack (){ 
         window.document.location.href = "/";
     }
 
+    function RenderView() {
+
+        if (merchant_template === "a") {
+            return <CallbackA name="EStore" amount="718.29" back={handleBack} />
+        } else {
+            return <CallbackB name="ZSports" amount="127.57" back={handleBack}/>
+        }
+    }
+
+    return (<>
+        <RenderView />
+    </>);
+
+}
+
+
+export interface CallbackProps {
+    name: string;
+    amount: string;
+    back: () => void;
+}
+
+function CallbackA(props: CallbackProps) {
+
+    const theme = createTheme({
+        palette: {
+            primary: {
+                main: "#003BD1",
+                contrastText: "#fff",
+            },
+            secondary: {
+                main: "#FFF176",
+            },
+
+            success: {
+                main: "#76FF03",
+            },
+        },
+    });
     return (
 
+        <>
+            <ThemeProvider theme={theme}>
+                <AppBar position="static">
+                    <Toolbar>
+                        <Typography variant="h6" component="div" sx={{ flexGrow: 1 }} align="center">
+                            {props.name}
+                        </Typography>
 
-        <div className="flex flex-col min-h-screen bg-white md:max-w-[675px] md:ml-auto md:mr-auto">
-            <div className="p-3 border-b">
-                <img src="/merchant-com.png" width={200} height={32} alt="MerchantCom Logo" />
-            </div>
-            <div className="grow flex flex-col p-3">
-
-                <form onSubmit={checkout}>
-
-                    <h1 id="headerText" className="headerText  ">Thank you for shopping at Merchant.com! We have received your order.</h1>
-
-
-                    <div className="flex flex-row">
-                        <p className="font-bold basis-1/4 text-right p-2" > Order Number</p>
-                        <p className="basis-3/4 text-left p-2" > XEREI-123451324</p>
-                    </div>
-                    <div className="flex flex-row">
-                        <p className="font-bold basis-1/4 text-right p-2" > Order Date</p>
-                        <p className="basis-3/4 text-left p-2"  > {currentdate}</p>
-                    </div>
-
-                    <p className="py-2 text-sm mt-2 text-left">
-                        To view order details or make changes, go to your order status page.
-                    </p>
-                    <p className="py-2 text-sm text-left">
-                        Your method of payment will be charged when your item(s) have shipped, or when your delivery has been scheduled.
-                    </p>
-
-                    <p className="py-2 text-sm text-left">
-                        If you have a scheduled delivery for a large item, we have lots of helpful information to ensure your experience is as smooth as possible. Learn about large item delivery.
-                    </p>
-
-
-
-                    <button
-                        className="button-blank text-white py-4 rounded-lg w-full mt-3 disabled:opacity-50"
-                        type="submit"
-                    >
-                        Return To Checkout
-                    </button>
-                </form>
-            </div>
-        </div>
+                    </Toolbar>
+                </AppBar>
+                <Container maxWidth="sm">
+                <Typography variant="body1" sx={{mt: 4}}>Thank You For Your Purchase</Typography>
+                <CheckCircle sx={{ fontSize: 128 , m: 4}} color="success"/>
+                <Typography variant="h6">Order #123RB23178Y Confirmed</Typography>
+                <Typography variant="body2" >Pay ${props.amount} through ABC Bank</Typography>
+                <Button variant="contained" sx={{ mt: 4, textTransform: "none" }} fullWidth >Track Order</Button>
+                <Button variant="text" sx={{ textTransform: "none" }} fullWidth onClick={props.back}>Return To Shopping</Button>
+                </Container>
+            </ThemeProvider>
+        </>
     );
+
+}
+
+function CallbackB(props: CallbackProps) {
+
+    const theme = createTheme({
+        palette: {
+            primary: {
+                main: "#30b0c7",
+                contrastText: "#fff",
+            },
+            secondary: {
+                main: "#3700b3",
+                contrastText: "#fff",
+            },
+            success: {
+                main: "#76FF03",
+            },
+        },
+    });
+    return (
+        <>
+            <ThemeProvider theme={theme}>
+                <AppBar position="static">
+                    <Toolbar>
+                        <Typography variant="h6" component="div" sx={{ flexGrow: 1 }} align="center">
+                            {props.name}
+                        </Typography>
+
+                    </Toolbar>
+                </AppBar>
+                <Container maxWidth="sm">
+                <Typography variant="body1" sx={{mt: 4}}>Thank You For Your Purchase</Typography>
+                <CheckCircle sx={{ fontSize: 128 , m: 4}} color="success"/>
+                <Typography variant="h6">Order #123RB23178Y Confirmed</Typography>
+                <Typography variant="body2" >Pay ${props.amount} through ABC Bank</Typography>
+                <Button variant="contained" sx={{ mt: 4, textTransform: "none" }} fullWidth >Track Order</Button>
+                <Button variant="text" sx={{ textTransform: "none" }} fullWidth onClick={props.back}>Return To Shopping</Button>
+                </Container>
+            </ThemeProvider>
+        </>
+    );
+
 }

@@ -80,7 +80,7 @@ export const bufferToBase64 = (data: ArrayBuffer) => {
     return base64EncodeUrl(base64);
 }
 
-export const stringToBase64Url = (data: string) => {
+export const stringToBase64Url = (data: string) : string => {
     const base64 = b2a(data);
     return base64EncodeUrl(base64);
 }
@@ -99,14 +99,14 @@ export const base64ToBuffer = (data: string): ArrayBuffer => {
     return bytes.buffer;
 }
 
+
 /**
  * Convert `base64` into `Uint8Array`
  * */
-export const base64UrlToString = (data: string): String => {
+export const base64UrlToString = (data: string): string => {
     data = data.replace(/-/g, "+").replace(/_/g, "/");
     return a2b(data);
 }
-
 /**
  * Along with traditional OO hierarchies, another popular way of building up classes from 
  * reusable components is to build them by combining simpler partial classes.
