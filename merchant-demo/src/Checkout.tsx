@@ -233,7 +233,7 @@ function CheckoutB(props: CheckoutProps) {
                     </Grid>
                     <Grid size={8} display="flex" justifyContent="start" alignItems="center">
                         <Stack>
-                            <Typography variant="body1">Running windbreaker</Typography>
+                            <Typography variant="body1">Running shoes</Typography>
                             <Typography variant="caption" align="left" >$120.33 x 1</Typography>
                         </Stack>
                     </Grid>
