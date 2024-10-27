@@ -22,6 +22,7 @@ import { useEffect, useState } from "react";
 import CheckoutLoginPrompt from "./CheckoutLoginPrompt";
 import { CheckoutConfirmPrompt } from "./CheckoutConfirmPrompt";
 import { useSearchParams } from "react-router-dom";
+import { base64UrlToString, stringToBase64Url } from "@/lib/encoding";
 
 export enum CheckoutViewEnum {
     Checkout = "checkout",
@@ -61,7 +62,7 @@ export function CheckoutPage() {
 	useEffect(() => {
         const query_data = searchParams.get("data")
         if(query_data) {
-            payload = JSON.parse(atob(query_data));
+            payload = JSON.parse(base64UrlToString(query_data));
             setView(CheckoutViewEnum.Login);
             redirect = true;
         } else {
@@ -135,7 +136,7 @@ export function CheckoutPage() {
     function onCheckoutConfirmHandle(email: string, token: string, next: string) {
         localStorage.setItem("preid-email",email);
         const baseCallback = payload?.callback || `http://localhost:3001/callback`;
-        const base64=btoa(`{"email":"${email}","token":"${token}","passkey":"true"}`);
+        const base64=stringToBase64Url(`{"email":"${email}","token":"${token}","passkey":"true"}`);
         const callback = baseCallback + `?data=${base64}`;
         if(redirect) {
             document.location.href = callback;

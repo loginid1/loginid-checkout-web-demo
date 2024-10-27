@@ -15,6 +15,7 @@
  *   limitations under the License.
  */
 
+import { stringToBase64Url } from "./encoding";
 import { Message, MessageType, MessagingService } from "./messaging";
 import { closePopup, defaultOptions, openPopup } from "./popup";
 
@@ -285,12 +286,12 @@ export default class CheckoutSDK {
 		//const id = await this.preID();
 		//console.log("pre-id: ", id.token);
 		if (request.preid == "") {
-			const url = this.baseURL + "/checkout?data=" + btoa(JSON.stringify(request));
+			const url = this.baseURL + "/checkout?data=" + stringToBase64Url(JSON.stringify(request));
 			document.location.href = url;
 		} else {
 			const result = await this.checkoutFrame(request);
 			const baseCallback = result.callback;
-			const base64 = btoa(`{"email":"${result.email}","token":"${result.token}","passkey":"true"}`);
+			const base64 = stringToBase64Url(`{"email":"${result.email}","token":"${result.token}","passkey":"true"}`);
 			const callback = baseCallback + `?data=${base64}`;
 			document.location.href = callback;
 
