@@ -28,7 +28,7 @@ export enum MessageType {
 
 export class MessagingService {
 
-    static channel : string = "wallet-communication-channel";
+    static channel : string = "checkout-communication-channel";
     targetOrigin : string = "*";
     timeout : number = 10000000;
     requestId : number = 0;
@@ -48,7 +48,9 @@ export class MessagingService {
         window.addEventListener(
             "message",
             (event: MessageEvent) => {
-                if (!event.data || typeof event.data !== 'string') {
+                if (!event.data || typeof event.data !== 'string' ) {
+                    return;
+                } else if (this.targetOrigin !== "*" && event.origin !== this.targetOrigin){
                     return;
                 } else {
                     try{
@@ -60,7 +62,7 @@ export class MessagingService {
                         }
                     } catch(error) {
                         // log error?
-                        //console.log(error);
+                        console.log(error);
                     }
                 }
 

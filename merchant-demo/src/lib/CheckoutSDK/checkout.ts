@@ -63,6 +63,7 @@ export default class CheckoutSDK {
 	mBackground: HTMLDivElement | null = null;
 	mApi?: string | null = null;
 	autoClose: boolean = true;
+	keyprefix = "loginid";
 	constructor(
 		url: string,
 		autoClose: boolean,
@@ -173,17 +174,9 @@ export default class CheckoutSDK {
 	}
 	/**
 	 *
-	 *   https://github.com/algorandfoundation/ARCs/blob/main/ARCs/arc-0006.md
 	 */
 
 	async checkoutFrame(request: CheckoutRequest): Promise<CheckoutResult> {
-		/*
-		if (this.mTarget == null) {
-			this.mTarget = this.prepareIframe();
-		}
-		if (this.mMain != null) {
-			this.mMain.style.display = "block";
-		}*/
 
 		if (this.mMain != null) {
 			this.mMain?.remove();
@@ -193,6 +186,8 @@ export default class CheckoutSDK {
 		}
 
 		let mMessage = new MessagingService("*");
+		//let mMessage = new MessagingService("https://crab-polite-lately.ngrok-free.app");
+		//let mMessage = new MessagingService("http://localhost:3005");
 		mMessage.closeEvent = () => {
 			if (this.mMain != null) {
 				this.mMain.remove();
@@ -301,7 +296,6 @@ export default class CheckoutSDK {
 	async preID(): Promise<IDResult> {
 		const preid = localStorage.getItem("preid-token");
 		if (preid && preid.length > 0) {
-			console.log("preid ", preid);
 			return Promise.resolve({ token: preid });
 		}
 
@@ -310,12 +304,6 @@ export default class CheckoutSDK {
 			return Promise.reject("iframe not created");
 		}
 		let mMessage = new MessagingService("*");
-		mMessage.closeEvent = () => {
-			/*
-			if (win != null) {
-				win.remove();
-			}*/
-		};
 
 		let response = await mMessage.pingForID(target, 5000);
 		let resp: IDResult = JSON.parse(response);

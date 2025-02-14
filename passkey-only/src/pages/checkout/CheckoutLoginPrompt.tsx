@@ -101,6 +101,7 @@ export default function CheckoutLoginPrompt(props: CheckoutLoginPromptProps) {
           value={email}
           autoComplete="username webauthn "
           w="100%"
+          autoFocus
         />
 
         {showPassword &&
