@@ -18,11 +18,12 @@
 'use client';
 
 import { Card, Center, Flex, Image } from "@mantine/core";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AddPasskey } from "../../components/common/AddPasskey";
 import { Footer } from "../../components/common/Footer";
 import LoginPromptPassword from "./LoginPromptPassword";
 import { useNavigate } from "react-router-dom";
+import { TrustID } from "@/lib/crypto";
 
 export enum LoginViewEnum {
   EmailConfirmation = "email-confirmation",
@@ -37,6 +38,11 @@ export default function LoginPage() {
   const [view, setView] = useState<LoginViewEnum>(LoginViewEnum.LoginPrompt);
   const router = useNavigate();
   const [email, setEmail] = useState("");
+
+  useEffect(()=>{
+    console.log("login")
+    //TrustID.test();
+  },[]);
   function renderView(view: LoginViewEnum) {
 
     if (view === LoginViewEnum.LoginPrompt) {

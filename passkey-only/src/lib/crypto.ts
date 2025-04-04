@@ -132,6 +132,24 @@ export class TrustID {
         localStorage.setItem("trustcred-"+credid, kid);
     }
 
+    static async test() {
+        let keypair = await TrustIDHelper.generateKey();
+        let id = window.crypto.randomUUID();
+        let encoder = new TextEncoder();
+        let challenge = encoder.encode("challenge");
+        let signature = await TrustIDHelper.sign(keypair, challenge);
+        await TrustIDHelper.storeKeystore(id, "test", keypair);
+        // verify
+        let keystore = await TrustIDHelper.loadKeystore(id);
+        if (keystore) {
+            let pk = await window.crypto.subtle.exportKey("jwk", keypair.publicKey)
+            //console.log("private: ", await window.crypto.subtle.exportKey("jwk",keystore.privateKey));
+            console.log("public: ", pk);
+            let result = await TrustIDHelper.verify(keystore.key, signature, challenge)
+            console.log(result);
+        }
+        console.log("end crypto test");
+    }
 
 }
 
@@ -227,6 +245,7 @@ class TrustIDHelper {
                 };
             }
         });
+
     }
 
     static async generateKey(): Promise<CryptoKeyPair> {
@@ -257,23 +276,5 @@ class TrustIDHelper {
         return jws;
     }
 
-    static async test() {
-        let keypair = await TrustIDHelper.generateKey();
-        let id = window.crypto.randomUUID();
-        let encoder = new TextEncoder();
-        let challenge = encoder.encode("challenge");
-        let signature = await TrustIDHelper.sign(keypair, challenge);
-        await TrustIDHelper.storeKeystore(id, "test", keypair);
-        // verify
-        let keystore = await TrustIDHelper.loadKeystore(id);
-        if (keystore) {
-            let pk = await window.crypto.subtle.exportKey("jwk", keypair.publicKey)
-            //console.log("private: ", await window.crypto.subtle.exportKey("jwk",keystore.privateKey));
-            console.log("public: ", pk);
-            let result = await TrustIDHelper.verify(keystore.key, signature, challenge)
-            console.log(result);
-        }
-        console.log("end crypto test");
-    }
 }
 
