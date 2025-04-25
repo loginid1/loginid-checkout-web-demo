@@ -1,1 +1,0 @@
-curl -H "X-Algo-API-Token:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" http://localhost:4001/v2/transactions/params
