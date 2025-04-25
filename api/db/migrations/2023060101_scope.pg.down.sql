@@ -1,5 +1,0 @@
-BEGIN;
-
-ALTER TABLE users DROP scopes;
-
-COMMIT;
