@@ -23,6 +23,7 @@ import CheckoutLoginPrompt from "./CheckoutLoginPrompt";
 import { CheckoutConfirmPrompt } from "./CheckoutConfirmPrompt";
 import { useSearchParams } from "react-router-dom";
 import { base64UrlToString, stringToBase64Url } from "@/lib/encoding";
+import { TrustID } from "@/lib/crypto";
 
 export enum CheckoutViewEnum {
     Checkout = "checkout",
@@ -85,6 +86,8 @@ export function CheckoutPage() {
                 setUsername(query_webview);
             }
         }
+
+        //TrustID.test();
 
     }, []);
 
