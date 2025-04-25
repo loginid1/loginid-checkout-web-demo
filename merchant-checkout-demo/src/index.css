@@ -1,0 +1,247 @@
+/*
+ *   Copyright (c) 2024 LoginID Inc
+ *   All rights reserved.
+
+ *   Licensed under the Apache License, Version 2.0 (the "License");
+ *   you may not use this file except in compliance with the License.
+ *   You may obtain a copy of the License at
+
+ *   http://www.apache.org/licenses/LICENSE-2.0
+
+ *   Unless required by applicable law or agreed to in writing, software
+ *   distributed under the License is distributed on an "AS IS" BASIS,
+ *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *   See the License for the specific language governing permissions and
+ *   limitations under the License.
+ */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+*/
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+.headerText {
+  padding-bottom: 4.72%;
+  text-align: center;
+  font-size: 24px;
+  font-weight: 400;
+  line-height: 32px;
+  font-family: pp-open-regular, Helvetica Neue, Arial, sans-serif;
+  font-style: normal;
+  font-display: swap;
+}
+
+.subHeaderText {
+  margin: 0 0 7.08%;
+  color: #001435;
+  text-align: center;
+}
+
+.subHeaderText2 {
+  margin: 0 0 2;
+  color: #001435;
+  text-align: center;
+}
+
+.button {
+  font-family: pp-open-bold, Helvetica Neue, Arial, sans-serif;
+  font-style: normal;
+  font-display: swap;
+  font-size: 100%;
+  border-radius: 100px;
+  height: 48px;
+}
+
+.button-blank {
+  font-family: pp-open-bold, Helvetica Neue, Arial, sans-serif;
+  font-style: normal;
+  font-display: swap;
+  font-size: 100%;
+  border-radius: 100px;
+  height: 48px;
+}
+
+a.button-blank,
+a.button-blank:link,
+a.button-blank:visited,
+.button-blank {
+  width: 100%;
+  min-width: 6rem;
+  padding: .75rem 2rem;
+  border: 0 solid #c4c6c9;
+  border-image-outset: 0;
+  border-image-repeat: stretch;
+  border-image-slice: 100%;
+  border-image-source: none;
+  border-image-width: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #c4c6c9;
+  -webkit-border-radius: 100px;
+  -moz-border-radius: 100px;
+  -khtml-border-radius: 100px;
+  border-radius: 100px;
+  cursor: pointer;
+  margin: 0;
+  color: #fff;
+  font-size: 1.06666667em;
+  text-align: center;
+  font-weight: 500;
+  text-shadow: none;
+  text-decoration: none;
+  transition: color .2s ease 0s, background-color .2s ease 0s, border-color .2s ease 0s, box-shadow .2s ease 0s;
+  -webkit-font-smoothing: antialiased;
+  /*position: relative;*/
+  line-height: 21px;
+  -webkit-border-image: none;
+  border-image: none;
+  appearance: button;
+  overflow: visible;
+}
+
+a.button,
+a.button:link,
+a.button:visited,
+.button {
+  width: 100%;
+  min-width: 6rem;
+  padding: .75rem 2rem;
+  border: 0 solid #0544b5;
+  border-image-outset: 0;
+  border-image-repeat: stretch;
+  border-image-slice: 100%;
+  border-image-source: none;
+  border-image-width: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #0544b5;
+  -webkit-border-radius: 100px;
+  -moz-border-radius: 100px;
+  -khtml-border-radius: 100px;
+  border-radius: 100px;
+  cursor: pointer;
+  margin: 0;
+  color: #fff;
+  font-size: 1.06666667em;
+  text-align: center;
+  font-weight: 500;
+  text-shadow: none;
+  text-decoration: none;
+  transition: color .2s ease 0s, background-color .2s ease 0s, border-color .2s ease 0s, box-shadow .2s ease 0s;
+  -webkit-font-smoothing: antialiased;
+  /*position: relative;*/
+  line-height: 21px;
+  -webkit-border-image: none;
+  border-image: none;
+  appearance: button;
+  overflow: visible;
+}
+
+.textInput input,
+.textInput textarea {
+  appearance: none;
+  height: 64px;
+  width: 100%;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 12px;
+  padding-right: 12px;
+  border: .0625rem solid #9da3a6;
+  background-color: #fff;
+  text-overflow: ellipsis;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  -webkit-border-radius: 4px;
+  -moz-border-radius: 4px;
+  -khtml-border-radius: 4px;
+  border-radius: 4px;
+  font-size: 100%;
+  color: #001435;
+  font-family: pp-open-regular, Helvetica Neue, Arial, sans-serif;
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  margin: 0;
+  overflow: visible;
+  position: relative;
+}
+
+.textInput [for="email"].fieldLabel {
+  position: absolute;
+  pointer-events: none;
+  left: 10px;
+  top: 18px;
+  transition: .2s ease all;
+  height: 30px;
+  width: 400px;
+  clip: unset;
+}
+
+.checkout {
+  background-color: #F1F2F3;
+}
+
+
+.round {
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 50%;
+  cursor: pointer;
+  height: 16px;
+  left: 0;
+  top: 0;
+  width: 16px;
+}
+
+.card {
+  border-radius: 5px;
+  border-width: 1px;
+}
+
+.card-notice {
+  border-radius: 5px;
+  border-width: 1px;
+  background-color: #ececec;
+}
+
+.active {
+  border-color: #0d70d2 !important;
+}
+
+.loader {
+  border: 4px solid #f3f3f3;
+  /* Light grey */
+  border-top: 4px solid #3498db;
+  /* Blue */
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
