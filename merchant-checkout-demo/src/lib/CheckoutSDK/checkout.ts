@@ -40,7 +40,6 @@ export interface CheckoutResponse {
 }
 
 export interface CheckoutRequest {
-	preid: string;
 	subtotal: string;
 	total: string;
 	tax: string;
@@ -211,7 +210,7 @@ export default class CheckoutSDK {
 		if (this.mTarget == null) {
 			return Promise.reject({ message: "no session" });
 		}
-		let isLoad = await mMessage.pingForResponse(this.mTarget, 20000);
+		let isLoad = await mMessage.pingForResponse(this.mTarget, 5000);
 		if (!isLoad) {
 			return Promise.reject({ message: "communication timeout" });
 		}
@@ -249,47 +248,6 @@ export default class CheckoutSDK {
 		}
 	}
 
-	async checkoutPopup(request: CheckoutRequest): Promise<CheckoutResult> {
-		closePopup(this.mTarget);
-		this.mTarget = openPopup(
-			this.baseURL + "/sdk/auth_p",
-			"auth_new",
-			defaultOptions
-		);
-		let mMessage = new MessagingService("*");
-		let isLoad = await mMessage.pingForResponse(this.mTarget, 20000);
-		if (!isLoad) {
-			return Promise.reject({ message: "communication timeout" });
-		}
-
-		// focus back to popup
-		window.addEventListener("focus", () => {
-			this.mTarget?.focus();
-		});
-
-		try {
-			let response = await mMessage.sendMessage(
-				this.mTarget,
-				JSON.stringify(request),
-				"init"
-			);
-
-			let resp = this.parseResponse(response);
-			let result: CheckoutResult = {
-				id: resp.id,
-				callback: resp.callback,
-				passkey: resp.passkey,
-			};
-			return Promise.resolve(result);
-		} catch (e) {
-			return Promise.reject(e);
-		} finally {
-			if (this.autoClose) {
-				closePopup(this.mTarget);
-			}
-		}
-	}
-
 	async checkout(request: CheckoutRequest): Promise<void> {
 		// discover embed or redirect flow
 		var embbed = false;
@@ -303,6 +261,8 @@ export default class CheckoutSDK {
 
 		if (embbed ) {
 			request.cid = cid.token
+			// prepare order request
+			// can submit from backend 
 			const result = await this.checkoutFrame(request);
 			const baseCallback = result.callback;
 			const base64 = stringToBase64Url(JSON.stringify(result));
@@ -316,6 +276,7 @@ export default class CheckoutSDK {
 	}
 
 	async discover(): Promise<boolean> {
+		// if webview detect return false
 		try {
 
 			var link = this.baseURL + "/discover";

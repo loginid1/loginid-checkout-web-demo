@@ -30,7 +30,6 @@ let merchant_template = process.env.REACT_APP_MERCHANT || "b";
 export function CheckoutPage() {
     const merchantA_request: CheckoutRequest = {
         merchant: "EStore",
-        preid: "",
         subtotal: "624.99",
         tax: "81.24",
         total: "718.29",
@@ -41,7 +40,6 @@ export function CheckoutPage() {
     }
     const merchantB_request: CheckoutRequest = {
         merchant: "ZSports",
-        preid: "",
         subtotal: "120.33",
         tax: "7.24",
         total: "127.57",
@@ -59,23 +57,15 @@ export function CheckoutPage() {
             setScreenWidth(window.innerWidth);
             console.log(window.innerWidth);
         }
-        getPreID();
     }, []);
 
 
-
-
-    const getPreID = async () => {
-        //const id = await wallet.preID();
-        //setPreid(id.token);
-    }
     async function checkout() {
         try {
             let c_request = merchantB_request;
             if (merchant_template === "a") {
                 c_request = merchantA_request;
             }
-            c_request.preid = preid;
             const result = await wallet.checkout(c_request);
             console.log("checkout result: ", result);
 

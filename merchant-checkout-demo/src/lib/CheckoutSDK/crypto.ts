@@ -133,6 +133,7 @@ export class CID {
             } catch(e) {
                 // error try to create new
                 console.log(e);
+                localStorage.setItem(CID_VAL, "false");
                 return await CID.create();
             }
         }  else {

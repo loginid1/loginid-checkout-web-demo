@@ -93,12 +93,12 @@ export function CheckoutPage() {
             }
         }
 
-        loadFlow();
+        loadOrder();
         //TrustID.test();
 
     }, []);
 
-    async function loadFlow() {
+    async function loadOrder() {
         const query_data = searchParams.get("data");
         let apayload = null;
         if (query_data) {
@@ -123,39 +123,8 @@ export function CheckoutPage() {
     }
 
 
-    const INTERVAL = 100;
-    const TIMEOUT = 10000;
-    async function waitForInput(): Promise<boolean> {
-        let wait = TIMEOUT;
-        while (wait > 0) {
-            if (payload == null) {
-                await new Promise((resolve) => setTimeout(resolve, INTERVAL));
-            } else {
-                return Promise.resolve(true);
-            }
-            wait = wait - INTERVAL;
-        }
-        return Promise.resolve(false);
-    }
 
     function onMessageHandle(msg: Message, origin: string) {
-        /*
-        try {
-            mService.origin = origin;
-            mService.id = msg.id;
-            let p: CheckoutRequest = JSON.parse(msg.data);
-            //console.log("request: " , p);
-            setUsername(p.preid);
-            if (p.preid != "") {
-                setView(CheckoutViewEnum.Confirmation);
-            } else {
-                setView(CheckoutViewEnum.Login);
-            }
-            payload = p;
-        } catch (error) {
-            console.log(error);
-        }
-            */
     }
 
     function renderView(view: CheckoutViewEnum) {
