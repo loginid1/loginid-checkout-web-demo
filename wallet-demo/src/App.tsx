@@ -29,11 +29,11 @@ import DiscoverPage from './pages/discover';
 const theme = createTheme({
   /** Put your mantine theme override here */
 });
+
 function App() {
   return (
     <div className="App">
     <MantineProvider theme={theme}>
-
       <Routes>
         <Route path="/" element={<CheckoutPage/>} />
         <Route path="/idv" element={<IDVPage/>} />

@@ -73,7 +73,6 @@ export function CheckoutPage() {
     const [redirect, setRedirect] = useState<boolean>(false);
     const [payload, setPayload] = useState< CheckoutRequest | null >( null);
 
-
     useEffect(() => {
         const inIframe = window.self !== window.top;
         let target = window.parent;
@@ -94,8 +93,6 @@ export function CheckoutPage() {
         }
 
         loadOrder();
-        //TrustID.test();
-
     }, []);
 
     async function loadOrder() {
@@ -121,7 +118,6 @@ export function CheckoutPage() {
         }
 
     }
-
 
 
     function onMessageHandle(msg: Message, origin: string) {
