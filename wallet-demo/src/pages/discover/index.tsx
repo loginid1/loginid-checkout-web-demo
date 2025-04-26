@@ -15,31 +15,31 @@
  *   limitations under the License.
  */
 
-import { LIDService } from "@/services/loginid";
 import { Message, MessagingService } from "@/services/messaging";
+import { LIDService } from "@/services/loginid";
 import { useEffect, useState } from "react";
 
 const mService = new MessagingService(window.parent);
 export default function DiscoverPage() {
-    useEffect(() => {
-        let target = window.parent;
-        if (target != null) {
-            mService.onMessage((msg, origin) => onMessageHandle(msg, origin));
-        }
-    }, []);
-
-    async function onMessageHandle(msg: Message, origin: string) {
-        try {
-            mService.origin = origin;
-            mService.id = msg.id;
-            const result = await LIDService.client.discover();
-            return mService.sendMessageData({embed:result.flow === "EMBEDDED_CONTEXT"?true:false});
-        } catch (error) {
-            console.log(error);
-            return mService.sendMessageData({embed:false});
-        }
+  useEffect(() => {
+    let target = window.parent;
+    if (target != null) {
+      mService.onMessage((msg, origin) => onMessageHandle(msg, origin));
     }
-    return (
-        <></>
-    );
+  }, []);
+
+  async function onMessageHandle(msg: Message, origin: string) {
+    try {
+      mService.origin = origin;
+      mService.id = msg.id;
+      const result = await LIDService.client.discover();
+      return mService.sendMessageData({
+        embed: result.flow === "EMBEDDED_CONTEXT" ? true : false,
+      });
+    } catch (error) {
+      console.log(error);
+      return mService.sendMessageData({ embed: false });
+    }
+  }
+  return <></>;
 }

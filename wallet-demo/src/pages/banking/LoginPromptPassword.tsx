@@ -15,12 +15,18 @@
  *   limitations under the License.
  */
 
-
 "use client";
+import {
+  Button,
+  Input,
+  UnstyledButton,
+  Text,
+  Title,
+  Flex,
+  Group,
+} from "@mantine/core";
 import { FormEvent, useEffect, useRef, useState } from "react";
-import { Button, Input, UnstyledButton, Text, Title, Flex, Group } from "@mantine/core";
 import { Link, useNavigate } from "react-router-dom";
-
 
 export interface LoginPromptProps {
   amount: string;
@@ -35,37 +41,42 @@ export default function LoginPromptPassword(props: LoginPromptProps) {
   const [showPassword, setShowPassword] = useState(true);
 
   const router = useNavigate();
-  useEffect(() => {
-
-  }, []);
+  useEffect(() => {}, []);
 
   const handlerSubmit = async (event: FormEvent<HTMLFormElement>) => {
-      console.log("submit"); 
+    console.log("submit");
     event.preventDefault();
     try {
       setError("");
-      console.log("begin login"); 
+      console.log("begin login");
 
       if (password === "testing") {
         // redirect back to external
         // else set error
-        console.log("success login"); 
+        console.log("success login");
         return props.onComplete(email, "redirect");
       } else {
-        setError("invalid username or password")
+        setError("invalid username or password");
       }
-
     } catch (e: any) {
       setError(e.message || e.msg);
     }
   };
 
   return (
-    <form onSubmit={handlerSubmit} style={{ width: '100%', justifyItems: 'center' }}>
+    <form
+      onSubmit={handlerSubmit}
+      style={{ width: "100%", justifyItems: "center" }}
+    >
       <Flex align="center" direction="column" ml="xl" mr="xl">
-
-        <Title order={4} mt="md" mb="sm">Sign In to Pay ${props.amount} to {props.merchant}</Title>
-        {error && <Text c="red.4" lineClamp={64} >{error}</Text>}
+        <Title order={4} mt="md" mb="sm">
+          Sign In to Pay ${props.amount} to {props.merchant}
+        </Title>
+        {error && (
+          <Text c="red.4" lineClamp={64}>
+            {error}
+          </Text>
+        )}
         <Input
           onChange={(e) => setEmail(e.target.value)}
           mb="md"
@@ -74,7 +85,7 @@ export default function LoginPromptPassword(props: LoginPromptProps) {
           w="100%"
         />
 
-        {showPassword &&
+        {showPassword && (
           <Input.Wrapper label="Password" w="100%">
             <Input
               onChange={(e) => setPassword(e.target.value)}
@@ -84,12 +95,11 @@ export default function LoginPromptPassword(props: LoginPromptProps) {
               w="100%"
             />
           </Input.Wrapper>
-        }
+        )}
         <Button type="submit" size="md" mb="sm" fullWidth>
           SIGN IN
         </Button>
       </Flex>
     </form>
   );
-};
-
+}

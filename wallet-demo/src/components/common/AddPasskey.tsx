@@ -15,36 +15,42 @@
  *   limitations under the License.
  */
 
+import {
+  Button,
+  Text,
+  Group,
+  Flex,
+  Title,
+  Image,
+  Chip,
+  rem,
+} from "@mantine/core";
 import { FormEvent, useEffect, useState } from "react";
-import { Button, Text, Group, Flex, Title, Image, Chip, rem } from "@mantine/core";
-import { LIDService} from "@/services/loginid";
+import { LIDService } from "@/services/loginid";
 
-import { IconMail } from '@tabler/icons-react';
+import { IconMail } from "@tabler/icons-react";
 
 export default interface AddPasskeyProps {
-  username: string,
+  username: string;
   onComplete: (success: boolean) => void;
 }
 
 export function AddPasskey(props: AddPasskeyProps) {
   const [error, setError] = useState("");
 
-  useEffect(() => {
-
-  }, []);
-
+  useEffect(() => {}, []);
 
   const handlerSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     try {
       //const token = LIDService.client.getSessionInfo().idToken;
-      const token=true;
-      if(token){
-        const session = await LIDService.client.performAction("passkey:reg")
+      const token = true;
+      if (token) {
+        const session = await LIDService.client.performAction("passkey:reg");
         //localStorage.setItem("preid-email",props.username);
         props.onComplete(true);
       } else {
-        setError("error create passkey - not authorized")
+        setError("error create passkey - not authorized");
       }
     } catch (e: any) {
       setError(e.message || e.msg || e);
@@ -57,36 +63,51 @@ export function AddPasskey(props: AddPasskeyProps) {
 
   return (
     <form onSubmit={handlerSubmit}>
-
       <Flex align="center" direction="column" m="md" mb={16}>
-
-        <Title order={4} >Simplify Your Sign-in With Passkey</Title>
-        <Chip icon={<IconMail style={{ width: rem(16), height: rem(16) }} />}
+        <Title order={4}>Simplify Your Sign-in With Passkey</Title>
+        <Chip
+          icon={<IconMail style={{ width: rem(16), height: rem(16) }} />}
           color="blue.7"
-          variant="filled" m="md" defaultChecked>{props.username}</Chip>
+          variant="filled"
+          m="md"
+          defaultChecked
+        >
+          {props.username}
+        </Chip>
         {error && <Text c="red.5">{error}</Text>}
 
-        <Flex direction="row" justify="center" gap="md" p="md" >
+        <Flex direction="row" justify="center" gap="md" p="md">
           <Group gap="md">
-
-            <Image h={48} w={48} src="/assets/touchid.svg" fit="contain" alt="touchid"/>
-            <Image h={48} w={48} fit="contain" src="/assets/faceid.svg" alt="faceid" />
+            <Image
+              h={48}
+              w={48}
+              src="/assets/touchid.svg"
+              fit="contain"
+              alt="touchid"
+            />
+            <Image
+              h={48}
+              w={48}
+              fit="contain"
+              src="/assets/faceid.svg"
+              alt="faceid"
+            />
           </Group>
         </Flex>
 
-        <Text pb="lg">With passkeys you can now use your fingerpint, face, or screen lock to verify it&apos;s really you</Text>
+        <Text pb="lg">
+          With passkeys you can now use your fingerpint, face, or screen lock to
+          verify it&apos;s really you
+        </Text>
         <Group justify="space-between" w="100%">
-
           <Button variant="light" size="md" onClick={() => handleCancel()}>
             Skip
           </Button>
-          <Button type="submit" size="md" >
+          <Button type="submit" size="md">
             Add A Passkey
           </Button>
-
         </Group>
       </Flex>
     </form>
   );
-};
-
+}

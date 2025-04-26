@@ -18,8 +18,6 @@
 //import { LoginIDCognitoWebSDK } from "@loginid/cognito-web-sdk";
 import { LoginIDWalletAuth } from "@loginid/checkout-wallet";
 
-
-
 const cognitoPoolId = process.env.REACT_APP_COGNITO_POOL_ID || "";
 const cognitoClientId = process.env.REACT_APP_COGNITO_CLIENT_ID || "";
 const loginidBaseUrl = process.env.REACT_APP_LOGINID_BASE_URL || "";
@@ -30,5 +28,5 @@ export class LoginidService {
 }*/
 
 export class LIDService {
-    static client = new LoginIDWalletAuth({baseUrl:loginidBaseUrl});
+  static client = new LoginIDWalletAuth({ baseUrl: loginidBaseUrl });
 }

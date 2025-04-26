@@ -18,14 +18,26 @@
 import { Group, Anchor, Text } from "@mantine/core";
 
 export function Footer() {
-    return (
-        <Group  justify="space-between" align="center"  pos="absolute" bottom={0} mt="lg" mb="sm" >
-            <Text size="xs" fw={500}>
-                Copyright 2024
-            </Text>
-            <Anchor size="xs" fw={500} href="http://loginid.io/privacy-notice" target="_blank">
-                Privacy policy
-            </Anchor>
-        </Group>
-    );
+  return (
+    <Group
+      justify="space-between"
+      align="center"
+      pos="absolute"
+      bottom={0}
+      mt="lg"
+      mb="sm"
+    >
+      <Text size="xs" fw={500}>
+        Copyright 2024
+      </Text>
+      <Anchor
+        size="xs"
+        fw={500}
+        href="http://loginid.io/privacy-notice"
+        target="_blank"
+      >
+        Privacy policy
+      </Anchor>
+    </Group>
+  );
 }

@@ -15,16 +15,16 @@
  *   limitations under the License.
  */
 
-'use client';
+"use client";
 
-import { Card, Center, Flex, Image } from "@mantine/core";
-import { useEffect, useState } from "react";
+import { base64UrlToString, stringToBase64Url } from "@/lib/encoding";
 import { AddPasskey } from "../../components/common/AddPasskey";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { Card, Center, Flex, Image } from "@mantine/core";
 import { Footer } from "../../components/common/Footer";
 import LoginPromptPassword from "./LoginPromptPassword";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { TrustID } from "@/lib/crypto";
-import { base64UrlToString, stringToBase64Url } from "@/lib/encoding";
 import ParseUtil from "@/lib/parse";
 
 export enum LoginViewEnum {
@@ -48,41 +48,45 @@ export interface BankPrefs {
 
 //let data: BankingData | null = null;
 export default function BankingPage() {
-
   const [view, setView] = useState<LoginViewEnum>(LoginViewEnum.LoginPrompt);
   const router = useNavigate();
   const [email, setEmail] = useState("");
   const [searchParams, setSearchParams] = useSearchParams();
-  const [data, setData] = useState<BankingData|null>(null);
+  const [data, setData] = useState<BankingData | null>(null);
 
   useEffect(() => {
-    console.log("banking login")
+    console.log("banking login");
     //TrustID.test();
     const qdata = searchParams.get("data");
-    setData(ParseUtil.parseB64Data(qdata))
+    setData(ParseUtil.parseB64Data(qdata));
   }, []);
 
   function renderView(view: LoginViewEnum) {
-
     if (view === LoginViewEnum.LoginPrompt) {
-      return <LoginPromptPassword amount={data?.amount || "0.00"} merchant={data?.merchant||"Unknown"} onComplete={onLoginPromptComplete} />
+      return (
+        <LoginPromptPassword
+          amount={data?.amount || "0.00"}
+          merchant={data?.merchant || "Unknown"}
+          onComplete={onLoginPromptComplete}
+        />
+      );
     }
   }
 
   function onLoginPromptComplete(email: string, next: string) {
-    console.log("data: ", data)
+    console.log("data: ", data);
     if (data) {
-      const callback = "/external?session=" + stringToBase64Url(JSON.stringify({ username: email, id: data.id }))
+      const callback =
+        "/external?session=" +
+        stringToBase64Url(JSON.stringify({ username: email, id: data.id }));
       document.location.href = callback;
     }
-
   }
 
   return (
     <Center h="100vh" w="100%">
       <Card shadow="sm" w={{ base: 356, md: 480, lg: 550 }} mih={420} p="sm">
         <Flex justify="center" align="center" direction="column" w="100%">
-
           <Image
             h={48}
             w={192}
@@ -95,7 +99,5 @@ export default function BankingPage() {
         </Flex>
       </Card>
     </Center>
-
   );
-
 }

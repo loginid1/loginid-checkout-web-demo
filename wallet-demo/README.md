@@ -13,8 +13,7 @@ This example application showcases how to implement key authentication flows on 
 ### Configure Environment Variables
 
 1. Copy `example.env` and rename it to `.env`.
-2. Replace the placeholder values with your own credentials, which you can find in your LoginID dashboard under
-your application settings:
+2. Replace the placeholder values with your own credentials, which you can find in your LoginID dashboard under your application settings:
 
 ```
 REACT_APP_LOGINID_BASE_URL=<BASE_URL_HERE>
