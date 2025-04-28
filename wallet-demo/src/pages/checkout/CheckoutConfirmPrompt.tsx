@@ -1,5 +1,5 @@
 /*
- *   Copyright (c) 2024 LoginID Inc
+ *   Copyright (c) 2025 LoginID Inc
  *   All rights reserved.
 
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,32 +15,16 @@
  *   limitations under the License.
  */
 
+import { Button, Grid, Text, Divider, Image, Container } from "@mantine/core";
 import {
-  Button,
-  Grid,
-  Modal,
-  Text,
-  Divider,
-  Card,
-  Group,
-  Image,
-  Title,
-  Container,
-  NativeSelect,
-  rem,
-  Checkbox,
-} from "@mantine/core";
-import {
-  Icon,
   IconCreditCard,
   IconFaceId,
   IconFingerprint,
 } from "@tabler/icons-react";
 import { LIDService } from "@/services/loginid";
-import { useDisclosure } from "@mantine/hooks";
-import { useEffect, useState } from "react";
 import ParseUtil from "@/lib/parse";
 import { CheckoutRequest } from ".";
+import { useState } from "react";
 
 export interface TxPayload {
   Merchant: string;
@@ -70,6 +54,22 @@ export interface CheckoutConfirmPromptProps {
   hasPasskey: boolean;
   onComplete: (email: string, token: string, next: string) => void;
 }
+
+/**
+ * CheckoutConfirmPrompt
+ *
+ * This component displays the payment summary to the user and handles passkey-based transaction confirmation.
+ *
+ * Responsibilities:
+ * - Displays a breakdown of the order details (shipping, contact info, total).
+ * - Triggers passkey-based transaction authentication with the LoginID Wallet SDK (`performAction("passkey:tx")`).
+ * - Handles both success (payload signature returned) and failure (error shown).
+ *
+ * Flow Summary:
+ * 1. Show the user a detailed confirmation page with merchant and payment info.
+ * 2. When the user clicks "Confirm", initiate passkey authentication.
+ * 3. On successful signing, complete the checkout flow by passing token back to the parent.
+ */
 export function CheckoutConfirmPrompt(props: CheckoutConfirmPromptProps) {
   const payData: TxPayload = {
     Merchant: props.request.merchant,
@@ -90,46 +90,12 @@ export function CheckoutConfirmPrompt(props: CheckoutConfirmPromptProps) {
     Note: "This payment will not be immediately reflected in your current balance.",
   };
 
-  const [openedPay, payHandlers] = useDisclosure(false, {
-    onOpen: () => clearPay(),
-  });
-  const [openedSend, sendHandlers] = useDisclosure(false, {
-    onOpen: () => clearSend(),
-  });
   const [error, setError] = useState("");
   const [txRef, setTxRef] = useState("");
 
-  const [sendAmount, setSendAmount] = useState("");
-  const [sendTo, setSendTo] = useState("");
-
-  const [buttonIcon, setButtonIcon] = useState<Icon>(IconCreditCard);
-
-  function clearPay() {
-    clear();
-    setTxRef("");
-  }
-
-  function clearSend() {
-    clear();
-    setTxRef("");
-    setSendTo("");
-  }
-
-  useEffect(() => {
-    if (props.token != "") {
-      setButtonIcon(IconCreditCard);
-    } else {
-      if (ParseUtil.isIPhone()) {
-        setButtonIcon(IconFaceId);
-      } else {
-        setButtonIcon(IconFingerprint);
-      }
-    }
-  }, []);
-
   function ButtonIcon() {
     const SIZE = 24;
-    if (props.token != "") {
+    if (props.token !== "") {
       return <IconCreditCard size={SIZE}></IconCreditCard>;
     } else {
       if (ParseUtil.isIPhone()) {
@@ -142,20 +108,21 @@ export function CheckoutConfirmPrompt(props: CheckoutConfirmPromptProps) {
 
   async function confirmPayTranstion() {
     // clear prior result
-    if (props.token != "") {
+    if (props.token !== "") {
       return props.onComplete(
         props.username,
         props.token,
         props.hasPasskey ? "passkey" : "none",
       );
     }
+
     clear();
+
     try {
-      console.log(props.username);
       const result = await LIDService.client.performAction("passkey:tx", {
         txPayload: JSON.stringify(payData),
       });
-      //const result = await LIDService.client.performAction("passkey:tx")
+
       if (result.payloadSignature) {
         return props.onComplete(
           props.username,
@@ -175,18 +142,6 @@ export function CheckoutConfirmPrompt(props: CheckoutConfirmPromptProps) {
 
   return (
     <Container w="100%">
-      {/**
-             * 
-            <Group bg="blue.7" justify="space-between" >
-                <Title c="white">Pay Card</Title>
-                {txRef ?
-                    <Image w={32} h={32} src="/assets/icon-2-checkmark.svg"></Image>
-                    :
-                    <Image w={32} h={32} src="/assets/icon-1-exclamation.svg"></Image>
-                }
-            </Group>
-             */}
-
       {txRef && (
         <>
           <Grid>
@@ -245,7 +200,6 @@ export function CheckoutConfirmPrompt(props: CheckoutConfirmPromptProps) {
         </Grid.Col>
       </Grid>
       <Divider mb="xs" mt="xs"></Divider>
-
       <Grid mt={0}>
         <Grid.Col span={8}>
           <Text fw={500} ta="right" size="xs">
@@ -293,14 +247,6 @@ export function CheckoutConfirmPrompt(props: CheckoutConfirmPromptProps) {
         </Grid.Col>
       </Grid>
       <Divider mb="xs" mt="xs"></Divider>
-      {/*!props.hasPasskey &&
-
-                <Grid justify="center">
-                    <Grid.Col span={12}  ><Checkbox checked={regPK} label="Create a passkey for faster future checkout"
-                    /></Grid.Col>
-                </Grid>
-            */}
-
       <Button leftSection={ButtonIcon()} onClick={confirmPayTranstion}>
         Confirm
       </Button>

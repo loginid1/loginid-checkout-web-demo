@@ -1,5 +1,5 @@
 /*
- *   Copyright (c) 2024 LoginID Inc
+ *   Copyright (c) 2025 LoginID Inc
  *   All rights reserved.
 
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,17 +15,9 @@
  *   limitations under the License.
  */
 
-//import { LoginIDCognitoWebSDK } from "@loginid/cognito-web-sdk";
 import { LoginIDWalletAuth } from "@loginid/checkout-wallet";
 
-const cognitoPoolId = process.env.REACT_APP_COGNITO_POOL_ID || "";
-const cognitoClientId = process.env.REACT_APP_COGNITO_CLIENT_ID || "";
 const loginidBaseUrl = process.env.REACT_APP_LOGINID_BASE_URL || "";
-/*
-export class LoginidService {
-    static client = new LoginIDCognitoWebSDK(cognitoPoolId, cognitoClientId, loginidBaseUrl);
-    static AUTH_FLOW_FALLBACK = "password";
-}*/
 
 export class LIDService {
   static client = new LoginIDWalletAuth({ baseUrl: loginidBaseUrl });

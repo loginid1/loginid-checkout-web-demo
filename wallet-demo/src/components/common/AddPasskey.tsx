@@ -1,5 +1,5 @@
 /*
- *   Copyright (c) 2024 LoginID Inc
+ *   Copyright (c) 2025 LoginID Inc
  *   All rights reserved.
 
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,33 +25,39 @@ import {
   Chip,
   rem,
 } from "@mantine/core";
-import { FormEvent, useEffect, useState } from "react";
 import { LIDService } from "@/services/loginid";
-
 import { IconMail } from "@tabler/icons-react";
+import { FormEvent, useState } from "react";
 
 export default interface AddPasskeyProps {
   username: string;
   onComplete: (success: boolean) => void;
 }
 
+/**
+ * AddPasskey
+ *
+ * This component handles prompting the user to create a passkey after external authentication.
+ *
+ * Responsibilities:
+ * - Displays a simple UI encouraging the user to create a passkey linked to their identity.
+ * - Initiates passkey registration using LoginID Wallet SDK (`performAction("passkey:reg")`).
+ * - Handles both successful registration and cancellation (skip) events.
+ *
+ * Flow Summary:
+ * 1. User is shown a prompt to add a passkey, associated with their username.
+ * 2. On submit, a passkey registration ceremony is triggered.
+ * 3. On success or skip, the parent onComplete callback is fired to continue the checkout flow.
+ */
 export function AddPasskey(props: AddPasskeyProps) {
   const [error, setError] = useState("");
 
-  useEffect(() => {}, []);
-
   const handlerSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
     try {
-      //const token = LIDService.client.getSessionInfo().idToken;
-      const token = true;
-      if (token) {
-        const session = await LIDService.client.performAction("passkey:reg");
-        //localStorage.setItem("preid-email",props.username);
-        props.onComplete(true);
-      } else {
-        setError("error create passkey - not authorized");
-      }
+      await LIDService.client.performAction("passkey:reg");
+      props.onComplete(true);
     } catch (e: any) {
       setError(e.message || e.msg || e);
     }

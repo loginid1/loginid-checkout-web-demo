@@ -1,5 +1,5 @@
 /*
- *   Copyright (c) 2024 LoginID Inc
+ *   Copyright (c) 2025 LoginID Inc
  *   All rights reserved.
 
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -33,14 +33,10 @@ export class MessagingService {
   channel: string = "wallet-communication-channel";
   id: number = 0;
   target: Window;
+
   constructor(targetWindow: Window) {
     this.target = targetWindow;
   }
-
-  /*
-    static sendMessage(target: Window , message:Message, origin: string) {
-        target.postMessage(JSON.stringify(message), origin)
-    }*/
 
   sendErrorMessage(error: string) {
     let message: Message = {

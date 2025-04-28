@@ -1,5 +1,5 @@
 /*
- *   Copyright (c) 2024 LoginID Inc
+ *   Copyright (c) 2025 LoginID Inc
  *   All rights reserved.
 
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,17 +16,9 @@
  */
 
 "use client";
-import {
-  Button,
-  Input,
-  UnstyledButton,
-  Text,
-  Title,
-  Flex,
-  Group,
-} from "@mantine/core";
-import { FormEvent, useEffect, useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+
+import { Button, Input, Text, Title, Flex } from "@mantine/core";
+import { FormEvent, useState } from "react";
 
 export interface LoginPromptProps {
   amount: string;
@@ -34,30 +26,28 @@ export interface LoginPromptProps {
   onComplete: (email: string, next: string) => void;
 }
 
+/**
+ * LoginPromptPassword
+ *
+ * A simple username and password login form used during fallback authentication.
+ *
+ * Responsibilities:
+ * - Collects username and password input.
+ * - Triggers the parent onComplete callback with the email after "successful" login.
+ */
 export default function LoginPromptPassword(props: LoginPromptProps) {
   const [error, setError] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(true);
-
-  const router = useNavigate();
-  useEffect(() => {}, []);
+  const [showPassword] = useState(true);
 
   const handlerSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    console.log("submit");
     event.preventDefault();
+
+    // For demo purposes, we are not validating the email and password
     try {
       setError("");
-      console.log("begin login");
-
-      if (password === "testing") {
-        // redirect back to external
-        // else set error
-        console.log("success login");
-        return props.onComplete(email, "redirect");
-      } else {
-        setError("invalid username or password");
-      }
+      return props.onComplete(email, "redirect");
     } catch (e: any) {
       setError(e.message || e.msg);
     }

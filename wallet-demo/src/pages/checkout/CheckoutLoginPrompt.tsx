@@ -1,5 +1,5 @@
 /*
- *   Copyright (c) 2024 LoginID Inc
+ *   Copyright (c) 2025 LoginID Inc
  *   All rights reserved.
 
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,6 +16,7 @@
  */
 
 "use client";
+
 import {
   Button,
   Input,
@@ -26,34 +27,39 @@ import {
   Group,
   Divider,
 } from "@mantine/core";
-import { FormEvent, useEffect, useRef, useState } from "react";
 import { IconAt, IconAtom } from "@tabler/icons-react";
-import { Link, useNavigate } from "react-router-dom";
+import { FormEvent, useEffect, useState } from "react";
 import { LIDService } from "@/services/loginid";
+import { Link } from "react-router-dom";
 import ParseUtil from "@/lib/parse";
 
 export interface CheckoutLoginPromptProps {
   onComplete: (email: string, token: string, next: string) => void;
 }
 
+/**
+ * CheckoutLoginPrompt
+ *
+ * This component handles fallback authentication in the checkout flow,
+ * giving users the option to login with a passkey or via external bank login.
+ *
+ * Responsibilities:
+ * - Attempts to auto-fill passkey login immediately on page load.
+ * - Provides a manual login option with passkey usernameless authentication.
+ * - Allows users to select a bank if passkey authentication is not available.
+ * - After authentication, calls the parent `onComplete` to continue checkout flow.
+ *
+ * Flow Summary:
+ * 1. Try passkey autofill silently on load using LoginID SDK.
+ * 2. Offer manual passkey usernameless login as a button submit.
+ * 3. Offer fallback buttons for external (bank) login selection.
+ */
 export default function CheckoutLoginPrompt(props: CheckoutLoginPromptProps) {
   const [error, setError] = useState("");
-  const [abortController] = useState(new AbortController());
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
+  const [email] = useState("");
 
-  const router = useNavigate();
   useEffect(() => {
-    document.onkeypress = function (e) {
-      e.preventDefault();
-      return false;
-    };
     handleAutoFill();
-    // this is important to unlock webauthn credential used by auto-fill when existing the page
-    return () => {
-      abortController.abort();
-    };
   }, []);
 
   async function handleAutoFill() {
@@ -62,11 +68,11 @@ export default function CheckoutLoginPrompt(props: CheckoutLoginPromptProps) {
         autoFill: true,
       });
 
-      //return router("/manage");
       if (result.isComplete && result.accessToken) {
         const token = ParseUtil.parseToken(result.accessToken);
-        //console.log(token);
         return props.onComplete(token["username"], token, "passkey");
+      } else {
+        setError("invalid credential");
       }
     } catch (e: any) {
       const msg = e.message || e.msg || e;
@@ -76,17 +82,15 @@ export default function CheckoutLoginPrompt(props: CheckoutLoginPromptProps) {
 
   const handlerSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
     try {
       setError("");
 
       const result = await LIDService.client.performAction("passkey:auth");
+
       if (result.isComplete && result.accessToken) {
         const token = ParseUtil.parseToken(result.accessToken);
-        return props.onComplete(
-          token["username"],
-          result.accessToken,
-          "passkey",
-        );
+        return props.onComplete(token["username"], token, "passkey");
       } else {
         setError("invalid credential");
       }

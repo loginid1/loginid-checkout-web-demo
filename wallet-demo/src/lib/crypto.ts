@@ -1,5 +1,5 @@
 /*
- *   Copyright (c) 2024 LoginID Inc
+ *   Copyright (c) 2025 LoginID Inc
  *   All rights reserved.
 
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,7 +15,7 @@
  *   limitations under the License.
  */
 
-import { base64EncodeUrl, bufferToBase64, stringToBase64Url } from "./encoding";
+import { bufferToBase64, stringToBase64Url } from "./encoding";
 
 interface Keystore {
   id: string;

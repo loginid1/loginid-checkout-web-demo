@@ -1,5 +1,5 @@
 /*
- *   Copyright (c) 2024 LoginID Inc
+ *   Copyright (c) 2025 LoginID Inc
  *   All rights reserved.
 
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,7 +21,6 @@ import { Route, Routes } from "react-router-dom";
 import { CheckoutPage } from "./pages/checkout";
 import DiscoverPage from "./pages/discover";
 import BankingPage from "./pages/banking";
-import IDVPage from "./pages/discover";
 import "@mantine/core/styles.css";
 import "./App.css";
 
@@ -35,7 +34,7 @@ function App() {
       <MantineProvider theme={theme}>
         <Routes>
           <Route path="/" element={<CheckoutPage />} />
-          <Route path="/idv" element={<IDVPage />} />
+          <Route path="/idv" element={<DiscoverPage />} />
           <Route path="/discover" element={<DiscoverPage />} />
           <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="/banking" element={<BankingPage />} />

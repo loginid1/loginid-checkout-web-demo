@@ -1,5 +1,5 @@
 /*
- *   Copyright (c) 2024 LoginID Inc
+ *   Copyright (c) 2025 LoginID Inc
  *   All rights reserved.
 
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -130,21 +130,4 @@ export const base64ToBuffer = (data: string): ArrayBuffer => {
 export const base64UrlToString = (data: string): string => {
   data = data.replace(/-/g, "+").replace(/_/g, "/");
   return a2b(data);
-};
-/**
- * Along with traditional OO hierarchies, another popular way of building up classes from
- * reusable components is to build them by combining simpler partial classes.
- * https://www.typescriptlang.org/docs/handbook/mixins.html
- * */
-export const applyMixins = (derivedCtor: any, constructors: any[]) => {
-  constructors.forEach((baseCtor) => {
-    Object.getOwnPropertyNames(baseCtor.prototype).forEach((name) => {
-      Object.defineProperty(
-        derivedCtor.prototype,
-        name,
-        Object.getOwnPropertyDescriptor(baseCtor.prototype, name) ||
-          Object.create(null),
-      );
-    });
-  });
 };

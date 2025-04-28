@@ -1,5 +1,5 @@
 /*
- *   Copyright (c) 2024 LoginID Inc
+ *   Copyright (c) 2025 LoginID Inc
  *   All rights reserved.
 
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,20 +17,6 @@
 
 import { base64UrlToString, stringToBase64Url } from "./encoding";
 
-const dateTimeFormat = new Intl.DateTimeFormat("en", {
-  month: "numeric",
-  year: "numeric",
-  day: "numeric",
-  hour: "numeric",
-  minute: "numeric",
-});
-
-const dateFormat = new Intl.DateTimeFormat("en", {
-  month: "numeric",
-  year: "numeric",
-  day: "numeric",
-});
-
 export interface IDToken {
   sub: string;
   aud: string;
@@ -38,22 +24,6 @@ export interface IDToken {
 }
 
 export default class ParseUtil {
-  static parseDateTime(time: string): string {
-    return dateTimeFormat.format(Date.parse(time));
-  }
-
-  static parseDateTimeUnix(time: number): string {
-    return dateTimeFormat.format(new Date(time * 1000));
-  }
-
-  static parseDateUnix(time: number): string {
-    return dateFormat.format(new Date(time * 1000));
-  }
-
-  static parseDate(time: Date): string {
-    return dateFormat.format(time);
-  }
-
   static parseToken(token: string): any {
     var base64Url = token.split(".")[1];
     var base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
@@ -70,26 +40,6 @@ export default class ParseUtil {
     return JSON.parse(jsonPayload);
   }
 
-  static isWebview(): boolean {
-    const navigator: any = window.navigator;
-    const userAgent = navigator.userAgent;
-    const normalizedUserAgent = userAgent.toLowerCase();
-
-    const isIos =
-      /ip(ad|hone|od)/.test(normalizedUserAgent) ||
-      (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
-    const isAndroid = /android/.test(normalizedUserAgent);
-    const isSafari = /safari/.test(normalizedUserAgent);
-    // ios only
-    let standalone = false;
-    if (isIos) {
-      standalone = navigator.standalone;
-    }
-    const isWebview =
-      (isAndroid && /; wv\)/.test(normalizedUserAgent)) ||
-      (isIos && !standalone && !isSafari);
-    return isWebview;
-  }
   static isIPhone(): boolean {
     const navigator: any = window.navigator;
     const userAgent = navigator.userAgent;
@@ -111,6 +61,7 @@ export default class ParseUtil {
       return null;
     }
   }
+
   static consertJSONToB64<T>(json: T): string | null {
     try {
       return stringToBase64Url(JSON.stringify(json));

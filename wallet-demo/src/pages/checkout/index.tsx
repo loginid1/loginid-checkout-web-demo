@@ -1,5 +1,5 @@
 /*
- *   Copyright (c) 2024 LoginID Inc
+ *   Copyright (c) 2025 LoginID Inc
  *   All rights reserved.
 
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,11 +21,10 @@ import { CheckoutConfirmPrompt } from "./CheckoutConfirmPrompt";
 import { Center, Card, Flex, Image } from "@mantine/core";
 import CheckoutLoginPrompt from "./CheckoutLoginPrompt";
 import { WalletMockService } from "@/services/backend";
-import { Footer } from "@/components/common/Footer";
+import { CALLBACK_URL, WEBVIEW_URL } from "@/lib/urls";
 import { useSearchParams } from "react-router-dom";
 import { LIDService } from "@/services/loginid";
 import { useEffect, useState } from "react";
-import { TrustID } from "@/lib/crypto";
 
 export enum CheckoutViewEnum {
   Checkout = "checkout",
@@ -34,6 +33,7 @@ export enum CheckoutViewEnum {
   Confirmation = "confirm",
   AddPasskey = "add-passkey",
 }
+
 export interface DisplayMessage {
   text: string;
   type: string;
@@ -58,14 +58,32 @@ export interface BankingData {
 }
 
 const mService = new MessagingService(window.parent);
+
+/**
+ * CheckoutPage
+ *
+ * This component manages the wallet-side flow for LoginID Checkout.
+ *
+ * Responsibilities:
+ * - Listens for messages from the merchant site (in iframe mode) or redirects in webview mode
+ * - Loads the user's checkout payload and begins Wallet SDK's `beginFlow` to determine next action
+ * - Displays fallback login (bank sign-in, autofill) or transaction confirmation based on passkey availability
+ * - Handles communication back to merchant (via message passing or URL redirects) after checkout completes
+ *
+ * Flow Summary:
+ * 1. Load order and determine checkout context (webview or iframe).
+ * 2. Use Wallet SDK (`beginFlow`) to decide if user can approve with passkey or needs to fallback login.
+ * 3. After user login/approval, send the result back to merchant domain.
+ *
+ * Related:
+ * - `WalletMockService` is used to simulate backend order creation for demo.
+ * - `LIDService` wraps the LoginID Wallet SDK client used for authentication and transaction signing.
+ */
 export function CheckoutPage() {
-  const [displayMessage, setDisplayMessage] = useState<DisplayMessage | null>(
-    null,
-  );
   const [username, setUsername] = useState<string>("");
   const [token, setToken] = useState<string>("");
   const [view, setView] = useState<CheckoutViewEnum>(CheckoutViewEnum.Wait);
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const [webview, setWebview] = useState<boolean>(false);
   const [passkey, setPasskey] = useState<boolean>(false);
   const [order, setOrder] = useState<string>("");
@@ -74,7 +92,6 @@ export function CheckoutPage() {
 
   useEffect(() => {
     const inIframe = window.self !== window.top;
-    let target = window.parent;
 
     if (inIframe) {
       mService.onMessage((msg, origin) => onMessageHandle(msg, origin));
@@ -85,33 +102,37 @@ export function CheckoutPage() {
     const query_webview = searchParams.get("webview");
     if (query_webview) {
       setWebview(true);
-      if (query_webview != "null") {
+      if (query_webview !== "null") {
         setView(CheckoutViewEnum.Confirmation);
         setUsername(query_webview);
       }
     }
 
     loadOrder();
-  }, []);
+  }, [searchParams]);
 
   async function loadOrder() {
-    const query_data = searchParams.get("data");
+    const queryData = searchParams.get("data");
     let apayload = null;
-    if (query_data) {
-      apayload = JSON.parse(base64UrlToString(query_data));
+
+    if (queryData) {
+      apayload = JSON.parse(base64UrlToString(queryData));
     }
+
     if (apayload) {
-      const cId = apayload.cid;
-      const oid = await WalletMockService.setupOrder(apayload);
-      setOrder(oid);
+      const checkoutId = apayload.cid;
+      const orderId = await WalletMockService.setupOrder(apayload);
+
+      setOrder(orderId);
       setPayload(apayload);
-      const txPayload = oid;
+
+      const txPayload = orderId;
       const result = await LIDService.client.beginFlow({
-        checkoutId: cId ? cId : undefined,
+        checkoutId: checkoutId,
         txPayload,
       });
 
-      if (result.nextAction == "passkey:tx") {
+      if (result.nextAction === "passkey:tx") {
         setView(CheckoutViewEnum.Confirmation);
       } else {
         // fallback
@@ -123,7 +144,7 @@ export function CheckoutPage() {
   function onMessageHandle(msg: Message, origin: string) {}
 
   function renderView(view: CheckoutViewEnum) {
-    if (view == CheckoutViewEnum.Confirmation && payload != null) {
+    if (view === CheckoutViewEnum.Confirmation && payload != null) {
       return (
         <CheckoutConfirmPrompt
           username={username}
@@ -133,7 +154,7 @@ export function CheckoutPage() {
           onComplete={onCheckoutConfirmHandle}
         />
       );
-    } else if (view == CheckoutViewEnum.Wait) {
+    } else if (view === CheckoutViewEnum.Wait) {
       return <></>;
     } else {
       return <CheckoutLoginPrompt onComplete={onCheckoutLoginHandle} />;
@@ -141,19 +162,21 @@ export function CheckoutPage() {
   }
 
   function onCheckoutLoginHandle(email: string, token: string, next: string) {
-    if (next == "passkey") {
-      //localStorage.setItem("preid-email", email);
+    // Display passkey authentication with autofill
+    if (next === "passkey") {
       setUsername(email);
       setToken(token);
       setPasskey(true);
       setView(CheckoutViewEnum.Confirmation);
-    } else if (next == "external") {
+      // We fallback to bank login
+    } else if (next === "external") {
       if (payload) {
         const data: BankingData = {
           id: order,
           merchant: payload?.merchant,
           amount: payload?.total,
         };
+
         document.location.href =
           "/banking?data=" + stringToBase64Url(JSON.stringify(data));
       }
@@ -161,33 +184,28 @@ export function CheckoutPage() {
   }
 
   function onCheckoutConfirmHandle(email: string, token: string, next: string) {
-    let hasPasskey = false;
-    if (next === "passkey") {
-      hasPasskey = true;
-    }
-    console.log("Payload ", payload);
-    const baseCallback = payload?.callback || `http://localhost:3001/callback`;
-    const base64 = stringToBase64Url(
-      `{"id":"${order}","passkey":${hasPasskey}}`,
-    );
-    const callback = baseCallback + `?data=${base64}`;
-    if (redirect) {
-      if (webview) {
-        const wbase64 = stringToBase64Url(
-          `{"id":"${order}","passkey":${hasPasskey}}`,
-        );
-        document.location.href = "abcbank://callback" + `?data=${wbase64}`;
-      } else {
-        document.location.href = callback;
-      }
-    } else {
-      console.log("redirect back ", order, baseCallback);
+    const hasPasskey = next === "passkey";
+    const orderData = { id: order, passkey: hasPasskey };
+
+    const baseCallback = payload?.callback || CALLBACK_URL;
+    const encodedData = stringToBase64Url(JSON.stringify(orderData));
+    const callbackUrl = `${baseCallback}?data=${encodedData}`;
+
+    if (!redirect) {
       return mService.sendMessageData({
         id: order,
         email: email,
         token: token,
         callback: baseCallback,
       });
+    }
+
+    if (webview) {
+      const webviewCallback = WEBVIEW_URL;
+      const webviewData = stringToBase64Url(JSON.stringify(orderData));
+      document.location.href = `${webviewCallback}?data=${webviewData}`;
+    } else {
+      document.location.href = callbackUrl;
     }
   }
 

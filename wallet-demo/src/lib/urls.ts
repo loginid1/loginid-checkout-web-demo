@@ -15,29 +15,7 @@
  *   limitations under the License.
  */
 
-import { Group, Anchor, Text } from "@mantine/core";
-
-export function Footer() {
-  return (
-    <Group
-      justify="space-between"
-      align="center"
-      pos="absolute"
-      bottom={0}
-      mt="lg"
-      mb="sm"
-    >
-      <Text size="xs" fw={500}>
-        Copyright 2025
-      </Text>
-      <Anchor
-        size="xs"
-        fw={500}
-        href="http://loginid.io/privacy-notice"
-        target="_blank"
-      >
-        Privacy policy
-      </Anchor>
-    </Group>
-  );
-}
+export const CALLBACK_URL =
+  process.env.NEXT_PUBLIC_CALLBACK_URL || "http://localhost:3001/callback";
+export const WEBVIEW_URL =
+  process.env.NEXT_PUBLIC_WEBVIEW_URL || "abcbank://callback";
