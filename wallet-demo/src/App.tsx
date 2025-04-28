@@ -1,5 +1,5 @@
 /*
- *   Copyright (c) 2024 LoginID Inc
+ *   Copyright (c) 2025 LoginID Inc
  *   All rights reserved.
 
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,34 +15,32 @@
  *   limitations under the License.
  */
 
-
-import './App.css';
-import { Route, Routes } from 'react-router-dom';
-import '@mantine/core/styles.css';
-import { createTheme, MantineProvider } from '@mantine/core';
-import IDVPage from './pages/discover';
-import { CheckoutPage } from './pages/checkout';
-import BankingPage from './pages/banking';
-import { CheckoutExternalPage } from './pages/checkout/external';
-import DiscoverPage from './pages/discover';
+import { CheckoutExternalPage } from "./pages/checkout/external";
+import { createTheme, MantineProvider } from "@mantine/core";
+import { Route, Routes } from "react-router-dom";
+import { CheckoutPage } from "./pages/checkout";
+import DiscoverPage from "./pages/discover";
+import BankingPage from "./pages/banking";
+import "@mantine/core/styles.css";
+import "./App.css";
 
 const theme = createTheme({
   /** Put your mantine theme override here */
 });
+
 function App() {
   return (
     <div className="App">
-    <MantineProvider theme={theme}>
-
-      <Routes>
-        <Route path="/" element={<CheckoutPage/>} />
-        <Route path="/idv" element={<IDVPage/>} />
-        <Route path="/discover" element={<DiscoverPage/>} />
-        <Route path="/checkout" element={<CheckoutPage/>} />
-        <Route path="/banking" element={<BankingPage/>} />
-        <Route path="/external" element={<CheckoutExternalPage/>} />
-      </Routes>
-    </MantineProvider>
+      <MantineProvider theme={theme}>
+        <Routes>
+          <Route path="/" element={<CheckoutPage />} />
+          <Route path="/idv" element={<DiscoverPage />} />
+          <Route path="/discover" element={<DiscoverPage />} />
+          <Route path="/checkout" element={<CheckoutPage />} />
+          <Route path="/banking" element={<BankingPage />} />
+          <Route path="/external" element={<CheckoutExternalPage />} />
+        </Routes>
+      </MantineProvider>
     </div>
   );
 }

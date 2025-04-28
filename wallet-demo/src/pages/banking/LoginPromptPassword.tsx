@@ -1,5 +1,5 @@
 /*
- *   Copyright (c) 2024 LoginID Inc
+ *   Copyright (c) 2025 LoginID Inc
  *   All rights reserved.
 
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,12 +15,10 @@
  *   limitations under the License.
  */
 
-
 "use client";
-import { FormEvent, useEffect, useRef, useState } from "react";
-import { Button, Input, UnstyledButton, Text, Title, Flex, Group } from "@mantine/core";
-import { Link, useNavigate } from "react-router-dom";
 
+import { Button, Input, Text, Title, Flex } from "@mantine/core";
+import { FormEvent, useState } from "react";
 
 export interface LoginPromptProps {
   amount: string;
@@ -28,44 +26,47 @@ export interface LoginPromptProps {
   onComplete: (email: string, next: string) => void;
 }
 
+/**
+ * LoginPromptPassword
+ *
+ * A simple username and password login form used during fallback authentication.
+ *
+ * Responsibilities:
+ * - Collects username and password input.
+ * - Triggers the parent onComplete callback with the email after "successful" login.
+ */
 export default function LoginPromptPassword(props: LoginPromptProps) {
   const [error, setError] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(true);
-
-  const router = useNavigate();
-  useEffect(() => {
-
-  }, []);
+  const [showPassword] = useState(true);
 
   const handlerSubmit = async (event: FormEvent<HTMLFormElement>) => {
-      console.log("submit"); 
     event.preventDefault();
+
+    // For demo purposes, we are not validating the email and password
     try {
       setError("");
-      console.log("begin login"); 
-
-      if (password === "testing") {
-        // redirect back to external
-        // else set error
-        console.log("success login"); 
-        return props.onComplete(email, "redirect");
-      } else {
-        setError("invalid username or password")
-      }
-
+      return props.onComplete(email, "redirect");
     } catch (e: any) {
       setError(e.message || e.msg);
     }
   };
 
   return (
-    <form onSubmit={handlerSubmit} style={{ width: '100%', justifyItems: 'center' }}>
+    <form
+      onSubmit={handlerSubmit}
+      style={{ width: "100%", justifyItems: "center" }}
+    >
       <Flex align="center" direction="column" ml="xl" mr="xl">
-
-        <Title order={4} mt="md" mb="sm">Sign In to Pay ${props.amount} to {props.merchant}</Title>
-        {error && <Text c="red.4" lineClamp={64} >{error}</Text>}
+        <Title order={4} mt="md" mb="sm">
+          Sign In to Pay ${props.amount} to {props.merchant}
+        </Title>
+        {error && (
+          <Text c="red.4" lineClamp={64}>
+            {error}
+          </Text>
+        )}
         <Input
           onChange={(e) => setEmail(e.target.value)}
           mb="md"
@@ -74,7 +75,7 @@ export default function LoginPromptPassword(props: LoginPromptProps) {
           w="100%"
         />
 
-        {showPassword &&
+        {showPassword && (
           <Input.Wrapper label="Password" w="100%">
             <Input
               onChange={(e) => setPassword(e.target.value)}
@@ -84,12 +85,11 @@ export default function LoginPromptPassword(props: LoginPromptProps) {
               w="100%"
             />
           </Input.Wrapper>
-        }
+        )}
         <Button type="submit" size="md" mb="sm" fullWidth>
           SIGN IN
         </Button>
       </Flex>
     </form>
   );
-};
-
+}

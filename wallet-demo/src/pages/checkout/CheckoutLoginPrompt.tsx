@@ -1,5 +1,5 @@
 /*
- *   Copyright (c) 2024 LoginID Inc
+ *   Copyright (c) 2025 LoginID Inc
  *   All rights reserved.
 
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,67 +15,82 @@
  *   limitations under the License.
  */
 
-
 "use client";
-import { FormEvent, useEffect, useRef, useState } from "react";
-import { Button, Input, UnstyledButton, Text, Title, Flex, Group, Divider } from "@mantine/core";
-import { LIDService } from "@/services/loginid";
-import { Link, useNavigate } from "react-router-dom";
-import { IconAt, IconAtom } from "@tabler/icons-react";
-import ParseUtil from "@/lib/parse";
 
+import {
+  Button,
+  Input,
+  UnstyledButton,
+  Text,
+  Title,
+  Flex,
+  Group,
+  Divider,
+} from "@mantine/core";
+import { IconAt, IconAtom } from "@tabler/icons-react";
+import { FormEvent, useEffect, useState } from "react";
+import { LIDService } from "@/services/loginid";
+import { Link } from "react-router-dom";
+import ParseUtil from "@/lib/parse";
 
 export interface CheckoutLoginPromptProps {
   onComplete: (email: string, token: string, next: string) => void;
 }
 
+/**
+ * CheckoutLoginPrompt
+ *
+ * This component handles fallback authentication in the checkout flow,
+ * giving users the option to login with a passkey or via external bank login.
+ *
+ * Responsibilities:
+ * - Attempts to auto-fill passkey login immediately on page load.
+ * - Provides a manual login option with passkey usernameless authentication.
+ * - Allows users to select a bank if passkey authentication is not available.
+ * - After authentication, calls the parent `onComplete` to continue checkout flow.
+ *
+ * Flow Summary:
+ * 1. Try passkey autofill silently on load using LoginID SDK.
+ * 2. Offer manual passkey usernameless login as a button submit.
+ * 3. Offer fallback buttons for external (bank) login selection.
+ */
 export default function CheckoutLoginPrompt(props: CheckoutLoginPromptProps) {
   const [error, setError] = useState("");
-  const [abortController] = useState(new AbortController());
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
+  const [email] = useState("");
 
-  const router = useNavigate();
   useEffect(() => {
-    document.onkeypress = function (e) { e.preventDefault(); return false };
     handleAutoFill();
-    // this is important to unlock webauthn credential used by auto-fill when existing the page
-    return () => {
-      abortController.abort();
-    };
-
   }, []);
-
 
   async function handleAutoFill() {
     try {
-      const result = await LIDService.client.performAction("passkey:auth", { autoFill: true });
+      const result = await LIDService.client.performAction("passkey:auth", {
+        autoFill: true,
+      });
 
-      //return router("/manage");
       if (result.isComplete && result.accessToken) {
-
         const token = ParseUtil.parseToken(result.accessToken);
-        //console.log(token);
         return props.onComplete(token["username"], token, "passkey");
+      } else {
+        setError("invalid credential");
       }
-
     } catch (e: any) {
       const msg = e.message || e.msg || e;
       console.log(msg);
     }
   }
 
-
   const handlerSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
     try {
       setError("");
 
       const result = await LIDService.client.performAction("passkey:auth");
+
       if (result.isComplete && result.accessToken) {
         const token = ParseUtil.parseToken(result.accessToken);
-        return props.onComplete(token["username"], result.accessToken, "passkey");
+        return props.onComplete(token["username"], token, "passkey");
       } else {
         setError("invalid credential");
       }
@@ -85,15 +100,23 @@ export default function CheckoutLoginPrompt(props: CheckoutLoginPromptProps) {
   };
 
   function handleExternal() {
-    return props.onComplete(email, "", "external")
+    return props.onComplete(email, "", "external");
   }
 
   return (
-    <form onSubmit={handlerSubmit} style={{ width: '100%', justifyItems: 'center' }}>
+    <form
+      onSubmit={handlerSubmit}
+      style={{ width: "100%", justifyItems: "center" }}
+    >
       <Flex align="center" direction="column" ml="xl" mr="xl">
-
-        <Title order={4} mt="md" mb="sm">Sign In</Title>
-        {error && <Text c="red.4" lineClamp={64} >{error}</Text>}
+        <Title order={4} mt="md" mb="sm">
+          Sign In
+        </Title>
+        {error && (
+          <Text c="red.4" lineClamp={64}>
+            {error}
+          </Text>
+        )}
         <Input
           mb="md"
           placeholder="Sign In with Passkey"
@@ -105,28 +128,48 @@ export default function CheckoutLoginPrompt(props: CheckoutLoginPromptProps) {
           //inputMode="none"
           style={{ caretColor: "transparent" }}
           //onClick={(e) => {handlerSubmit}}
-          onKeyDown={(e) => { e.preventDefault(); return false; }}
+          onKeyDown={(e) => {
+            e.preventDefault();
+            return false;
+          }}
         />
 
         <Button type="submit" size="md" mb="sm" fullWidth>
           Log in
         </Button>
         <Divider m="md" />
-        <Text fw={700} m="md">Select a financial institution:</Text>
-        <Button variant="outline" leftSection={<IconAt/>} size="md" mb="sm" fullWidth onClick={handleExternal}>
+        <Text fw={700} m="md">
+          Select a financial institution:
+        </Text>
+        <Button
+          variant="outline"
+          leftSection={<IconAt />}
+          size="md"
+          mb="sm"
+          fullWidth
+          onClick={handleExternal}
+        >
           ABC Bank
         </Button>
-        <Button variant="outline" leftSection={<IconAtom/>} size="md" mb="sm" fullWidth onClick={handleExternal}>
+        <Button
+          variant="outline"
+          leftSection={<IconAtom />}
+          size="md"
+          mb="sm"
+          fullWidth
+          onClick={handleExternal}
+        >
           XYZ Financial
         </Button>
-        <UnstyledButton
-        >
+        <UnstyledButton>
           <Group>
-            Don&apos;t have an account? <Link to="/signup" style={{ textDecoration: "none" }}><Text c="blue.5" >Sign up</Text></Link>
+            Don&apos;t have an account?{" "}
+            <Link to="/signup" style={{ textDecoration: "none" }}>
+              <Text c="blue.5">Sign up</Text>
+            </Link>
           </Group>
         </UnstyledButton>
       </Flex>
     </form>
   );
-};
-
+}

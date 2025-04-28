@@ -1,5 +1,5 @@
 /*
- *   Copyright (c) 2024 LoginID Inc
+ *   Copyright (c) 2025 LoginID Inc
  *   All rights reserved.
 
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,16 +15,14 @@
  *   limitations under the License.
  */
 
-'use client';
+"use client";
 
 import { Card, Center, Flex, Image } from "@mantine/core";
-import { useEffect, useState } from "react";
-import { AddPasskey } from "../../components/common/AddPasskey";
 import { Footer } from "../../components/common/Footer";
 import LoginPromptPassword from "./LoginPromptPassword";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { TrustID } from "@/lib/crypto";
-import { base64UrlToString, stringToBase64Url } from "@/lib/encoding";
+import { useSearchParams } from "react-router-dom";
+import { stringToBase64Url } from "@/lib/encoding";
+import { useEffect, useState } from "react";
 import ParseUtil from "@/lib/parse";
 
 export enum LoginViewEnum {
@@ -46,43 +44,57 @@ export interface BankPrefs {
   primary: string;
 }
 
-//let data: BankingData | null = null;
+/**
+ * BankingPage
+ *
+ * This component simulates a fallback login flow via a bank authentication screen.
+ *
+ * Responsibilities:
+ * - Parses incoming banking transaction data (amount, merchant, order id) from URL query params.
+ * - Displays a simple email/password login prompt to simulate a bank login experience.
+ * - On successful "login", redirects to the external authentication flow for passkey registration.
+ *
+ * Flow Summary:
+ * 1. Parse order data from merchant site (passed as Base64Url-encoded query param).
+ * 2. Display bank login UI using the `LoginPromptPassword` component.
+ * 3. After form submission, redirect to `/external` with the login session details for further processing.
+ */
 export default function BankingPage() {
-
-  const [view, setView] = useState<LoginViewEnum>(LoginViewEnum.LoginPrompt);
-  const router = useNavigate();
-  const [email, setEmail] = useState("");
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [data, setData] = useState<BankingData|null>(null);
+  const [view] = useState<LoginViewEnum>(LoginViewEnum.LoginPrompt);
+  const [searchParams] = useSearchParams();
+  const [data, setData] = useState<BankingData | null>(null);
 
   useEffect(() => {
-    console.log("banking login")
-    //TrustID.test();
-    const qdata = searchParams.get("data");
-    setData(ParseUtil.parseB64Data(qdata))
-  }, []);
+    const queryData = searchParams.get("data");
+    setData(ParseUtil.parseB64Data(queryData));
+  }, [searchParams]);
 
   function renderView(view: LoginViewEnum) {
-
     if (view === LoginViewEnum.LoginPrompt) {
-      return <LoginPromptPassword amount={data?.amount || "0.00"} merchant={data?.merchant||"Unknown"} onComplete={onLoginPromptComplete} />
+      return (
+        <LoginPromptPassword
+          amount={data?.amount || "0.00"}
+          merchant={data?.merchant || "Unknown"}
+          onComplete={onLoginPromptComplete}
+        />
+      );
     }
   }
 
-  function onLoginPromptComplete(email: string, next: string) {
-    console.log("data: ", data)
+  function onLoginPromptComplete(email: string) {
     if (data) {
-      const callback = "/external?session=" + stringToBase64Url(JSON.stringify({ username: email, id: data.id }))
+      const callback =
+        "/external?session=" +
+        stringToBase64Url(JSON.stringify({ username: email, id: data.id }));
+
       document.location.href = callback;
     }
-
   }
 
   return (
     <Center h="100vh" w="100%">
       <Card shadow="sm" w={{ base: 356, md: 480, lg: 550 }} mih={420} p="sm">
         <Flex justify="center" align="center" direction="column" w="100%">
-
           <Image
             h={48}
             w={192}
@@ -95,7 +107,5 @@ export default function BankingPage() {
         </Flex>
       </Card>
     </Center>
-
   );
-
 }

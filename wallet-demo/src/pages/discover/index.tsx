@@ -1,5 +1,5 @@
 /*
- *   Copyright (c) 2024 LoginID Inc
+ *   Copyright (c) 2025 LoginID Inc
  *   All rights reserved.
 
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,31 +15,49 @@
  *   limitations under the License.
  */
 
-import { LIDService } from "@/services/loginid";
 import { Message, MessagingService } from "@/services/messaging";
-import { useEffect, useState } from "react";
+import { LIDService } from "@/services/loginid";
+import { useEffect } from "react";
 
 const mService = new MessagingService(window.parent);
-export default function DiscoverPage() {
-    useEffect(() => {
-        let target = window.parent;
-        if (target != null) {
-            mService.onMessage((msg, origin) => onMessageHandle(msg, origin));
-        }
-    }, []);
 
-    async function onMessageHandle(msg: Message, origin: string) {
-        try {
-            mService.origin = origin;
-            mService.id = msg.id;
-            const result = await LIDService.client.discover();
-            return mService.sendMessageData({embed:result.flow === "EMBEDDED_CONTEXT"?true:false});
-        } catch (error) {
-            console.log(error);
-            return mService.sendMessageData({embed:false});
-        }
+/**
+ * DiscoverPage
+ *
+ * This component handles discovery of whether the embedded checkout flow (iframe) is supported.
+ *
+ * Responsibilities:
+ * - Listens for a discovery message from the merchant (parent) window.
+ * - Calls the LoginID Wallet SDK's `discover()` method to detect the supported flow type.
+ * - Replies back to the merchant with the discovery result (`embed: true` or `false`).
+ *
+ * Flow Summary:
+ * 1. Wait for a discovery request from the merchant site via messaging.
+ * 2. Perform `discover()` to check if an embedded checkout experience is possible.
+ * 3. Post the result back to the merchant using window messaging.
+ */
+export default function DiscoverPage() {
+  useEffect(() => {
+    let target = window.parent;
+    if (target != null) {
+      mService.onMessage((msg, origin) => onMessageHandle(msg, origin));
     }
-    return (
-        <></>
-    );
+  }, []);
+
+  async function onMessageHandle(msg: Message, origin: string) {
+    try {
+      mService.origin = origin;
+      mService.id = msg.id;
+
+      const result = await LIDService.client.discover();
+      return mService.sendMessageData({
+        embed: result.flow === "EMBEDDED_CONTEXT" ? true : false,
+      });
+    } catch (error) {
+      console.log(error);
+      return mService.sendMessageData({ embed: false });
+    }
+  }
+
+  return <></>;
 }
