@@ -1,5 +1,5 @@
 /*
- *   Copyright (c) 2024 LoginID Inc
+ *   Copyright (c) 2025 LoginID Inc
  *   All rights reserved.
 
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,144 +15,151 @@
  *   limitations under the License.
  */
 
-export interface Message{
-    channel: string;
-    data: string;
-    id: number;
-    type: string;
+export interface Message {
+  channel: string;
+  data: string;
+  id: number;
+  type: string;
 }
 
 export enum MessageType {
-    data="data", ping="ping", error="error", close="close"
+  data = "data",
+  ping = "ping",
+  error = "error",
+  close = "close",
 }
 
 export class MessagingService {
+  static channel: string = "checkout-communication-channel";
+  private targetOrigin: string = "*";
+  private timeout: number = 10000000;
+  private requestId: number = 0;
+  private requestMap = new Map<number, Message>();
+  private readonly POLL_INTERVAL = 200;
+  private closeEvent!: () => void;
 
-    static channel : string = "checkout-communication-channel";
-    targetOrigin : string = "*";
-    timeout : number = 10000000;
-    requestId : number = 0;
-    requestMap = new Map<number, Message>();
-    INTERVAL = 200;
-    closeEvent!: () => void;
+  constructor(tOrigin: string) {
+    this.targetOrigin = tOrigin;
+    this.onMessage();
+  }
 
-    constructor(tOrigin: string) {
-        this.targetOrigin = tOrigin;
-        this.onMessage();
-    }
-    getNextRequestId() : number {
-        this.requestId = this.requestId + 1;
-        return this.requestId ;
-    }
-    onMessage() {
-        window.addEventListener(
-            "message",
-            (event: MessageEvent) => {
-                if (!event.data || typeof event.data !== 'string' ) {
-                    return;
-                } else if (this.targetOrigin !== "*" && event.origin !== this.targetOrigin){
-                    return;
-                } else {
-                    try{
-                        let message : Message = JSON.parse(event.data)
-                        this.requestMap.set(message.id,message);
-                        if(message.type === MessageType.close.valueOf() || message.data === "user cancel") {
-                            console.log("user cancel");
-                            this.closeEvent();
-                        }
-                    } catch(error) {
-                        // log error?
-                        console.log(error);
-                    }
-                }
+  getNextRequestId(): number {
+    this.requestId = this.requestId + 1;
+    return this.requestId;
+  }
 
-            },
-            false
-        );
-    }
-
-
-    reset(){
-        this.requestId = 0;
-    }
-    async sendMessageText( target: Window,  txt: string ) : Promise< string> {
-
-        let nextId = this.getNextRequestId();
-        let message : Message = {id: nextId, type:MessageType.data.valueOf(), channel:MessagingService.channel, data: txt };
-        target.postMessage(JSON.stringify(message), this.targetOrigin);
-        // wait for reply
-        let result = await this.waitForResponse(nextId, this.timeout);
-        if (result == null) {
-            return Promise.reject({message:"timeout"});
-        } 
-        if (result.type === MessageType.error.valueOf()) {
-            return Promise.reject({message:result?.data});
+  onMessage() {
+    window.addEventListener(
+      "message",
+      (event: MessageEvent) => {
+        if (!event.data || typeof event.data !== "string") {
+          return;
+        } else if (
+          this.targetOrigin !== "*" &&
+          event.origin !== this.targetOrigin
+        ) {
+          return;
+        } else {
+          try {
+            let message: Message = JSON.parse(event.data);
+            this.requestMap.set(message.id, message);
+            if (
+              message.type === MessageType.close.valueOf() ||
+              message.data === "user cancel"
+            ) {
+              console.log("user cancel");
+              this.closeEvent();
+            }
+          } catch (error) {
+            // log error?
+            console.log(error);
+          }
         }
-        return Promise.resolve(result.data);
-    }
-    async sendMessage( target: Window,  txt: string, type: string ) : Promise< string> {
+      },
+      false,
+    );
+  }
 
-        let nextId = this.getNextRequestId();
-        let message : Message = {id: nextId, type:type, channel:MessagingService.channel, data: txt };
+  async sendMessage(
+    target: Window,
+    txt: string,
+    type: string,
+  ): Promise<string> {
+    let nextId = this.getNextRequestId();
+    let message: Message = {
+      id: nextId,
+      type: type,
+      channel: MessagingService.channel,
+      data: txt,
+    };
+    target.postMessage(JSON.stringify(message), this.targetOrigin);
+    // wait for reply
+    let result = await this.waitForResponse(nextId, this.timeout);
+    if (result == null) {
+      return Promise.reject({ message: "timeout" });
+    }
+    if (result.type === MessageType.error.valueOf()) {
+      return Promise.reject({ message: result?.data });
+    }
+    return Promise.resolve(result.data);
+  }
+
+  async waitForResponse(id: number, timeout: number): Promise<Message> {
+    let waitTime = timeout;
+    while (waitTime > 0) {
+      if (this.requestMap.has(id)) {
+        let message = this.requestMap.get(id)!;
+        return Promise.resolve(message);
+      } else {
+        await new Promise((resolve) => setTimeout(resolve, this.POLL_INTERVAL));
+      }
+      waitTime = waitTime - this.POLL_INTERVAL;
+    }
+    return Promise.reject("timeout");
+  }
+
+  // send ping till response
+  async pingForResponse(target: Window, timeout: number): Promise<boolean> {
+    let nextId = this.getNextRequestId();
+    let message: Message = {
+      id: nextId,
+      type: MessageType.ping.valueOf(),
+      channel: MessagingService.channel,
+      data: "ping",
+    };
+    let waitTime = timeout;
+    while (waitTime > 0) {
+      if (this.requestMap.has(nextId)) {
+        return Promise.resolve(true);
+      } else {
         target.postMessage(JSON.stringify(message), this.targetOrigin);
-        // wait for reply
-        let result = await this.waitForResponse(nextId, this.timeout);
-        if (result == null) {
-            return Promise.reject({message:"timeout"});
-        } 
-        if (result.type === MessageType.error.valueOf()) {
-            return Promise.reject({message:result?.data});
-        }
-        return Promise.resolve(result.data);
+        await new Promise((resolve) => setTimeout(resolve, this.POLL_INTERVAL));
+      }
+      waitTime = waitTime - this.POLL_INTERVAL;
     }
+    return Promise.resolve(false);
+  }
 
-    async waitForResponse(id: number, timeout: number) : Promise<(Message )> {
-        let waitTime = timeout;
-        while (waitTime > 0) {
-			if (this.requestMap.has(id) ) {
-                let message = this.requestMap.get(id)!;
-				return Promise.resolve(message);
-			} else {
-				await new Promise((resolve) => setTimeout(resolve, this.INTERVAL));
-			}
-            waitTime = waitTime - this.INTERVAL;
-		}
-        return Promise.reject("timeout");
+  // send ping till response
+  async pingForId(target: Window, timeout: number): Promise<string> {
+    let nextId = this.getNextRequestId();
+    let message: Message = {
+      id: nextId,
+      type: MessageType.data.valueOf(),
+      channel: MessagingService.channel,
+      data: "id",
+    };
+    let waitTime = timeout;
+    while (waitTime > 0) {
+      if (this.requestMap.has(nextId)) {
+        let message = this.requestMap.get(nextId)!;
+        return Promise.resolve(message.data);
+      } else {
+        target.postMessage(JSON.stringify(message), this.targetOrigin);
+        await new Promise((resolve) => setTimeout(resolve, this.POLL_INTERVAL));
+      }
+      waitTime = waitTime - this.POLL_INTERVAL;
     }
-
-    // send ping till response
-    async pingForResponse(target: Window, timeout: number) : Promise<boolean> {
-        let nextId = this.getNextRequestId();
-        let message : Message = {id: nextId, type:MessageType.ping.valueOf(), channel:MessagingService.channel, data: "ping" };
-        let waitTime = timeout;
-        while (waitTime > 0) {
-			if (this.requestMap.has(nextId) ) {
-				return Promise.resolve(true);
-			} else {
-                target.postMessage(JSON.stringify(message), this.targetOrigin);
-				await new Promise((resolve) => setTimeout(resolve, this.INTERVAL));
-			}
-            waitTime = waitTime - this.INTERVAL;
-		}
-        return Promise.resolve(false);
-    }
-
-    // send ping till response
-    async pingForID(target: Window, timeout: number) : Promise<string> {
-        let nextId = this.getNextRequestId();
-        let message : Message = {id: nextId, type:MessageType.data.valueOf(), channel:MessagingService.channel, data: "id" };
-        let waitTime = timeout;
-        while (waitTime > 0) {
-			if (this.requestMap.has(nextId) ) {
-                let message = this.requestMap.get(nextId)!;
-				return Promise.resolve(message.data);
-			} else {
-                target.postMessage(JSON.stringify(message), this.targetOrigin);
-				await new Promise((resolve) => setTimeout(resolve, this.INTERVAL));
-			}
-            waitTime = waitTime - this.INTERVAL;
-		}
-        return Promise.reject("timeout");
-    }
-
+    return Promise.reject("timeout");
+  }
 }

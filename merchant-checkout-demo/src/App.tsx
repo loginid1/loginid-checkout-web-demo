@@ -1,5 +1,5 @@
 /*
- *   Copyright (c) 2024 LoginID Inc
+ *   Copyright (c) 2025 LoginID Inc
  *   All rights reserved.
 
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,18 +15,17 @@
  *   limitations under the License.
  */
 
-import './App.css';
-import { Routes, Route } from 'react-router-dom';
-import { CallbackPage } from './Callback';
-import { CheckoutPage } from './Checkout';
+import { Routes, Route } from "react-router-dom";
+import { CallbackPage } from "./Callback";
+import { CheckoutPage } from "./Checkout";
+import "./App.css";
 
 function App() {
   return (
     <div className="App">
-
       <Routes>
-        <Route path="/" element={<CheckoutPage/>} />
-        <Route path="/callback" element={<CallbackPage/>} />
+        <Route path="/" element={<CheckoutPage />} />
+        <Route path="/callback" element={<CallbackPage />} />
       </Routes>
     </div>
   );
