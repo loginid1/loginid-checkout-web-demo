@@ -27,7 +27,7 @@ import {
   Toolbar,
   Typography,
 } from "@mui/material";
-import CheckoutSDK, { CheckoutRequest } from "./lib/CheckoutSDK/checkout";
+import CheckoutSDK, { CheckoutRequest } from "./lib/checkout";
 import ShoppingCart from "@mui/icons-material/ShoppingCart";
 import { useState, useEffect } from "react";
 import Grid from "@mui/material/Grid2";

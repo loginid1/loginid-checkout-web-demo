@@ -24,11 +24,11 @@ import {
   Button,
   Theme,
 } from "@mui/material";
-import { CheckoutResult } from "./lib/CheckoutSDK/checkout";
+import { CheckoutResult } from "./lib/checkout";
 import CheckCircle from "@mui/icons-material/CheckCircle";
 import { useSearchParams } from "react-router-dom";
 import Cancel from "@mui/icons-material/Cancel";
-import { CID } from "./lib/CheckoutSDK/crypto";
+import { CID } from "./lib/crypto";
 import { ThemeProvider } from "@emotion/react";
 import { useEffect, useState } from "react";
 
