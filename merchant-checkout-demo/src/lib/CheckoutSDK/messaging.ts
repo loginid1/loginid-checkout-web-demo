@@ -36,130 +36,137 @@ export class MessagingService {
   private requestId: number = 0;
   private requestMap = new Map<number, Message>();
   private readonly POLL_INTERVAL = 200;
-  private closeEvent!: () => void;
+  public closeEvent!: () => void;
 
-  constructor(tOrigin: string) {
-    this.targetOrigin = tOrigin;
-    this.onMessage();
+  constructor(targetOrigin: string) {
+    this.targetOrigin = targetOrigin;
+    this.handleMessageEvent();
   }
 
-  getNextRequestId(): number {
-    this.requestId = this.requestId + 1;
-    return this.requestId;
-  }
-
-  onMessage() {
-    window.addEventListener(
-      "message",
-      (event: MessageEvent) => {
-        if (!event.data || typeof event.data !== "string") {
-          return;
-        } else if (
-          this.targetOrigin !== "*" &&
-          event.origin !== this.targetOrigin
-        ) {
-          return;
-        } else {
-          try {
-            let message: Message = JSON.parse(event.data);
-            this.requestMap.set(message.id, message);
-            if (
-              message.type === MessageType.close.valueOf() ||
-              message.data === "user cancel"
-            ) {
-              console.log("user cancel");
-              this.closeEvent();
-            }
-          } catch (error) {
-            // log error?
-            console.log(error);
-          }
-        }
-      },
-      false,
-    );
-  }
-
-  async sendMessage(
+  public async sendMessage(
     target: Window,
     txt: string,
     type: string,
   ): Promise<string> {
-    let nextId = this.getNextRequestId();
-    let message: Message = {
+    const nextId = this.getNextRequestId();
+    const message: Message = {
       id: nextId,
       type: type,
       channel: MessagingService.channel,
       data: txt,
     };
-    target.postMessage(JSON.stringify(message), this.targetOrigin);
-    // wait for reply
-    let result = await this.waitForResponse(nextId, this.timeout);
-    if (result == null) {
-      return Promise.reject({ message: "timeout" });
-    }
-    if (result.type === MessageType.error.valueOf()) {
-      return Promise.reject({ message: result?.data });
-    }
-    return Promise.resolve(result.data);
-  }
 
-  async waitForResponse(id: number, timeout: number): Promise<Message> {
-    let waitTime = timeout;
-    while (waitTime > 0) {
-      if (this.requestMap.has(id)) {
-        let message = this.requestMap.get(id)!;
-        return Promise.resolve(message);
-      } else {
-        await new Promise((resolve) => setTimeout(resolve, this.POLL_INTERVAL));
-      }
-      waitTime = waitTime - this.POLL_INTERVAL;
+    target.postMessage(JSON.stringify(message), this.targetOrigin);
+
+    // wait for reply
+    const result = await this.waitForResponse(nextId, this.timeout);
+    if (!result) {
+      throw new Error("Timeout");
     }
-    return Promise.reject("timeout");
+
+    if (result.type === MessageType.error.valueOf()) {
+      throw new Error(result.data);
+    }
+
+    return result.data;
   }
 
   // send ping till response
-  async pingForResponse(target: Window, timeout: number): Promise<boolean> {
-    let nextId = this.getNextRequestId();
-    let message: Message = {
-      id: nextId,
+  public async pingForResponse(target: Window, timeout: number): Promise<boolean> {
+    const messageId = this.getNextRequestId();
+    const message: Message = {
+      id: messageId,
       type: MessageType.ping.valueOf(),
       channel: MessagingService.channel,
       data: "ping",
     };
-    let waitTime = timeout;
-    while (waitTime > 0) {
-      if (this.requestMap.has(nextId)) {
-        return Promise.resolve(true);
-      } else {
-        target.postMessage(JSON.stringify(message), this.targetOrigin);
-        await new Promise((resolve) => setTimeout(resolve, this.POLL_INTERVAL));
-      }
-      waitTime = waitTime - this.POLL_INTERVAL;
-    }
-    return Promise.resolve(false);
+
+    return this.pollForMessage(target, message, timeout).then(() => true).catch(() => false);
   }
 
   // send ping till response
-  async pingForId(target: Window, timeout: number): Promise<string> {
-    let nextId = this.getNextRequestId();
-    let message: Message = {
-      id: nextId,
+  public async pingForId(target: Window, timeout: number): Promise<string> {
+    const messageId = this.getNextRequestId();
+    const message: Message = {
+      id: messageId,
       type: MessageType.data.valueOf(),
       channel: MessagingService.channel,
       data: "id",
     };
-    let waitTime = timeout;
-    while (waitTime > 0) {
-      if (this.requestMap.has(nextId)) {
-        let message = this.requestMap.get(nextId)!;
-        return Promise.resolve(message.data);
-      } else {
-        target.postMessage(JSON.stringify(message), this.targetOrigin);
-        await new Promise((resolve) => setTimeout(resolve, this.POLL_INTERVAL));
+
+    const response = await this.pollForMessage(target, message, timeout);
+    return response.data;
+  }
+
+  private handleMessageEvent() {
+    window.addEventListener("message", this.onMessage.bind(this), false);
+  }
+
+  private getNextRequestId(): number {
+    return ++this.requestId;
+  }
+
+  private delay(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  private onMessage(event: MessageEvent) {
+    const { data, origin } = event;
+    if (typeof data !== "string") return;
+    if (this.targetOrigin !== "*" && origin !== this.targetOrigin) return;
+
+    try {
+      const message: Message = JSON.parse(data);
+      this.requestMap.set(message.id, message);
+
+      const isCloseMessage =
+        message.type === MessageType.close.valueOf() ||
+        message.data === "user cancel";
+
+      if (isCloseMessage) {
+        console.log("user cancel");
+        this.closeEvent();
       }
-      waitTime = waitTime - this.POLL_INTERVAL;
+    } catch (error) {
+      console.error("Failed to parse message event:", error);
     }
-    return Promise.reject("timeout");
+  }
+
+  private async waitForResponse(id: number, timeout: number): Promise<Message | null> {
+    let remainingTime = timeout;
+
+    while (remainingTime > 0) {
+      const message = this.requestMap.get(id);
+      if (message) {
+        this.requestMap.delete(id);
+        return message;
+      }
+      await this.delay(this.POLL_INTERVAL);
+      remainingTime -= this.POLL_INTERVAL;
+    }
+
+    return null
+  }
+
+  private async pollForMessage(
+    target: Window,
+    message: Message,
+    timeout: number
+  ): Promise<Message> {
+    let remainingTime = timeout;
+
+    while (remainingTime > 0) {
+      if (this.requestMap.has(message.id)) {
+        const response = this.requestMap.get(message.id)!;
+        this.requestMap.delete(message.id);
+        return response;
+      }
+
+      target.postMessage(JSON.stringify(message), this.targetOrigin);
+      await this.delay(this.POLL_INTERVAL);
+      remainingTime -= this.POLL_INTERVAL;
+    }
+
+    throw new Error("Timeout");
   }
 }
