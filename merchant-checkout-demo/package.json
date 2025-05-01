@@ -28,7 +28,8 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "build-xyz": "env-cmd -f xyz.env npm run build",
-    "build-cde": "env-cmd -f cde.env npm run build"
+    "build-cde": "env-cmd -f cde.env npm run build",
+    "pretty": "prettier --write --ignore-unknown ."
   },
   "eslintConfig": {
     "extends": [
@@ -50,6 +51,8 @@
   },
   "devDependencies": {
     "env-cmd": "^10.1.0",
+    "prettier": "^3.5.3",
+    "prettier-plugin-sort-imports": "^1.8.7",
     "tailwindcss": "^3.4.14"
   }
 }

@@ -10,6 +10,13 @@ This example application showcases how to implement key authentication flows on 
 
 ## Getting Started
 
+### Setup LoginID Application
+
+1. Create an account with [LoginID](https://dashboard.loginid.io/login).
+2. Create a [basic application](https://docs.dev.loginid.io/setup/loginid/#steps-to-create-an-application-with-basic-optionsdefault) integration. Use the hosted URL of where the wallet demo is being hosted on.
+3. Create an API key with `external:verify` scope.
+4. Update the wallet demo environment variables in the next section.
+
 ### Configure Environment Variables
 
 1. Copy `example.env` and rename it to `.env`.
