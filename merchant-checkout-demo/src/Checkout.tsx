@@ -41,7 +41,6 @@ export interface CheckoutProps {
 const wallet = new CheckoutSDK(
   process.env.REACT_APP_CHECKOUT_BASEURL || "",
   true,
-  "checkout",
 );
 
 const callbackUrl = window.location.origin + "/callback";

@@ -24,13 +24,13 @@ import {
   Button,
   Theme,
 } from "@mui/material";
-import { CheckoutResult } from "./lib/checkout";
 import CheckCircle from "@mui/icons-material/CheckCircle";
 import { useSearchParams } from "react-router-dom";
 import Cancel from "@mui/icons-material/Cancel";
-import { CID } from "./lib/crypto";
+import { CheckoutResult } from "./lib/checkout";
 import { ThemeProvider } from "@emotion/react";
 import { useEffect, useState } from "react";
+import { CID } from "./lib/crypto";
 
 export interface CallbackProps {
   name: string;

@@ -99,7 +99,11 @@ export class CID {
       exp: Date.now() + 5 * 60 * 1000,
     };
 
-    const token = await CIDHelper.buildCheckoutJWT(keystore.key, header, claims);
+    const token = await CIDHelper.buildCheckoutJWT(
+      keystore.key,
+      header,
+      claims,
+    );
     const isValid = localStorage.getItem(CID_VAL) === "true";
 
     return { id, token, valid: isValid };

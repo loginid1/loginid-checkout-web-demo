@@ -86,7 +86,10 @@ export class MessagingService {
    * @param timeout Timeout in milliseconds
    * @returns true if a response was received, false otherwise
    */
-  public async pingForResponse(target: Window, timeout: number): Promise<boolean> {
+  public async pingForResponse(
+    target: Window,
+    timeout: number,
+  ): Promise<boolean> {
     const messageId = this.getNextRequestId();
     const message: Message = {
       id: messageId,
@@ -95,7 +98,9 @@ export class MessagingService {
       data: "ping",
     };
 
-    return this.pollForMessage(target, message, timeout).then(() => true).catch(() => false);
+    return this.pollForMessage(target, message, timeout)
+      .then(() => true)
+      .catch(() => false);
   }
 
   /**
@@ -178,7 +183,10 @@ export class MessagingService {
    * @param timeout Timeout duration in milliseconds
    * @returns Message if received, null if timed out
    */
-  private async waitForResponse(id: number, timeout: number): Promise<Message | null> {
+  private async waitForResponse(
+    id: number,
+    timeout: number,
+  ): Promise<Message | null> {
     let remainingTime = timeout;
 
     while (remainingTime > 0) {
@@ -205,7 +213,7 @@ export class MessagingService {
   private async pollForMessage(
     target: Window,
     message: Message,
-    timeout: number
+    timeout: number,
   ): Promise<Message> {
     let remainingTime = timeout;
 
