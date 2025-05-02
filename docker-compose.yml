@@ -1,17 +1,29 @@
-version: "3.7"
-# NOTE: Changeme
+version: '3.8'
 services:
-  frontend:
-    restart: always
+  wallet:
     build:
-      context: ./fe
-      dockerfile: Dockerfile
-    container_name: vault-frontend
-    env_file:
-      - "./fe/.env"
-    depends_on: 
-      - backend
+      context: ./wallet-checkout-demo
+    container_name: wallet-app
     ports:
       - "3000:3000"
+    env_file:
+      - ./wallet-checkout-demo/.env
     volumes:
-      - ./fe:/app
+      - ./wallet-checkout-demo:/app
+      - /app/node_modules
+    stdin_open: true
+    tty: true
+
+  merchant:
+    build:
+      context: ./merchant-checkout-demo
+    container_name: merchant-app
+    ports:
+      - "3001:3000"
+    env_file:
+      - ./merchant-checkout-demo/.env
+    volumes:
+      - ./merchant-checkout-demo:/app
+      - /app/node_modules
+    stdin_open: true
+    tty: true
