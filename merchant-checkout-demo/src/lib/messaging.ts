@@ -1,13 +1,13 @@
 /*
  *   Copyright (c) 2025 LoginID Inc
  *   All rights reserved.
-
+ *
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
  *   You may obtain a copy of the License at
-
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
-
+ *
  *   Unless required by applicable law or agreed to in writing, software
  *   distributed under the License is distributed on an "AS IS" BASIS,
  *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -43,6 +43,14 @@ export class MessagingService {
     this.handleMessageEvent();
   }
 
+  /**
+   * Send a message to the target window and wait for a response.
+   *
+   * @param target Target window to send the message to
+   * @param txt Message body
+   * @param type Message type
+   * @returns Response message data
+   */
   public async sendMessage(
     target: Window,
     txt: string,
@@ -71,7 +79,13 @@ export class MessagingService {
     return result.data;
   }
 
-  // send ping till response
+  /**
+   * Sends ping messages repeatedly to check if the target responds within a timeout.
+   *
+   * @param target Target window to send ping to
+   * @param timeout Timeout in milliseconds
+   * @returns true if a response was received, false otherwise
+   */
   public async pingForResponse(target: Window, timeout: number): Promise<boolean> {
     const messageId = this.getNextRequestId();
     const message: Message = {
@@ -84,7 +98,13 @@ export class MessagingService {
     return this.pollForMessage(target, message, timeout).then(() => true).catch(() => false);
   }
 
-  // send ping till response
+  /**
+   * Sends a message requesting an ID and waits for the response.
+   *
+   * @param target Target window to send the request to
+   * @param timeout Timeout in milliseconds
+   * @returns The received ID as a string
+   */
   public async pingForId(target: Window, timeout: number): Promise<string> {
     const messageId = this.getNextRequestId();
     const message: Message = {
@@ -98,18 +118,37 @@ export class MessagingService {
     return response.data;
   }
 
+  /**
+   * Registers a message event listener to process incoming messages.
+   */
   private handleMessageEvent() {
     window.addEventListener("message", this.onMessage.bind(this), false);
   }
 
+  /**
+   * Generates a new unique message request ID.
+   *
+   * @returns Next request ID number
+   */
   private getNextRequestId(): number {
     return ++this.requestId;
   }
 
+  /**
+   * Utility to delay execution by a specified number of milliseconds.
+   *
+   * @param ms Delay in milliseconds
+   * @returns Promise that resolves after the delay
+   */
   private delay(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
+  /**
+   * Processes an incoming message event and updates the request map.
+   *
+   * @param event MessageEvent object
+   */
   private onMessage(event: MessageEvent) {
     const { data, origin } = event;
     if (typeof data !== "string") return;
@@ -132,6 +171,13 @@ export class MessagingService {
     }
   }
 
+  /**
+   * Waits for a response with the specified ID within the given timeout.
+   *
+   * @param id Message ID to wait for
+   * @param timeout Timeout duration in milliseconds
+   * @returns Message if received, null if timed out
+   */
   private async waitForResponse(id: number, timeout: number): Promise<Message | null> {
     let remainingTime = timeout;
 
@@ -145,9 +191,17 @@ export class MessagingService {
       remainingTime -= this.POLL_INTERVAL;
     }
 
-    return null
+    return null;
   }
 
+  /**
+   * Sends a message repeatedly until a response with the same ID is received or the timeout is reached.
+   *
+   * @param target Target window to communicate with
+   * @param message Message to send
+   * @param timeout Timeout duration in milliseconds
+   * @returns Response message
+   */
   private async pollForMessage(
     target: Window,
     message: Message,

@@ -48,32 +48,32 @@ const CID_KID = "cid-kid";
 export class CID {
   /**
    * Create trustID of following username
+   *
    * @param username
    * @returns
    */
   static async create(): Promise<CIDResult> {
-    const keypair = await CIDHelper.generateKey();
+    const keyPair = await CIDHelper.generateKey();
     const id = crypto.randomUUID();
-    const dbResult = await CIDHelper.storeKeystore(id, keypair);
-    if (dbResult) {
-      const pk = await crypto.subtle.exportKey("jwk", keypair.publicKey);
-      const header: CHeader = {
-        kid: id,
-        alg: CIDHelper.DEFAULT_JWT_ALG,
-        jwk: pk,
-      };
-      let exp = new Date();
-      exp.setMinutes(exp.getMinutes() + 5);
-      const claims: CClaims = {
-        sub: id,
-        exp: exp.getTime(),
-      };
-      const token = await CIDHelper.buildCJWT(keypair, header, claims);
-      localStorage.setItem(CID_KID, id);
-      return { id: id, token: token, valid: false };
-    } else {
-      throw new Error("error storing trust db");
-    }
+
+    const stored = await CIDHelper.storeKeystore(id, keyPair);
+    if (!stored) throw new Error("Failed to store key in DB");
+
+    const jwk = await crypto.subtle.exportKey("jwk", keyPair.publicKey);
+    const header: CHeader = {
+      kid: id,
+      alg: CIDHelper.DEFAULT_JWT_ALG,
+      jwk: jwk,
+    };
+    const claims: CClaims = {
+      sub: id,
+      exp: Date.now() + 5 * 60 * 1000, // 5 minutes
+    };
+
+    const token = await CIDHelper.buildCheckoutJWT(keyPair, header, claims);
+    localStorage.setItem(CID_KID, id);
+
+    return { id, token, valid: false };
   }
 
   /**
@@ -85,33 +85,29 @@ export class CID {
    * @returns
    */
   static async sign(id: string): Promise<CIDResult> {
-    const dbResult = await CIDHelper.loadKeystore(id);
-    let exp = new Date();
-    exp.setMinutes(exp.getMinutes() + 5);
-    if (dbResult) {
-      const pk = await crypto.subtle.exportKey("jwk", dbResult.key.publicKey);
-      const header: CHeader = {
-        kid: id,
-        alg: CIDHelper.DEFAULT_JWT_ALG,
-        jwk: pk,
-      };
+    const keystore = await CIDHelper.loadKeystore(id);
+    if (!keystore) throw new Error("Key not found in DB");
 
-      const claims: CClaims = {
-        sub: id,
-        exp: exp.getTime(),
-      };
-      const token = await CIDHelper.buildCJWT(dbResult.key, header, claims);
-      return {
-        id: id,
-        token: token,
-        valid: localStorage.getItem("cid-validation") === "true" ? true : false,
-      };
-    } else {
-      // key database may be deleted
-      throw new Error("error loading key from db");
-    }
+    const jwk = await crypto.subtle.exportKey("jwk", keystore.key.publicKey);
+    const header: CHeader = {
+      kid: id,
+      alg: CIDHelper.DEFAULT_JWT_ALG,
+      jwk,
+    };
+    const claims: CClaims = {
+      sub: id,
+      exp: Date.now() + 5 * 60 * 1000,
+    };
+
+    const token = await CIDHelper.buildCheckoutJWT(keystore.key, header, claims);
+    const isValid = localStorage.getItem(CID_VAL) === "true";
+
+    return { id, token, valid: isValid };
   }
 
+  /**
+   * Marks the current identity as valid in localStorage.
+   */
   static setCIDValid() {
     localStorage.setItem(CID_VAL, "true");
   }
@@ -124,17 +120,14 @@ export class CID {
    */
   static async getLatest(): Promise<CIDResult> {
     const id = localStorage.getItem(CID_KID);
-    if (id) {
-      try {
-        return await CID.sign(id);
-      } catch (e) {
-        // error try to create new
-        console.log(e);
-        localStorage.setItem(CID_VAL, "false");
-        return await CID.create();
-      }
-    } else {
-      return await CID.create();
+    if (!id) return CID.create();
+
+    try {
+      return await CID.sign(id);
+    } catch (e) {
+      console.error("Signing failed, creating new identity:", e);
+      localStorage.setItem(CID_VAL, "false");
+      return CID.create();
     }
   }
 }
@@ -149,90 +142,70 @@ class CIDHelper {
     name: "ECDSA",
     hash: { name: "SHA-256" },
   };
+
   /**
    * Load latest device id
+   *
    * @param id device id
-   * @returns
+   * @returns Keystore | null
    */
   static async loadKeystore(id: string): Promise<Keystore | null> {
-    return new Promise<Keystore | null>((resolve) => {
-      // Open (or create) the database
-      var open = window.indexedDB.open(DB_NAME, 1);
+    try {
+      const db = await this.openDB();
+      const tx = db.transaction(DB_STORE, "readonly");
+      const store = tx.objectStore(DB_STORE);
+      const record = store.get(id);
 
-      // Create the schema
-      open.onupgradeneeded = function () {
-        var db = open.result;
-        if (!db.objectStoreNames.contains(DB_STORE)) {
-          db.createObjectStore(DB_STORE, { keyPath: "id" });
-        }
-      };
+      const result = await new Promise<Keystore>((resolve, reject) => {
+        record.onsuccess = () => resolve(record.result);
+        record.onerror = () => reject(record.error);
+      });
 
-      open.onerror = function () {
-        resolve(null);
-      };
-      open.onsuccess = function () {
-        // Start a new transaction
-        var db = open.result;
-        var tx = db.transaction(DB_STORE, "readwrite");
-        var store = tx.objectStore(DB_STORE);
-        const request = store.get(id);
-        request.onsuccess = function () {
-          var keystore: Keystore = request.result;
-          resolve(keystore);
-        };
-        request.onerror = function () {
-          resolve(null);
-        };
+      db.close();
 
-        // Close the db when the transaction is done
-        tx.oncomplete = function () {
-          db.close();
-        };
-      };
-    });
+      return result || null;
+    } catch {
+      return null;
+    }
   }
 
+  /**
+   * Store the device's key pair in IndexedDB under the provided ID.
+   *
+   * @param id Unique identifier for the key
+   * @param key Key pair to store
+   * @returns True if the key was successfully stored, false otherwise
+   */
   static async storeKeystore(id: string, key: CryptoKeyPair): Promise<boolean> {
-    return new Promise<boolean>((resolve) => {
-      // Open (or create) the database
-      var open = window.indexedDB.open(DB_NAME, 1);
+    try {
+      const db = await this.openDB();
+      const tx = db.transaction(DB_STORE, "readwrite");
 
-      // Create the schema
-      open.onupgradeneeded = function () {
-        var db = open.result;
-        if (!db.objectStoreNames.contains(DB_STORE)) {
-          db.createObjectStore(DB_STORE, { keyPath: "id" });
-        }
-      };
+      tx.objectStore(DB_STORE).put({ id, key });
 
-      open.onerror = function () {
-        resolve(false);
-      };
-      open.onsuccess = function () {
-        // Start a new transaction
-        var db = open.result;
-        var tx = db.transaction(DB_STORE, "readwrite");
-        var store = tx.objectStore(DB_STORE);
-        let keystore: Keystore = {
-          id: id,
-          key: key,
-        };
-        store.put(keystore);
+      await new Promise<void>((resolve, reject) => {
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+        tx.onabort = () => reject(tx.error);
+      });
 
-        // Close the db when the transaction is done
-        tx.oncomplete = function () {
-          db.close();
-          resolve(true);
-        };
-      };
-    });
+      db.close();
+      return true;
+    } catch {
+      return false;
+    }
   }
 
+  /**
+   * Generate a new ECDSA P-256 key pair for signing operations.
+   *
+   * @returns Newly generated CryptoKeyPair
+   */
   static async generateKey(): Promise<CryptoKeyPair> {
     return await window.crypto.subtle.generateKey(
       this.KG_DEFAULT_ALGORITHM,
       false,
-      ["sign", "verify"],
+      ["sign"],
     );
   }
 
@@ -252,7 +225,15 @@ class CIDHelper {
     );
   }
 
-  static async buildCJWT(
+  /**
+   * Construct and sign a compact Checkout ID JWT from the provided key, header, and claims.
+   *
+   * @param keypair Key pair used for signing
+   * @param header Checkout ID JWT header containing key metadata
+   * @param claims Checkout ID JWT claims containing subject and expiry
+   * @returns Signed Checkout ID JWT as a string
+   */
+  static async buildCheckoutJWT(
     keypair: CryptoKeyPair,
     header: CHeader,
     claims: CClaims,
@@ -265,5 +246,24 @@ class CIDHelper {
     const b64Sig = bufferToBase64(sig);
     const jws = b64Header + "." + b64Claims + "." + b64Sig;
     return jws;
+  }
+
+  /**
+   * Open (or create) an IndexedDB instance for storing keystore records.
+   *
+   * @returns the opened IndexedDB database
+   */
+  private static openDB(): Promise<IDBDatabase> {
+    return new Promise((resolve, reject) => {
+      const request = indexedDB.open(DB_NAME, 1);
+      request.onupgradeneeded = () => {
+        const db = request.result;
+        if (!db.objectStoreNames.contains(DB_STORE)) {
+          db.createObjectStore(DB_STORE, { keyPath: "id" });
+        }
+      };
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
   }
 }
