@@ -1,5 +1,5 @@
 /*
- *   Copyright (c) 2024 LoginID Inc
+ *   Copyright (c) 2025 LoginID Inc
  *   All rights reserved.
 
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,8 +30,8 @@ body {
 }
 */
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+  font-family:
+    source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
 }
 
 .headerText {
@@ -40,7 +40,11 @@ code {
   font-size: 24px;
   font-weight: 400;
   line-height: 32px;
-  font-family: pp-open-regular, Helvetica Neue, Arial, sans-serif;
+  font-family:
+    pp-open-regular,
+    Helvetica Neue,
+    Arial,
+    sans-serif;
   font-style: normal;
   font-display: swap;
 }
@@ -58,7 +62,11 @@ code {
 }
 
 .button {
-  font-family: pp-open-bold, Helvetica Neue, Arial, sans-serif;
+  font-family:
+    pp-open-bold,
+    Helvetica Neue,
+    Arial,
+    sans-serif;
   font-style: normal;
   font-display: swap;
   font-size: 100%;
@@ -67,7 +75,11 @@ code {
 }
 
 .button-blank {
-  font-family: pp-open-bold, Helvetica Neue, Arial, sans-serif;
+  font-family:
+    pp-open-bold,
+    Helvetica Neue,
+    Arial,
+    sans-serif;
   font-style: normal;
   font-display: swap;
   font-size: 100%;
@@ -81,7 +93,7 @@ a.button-blank:visited,
 .button-blank {
   width: 100%;
   min-width: 6rem;
-  padding: .75rem 2rem;
+  padding: 0.75rem 2rem;
   border: 0 solid #c4c6c9;
   border-image-outset: 0;
   border-image-repeat: stretch;
@@ -104,7 +116,11 @@ a.button-blank:visited,
   font-weight: 500;
   text-shadow: none;
   text-decoration: none;
-  transition: color .2s ease 0s, background-color .2s ease 0s, border-color .2s ease 0s, box-shadow .2s ease 0s;
+  transition:
+    color 0.2s ease 0s,
+    background-color 0.2s ease 0s,
+    border-color 0.2s ease 0s,
+    box-shadow 0.2s ease 0s;
   -webkit-font-smoothing: antialiased;
   /*position: relative;*/
   line-height: 21px;
@@ -120,7 +136,7 @@ a.button:visited,
 .button {
   width: 100%;
   min-width: 6rem;
-  padding: .75rem 2rem;
+  padding: 0.75rem 2rem;
   border: 0 solid #0544b5;
   border-image-outset: 0;
   border-image-repeat: stretch;
@@ -143,7 +159,11 @@ a.button:visited,
   font-weight: 500;
   text-shadow: none;
   text-decoration: none;
-  transition: color .2s ease 0s, background-color .2s ease 0s, border-color .2s ease 0s, box-shadow .2s ease 0s;
+  transition:
+    color 0.2s ease 0s,
+    background-color 0.2s ease 0s,
+    border-color 0.2s ease 0s,
+    box-shadow 0.2s ease 0s;
   -webkit-font-smoothing: antialiased;
   /*position: relative;*/
   line-height: 21px;
@@ -162,7 +182,7 @@ a.button:visited,
   padding-bottom: 8px;
   padding-left: 12px;
   padding-right: 12px;
-  border: .0625rem solid #9da3a6;
+  border: 0.0625rem solid #9da3a6;
   background-color: #fff;
   text-overflow: ellipsis;
   -webkit-box-sizing: border-box;
@@ -174,7 +194,11 @@ a.button:visited,
   border-radius: 4px;
   font-size: 100%;
   color: #001435;
-  font-family: pp-open-regular, Helvetica Neue, Arial, sans-serif;
+  font-family:
+    pp-open-regular,
+    Helvetica Neue,
+    Arial,
+    sans-serif;
   font-style: normal;
   font-display: swap;
   font-weight: 400;
@@ -188,16 +212,15 @@ a.button:visited,
   pointer-events: none;
   left: 10px;
   top: 18px;
-  transition: .2s ease all;
+  transition: 0.2s ease all;
   height: 30px;
   width: 400px;
   clip: unset;
 }
 
 .checkout {
-  background-color: #F1F2F3;
+  background-color: #f1f2f3;
 }
-
 
 .round {
   background-color: #fff;
