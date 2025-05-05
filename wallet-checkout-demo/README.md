@@ -1,4 +1,4 @@
-# wallet-demo
+# wallet-checkout-demo
 
 ## Overview
 
@@ -13,7 +13,7 @@ This example application showcases how to implement key authentication flows on 
 ### Setup LoginID Application
 
 1. Create an account with [LoginID](https://dashboard.loginid.io/login).
-2. Create a [basic application](https://docs.dev.loginid.io/setup/loginid/#steps-to-create-an-application-with-basic-optionsdefault) integration. Use the hosted URL of where the wallet demo is being hosted on.
+2. Create a [basic application](https://docs.dev.loginid.io/setup/loginid/#steps-to-create-an-application-with-basic-optionsdefault) integration. Use the hosted URL of where the wallet demo is being hosted on as the `website URL`.
 3. Create an API key with `external:verify` scope.
 4. Update the wallet demo environment variables in the next section.
 
@@ -35,13 +35,13 @@ Install dependencies:
 npm install
 ```
 
-Run the development server:
+Optionally, specify a custom port by setting the `PORT` environment variable in your `.env` file or before starting the server:
 
 ```bash
-npm start
+PORT=3001 npm start
 ```
 
-Then open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Then open [http://localhost:3001](http://localhost:3001) with your browser to see the result.
 
 ## License
 

@@ -51,7 +51,7 @@ export default function DiscoverPage() {
 
       const result = await LIDService.client.discover();
       return mService.sendMessageData({
-        embed: result.flow === "EMBEDDED_CONTEXT" ? true : false,
+        embed: result.flow === "EMBED" ? true : false,
       });
     } catch (error) {
       console.log(error);
