@@ -13,6 +13,7 @@ Together, they simulate the interaction between a merchant site and a wallet ser
 
 ## Overview
 
+
 ### merchant-checkout-demo
 A demo merchant site that integrates with a wallet. It supports:
 
