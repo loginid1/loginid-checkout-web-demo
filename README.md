@@ -4,9 +4,12 @@ This repository contains two demos showcasing a passkey-based checkout flow usin
 Together, they simulate the interaction between a merchant site and a wallet service.
 
 ## Project Structure
+
+```
 .
 ├── merchant-checkout-demo/   # Merchant-facing checkout demo (iframe + fallback)
 └── wallet-checkout-demo/     # Wallet service demo (passkey login + transaction cofirmation signing)
+```
 
 ## Overview
 

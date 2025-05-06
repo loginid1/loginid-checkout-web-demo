@@ -3,9 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@loginid/checkout-wallet": "file:../../websdk3/packages/checkout/wallet/",
-    "@loginid/cognito-web-sdk": "^1.8.3",
-    "@loginid/websdk3": "^3.1.1",
+    "@loginid/checkout-wallet": "^1.2.0",
     "@mantine/core": "^7.12.1",
     "@mantine/hooks": "^7.12.1",
     "@tabler/icons-react": "^3.12.0",
