@@ -35,6 +35,7 @@ import ParseUtil from "@/lib/parse";
 
 export interface CheckoutLoginPromptProps {
   onComplete: (email: string, token: string, next: string) => void;
+  onExternal: (bank: string) => void;
 }
 
 /**
@@ -99,8 +100,8 @@ export default function CheckoutLoginPrompt(props: CheckoutLoginPromptProps) {
     }
   };
 
-  function handleExternal() {
-    return props.onComplete(email, "", "external");
+  function handleExternal( bank: string) {
+    return props.onExternal(bank);
   }
 
   return (
@@ -139,7 +140,7 @@ export default function CheckoutLoginPrompt(props: CheckoutLoginPromptProps) {
         </Button>
         <Divider m="md" />
         <Text fw={700} m="md">
-          Select a financial institution:
+          Select other financial institution:
         </Text>
         <Button
           variant="outline"
@@ -147,9 +148,9 @@ export default function CheckoutLoginPrompt(props: CheckoutLoginPromptProps) {
           size="md"
           mb="sm"
           fullWidth
-          onClick={handleExternal}
+          onClick={e=>handleExternal("oz")}
         >
-          ABC Bank
+          OZ Bank
         </Button>
         <Button
           variant="outline"
@@ -157,7 +158,7 @@ export default function CheckoutLoginPrompt(props: CheckoutLoginPromptProps) {
           size="md"
           mb="sm"
           fullWidth
-          onClick={handleExternal}
+          onClick={e=>handleExternal("xyz")}
         >
           XYZ Financial
         </Button>

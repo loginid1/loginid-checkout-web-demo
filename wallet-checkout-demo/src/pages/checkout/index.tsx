@@ -53,6 +53,7 @@ export interface CheckoutRequest {
 
 export interface BankingData {
   id: string;
+  bank: string;
   amount: string;
   merchant: string;
 }
@@ -141,7 +142,7 @@ export function CheckoutPage() {
     }
   }
 
-  function onMessageHandle(msg: Message, origin: string) {}
+  function onMessageHandle(msg: Message, origin: string) { }
 
   function renderView(view: CheckoutViewEnum) {
     if (view === CheckoutViewEnum.Confirmation && payload != null) {
@@ -157,7 +158,7 @@ export function CheckoutPage() {
     } else if (view === CheckoutViewEnum.Wait) {
       return <></>;
     } else {
-      return <CheckoutLoginPrompt onComplete={onCheckoutLoginHandle} />;
+      return <CheckoutLoginPrompt onComplete={onCheckoutLoginHandle} onExternal={onExternalHandle} />;
     }
   }
 
@@ -168,19 +169,22 @@ export function CheckoutPage() {
       setToken(token);
       setPasskey(true);
       setView(CheckoutViewEnum.Confirmation);
-      // We fallback to bank login
-    } else if (next === "external") {
-      if (payload) {
-        const data: BankingData = {
-          id: order,
-          merchant: payload?.merchant,
-          amount: payload?.total,
-        };
-
-        document.location.href =
-          "/banking?data=" + stringToBase64Url(JSON.stringify(data));
-      }
     }
+  }
+
+  function onExternalHandle(bank: string) {
+    if (payload) {
+      const data: BankingData = {
+        id: order,
+        bank: bank,
+        merchant: payload?.merchant,
+        amount: payload?.total,
+      };
+
+      document.location.href =
+        "/banking?data=" + stringToBase64Url(JSON.stringify(data));
+    }
+
   }
 
   function onCheckoutConfirmHandle(email: string, token: string, next: string) {

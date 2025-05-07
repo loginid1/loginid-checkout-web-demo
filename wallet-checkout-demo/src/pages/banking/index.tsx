@@ -17,13 +17,60 @@
 
 "use client";
 
-import { Card, Center, Flex, Image } from "@mantine/core";
+import { Card, Center, createTheme, Flex, Group, Image, MantineProvider, MantineThemeOverride, MantineThemeProvider, ThemeIcon, Title, virtualColor } from "@mantine/core";
 import { Footer } from "../../components/common/Footer";
 import LoginPromptPassword from "./LoginPromptPassword";
 import { useSearchParams } from "react-router-dom";
 import { stringToBase64Url } from "@/lib/encoding";
-import { useEffect, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import ParseUtil from "@/lib/parse";
+import {  IconAt, IconAtom } from "@tabler/icons-react";
+
+export interface BankProps {
+  name: string;
+  theme: MantineThemeOverride;
+  icon: ReactNode;
+}
+
+const ozTheme = createTheme({
+  fontFamily: 'Open Sans, sans-serif',
+  primaryColor: 'cyan',
+  defaultRadius: 0,
+  colors: {
+    title: virtualColor({
+      name: 'title',
+      dark: 'cyan',
+      light: 'cyan',
+    }),
+  },
+  headings: {
+    fontWeight:"700",
+  },
+});
+
+const xyzTheme = createTheme({
+  fontFamily: 'Open Sans, sans-serif',
+  primaryColor: 'orange',
+  defaultRadius: 4,
+  colors: {
+    title: virtualColor({
+      name: 'title',
+      dark: 'orange',
+      light: 'orange',
+    }),
+  },
+  headings: {
+    fontWeight:"700",
+  },
+});
+const DEFAULT_PROPS = {name:"OZ Bank", theme:ozTheme, icon: <IconAt/> };
+export const BANK_MAP : Map<string,BankProps> = 
+new Map([
+  ["oz",DEFAULT_PROPS],
+  ["xyz",{name:"XYZ Financial", theme: xyzTheme, icon: <IconAtom/>}],
+]);
+
+
 
 export enum LoginViewEnum {
   EmailConfirmation = "email-confirmation",
@@ -33,6 +80,7 @@ export enum LoginViewEnum {
 
 export interface BankingData {
   id: string;
+  bank: string;
   amount: string;
   merchant: string;
 }
@@ -63,10 +111,18 @@ export default function BankingPage() {
   const [view] = useState<LoginViewEnum>(LoginViewEnum.LoginPrompt);
   const [searchParams] = useSearchParams();
   const [data, setData] = useState<BankingData | null>(null);
+  const [bank, setBank] = useState<BankProps>(DEFAULT_PROPS);
 
   useEffect(() => {
     const queryData = searchParams.get("data");
-    setData(ParseUtil.parseB64Data(queryData));
+    const bankData : BankingData | null= ParseUtil.parseB64Data(queryData);
+    if(bankData){
+      setData(bankData);
+      const props = BANK_MAP.get(bankData.bank)
+      if(props) {
+        setBank(props);
+      }
+    }
   }, [searchParams]);
 
   function renderView(view: LoginViewEnum) {
@@ -81,6 +137,7 @@ export default function BankingPage() {
     }
   }
 
+
   function onLoginPromptComplete(email: string) {
     if (data) {
       const callback =
@@ -92,20 +149,18 @@ export default function BankingPage() {
   }
 
   return (
+    <MantineProvider theme={bank.theme}>
     <Center h="100vh" w="100%">
       <Card shadow="sm" w={{ base: 356, md: 480, lg: 550 }} mih={420} p="sm">
         <Flex justify="center" align="center" direction="column" w="100%">
-          <Image
-            h={48}
-            w={192}
-            src="/assets/logo.svg"
-            alt="LoginID Inc."
-            mb="md"
-          />
+          <Group justify="center" m="md">
+          <Title c="title" >{bank.name}</Title>
+          </Group>
           {renderView(view)}
           <Footer />
         </Flex>
       </Card>
     </Center>
+    </MantineProvider>
   );
 }
