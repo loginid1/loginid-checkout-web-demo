@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@loginid/checkout-wallet": "^1.2.0",
+    "@loginid/checkout-wallet": "^1.2.1",
     "@mantine/core": "^7.12.1",
     "@mantine/hooks": "^7.12.1",
     "@tabler/icons-react": "^3.12.0",

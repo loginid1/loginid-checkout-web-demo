@@ -46,24 +46,48 @@ export interface ErrorProps {
   back: () => void;
 }
 
+const merchantTemplate = process.env.REACT_APP_MERCHANT || "b";
+
+const themeA = createTheme({
+  palette: {
+    primary: {
+      main: "#003BD1",
+      contrastText: "#fff",
+    },
+    secondary: {
+      main: "#FFF176",
+    },
+
+    success: {
+      main: "#76FF03",
+    },
+  },
+});
+
+const themeB = createTheme({
+  palette: {
+    primary: {
+      main: "#30b0c7",
+      contrastText: "#fff",
+    },
+    secondary: {
+      main: "#3700b3",
+      contrastText: "#fff",
+    },
+    success: {
+      main: "#76FF03",
+    },
+  },
+});
+
+const config = {
+  theme: merchantTemplate === "a" ? themeA : themeB,
+  name: merchantTemplate === "a" ? "EStore" : "ZSports",
+};
+
 export function CallbackPage() {
   const [searchParams] = useSearchParams();
   const [error, setError] = useState<string>("");
-  const theme = createTheme({
-    palette: {
-      primary: {
-        main: "#30b0c7",
-        contrastText: "#fff",
-      },
-      secondary: {
-        main: "#3700b3",
-        contrastText: "#fff",
-      },
-      success: {
-        main: "#76FF03",
-      },
-    },
-  });
 
   useEffect(() => {
     const queryData = searchParams.get("data");
@@ -89,14 +113,19 @@ export function CallbackPage() {
   function RenderView() {
     if (error !== "") {
       return (
-        <Error name="ZSports" error={error} theme={theme} back={handleBack} />
+        <Error
+          name={config.name}
+          error={error}
+          theme={config.theme}
+          back={handleBack}
+        />
       );
     } else {
       return (
         <Callback
-          name="ZSports"
+          name={config.name}
           amount="127.57"
-          theme={theme}
+          theme={config.theme}
           back={handleBack}
         />
       );
