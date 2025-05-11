@@ -132,7 +132,7 @@ export default class CheckoutSDK {
     if (!largeScreen) {
       main.animate(
         [{ transform: "translateY(100%)" }, { transform: "translateY(0)" }],
-        { duration: 500 }
+        { duration: 500 },
       );
     }
 
