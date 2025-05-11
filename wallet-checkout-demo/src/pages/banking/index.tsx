@@ -23,11 +23,8 @@ import {
   createTheme,
   Flex,
   Group,
-  Image,
   MantineProvider,
   MantineThemeOverride,
-  MantineThemeProvider,
-  ThemeIcon,
   Title,
   virtualColor,
 } from "@mantine/core";

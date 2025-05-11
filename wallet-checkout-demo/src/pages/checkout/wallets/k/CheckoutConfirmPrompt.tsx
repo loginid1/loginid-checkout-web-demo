@@ -148,7 +148,12 @@ export function KCheckoutConfirmPrompt(props: KCheckoutConfirmPromptProps) {
       </Card>
 
       <Group className="button-wrapper">
-        <Button fullWidth variant="filled" rightSection={ButtonIcon()} onClick={props.onConfirm}>
+        <Button
+          fullWidth
+          variant="filled"
+          rightSection={ButtonIcon()}
+          onClick={props.onConfirm}
+        >
           Confirm
         </Button>
       </Group>

@@ -219,7 +219,12 @@ export function CheckoutPage() {
 
   return (
     <Center h="100vh" w="100%" bg="#f8f8f8">
-      <Card w={{ base: "100%", md: 480, lg: 550 }} bg="#f8f8f8" mih={420} p="sm">
+      <Card
+        w={{ base: "100%", md: 480, lg: 550 }}
+        bg="#f8f8f8"
+        mih={420}
+        p="sm"
+      >
         <Flex justify="center" align="center" direction="column" w="100%">
           {redirect && (
             <Image
