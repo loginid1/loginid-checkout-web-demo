@@ -1,0 +1,40 @@
+.container {
+  background-color: #f8f8f8;
+  display: flex;
+  flex-direction: column;
+  margin: 2rem auto;
+  padding: 10px;
+}
+
+.checkout-box {
+  padding: 20px 15px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  margin-bottom: 12px;
+}
+
+.checkout-box p,
+.checkout-box-info p {
+  color: #898989;
+}
+
+.checkout-box-info {
+  display: flex;
+  flex-direction: row !important;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.checkout-box-info span {
+  color: #65558f;
+}
+
+.checkout-box-info button {
+  border-color: #65558f;
+}
+
+.button-wrapper span,
+.button-wrapper button {
+  color: white;
+  background: #ca27ca;
+}

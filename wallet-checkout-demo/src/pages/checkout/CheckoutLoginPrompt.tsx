@@ -100,7 +100,7 @@ export default function CheckoutLoginPrompt(props: CheckoutLoginPromptProps) {
     }
   };
 
-  function handleExternal( bank: string) {
+  function handleExternal(bank: string) {
     return props.onExternal(bank);
   }
 
@@ -148,7 +148,7 @@ export default function CheckoutLoginPrompt(props: CheckoutLoginPromptProps) {
           size="md"
           mb="sm"
           fullWidth
-          onClick={e=>handleExternal("oz")}
+          onClick={(e) => handleExternal("oz")}
         >
           OZ Bank
         </Button>
@@ -158,7 +158,7 @@ export default function CheckoutLoginPrompt(props: CheckoutLoginPromptProps) {
           size="md"
           mb="sm"
           fullWidth
-          onClick={e=>handleExternal("xyz")}
+          onClick={(e) => handleExternal("xyz")}
         >
           XYZ Financial
         </Button>

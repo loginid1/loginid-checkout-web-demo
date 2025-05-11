@@ -142,7 +142,7 @@ export function CheckoutPage() {
     }
   }
 
-  function onMessageHandle(msg: Message, origin: string) { }
+  function onMessageHandle(msg: Message, origin: string) {}
 
   function renderView(view: CheckoutViewEnum) {
     if (view === CheckoutViewEnum.Confirmation && payload != null) {
@@ -158,7 +158,12 @@ export function CheckoutPage() {
     } else if (view === CheckoutViewEnum.Wait) {
       return <></>;
     } else {
-      return <CheckoutLoginPrompt onComplete={onCheckoutLoginHandle} onExternal={onExternalHandle} />;
+      return (
+        <CheckoutLoginPrompt
+          onComplete={onCheckoutLoginHandle}
+          onExternal={onExternalHandle}
+        />
+      );
     }
   }
 
@@ -184,7 +189,6 @@ export function CheckoutPage() {
       document.location.href =
         "/banking?data=" + stringToBase64Url(JSON.stringify(data));
     }
-
   }
 
   function onCheckoutConfirmHandle(email: string, token: string, next: string) {
