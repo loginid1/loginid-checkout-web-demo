@@ -87,70 +87,39 @@ export default class CheckoutSDK {
     const link = url;
 
     const background = document.createElement("div");
-    background.style.display = "block";
-    background.style.position = "fixed";
-    background.style.backgroundColor = "#cccccccc";
-    background.style.top = "0";
-    background.style.left = "0";
-    background.style.width = "100%";
-    background.style.height = "100%";
+    background.className = "checkout-background";
 
     const main = document.createElement("div");
-    main.style.zIndex = "9997";
-    main.style.display = "block";
-    main.style.border = "none";
-    main.style.position = "fixed";
-    main.style.zIndex = "9998";
-    main.style.backgroundColor = "#fff";
+    main.className = "checkout-main";
 
     if (largeScreen) {
-      main.style.left = "" + (window.innerWidth / 2 - width / 2) + "px";
-      main.style.top = "" + (window.innerHeight / 2 - (height + 32) / 2) + "px";
+      main.style.left = `${window.innerWidth / 2 - width / 2}px`;
+      main.style.top = `${window.innerHeight / 2 - (height + 32) / 2}px`;
     } else {
-      main.style.left = "" + (window.innerWidth / 2 - width / 2) + "px";
-      main.style.top = "" + (window.innerHeight - (height + 32)) + "px";
+      main.style.left = `${window.innerWidth / 2 - width / 2}px`;
+      main.style.top = `${window.innerHeight - (height + 32)}px`;
     }
-    main.style.boxShadow = "0 4px 8px 0 rgba(0,0,0,0.2)";
-    main.style.width = "" + width + "px";
+    main.style.width = `${width}px`;
 
     const image = document.createElement("img");
+    image.className = "checkout-logo";
     image.setAttribute("src", "data:image/svg+xml;base64," + base64logo);
-    image.style.display = "relative";
-    image.style.left = "8px";
-    image.style.top = "8px";
-    image.style.padding = "8px";
-    image.style.zIndex = "9999";
-    image.style.float = "left";
-    image.style.height = "32px";
-    image.style.width = "96px";
 
     const close = document.createElement("span");
+    close.className = "checkout-close";
     close.innerHTML = "Cancel";
-    close.style.zIndex = "9999";
-    close.style.display = "block";
-    close.style.fontSize = "12px";
-    close.style.fontWeight = "500";
-    close.style.fontFamily = "sans-serif";
-    close.style.float = "right";
-    close.style.color = "#0d70d2";
-    close.style.position = "relative";
-    close.style.paddingRight = "8px";
-    close.style.padding = "8px";
     close.onclick = function () {
       main.remove();
       background.remove();
     };
 
     const iframe = document.createElement("iframe");
-    iframe.style.border = "none";
-    iframe.style.position = "relative";
-    iframe.width = "" + width + "px";
-    iframe.height = "" + height + "px";
+    iframe.className = "checkout-iframe";
+    iframe.width = `${width}px`;
+    iframe.height = `${height}px`;
     iframe.id = "loginid-auth";
-    // NOTE: this is important to get passkeys to work in an iframe
     iframe.allow =
       "publickey-credentials-get *; publickey-credentials-create * ";
-
     iframe.setAttribute("src", link);
 
     main.appendChild(image);
@@ -163,9 +132,53 @@ export default class CheckoutSDK {
     if (!largeScreen) {
       main.animate(
         [{ transform: "translateY(100%)" }, { transform: "translateY(0)" }],
-        { duration: 500 },
+        { duration: 500 }
       );
     }
+
+    this.mMain = main;
+    this.mBackground = background;
+
+    return iframe.contentWindow;
+  }
+
+  private prepareIframeGeneric(url: string): Window | null {
+    const width = Math.min(window.innerWidth, 480);
+    // NOTE: The only way to achieve true dynamic height is with postMessage
+    // to obtain height + width of iframe
+    const height = 470;
+    const link = url;
+
+    const background = document.createElement("div");
+    background.className = "checkout-background";
+
+    const main = document.createElement("div");
+    main.className = "checkout-main";
+    main.style.width = `${width}px`;
+
+    const close = document.createElement("span");
+    close.className = "checkout-close";
+    close.innerHTML = "Cancel";
+    close.onclick = function () {
+      main.remove();
+      background.remove();
+    };
+
+    const iframe = document.createElement("iframe");
+    iframe.className = "checkout-iframe";
+    iframe.width = `${width}px`;
+    iframe.height = `${height}px`;
+    iframe.id = "loginid-auth";
+    iframe.allow =
+      "publickey-credentials-get *; publickey-credentials-create *; bluetooth * ";
+    iframe.setAttribute("src", link);
+    iframe.style.borderRadius = "12px";
+
+    main.appendChild(close);
+    main.appendChild(iframe);
+
+    document.body.appendChild(background);
+    document.body.appendChild(main);
 
     this.mMain = main;
     this.mBackground = background;
@@ -193,7 +206,7 @@ export default class CheckoutSDK {
     mMessage.closeEvent = removeUI;
 
     const url = `${this.baseUrl}/checkout?data=${stringToBase64Url(JSON.stringify(request))}`;
-    this.mTarget = this.prepareIframe(url);
+    this.mTarget = this.prepareIframeGeneric(url);
 
     if (!this.mTarget) {
       throw new Error("no session");
@@ -211,8 +224,6 @@ export default class CheckoutSDK {
         "init",
       );
       const resp = this.parseResponse(response);
-
-      //document.cookie = `loginid-token=${resp.token}; SameSite=None; Secure`;
 
       return {
         id: resp.id,

@@ -1,21 +1,31 @@
+:root {
+  --color-background: #f8f8f8;
+  --color-text-muted: #898989;
+  --color-accent: #65558f;
+  --color-button-bg: #ca27ca;
+  --color-box-shadow: rgba(0, 0, 0, 0.05);
+  --color-white: white;
+}
+
 .container {
-  background-color: #f8f8f8;
+  background-color: var(--color-background);
   display: flex;
   flex-direction: column;
   margin: 2rem auto;
+  margin: 0;
   padding: 10px;
 }
 
 .checkout-box {
   padding: 20px 15px;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 8px var(--color-box-shadow);
   margin-bottom: 12px;
 }
 
 .checkout-box p,
 .checkout-box-info p {
-  color: #898989;
+  color: var(--color-text-muted);
 }
 
 .checkout-box-info {
@@ -26,15 +36,19 @@
 }
 
 .checkout-box-info span {
-  color: #65558f;
+  color: var(--color-accent);
 }
 
 .checkout-box-info button {
-  border-color: #65558f;
+  border-color: var(--color-accent);
 }
 
 .button-wrapper span,
 .button-wrapper button {
-  color: white;
-  background: #ca27ca;
+  color: var(--color-white);
+  background: var(--color-button-bg);
+}
+
+.button-wrapper button:hover {
+  background-color: var(--color-button-bg);
 }
