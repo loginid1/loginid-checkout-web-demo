@@ -19,6 +19,7 @@ import {
   Button,
   Grid,
   Card,
+  Center,
   Group,
   Text,
   Divider,
@@ -59,104 +60,108 @@ export function KCheckoutConfirmPrompt(props: KCheckoutConfirmPromptProps) {
   }
 
   return (
-    <Container className="container" w="100%">
-      {props.txRef && (
-        <>
-          <Grid>
-            <Grid.Col span={12} ta="center">
-              <Text c="green.5">Transaction Successfull</Text>
-            </Grid.Col>
-          </Grid>
-        </>
-      )}
-      {props.error && <Text c="red.5">{props.error}</Text>}
-      <Card className="checkout-box" withBorder>
-        <Text ta="left" mb="xs" size="xs">
-          {props.payData.Merchant.toUpperCase()}
-        </Text>
-        <Group display="flex" justify="space-between">
-          <Text ta="left" size="sm">
-            Order Subtotal
-          </Text>
-          <Text fw="bold" size="sm" c="black">
-            ${props.payData.Subtotal}
-          </Text>
-        </Group>
-        <Group display="flex" justify="space-between">
-          <Text ta="left" size="sm">
-            Shipping and Handling
-          </Text>
-          <Text fw="bold" size="sm" c="black">
-            FREE
-          </Text>
-        </Group>
-        <Group display="flex" justify="space-between">
-          <Text size="sm" ta="left">
-            GST/HST
-          </Text>
-          <Text size="sm" fw="bold" c="black">
-            ${props.payData.Tax}
-          </Text>
-        </Group>
-        <Divider my="sm" />
-        <Group display="flex" justify="space-between">
-          <Text size="sm" ta="left" c="black">
-            Total
-          </Text>
-          <Text size="sm" fw="bold" c="black">
-            ${props.payData.Total}
-          </Text>
-        </Group>
-      </Card>
-
-      <Card className="checkout-box-info" withBorder>
-        <Group display="block">
-          <Text ta="left" mb="xs" size="xs">
-            SHIPPING ADDRESS
-          </Text>
-          <Text size="sm" ta="left" c="black">
-            {props.payData.Address.Street}
-          </Text>
-          <Text size="sm" ta="left" c="black">
-            {requestAddress}
-          </Text>
-        </Group>
-        <Group>
-          <Button variant="outline" radius="xl">
-            Change
-          </Button>
-        </Group>
-      </Card>
-
-      <Card className="checkout-box-info" withBorder>
-        <Group display="block">
-          <Text ta="left" mb="xs" size="xs">
-            PAYMENT INFO
-          </Text>
-          <Group>
-            <Image h={24} w={38} src="/assets/pay-icon.png" />
-            <Text size="xs" c="black">
-              ending with 4242
+    <Center h="100vh" w="100%" bg="#f8f8f8">
+      <Card w={{ base: "100%", md: 720 }} bg="#f8f8f8" mih={420} p="sm">
+        <Container className="container" w="100%">
+          {props.txRef && (
+            <>
+              <Grid>
+                <Grid.Col span={12} ta="center">
+                  <Text c="green.5">Transaction Successfull</Text>
+                </Grid.Col>
+              </Grid>
+            </>
+          )}
+          {props.error && <Text c="red.5">{props.error}</Text>}
+          <Card className="checkout-box" withBorder>
+            <Text ta="left" mb="xs" size="xs">
+              {props.payData.Merchant.toUpperCase()}
             </Text>
-          </Group>
-        </Group>
-        <Group>
-          <Button variant="outline" radius="xl">
-            Change
-          </Button>
-        </Group>
-      </Card>
+            <Group display="flex" justify="space-between">
+              <Text ta="left" size="sm">
+                Order Subtotal
+              </Text>
+              <Text fw="bold" size="sm" c="black">
+                ${props.payData.Subtotal}
+              </Text>
+            </Group>
+            <Group display="flex" justify="space-between">
+              <Text ta="left" size="sm">
+                Shipping and Handling
+              </Text>
+              <Text fw="bold" size="sm" c="black">
+                FREE
+              </Text>
+            </Group>
+            <Group display="flex" justify="space-between">
+              <Text size="sm" ta="left">
+                GST/HST
+              </Text>
+              <Text size="sm" fw="bold" c="black">
+                ${props.payData.Tax}
+              </Text>
+            </Group>
+            <Divider my="sm" />
+            <Group display="flex" justify="space-between">
+              <Text size="sm" ta="left" c="black">
+                Total
+              </Text>
+              <Text size="sm" fw="bold" c="black">
+                ${props.payData.Total}
+              </Text>
+            </Group>
+          </Card>
 
-      <Group className="button-wrapper">
-        <Button
-          fullWidth
-          variant="filled"
-          rightSection={ButtonIcon()}
-          onClick={props.onConfirm}
-        >
-          Confirm
-        </Button>
-      </Group>
-    </Container>
+          <Card className="checkout-box-info" withBorder>
+            <Group display="block">
+              <Text ta="left" mb="xs" size="xs">
+                SHIPPING ADDRESS
+              </Text>
+              <Text size="sm" ta="left" c="black">
+                {props.payData.Address.Street}
+              </Text>
+              <Text size="sm" ta="left" c="black">
+                {requestAddress}
+              </Text>
+            </Group>
+            <Group>
+              <Button variant="outline" radius="xl">
+                Change
+              </Button>
+            </Group>
+          </Card>
+
+          <Card className="checkout-box-info" withBorder>
+            <Group display="block">
+              <Text ta="left" mb="xs" size="xs">
+                PAYMENT INFO
+              </Text>
+              <Group>
+                <Image h={24} w={38} src="/assets/pay-icon.png" />
+                <Text size="xs" c="black">
+                  ending with 4242
+                </Text>
+              </Group>
+            </Group>
+            <Group>
+              <Button variant="outline" radius="xl">
+                Change
+              </Button>
+            </Group>
+          </Card>
+
+          <Group className="button-wrapper">
+            <Button
+              bg="ca27ca"
+              variant="filled"
+              rightSection={ButtonIcon()}
+              onClick={props.onConfirm}
+            >
+              Confirm
+            </Button>
+          </Group>
+        </Container>
+      </Card>
+    </Center>
   );
 }

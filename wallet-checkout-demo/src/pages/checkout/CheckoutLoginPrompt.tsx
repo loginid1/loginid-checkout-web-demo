@@ -17,7 +17,7 @@
 
 "use client";
 
-import { BaseCheckoutLoginPrompt } from "./wallets/base/CheckoutLoginPrompt";
+import { KCheckoutLoginPrompt } from "./wallets/k/CheckoutLoginPrompt";
 import { FormEvent, useEffect, useState } from "react";
 import { LIDService } from "@/services/loginid";
 import ParseUtil from "@/lib/parse";
@@ -25,6 +25,7 @@ import ParseUtil from "@/lib/parse";
 export interface CheckoutLoginPromptProps {
   onComplete: (email: string, token: string, next: string) => void;
   onExternal: (bank: string) => void;
+  redirect: boolean;
 }
 
 /**
@@ -94,7 +95,7 @@ export default function CheckoutLoginPrompt(props: CheckoutLoginPromptProps) {
   }
 
   return (
-    <BaseCheckoutLoginPrompt
+    <KCheckoutLoginPrompt
       error={error}
       email={email}
       onSubmit={handlerSubmit}

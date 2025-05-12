@@ -16,11 +16,21 @@
  */
 
 import {
+  Button,
+  Grid,
+  Text,
+  Divider,
+  Image,
+  Card,
+  Flex,
+  Center,
+  Container,
+} from "@mantine/core";
+import {
   IconCreditCard,
   IconFaceId,
   IconFingerprint,
 } from "@tabler/icons-react";
-import { Button, Grid, Text, Divider, Image, Container } from "@mantine/core";
 import { TxPayload } from "../../CheckoutConfirmPrompt";
 import ParseUtil from "@/lib/parse";
 
@@ -30,6 +40,7 @@ export interface BaseCheckoutConfirmPromptProps {
   txRef: string;
   onConfirm: () => void;
   token: string;
+  redirect: boolean;
 }
 
 export function BaseCheckoutConfirmPrompt(
@@ -49,115 +60,130 @@ export function BaseCheckoutConfirmPrompt(
   }
 
   return (
-    <Container w="100%">
-      {props.txRef && (
-        <>
-          <Grid>
-            <Grid.Col span={12} ta="center">
-              <Text c="green.5">Transaction Successfull</Text>
-            </Grid.Col>
-          </Grid>
-        </>
-      )}
-      {props.error && <Text c="red.5">{props.error}</Text>}
-      <Grid>
-        <Grid.Col
-          span={4}
-          style={{ display: "flex", justifyContent: "flex-end" }}
-        >
-          <Image h={36} w={64} src="/assets/my-bank.png" />
-        </Grid.Col>
-        <Grid.Col span={8}>
-          <Text size="sm" ta="left">
-            My Bank Rewards
-            <br />
-            ******5465
-          </Text>
-        </Grid.Col>
-      </Grid>
-      <Divider mb="xs" mt="xs"></Divider>
-      <Grid>
-        <Grid.Col span={4}>
-          <Text fw={700} ta="right" size="sm">
-            SHIPPING
-          </Text>
-        </Grid.Col>
-        <Grid.Col span={8}>
-          <Text size="sm" ta="left">
-            {props.payData.Address.Street}
-            <br />
-            {props.payData.Address.City} , {props.payData.Address.State}
-            <br />
-            {props.payData.Address.Country} {props.payData.Address.Postal}
-          </Text>
-        </Grid.Col>
-      </Grid>
-      <Divider mb="xs" mt="xs"></Divider>
-      <Grid>
-        <Grid.Col span={4}>
-          <Text fw={700} ta="right" size="sm">
-            CONTACT
-          </Text>
-        </Grid.Col>
-        <Grid.Col span={8}>
-          <Text size="sm" ta="left">
-            {props.payData.Contact}
-            <br />
-            {props.payData.Email} <br />
-          </Text>
-        </Grid.Col>
-      </Grid>
-      <Divider mb="xs" mt="xs"></Divider>
-      <Grid mt={0}>
-        <Grid.Col span={8}>
-          <Text fw={500} ta="right" size="xs">
-            SUBTOTAL
-          </Text>
-        </Grid.Col>
-        <Grid.Col span={4}>
-          <Text size="xs" ta="left">
-            {props.payData.Subtotal}{" "}
-          </Text>
-        </Grid.Col>
-      </Grid>
-      <Grid mt={0}>
-        <Grid.Col span={8}>
-          <Text fw={500} ta="right" size="xs">
-            SHIPPING
-          </Text>
-        </Grid.Col>
-        <Grid.Col span={4}>
-          <Text size="xs" ta="left">
-            {props.payData.Shipping}{" "}
-          </Text>
-        </Grid.Col>
-      </Grid>
-      <Grid mt={0}>
-        <Grid.Col span={8}>
-          <Text fw={500} ta="right" size="xs">
-            TAX
-          </Text>
-        </Grid.Col>
-        <Grid.Col span={4}>
-          <Text size="xs" ta="left">
-            {props.payData.Tax}{" "}
-          </Text>
-        </Grid.Col>
-      </Grid>
-      <Grid>
-        <Grid.Col span={8}>
-          <Text fw={700} ta="right">
-            PAY {props.payData.Merchant}{" "}
-          </Text>
-        </Grid.Col>
-        <Grid.Col span={4} ta="left">
-          ${props.payData.Total}
-        </Grid.Col>
-      </Grid>
-      <Divider mb="xs" mt="xs"></Divider>
-      <Button leftSection={ButtonIcon()} onClick={props.onConfirm}>
-        Confirm
-      </Button>
-    </Container>
+    <Center h="100vh" w="100%">
+      <Card shadow="sm" w={{ base: "100%", md: 480, lg: 550 }} mih={420} p="sm">
+        <Flex justify="center" align="center" direction="column" w="100%">
+          {props.redirect && (
+            <Image
+              h={24}
+              w={96}
+              src="/assets/logo.svg"
+              alt="LoginID Inc."
+              mb="md"
+            />
+          )}
+          <Container w="100%">
+            {props.txRef && (
+              <>
+                <Grid>
+                  <Grid.Col span={12} ta="center">
+                    <Text c="green.5">Transaction Successfull</Text>
+                  </Grid.Col>
+                </Grid>
+              </>
+            )}
+            {props.error && <Text c="red.5">{props.error}</Text>}
+            <Grid>
+              <Grid.Col
+                span={4}
+                style={{ display: "flex", justifyContent: "flex-end" }}
+              >
+                <Image h={36} w={64} src="/assets/my-bank.png" />
+              </Grid.Col>
+              <Grid.Col span={8}>
+                <Text size="sm" ta="left">
+                  My Bank Rewards
+                  <br />
+                  ******5465
+                </Text>
+              </Grid.Col>
+            </Grid>
+            <Divider mb="xs" mt="xs"></Divider>
+            <Grid>
+              <Grid.Col span={4}>
+                <Text fw={700} ta="right" size="sm">
+                  SHIPPING
+                </Text>
+              </Grid.Col>
+              <Grid.Col span={8}>
+                <Text size="sm" ta="left">
+                  {props.payData.Address.Street}
+                  <br />
+                  {props.payData.Address.City} , {props.payData.Address.State}
+                  <br />
+                  {props.payData.Address.Country} {props.payData.Address.Postal}
+                </Text>
+              </Grid.Col>
+            </Grid>
+            <Divider mb="xs" mt="xs"></Divider>
+            <Grid>
+              <Grid.Col span={4}>
+                <Text fw={700} ta="right" size="sm">
+                  CONTACT
+                </Text>
+              </Grid.Col>
+              <Grid.Col span={8}>
+                <Text size="sm" ta="left">
+                  {props.payData.Contact}
+                  <br />
+                  {props.payData.Email} <br />
+                </Text>
+              </Grid.Col>
+            </Grid>
+            <Divider mb="xs" mt="xs"></Divider>
+            <Grid mt={0}>
+              <Grid.Col span={8}>
+                <Text fw={500} ta="right" size="xs">
+                  SUBTOTAL
+                </Text>
+              </Grid.Col>
+              <Grid.Col span={4}>
+                <Text size="xs" ta="left">
+                  {props.payData.Subtotal}{" "}
+                </Text>
+              </Grid.Col>
+            </Grid>
+            <Grid mt={0}>
+              <Grid.Col span={8}>
+                <Text fw={500} ta="right" size="xs">
+                  SHIPPING
+                </Text>
+              </Grid.Col>
+              <Grid.Col span={4}>
+                <Text size="xs" ta="left">
+                  {props.payData.Shipping}{" "}
+                </Text>
+              </Grid.Col>
+            </Grid>
+            <Grid mt={0}>
+              <Grid.Col span={8}>
+                <Text fw={500} ta="right" size="xs">
+                  TAX
+                </Text>
+              </Grid.Col>
+              <Grid.Col span={4}>
+                <Text size="xs" ta="left">
+                  {props.payData.Tax}{" "}
+                </Text>
+              </Grid.Col>
+            </Grid>
+            <Grid>
+              <Grid.Col span={8}>
+                <Text fw={700} ta="right">
+                  PAY {props.payData.Merchant}{" "}
+                </Text>
+              </Grid.Col>
+              <Grid.Col span={4} ta="left">
+                ${props.payData.Total}
+              </Grid.Col>
+            </Grid>
+            <Divider mb="xs" mt="xs"></Divider>
+            <Button leftSection={ButtonIcon()} onClick={props.onConfirm}>
+              Confirm
+            </Button>
+          </Container>
+        </Flex>
+      </Card>
+    </Center>
   );
 }

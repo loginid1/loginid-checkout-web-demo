@@ -17,9 +17,12 @@
 
 import {
   Button,
+  Card,
+  Center,
   Divider,
   Flex,
   Group,
+  Image,
   Input,
   Text,
   Title,
@@ -33,6 +36,7 @@ export interface BaseCheckoutLoginPromptProps {
   email: string;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   onExternal: (bank: string) => void;
+  redirect: boolean;
 }
 
 export function BaseCheckoutLoginPrompt({
@@ -40,68 +44,87 @@ export function BaseCheckoutLoginPrompt({
   email,
   onSubmit,
   onExternal,
+  redirect,
 }: BaseCheckoutLoginPromptProps) {
   return (
-    <form onSubmit={onSubmit} style={{ width: "100%", justifyItems: "center" }}>
-      <Flex align="center" direction="column" ml="xl" mr="xl">
-        <Title order={4} mt="md" mb="sm">
-          Sign In
-        </Title>
-        {error && (
-          <Text c="red.4" lineClamp={64}>
-            {error}
-          </Text>
-        )}
-        <Input
-          mb="md"
-          placeholder="Sign In with Passkey"
-          type="email"
-          value={email}
-          autoComplete="username webauthn"
-          w="100%"
-          autoFocus
-          style={{ caretColor: "transparent" }}
-          onKeyDown={(e) => {
-            e.preventDefault();
-            return false;
-          }}
-        />
-        <Button type="submit" size="md" mb="sm" fullWidth>
-          Log in
-        </Button>
-        <Divider m="md" />
-        <Text fw={700} m="md">
-          Select other financial institution:
-        </Text>
-        <Button
-          variant="outline"
-          leftSection={<IconAt />}
-          size="md"
-          mb="sm"
-          fullWidth
-          onClick={() => onExternal("oz")}
-        >
-          OZ Bank
-        </Button>
-        <Button
-          variant="outline"
-          leftSection={<IconAtom />}
-          size="md"
-          mb="sm"
-          fullWidth
-          onClick={() => onExternal("xyz")}
-        >
-          XYZ Financial
-        </Button>
-        <UnstyledButton>
-          <Group>
-            Don&apos;t have an account?{" "}
-            <Link to="/signup" style={{ textDecoration: "none" }}>
-              <Text c="blue.5">Sign up</Text>
-            </Link>
-          </Group>
-        </UnstyledButton>
-      </Flex>
-    </form>
+    <Center h="100vh" w="100%">
+      <Card shadow="sm" w={{ base: "100%", md: 480, lg: 550 }} mih={420} p="sm">
+        <Flex justify="center" align="center" direction="column" w="100%">
+          {redirect && (
+            <Image
+              h={24}
+              w={96}
+              src="/assets/logo.svg"
+              alt="LoginID Inc."
+              mb="md"
+            />
+          )}
+          <form
+            onSubmit={onSubmit}
+            style={{ width: "100%", justifyItems: "center" }}
+          >
+            <Flex align="center" direction="column" ml="xl" mr="xl">
+              <Title order={4} mt="md" mb="sm">
+                Sign In
+              </Title>
+              {error && (
+                <Text c="red.4" lineClamp={64}>
+                  {error}
+                </Text>
+              )}
+              <Input
+                mb="md"
+                placeholder="Sign In with Passkey"
+                type="email"
+                value={email}
+                autoComplete="username webauthn"
+                w="100%"
+                autoFocus
+                style={{ caretColor: "transparent" }}
+                onKeyDown={(e) => {
+                  e.preventDefault();
+                  return false;
+                }}
+              />
+              <Button type="submit" size="md" mb="sm" fullWidth>
+                Log in
+              </Button>
+              <Divider m="md" />
+              <Text fw={700} m="md">
+                Select other financial institution:
+              </Text>
+              <Button
+                variant="outline"
+                leftSection={<IconAt />}
+                size="md"
+                mb="sm"
+                fullWidth
+                onClick={() => onExternal("oz")}
+              >
+                OZ Bank
+              </Button>
+              <Button
+                variant="outline"
+                leftSection={<IconAtom />}
+                size="md"
+                mb="sm"
+                fullWidth
+                onClick={() => onExternal("xyz")}
+              >
+                XYZ Financial
+              </Button>
+              <UnstyledButton>
+                <Group>
+                  Don&apos;t have an account?{" "}
+                  <Link to="/signup" style={{ textDecoration: "none" }}>
+                    <Text c="blue.5">Sign up</Text>
+                  </Link>
+                </Group>
+              </UnstyledButton>
+            </Flex>
+          </form>
+        </Flex>
+      </Card>
+    </Center>
   );
 }

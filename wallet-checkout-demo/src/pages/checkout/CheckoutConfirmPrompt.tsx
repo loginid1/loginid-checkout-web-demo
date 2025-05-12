@@ -15,7 +15,6 @@
  *   limitations under the License.
  */
 
-import { BaseCheckoutConfirmPrompt } from "./wallets/base/CheckoutConfirmPrompt";
 import { KCheckoutConfirmPrompt } from "./wallets/k/CheckoutConfirmPrompt";
 import { LIDService } from "@/services/loginid";
 import { CheckoutRequest } from ".";
@@ -47,6 +46,7 @@ export interface CheckoutConfirmPromptProps {
   token: string;
   request: CheckoutRequest;
   hasPasskey: boolean;
+  redirect: boolean;
   onComplete: (email: string, token: string, next: string) => void;
 }
 
