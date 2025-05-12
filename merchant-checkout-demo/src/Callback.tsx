@@ -16,74 +16,56 @@
  */
 
 import {
-  createTheme,
-  AppBar,
-  Toolbar,
-  Typography,
-  Container,
-  Button,
-  Theme,
-} from "@mui/material";
-import CheckCircle from "@mui/icons-material/CheckCircle";
+  CallbackA,
+  ErrorA,
+  merchantConfigA,
+} from "./merchants/merchant-a/Callback";
+import {
+  CallbackB,
+  ErrorB,
+  merchantConfigB,
+} from "./merchants/merchant-b/Callback";
+import { CallbackC, ErrorC } from "./merchants/merchant-c/Callback";
 import { useSearchParams } from "react-router-dom";
-import Cancel from "@mui/icons-material/Cancel";
 import { CheckoutResult } from "./lib/checkout";
-import { ThemeProvider } from "@emotion/react";
 import { useEffect, useState } from "react";
+import { Theme } from "@mui/material";
 import { CID } from "./lib/crypto";
 
-export interface CallbackProps {
-  name: string;
-  amount: string;
-  theme: Theme;
-  back: () => void;
-}
+type MerchantKey = "a" | "b" | "c";
 
-export interface ErrorProps {
-  name: string;
-  error: string;
-  theme: Theme;
-  back: () => void;
-}
+const merchantTemplate = (process.env.REACT_APP_MERCHANT?.toLowerCase() ??
+  "b") as MerchantKey;
 
-const merchantTemplate = process.env.REACT_APP_MERCHANT || "b";
-
-const themeA = createTheme({
-  palette: {
-    primary: {
-      main: "#003BD1",
-      contrastText: "#fff",
-    },
-    secondary: {
-      main: "#FFF176",
-    },
-
-    success: {
-      main: "#76FF03",
-    },
+const merchantMap: Record<
+  MerchantKey,
+  {
+    Callback: (props: any) => JSX.Element;
+    Error: (props: any) => JSX.Element;
+    config: {
+      name: string;
+      theme: Theme;
+    };
+  }
+> = {
+  a: {
+    Callback: CallbackA,
+    Error: ErrorA,
+    config: merchantConfigA,
   },
-});
-
-const themeB = createTheme({
-  palette: {
-    primary: {
-      main: "#30b0c7",
-      contrastText: "#fff",
-    },
-    secondary: {
-      main: "#3700b3",
-      contrastText: "#fff",
-    },
-    success: {
-      main: "#76FF03",
-    },
+  b: {
+    Callback: CallbackB,
+    Error: ErrorB,
+    config: merchantConfigB,
   },
-});
-
-const config = {
-  theme: merchantTemplate === "a" ? themeA : themeB,
-  name: merchantTemplate === "a" ? "EStore" : "ZSports",
+  c: {
+    Callback: CallbackC,
+    Error: ErrorC,
+    config: merchantConfigB,
+  },
 };
+
+const { Callback, Error, config } = merchantMap[merchantTemplate];
 
 export function CallbackPage() {
   const [searchParams] = useSearchParams();
@@ -135,88 +117,6 @@ export function CallbackPage() {
   return (
     <>
       <RenderView />
-    </>
-  );
-}
-
-function Callback(props: CallbackProps) {
-  return (
-    <>
-      <ThemeProvider theme={props.theme}>
-        <AppBar position="static">
-          <Toolbar>
-            <Typography
-              variant="h6"
-              component="div"
-              sx={{ flexGrow: 1 }}
-              align="center"
-            >
-              {props.name}
-            </Typography>
-          </Toolbar>
-        </AppBar>
-        <Container maxWidth="sm">
-          <Typography variant="body1" sx={{ mt: 4 }}>
-            Thank You For Your Purchase
-          </Typography>
-          <CheckCircle sx={{ fontSize: 128, m: 4 }} color="success" />
-          <Typography variant="h6">Order #123RB23178Y Confirmed</Typography>
-          <Typography variant="body2">
-            Pay ${props.amount} through ABC Bank
-          </Typography>
-          <Button
-            variant="contained"
-            sx={{ mt: 4, textTransform: "none" }}
-            fullWidth
-          >
-            Track Order
-          </Button>
-          <Button
-            variant="text"
-            sx={{ textTransform: "none" }}
-            fullWidth
-            onClick={props.back}
-          >
-            Return To Shopping
-          </Button>
-        </Container>
-      </ThemeProvider>
-    </>
-  );
-}
-
-function Error(props: ErrorProps) {
-  return (
-    <>
-      <ThemeProvider theme={props.theme}>
-        <AppBar position="static">
-          <Toolbar>
-            <Typography
-              variant="h6"
-              component="div"
-              sx={{ flexGrow: 1 }}
-              align="center"
-            >
-              {props.name}
-            </Typography>
-          </Toolbar>
-        </AppBar>
-        <Container maxWidth="sm">
-          <Typography variant="body1" sx={{ mt: 4 }}>
-            Order Unsuccessful!
-          </Typography>
-          <Cancel sx={{ fontSize: 128, m: 4 }} color="error" />
-          <Typography variant="body2"> ${props.error} </Typography>
-          <Button
-            variant="text"
-            sx={{ textTransform: "none" }}
-            fullWidth
-            onClick={props.back}
-          >
-            Return To Shopping
-          </Button>
-        </Container>
-      </ThemeProvider>
     </>
   );
 }

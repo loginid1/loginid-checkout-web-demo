@@ -18,7 +18,6 @@
 import { base64UrlToString, stringToBase64Url } from "@/lib/encoding";
 import { Message, MessagingService } from "@/services/messaging";
 import { CheckoutConfirmPrompt } from "./CheckoutConfirmPrompt";
-import { Center, Card, Flex, Image } from "@mantine/core";
 import CheckoutLoginPrompt from "./CheckoutLoginPrompt";
 import { WalletMockService } from "@/services/backend";
 import { CALLBACK_URL, WEBVIEW_URL } from "@/lib/urls";
@@ -142,7 +141,7 @@ export function CheckoutPage() {
     }
   }
 
-  function onMessageHandle(msg: Message, origin: string) { }
+  function onMessageHandle(msg: Message, origin: string) {}
 
   function renderView(view: CheckoutViewEnum) {
     if (view === CheckoutViewEnum.Confirmation && payload != null) {
@@ -153,12 +152,19 @@ export function CheckoutPage() {
           request={payload}
           hasPasskey={passkey}
           onComplete={onCheckoutConfirmHandle}
+          redirect={redirect}
         />
       );
     } else if (view === CheckoutViewEnum.Wait) {
       return <></>;
     } else {
-      return <CheckoutLoginPrompt onComplete={onCheckoutLoginHandle} onExternal={onExternalHandle} />;
+      return (
+        <CheckoutLoginPrompt
+          onComplete={onCheckoutLoginHandle}
+          onExternal={onExternalHandle}
+          redirect={redirect}
+        />
+      );
     }
   }
 
@@ -184,7 +190,6 @@ export function CheckoutPage() {
       document.location.href =
         "/banking?data=" + stringToBase64Url(JSON.stringify(data));
     }
-
   }
 
   function onCheckoutConfirmHandle(email: string, token: string, next: string) {
@@ -213,22 +218,5 @@ export function CheckoutPage() {
     }
   }
 
-  return (
-    <Center h="100vh" w="100%">
-      <Card shadow="sm" w={{ base: "100%", md: 480, lg: 550 }} mih={420} p="sm">
-        <Flex justify="center" align="center" direction="column" w="100%">
-          {redirect && (
-            <Image
-              h={24}
-              w={96}
-              src="/assets/logo.svg"
-              alt="LoginID Inc."
-              mb="md"
-            />
-          )}
-          {renderView(view)}
-        </Flex>
-      </Card>
-    </Center>
-  );
+  return renderView(view);
 }

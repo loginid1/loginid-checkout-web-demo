@@ -17,25 +17,15 @@
 
 "use client";
 
-import {
-  Button,
-  Input,
-  UnstyledButton,
-  Text,
-  Title,
-  Flex,
-  Group,
-  Divider,
-} from "@mantine/core";
-import { IconAt, IconAtom } from "@tabler/icons-react";
+import { KCheckoutLoginPrompt } from "./wallets/k/CheckoutLoginPrompt";
 import { FormEvent, useEffect, useState } from "react";
 import { LIDService } from "@/services/loginid";
-import { Link } from "react-router-dom";
 import ParseUtil from "@/lib/parse";
 
 export interface CheckoutLoginPromptProps {
   onComplete: (email: string, token: string, next: string) => void;
   onExternal: (bank: string) => void;
+  redirect: boolean;
 }
 
 /**
@@ -100,77 +90,17 @@ export default function CheckoutLoginPrompt(props: CheckoutLoginPromptProps) {
     }
   };
 
-  function handleExternal( bank: string) {
+  function handleExternal(bank: string) {
     return props.onExternal(bank);
   }
 
   return (
-    <form
+    <KCheckoutLoginPrompt
+      error={error}
+      email={email}
       onSubmit={handlerSubmit}
-      style={{ width: "100%", justifyItems: "center" }}
-    >
-      <Flex align="center" direction="column" ml="xl" mr="xl">
-        <Title order={4} mt="md" mb="sm">
-          Sign In
-        </Title>
-        {error && (
-          <Text c="red.4" lineClamp={64}>
-            {error}
-          </Text>
-        )}
-        <Input
-          mb="md"
-          placeholder="Sign In with Passkey"
-          type="email"
-          value={email}
-          autoComplete="username webauthn"
-          w="100%"
-          autoFocus
-          //inputMode="none"
-          style={{ caretColor: "transparent" }}
-          //onClick={(e) => {handlerSubmit}}
-          onKeyDown={(e) => {
-            e.preventDefault();
-            return false;
-          }}
-        />
-
-        <Button type="submit" size="md" mb="sm" fullWidth>
-          Log in
-        </Button>
-        <Divider m="md" />
-        <Text fw={700} m="md">
-          Select other financial institution:
-        </Text>
-        <Button
-          variant="outline"
-          leftSection={<IconAt />}
-          size="md"
-          mb="sm"
-          fullWidth
-          onClick={e=>handleExternal("oz")}
-        >
-          OZ Bank
-        </Button>
-        <Button
-          variant="outline"
-          leftSection={<IconAtom />}
-          size="md"
-          mb="sm"
-          fullWidth
-          onClick={e=>handleExternal("xyz")}
-        >
-          XYZ Financial
-        </Button>
-        <UnstyledButton>
-          <Group>
-            Don&apos;t have an account?{" "}
-            <Link to="/signup" style={{ textDecoration: "none" }}>
-              <Text c="blue.5">Sign up</Text>
-            </Link>
-          </Group>
-        </UnstyledButton>
-      </Flex>
-    </form>
+      onExternal={handleExternal}
+      redirect={props.redirect}
+    />
   );
 }

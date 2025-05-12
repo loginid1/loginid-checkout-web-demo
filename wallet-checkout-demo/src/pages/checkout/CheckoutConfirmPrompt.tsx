@@ -15,14 +15,8 @@
  *   limitations under the License.
  */
 
-import { Button, Grid, Text, Divider, Image, Container } from "@mantine/core";
-import {
-  IconCreditCard,
-  IconFaceId,
-  IconFingerprint,
-} from "@tabler/icons-react";
+import { KCheckoutConfirmPrompt } from "./wallets/k/CheckoutConfirmPrompt";
 import { LIDService } from "@/services/loginid";
-import ParseUtil from "@/lib/parse";
 import { CheckoutRequest } from ".";
 import { useState } from "react";
 
@@ -52,6 +46,7 @@ export interface CheckoutConfirmPromptProps {
   token: string;
   request: CheckoutRequest;
   hasPasskey: boolean;
+  redirect: boolean;
   onComplete: (email: string, token: string, next: string) => void;
 }
 
@@ -93,19 +88,6 @@ export function CheckoutConfirmPrompt(props: CheckoutConfirmPromptProps) {
   const [error, setError] = useState("");
   const [txRef, setTxRef] = useState("");
 
-  function ButtonIcon() {
-    const SIZE = 24;
-    if (props.token !== "") {
-      return <IconCreditCard size={SIZE}></IconCreditCard>;
-    } else {
-      if (ParseUtil.isIPhone()) {
-        return <IconFaceId size={SIZE}></IconFaceId>;
-      } else {
-        return <IconFingerprint size={SIZE}></IconFingerprint>;
-      }
-    }
-  }
-
   async function confirmPayTranstion() {
     // clear prior result
     if (props.token !== "") {
@@ -141,115 +123,12 @@ export function CheckoutConfirmPrompt(props: CheckoutConfirmPromptProps) {
   }
 
   return (
-    <Container w="100%">
-      {txRef && (
-        <>
-          <Grid>
-            <Grid.Col span={12} ta="center">
-              <Text c="green.5">Transaction Successfull</Text>
-            </Grid.Col>
-          </Grid>
-        </>
-      )}
-      {error && <Text c="red.5">{error}</Text>}
-      <Grid>
-        <Grid.Col
-          span={4}
-          style={{ display: "flex", justifyContent: "flex-end" }}
-        >
-          <Image h={36} w={64} src="/assets/my-bank.png" />
-        </Grid.Col>
-        <Grid.Col span={8}>
-          <Text size="sm" ta="left">
-            My Bank Rewards
-            <br />
-            ******5465
-          </Text>
-        </Grid.Col>
-      </Grid>
-      <Divider mb="xs" mt="xs"></Divider>
-      <Grid>
-        <Grid.Col span={4}>
-          <Text fw={700} ta="right" size="sm">
-            SHIPPING
-          </Text>
-        </Grid.Col>
-        <Grid.Col span={8}>
-          <Text size="sm" ta="left">
-            {payData.Address.Street}
-            <br />
-            {payData.Address.City} , {payData.Address.State}
-            <br />
-            {payData.Address.Country} {payData.Address.Postal}
-          </Text>
-        </Grid.Col>
-      </Grid>
-      <Divider mb="xs" mt="xs"></Divider>
-      <Grid>
-        <Grid.Col span={4}>
-          <Text fw={700} ta="right" size="sm">
-            CONTACT
-          </Text>
-        </Grid.Col>
-        <Grid.Col span={8}>
-          <Text size="sm" ta="left">
-            {payData.Contact}
-            <br />
-            {payData.Email} <br />
-          </Text>
-        </Grid.Col>
-      </Grid>
-      <Divider mb="xs" mt="xs"></Divider>
-      <Grid mt={0}>
-        <Grid.Col span={8}>
-          <Text fw={500} ta="right" size="xs">
-            SUBTOTAL
-          </Text>
-        </Grid.Col>
-        <Grid.Col span={4}>
-          <Text size="xs" ta="left">
-            {payData.Subtotal}{" "}
-          </Text>
-        </Grid.Col>
-      </Grid>
-      <Grid mt={0}>
-        <Grid.Col span={8}>
-          <Text fw={500} ta="right" size="xs">
-            SHIPPING
-          </Text>
-        </Grid.Col>
-        <Grid.Col span={4}>
-          <Text size="xs" ta="left">
-            {payData.Shipping}{" "}
-          </Text>
-        </Grid.Col>
-      </Grid>
-      <Grid mt={0}>
-        <Grid.Col span={8}>
-          <Text fw={500} ta="right" size="xs">
-            TAX
-          </Text>
-        </Grid.Col>
-        <Grid.Col span={4}>
-          <Text size="xs" ta="left">
-            {payData.Tax}{" "}
-          </Text>
-        </Grid.Col>
-      </Grid>
-      <Grid>
-        <Grid.Col span={8}>
-          <Text fw={700} ta="right">
-            PAY {payData.Merchant}{" "}
-          </Text>
-        </Grid.Col>
-        <Grid.Col span={4} ta="left">
-          ${payData.Total}
-        </Grid.Col>
-      </Grid>
-      <Divider mb="xs" mt="xs"></Divider>
-      <Button leftSection={ButtonIcon()} onClick={confirmPayTranstion}>
-        Confirm
-      </Button>
-    </Container>
+    <KCheckoutConfirmPrompt
+      payData={payData}
+      error={error}
+      txRef={txRef}
+      onConfirm={confirmPayTranstion}
+      token={props.token}
+    />
   );
 }

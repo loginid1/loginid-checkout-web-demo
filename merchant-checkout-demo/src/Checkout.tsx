@@ -15,59 +15,48 @@
  *   limitations under the License.
  */
 
-import {
-  AppBar,
-  Badge,
-  Button,
-  Container,
-  createTheme,
-  Divider,
-  Stack,
-  ThemeProvider,
-  Toolbar,
-  Typography,
-} from "@mui/material";
+import { merchantARequest } from "./merchants/merchant-a/merchantARequest";
+import { merchantBRequest } from "./merchants/merchant-b/merchantBRequest";
+import { merchantCRequest } from "./merchants/merchant-c/merchantCRequest";
 import CheckoutSDK, { CheckoutRequest } from "./lib/checkout";
-import ShoppingCart from "@mui/icons-material/ShoppingCart";
-import { useState, useEffect } from "react";
-import Grid from "@mui/material/Grid2";
-
-export interface CheckoutProps {
-  screenWidth: number;
-  request: CheckoutRequest;
-  submit: () => void;
-}
+import { CheckoutA } from "./merchants/merchant-a/CheckoutA";
+import { CheckoutB } from "./merchants/merchant-b/CheckoutB";
+import { CheckoutC } from "./merchants/merchant-c/CheckoutC";
+import { CheckoutProps } from "./merchants/types";
+import { useState, useEffect, FC } from "react";
 
 const wallet = new CheckoutSDK(
   process.env.REACT_APP_CHECKOUT_BASEURL || "",
   true,
 );
 
-const callbackUrl =
-  process.env.REACT_APP_CALLBACK_URL || window.location.origin + "/callback";
-const merchantTemplate = process.env.REACT_APP_MERCHANT || "b";
+type MerchantKey = "a" | "b" | "c";
 
-const merchantARequest: CheckoutRequest = {
-  merchant: "EStore",
-  subtotal: "624.99",
-  tax: "81.24",
-  total: "718.29",
-  shipping: "12.00",
-  desc: "item",
-  callback: callbackUrl,
-  cid: "",
+const merchantTemplate = (process.env.REACT_APP_MERCHANT?.toLowerCase() ??
+  "b") as MerchantKey;
+
+const merchantMap: Record<
+  MerchantKey,
+  {
+    CheckoutComponent: FC<CheckoutProps>;
+    request: CheckoutRequest;
+  }
+> = {
+  a: {
+    CheckoutComponent: CheckoutA,
+    request: merchantARequest,
+  },
+  b: {
+    CheckoutComponent: CheckoutB,
+    request: merchantBRequest,
+  },
+  c: {
+    CheckoutComponent: CheckoutC,
+    request: merchantCRequest,
+  },
 };
 
-const merchantBRequest: CheckoutRequest = {
-  merchant: "ZSports",
-  subtotal: "120.33",
-  tax: "7.24",
-  total: "127.57",
-  shipping: "0.00",
-  desc: "item",
-  callback: callbackUrl,
-  cid: "",
-};
+const { CheckoutComponent, request } = merchantMap[merchantTemplate];
 
 export function CheckoutPage() {
   const [screenWidth, setScreenWidth] = useState(600);
@@ -80,8 +69,6 @@ export function CheckoutPage() {
 
   async function checkout() {
     try {
-      const request =
-        merchantTemplate === "a" ? merchantARequest : merchantBRequest;
       const result = await wallet.checkout(request);
       console.log("Checkout result:", result);
     } catch (e) {
@@ -89,278 +76,11 @@ export function CheckoutPage() {
     }
   }
 
-  return merchantTemplate === "a" ? (
-    <CheckoutA
-      screenWidth={screenWidth}
-      request={merchantARequest}
-      submit={checkout}
-    />
-  ) : (
-    <CheckoutB
-      screenWidth={screenWidth}
-      request={merchantBRequest}
-      submit={checkout}
-    />
-  );
-}
-
-function CheckoutA(props: CheckoutProps) {
-  const theme = createTheme({
-    palette: {
-      primary: {
-        main: "#003BD1",
-        contrastText: "#fff",
-      },
-      secondary: {
-        main: "#FFF176",
-      },
-    },
-  });
-  return (<>
-    <ThemeProvider theme={theme}>
-      <AppBar position="static">
-        <Toolbar>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }} align="left">
-            {props.request.merchant}
-          </Typography>
-          <Badge badgeContent={2} color="secondary">
-            <ShoppingCart />
-          </Badge>
-
-        </Toolbar>
-      </AppBar>
-      <Container maxWidth="sm">
-        <div>
-
-          <Typography variant="h6" component="h6" align="left" sx={{ mt: 4, textDecoration: "underline 2px #FFF176", textUnderlineOffset: "8px" }} noWrap>
-            Order Summary
-          </Typography>
-        </div>
-        <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }} sx={{ m: 2 }}>
-          <Grid size={2}>
-            <img src="/items/tablet.jpg" width="64" height="64"></img>
-          </Grid>
-          <Grid size={8} display="flex" justifyContent="start" alignItems="center">
-            <Stack>
-              <Typography variant="body1">Chromebook tablet</Typography>
-              <Typography variant="caption" align="left">$499.00 x 1</Typography>
-            </Stack>
-          </Grid>
-          <Grid size={2} display="flex" justifyContent="center" alignItems="end" justifyItems="end">
-            <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>$499.00</Typography>
-          </Grid>
-        </Grid>
-        <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }} sx={{ m: 2 }}>
-          <Grid size={2}>
-            <img src="/items/headset.jpg" width="64" height="64"></img>
-          </Grid>
-          <Grid size={8} display="flex" justifyContent="start" alignItems="center">
-            <Stack>
-              <Typography variant="body1">Noice canceling headphone</Typography>
-              <Typography variant="caption" align="left">$125.00 x 1</Typography>
-            </Stack>
-          </Grid>
-          <Grid size={2} display="flex" justifyContent="center" alignItems="end" justifyItems="end">
-            <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>$125.00</Typography>
-          </Grid>
-        </Grid>
-        <Divider sx={{ mt: 4, mb: 4 }} />
-        <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }} sx={{ m: 2, mt: 4 }}>
-          <Grid size={10} display="flex" justifyContent="start" alignItems="center">
-            <Typography variant="caption">Subtotal</Typography>
-          </Grid>
-          <Grid size={2} display="flex" justifyContent="end" alignItems="end" justifyItems="end">
-            <Typography variant="subtitle2" >${props.request.subtotal}</Typography>
-          </Grid>
-          <Grid size={10} display="flex" justifyContent="start" alignItems="center">
-            <Typography variant="caption">Tax</Typography>
-          </Grid>
-          <Grid size={2} display="flex" justifyContent="end" alignItems="end" justifyItems="end">
-            <Typography variant="subtitle2" >${props.request.tax}</Typography>
-          </Grid>
-          <Grid size={10} display="flex" justifyContent="start" alignItems="center">
-            <Typography variant="caption">Shipping Fee</Typography>
-          </Grid>
-          <Grid size={2} display="flex" justifyContent="end" alignItems="end" justifyItems="end">
-            <Typography variant="subtitle2" >${props.request.shipping}</Typography>
-          </Grid>
-          <Grid size={10} display="flex" justifyContent="start" alignItems="center">
-            <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>Total</Typography>
-          </Grid>
-          <Grid size={2} display="flex" justifyContent="end" alignItems="end" justifyItems="end">
-            <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>${props.request.total}</Typography>
-          </Grid>
-        </Grid>
-        <Button variant="contained" sx={{ textTransform: "none" }} fullWidth onClick={props.submit}>Pay with ABC Bank</Button>
-      </Container>
-    </ThemeProvider>
-  </>);
-
-}
-
-function CheckoutB(props: CheckoutProps) {
-  const theme = createTheme({
-    palette: {
-      primary: {
-        main: "#30b0c7",
-        contrastText: "#fff",
-      },
-      secondary: {
-        main: "#3700b3",
-        contrastText: "#fff",
-      },
-    },
-  });
   return (
-    <>
-      <ThemeProvider theme={theme}>
-        <AppBar position="static">
-          <Toolbar>
-            <Typography
-              variant="h6"
-              component="div"
-              sx={{ flexGrow: 1 }}
-              align="left"
-            >
-              {props.request.merchant}
-            </Typography>
-            <Badge badgeContent={1} color="secondary">
-              <ShoppingCart />
-            </Badge>
-          </Toolbar>
-        </AppBar>
-        <Container maxWidth="sm">
-          <Typography variant="h6" component="h6" align="left" sx={{ mt: 4 }}>
-            Order Summary
-          </Typography>
-          <Divider />
-          <Grid
-            container
-            rowSpacing={1}
-            columnSpacing={{ xs: 1, sm: 2, md: 3 }}
-            sx={{ m: 2 }}
-          >
-            <Grid size={2}>
-              <img src="/items/running-shoe.jpg" width="64" height="64"></img>
-            </Grid>
-            <Grid
-              size={8}
-              display="flex"
-              justifyContent="start"
-              alignItems="center"
-            >
-              <Stack>
-                <Typography variant="body1">Running shoes</Typography>
-                <Typography variant="caption" align="left">
-                  $120.33 x 1
-                </Typography>
-              </Stack>
-            </Grid>
-            <Grid
-              size={2}
-              display="flex"
-              justifyContent="end"
-              alignItems="end"
-              justifyItems="end"
-            >
-              <Typography variant="subtitle2">$120.33</Typography>
-            </Grid>
-          </Grid>
-          <Grid
-            container
-            rowSpacing={1}
-            columnSpacing={{ xs: 1, sm: 2, md: 3 }}
-            sx={{ m: 2, mt: 4 }}
-          >
-            <Grid
-              size={10}
-              display="flex"
-              justifyContent="start"
-              alignItems="center"
-            >
-              <Typography variant="caption">Subtotal</Typography>
-            </Grid>
-            <Grid
-              size={2}
-              display="flex"
-              justifyContent="end"
-              alignItems="end"
-              justifyItems="end"
-            >
-              <Typography variant="subtitle2" sx={{ fontWeight: 500 }}>
-                ${props.request.subtotal}
-              </Typography>
-            </Grid>
-            <Grid
-              size={10}
-              display="flex"
-              justifyContent="start"
-              alignItems="center"
-            >
-              <Typography variant="caption">Tax</Typography>
-            </Grid>
-            <Grid
-              size={2}
-              display="flex"
-              justifyContent="end"
-              alignItems="end"
-              justifyItems="end"
-            >
-              <Typography variant="subtitle2" sx={{ fontWeight: 500 }}>
-                ${props.request.tax}
-              </Typography>
-            </Grid>
-            <Grid
-              size={10}
-              display="flex"
-              justifyContent="start"
-              alignItems="center"
-            >
-              <Typography variant="caption">Shipping Fee</Typography>
-            </Grid>
-            <Grid
-              size={2}
-              display="flex"
-              justifyContent="end"
-              alignItems="end"
-              justifyItems="end"
-            >
-              <Typography variant="subtitle2" sx={{ fontWeight: 500 }}>
-                ${props.request.shipping}
-              </Typography>
-            </Grid>
-            <Grid
-              size={10}
-              display="flex"
-              justifyContent="start"
-              alignItems="center"
-            >
-              <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                Total
-              </Typography>
-            </Grid>
-            <Grid
-              size={2}
-              display="flex"
-              justifyContent="end"
-              alignItems="end"
-              justifyItems="end"
-            >
-              <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                ${props.request.total}
-              </Typography>
-            </Grid>
-          </Grid>
-          <Button
-            variant="outlined"
-            sx={{ textTransform: "none" }}
-            fullWidth
-            onClick={props.submit}
-          >
-            Pay with ABC Bank
-          </Button>
-        </Container>
-      </ThemeProvider>
-    </>
+    <CheckoutComponent
+      screenWidth={screenWidth}
+      request={request}
+      submit={checkout}
+    />
   );
 }
