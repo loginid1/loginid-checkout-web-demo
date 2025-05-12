@@ -17,17 +17,46 @@
 
 import { merchantARequest } from "./merchants/merchant-a/merchantARequest";
 import { merchantBRequest } from "./merchants/merchant-b/merchantBRequest";
+import { merchantCRequest } from "./merchants/merchant-c/merchantCRequest";
+import CheckoutSDK, { CheckoutRequest } from "./lib/checkout";
 import { CheckoutA } from "./merchants/merchant-a/CheckoutA";
 import { CheckoutB } from "./merchants/merchant-b/CheckoutB";
-import { useState, useEffect } from "react";
-import CheckoutSDK from "./lib/checkout";
+import { CheckoutC } from "./merchants/merchant-c/CheckoutC";
+import { CheckoutProps } from "./merchants/types";
+import { useState, useEffect, FC } from "react";
 
 const wallet = new CheckoutSDK(
   process.env.REACT_APP_CHECKOUT_BASEURL || "",
   true,
 );
 
-const merchantTemplate = process.env.REACT_APP_MERCHANT || "b";
+type MerchantKey = "a" | "b" | "c";
+
+const merchantTemplate = (process.env.REACT_APP_MERCHANT?.toLowerCase() ??
+  "b") as MerchantKey;
+
+const merchantMap: Record<
+  MerchantKey,
+  {
+    CheckoutComponent: FC<CheckoutProps>;
+    request: CheckoutRequest;
+  }
+> = {
+  a: {
+    CheckoutComponent: CheckoutA,
+    request: merchantARequest,
+  },
+  b: {
+    CheckoutComponent: CheckoutB,
+    request: merchantBRequest,
+  },
+  c: {
+    CheckoutComponent: CheckoutC,
+    request: merchantCRequest,
+  },
+};
+
+const { CheckoutComponent, request } = merchantMap[merchantTemplate];
 
 export function CheckoutPage() {
   const [screenWidth, setScreenWidth] = useState(600);
@@ -40,8 +69,6 @@ export function CheckoutPage() {
 
   async function checkout() {
     try {
-      const request =
-        merchantTemplate === "a" ? merchantARequest : merchantBRequest;
       const result = await wallet.checkout(request);
       console.log("Checkout result:", result);
     } catch (e) {
@@ -49,16 +76,10 @@ export function CheckoutPage() {
     }
   }
 
-  return merchantTemplate === "a" ? (
-    <CheckoutA
+  return (
+    <CheckoutComponent
       screenWidth={screenWidth}
       request={merchantARequest}
-      submit={checkout}
-    />
-  ) : (
-    <CheckoutB
-      screenWidth={screenWidth}
-      request={merchantBRequest}
       submit={checkout}
     />
   );

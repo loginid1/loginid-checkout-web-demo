@@ -6,8 +6,9 @@ import {
   Section,
   Title,
   Value,
+  WalletButton,
 } from "./styles";
-import { AppBar, Box, Button, Toolbar, Typography } from "@mui/material";
+import { AppBar, Box, Toolbar, Typography } from "@mui/material";
 import { CheckoutProps } from "../types";
 
 export function CheckoutC(props: CheckoutProps) {
@@ -59,22 +60,9 @@ export function CheckoutC(props: CheckoutProps) {
           </Section>
 
           <Box textAlign="center" mt={4}>
-            <Button
-              variant="contained"
-              sx={{
-                backgroundColor: "#ca27ca",
-                "&:hover": { backgroundColor: "#e85fe8" },
-                borderRadius: 1,
-                textTransform: "none",
-                px: 4,
-                py: 1.5,
-                fontWeight: "bold",
-                width: "100%",
-              }}
-              onClick={props.submit}
-            >
+            <WalletButton variant="contained" onClick={props.submit}>
               Pay with Wallet
-            </Button>
+            </WalletButton>
           </Box>
         </Container>
       </Box>

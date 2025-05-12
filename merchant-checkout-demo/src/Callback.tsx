@@ -25,20 +25,51 @@ import {
   ErrorB,
   merchantConfigB,
 } from "./merchants/merchant-b/Callback";
+import { CallbackC, ErrorC } from "./merchants/merchant-c/Callback";
 import { useSearchParams } from "react-router-dom";
 import { CheckoutResult } from "./lib/checkout";
 import { useEffect, useState } from "react";
+import { Theme } from "@mui/material";
 import { CID } from "./lib/crypto";
 
-const merchantTemplate = process.env.REACT_APP_MERCHANT || "b";
+type MerchantKey = "a" | "b" | "c";
+
+const merchantTemplate = (process.env.REACT_APP_MERCHANT?.toLowerCase() ??
+  "b") as MerchantKey;
+
+const merchantMap: Record<
+  MerchantKey,
+  {
+    Callback: (props: any) => JSX.Element;
+    Error: (props: any) => JSX.Element;
+    config: {
+      name: string;
+      theme: Theme;
+    };
+  }
+> = {
+  a: {
+    Callback: CallbackA,
+    Error: ErrorA,
+    config: merchantConfigA,
+  },
+  b: {
+    Callback: CallbackB,
+    Error: ErrorB,
+    config: merchantConfigB,
+  },
+  c: {
+    Callback: CallbackC,
+    Error: ErrorC,
+    config: merchantConfigB,
+  },
+};
+
+const { Callback, Error, config } = merchantMap[merchantTemplate];
 
 export function CallbackPage() {
   const [searchParams] = useSearchParams();
   const [error, setError] = useState<string>("");
-
-  const config = merchantTemplate === "a" ? merchantConfigA : merchantConfigB;
-  const Callback = merchantTemplate === "a" ? CallbackA : CallbackB;
-  const Error = merchantTemplate === "a" ? ErrorA : ErrorB;
 
   useEffect(() => {
     const queryData = searchParams.get("data");
