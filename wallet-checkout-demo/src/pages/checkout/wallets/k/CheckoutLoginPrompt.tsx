@@ -54,11 +54,7 @@ export function KCheckoutLoginPrompt({
       >
         {redirect && (
           <Center>
-            <Image
-              w={90}
-              src="/assets/wallet-logo.svg"
-              alt="Wallet Logo"
-            />
+            <Image w={90} src="/assets/wallet-logo.svg" alt="Wallet Logo" />
           </Center>
         )}
         <form onSubmit={onSubmit} className="login-form">

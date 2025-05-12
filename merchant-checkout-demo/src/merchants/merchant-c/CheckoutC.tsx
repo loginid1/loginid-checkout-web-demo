@@ -63,9 +63,19 @@ export function CheckoutC(props: CheckoutProps) {
 
           <Section>
             <Label>Items</Label>
-            {[ 
-              { name: "Snake plant", description: "Concrete pot", price: 59, image: "/snake-plant.png" },
-              { name: "Watering can", description: "Matte black", price: 39, image: "/watering-can.png" }
+            {[
+              {
+                name: "Snake plant",
+                description: "Concrete pot",
+                price: 59,
+                image: "/snake-plant.png",
+              },
+              {
+                name: "Watering can",
+                description: "Matte black",
+                price: 39,
+                image: "/watering-can.png",
+              },
             ].map((item, index) => (
               <Box key={index} display="flex" alignItems="center" mb={2}>
                 <Box
@@ -85,7 +95,9 @@ export function CheckoutC(props: CheckoutProps) {
                     {item.description}
                   </Typography>
                 </Box>
-                <Typography fontWeight="bold">${item.price.toFixed(2)}</Typography>
+                <Typography fontWeight="bold">
+                  ${item.price.toFixed(2)}
+                </Typography>
               </Box>
             ))}
           </Section>
@@ -101,9 +113,13 @@ export function CheckoutC(props: CheckoutProps) {
               <Typography>Shipping</Typography>
               <Typography>${props.request.shipping}</Typography>
             </Box>
-            <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
-              <Typography>Estimated taxes
-              </Typography>
+            <Box
+              display="flex"
+              justifyContent="space-between"
+              alignItems="center"
+              mb={1}
+            >
+              <Typography>Estimated taxes</Typography>
               <Typography>{props.request.tax}</Typography>
             </Box>
             <Box display="flex" justifyContent="space-between" mt={2}>
