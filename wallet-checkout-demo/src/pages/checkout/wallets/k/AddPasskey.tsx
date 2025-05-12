@@ -70,7 +70,12 @@ export function AddPasskey(props: AddPasskeyProps) {
 
   return (
     <Center h="100vh" w="100%" bg="#f8f8f8">
-      <Card w={{ base: "100%", xs: 540, sm: 720 }} bg="#f8f8f8" mih={420} p="sm">
+      <Card
+        w={{ base: "100%", xs: 540, sm: 720 }}
+        bg="#f8f8f8"
+        mih={420}
+        p="sm"
+      >
         <form onSubmit={handlerSubmit}>
           <Container className="container" w="100%" ta="left">
             <Image
@@ -81,39 +86,43 @@ export function AddPasskey(props: AddPasskeyProps) {
               mx="auto"
               mb="md"
             />
-            <Title order={3}>
-              Faster checkouts with passkey
-            </Title>
+            <Title order={3}>Faster checkouts with passkey</Title>
             <Text c="dimmed" mb="lg">
-              Unlock your account’s full potential by creating a passkey or you can create your passkey later.
+              Unlock your account’s full potential by creating a passkey or you
+              can create your passkey later.
             </Text>
 
             <Stack gap="md" mb="xl">
               <Group justify="flex-start" align="flex-start" wrap="nowrap">
                 <Image
-                  style={{alignSelf: "center"}}
+                  style={{ alignSelf: "center" }}
                   src="/assets/passkey-icon-black.svg"
                   alt="Passkey icon"
                   h={28}
                   w={28}
                 />
                 <div>
-                  <Text size="sm" fw={500}>Create a passkey</Text>
+                  <Text size="sm" fw={500}>
+                    Create a passkey
+                  </Text>
                   <Text size="xs" c="dimmed">
-                    Convenient options like trusting your device. Face ID, Touch ID, or a PIN for quick and secure access.
+                    Convenient options like trusting your device. Face ID, Touch
+                    ID, or a PIN for quick and secure access.
                   </Text>
                 </div>
               </Group>
               <Group justify="flex-start" align="flex-start" wrap="nowrap">
                 <Image
-                  style={{alignSelf: "center"}}
+                  style={{ alignSelf: "center" }}
                   src="/assets/faceid.svg"
                   alt="Face ID icon"
                   h={28}
                   w={28}
                 />
                 <div>
-                  <Text size="sm" fw={500}>Make one-click payments</Text>
+                  <Text size="sm" fw={500}>
+                    Make one-click payments
+                  </Text>
                   <Text size="xs" c="dimmed">
                     Enjoy faster checkouts by authenticating with your passkey.
                   </Text>

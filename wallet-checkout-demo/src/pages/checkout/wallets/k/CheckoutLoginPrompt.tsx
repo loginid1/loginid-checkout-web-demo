@@ -44,7 +44,12 @@ export function KCheckoutLoginPrompt({
 }: KCheckoutLoginPromptProps) {
   return (
     <Center h="100vh" w="100%" bg="#f8f8f8">
-      <Card w={{ base: "100%", xs: 540, md: 720 }} bg="#f8f8f8" mih={420} p="sm">
+      <Card
+        w={{ base: "100%", xs: 540, md: 720 }}
+        bg="#f8f8f8"
+        mih={420}
+        p="sm"
+      >
         <form onSubmit={onSubmit} className="login-form">
           <Container className="container" w="100%">
             <Title ta="left" order={3}>
@@ -74,7 +79,12 @@ export function KCheckoutLoginPrompt({
                     return false;
                   }}
                 />
-                <Button color="#ca27ca" type="submit" variant="filled" radius="md">
+                <Button
+                  color="#ca27ca"
+                  type="submit"
+                  variant="filled"
+                  radius="md"
+                >
                   Log in
                 </Button>
               </Group>
