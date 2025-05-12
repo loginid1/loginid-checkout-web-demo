@@ -34,6 +34,7 @@ export interface KCheckoutLoginPromptProps {
   email: string;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   onExternal: (bank: string) => void;
+  redirect: boolean;
 }
 
 export function KCheckoutLoginPrompt({
@@ -41,6 +42,7 @@ export function KCheckoutLoginPrompt({
   email,
   onSubmit,
   onExternal,
+  redirect,
 }: KCheckoutLoginPromptProps) {
   return (
     <Center h="100vh" w="100%" bg="#f8f8f8">
@@ -50,6 +52,15 @@ export function KCheckoutLoginPrompt({
         mih={420}
         p="sm"
       >
+        {redirect && (
+          <Center>
+            <Image
+              w={90}
+              src="/assets/wallet-logo.svg"
+              alt="Wallet Logo"
+            />
+          </Center>
+        )}
         <form onSubmit={onSubmit} className="login-form">
           <Container className="container" w="100%">
             <Title ta="left" order={3}>

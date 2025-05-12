@@ -90,7 +90,7 @@ export function KCheckoutConfirmPrompt(props: KCheckoutConfirmPromptProps) {
                 Shipping and Handling
               </Text>
               <Text fw="bold" size="sm" c="black">
-                FREE
+                ${props.payData.Shipping}
               </Text>
             </Group>
             <Group display="flex" justify="space-between">
@@ -150,7 +150,7 @@ export function KCheckoutConfirmPrompt(props: KCheckoutConfirmPromptProps) {
             </Group>
           </Card>
 
-          <Group className="button-wrapper">
+          <Group display="flex" justify="center" className="button-wrapper">
             <Button
               bg="ca27ca"
               variant="filled"

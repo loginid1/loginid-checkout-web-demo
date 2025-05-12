@@ -78,15 +78,22 @@ export function AddPasskey(props: AddPasskeyProps) {
       >
         <form onSubmit={handlerSubmit}>
           <Container className="container" w="100%" ta="left">
-            <Image
-              src="/assets/hero-passkey-icon.svg"
-              alt="Passkey icon"
-              h={80}
-              w={80}
-              mx="auto"
-              mb="md"
-            />
+            <Group justify="center" align="center" mb="md">
+              <Image
+                src="/assets/hero-passkey-icon.svg"
+                alt="Passkey icon"
+                h={80}
+                w={80}
+              />
+              <Image
+                src="/assets/wallet-logo.svg"
+                alt="Wallet Logo"
+                h={80}
+                w={90}
+              />
+            </Group>
             <Title order={3}>Faster checkouts with passkey</Title>
+            {error && <Text c="red.5">{error}</Text>}
             <Text c="dimmed" mb="lg">
               Unlock your account’s full potential by creating a passkey or you
               can create your passkey later.

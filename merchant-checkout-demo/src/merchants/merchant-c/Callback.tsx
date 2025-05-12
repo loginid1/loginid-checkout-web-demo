@@ -82,12 +82,13 @@ export function CallbackC(props: CallbackProps) {
             <ReviewLabel variant="caption">Payment method</ReviewLabel>
             <Box sx={{ display: "flex", alignItems: "center" }}>
               <img
-                src="/pay-icon.png"
-                alt="Visa"
+                src="/wallet-logo.svg"
+                alt="Wallet Logo"
+                height={40}
                 width={40}
-                style={{ marginRight: 8, marginTop: 4 }}
+                style={{ marginRight: 8 }}
               />
-              <Typography>Visa •••• 4242 – ${props.amount}</Typography>
+              <Typography>Wallet – ${props.amount}</Typography>
             </Box>
           </Box>
 

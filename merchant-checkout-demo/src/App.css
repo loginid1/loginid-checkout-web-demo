@@ -66,15 +66,15 @@
 }
 
 .checkout-logo {
-  display: relative;
   position: relative;
+  display: block;
   left: 8px;
   top: 8px;
-  padding: 8px;
   float: left;
   height: 32px;
-  width: 96px;
   z-index: 9999;
+  scale: 1.4;
+  margin-left: 5px;
 }
 
 .checkout-close {
@@ -83,11 +83,12 @@
   font-size: 12px;
   font-weight: 500;
   font-family: sans-serif;
-  float: left;
+  float: right;
   color: #0d70d2;
   position: relative;
   padding: 8px;
   cursor: pointer;
+  margin-right: 5px;
 }
 
 .checkout-iframe {

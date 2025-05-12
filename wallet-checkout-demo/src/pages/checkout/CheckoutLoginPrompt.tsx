@@ -100,6 +100,7 @@ export default function CheckoutLoginPrompt(props: CheckoutLoginPromptProps) {
       email={email}
       onSubmit={handlerSubmit}
       onExternal={handleExternal}
+      redirect={props.redirect}
     />
   );
 }

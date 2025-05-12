@@ -79,7 +79,7 @@ export function CheckoutPage() {
   return (
     <CheckoutComponent
       screenWidth={screenWidth}
-      request={merchantARequest}
+      request={request}
       submit={checkout}
     />
   );

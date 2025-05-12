@@ -59,6 +59,59 @@ export function CheckoutC(props: CheckoutProps) {
             </Typography>
           </Section>
 
+          <Divide />
+
+          <Section>
+            <Label>Items</Label>
+            {[ 
+              { name: "Snake plant", description: "Concrete pot", price: 59, image: "/snake-plant.png" },
+              { name: "Watering can", description: "Matte black", price: 39, image: "/watering-can.png" }
+            ].map((item, index) => (
+              <Box key={index} display="flex" alignItems="center" mb={2}>
+                <Box
+                  component="img"
+                  src={item.image}
+                  alt={item.name}
+                  sx={{
+                    width: 64,
+                    height: 64,
+                    mr: 2,
+                    backgroundColor: "#f0f0f0",
+                  }}
+                />
+                <Box textAlign="left" flexGrow={1}>
+                  <Typography fontWeight="bold">{item.name}</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {item.description}
+                  </Typography>
+                </Box>
+                <Typography fontWeight="bold">${item.price.toFixed(2)}</Typography>
+              </Box>
+            ))}
+          </Section>
+
+          <Divide />
+
+          <Section>
+            <Box display="flex" justifyContent="space-between" mb={1}>
+              <Typography>Subtotal</Typography>
+              <Typography>${props.request.subtotal}</Typography>
+            </Box>
+            <Box display="flex" justifyContent="space-between" mb={1}>
+              <Typography>Shipping</Typography>
+              <Typography>${props.request.shipping}</Typography>
+            </Box>
+            <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+              <Typography>Estimated taxes
+              </Typography>
+              <Typography>{props.request.tax}</Typography>
+            </Box>
+            <Box display="flex" justifyContent="space-between" mt={2}>
+              <Typography fontWeight="bold">Total</Typography>
+              <Typography fontWeight="bold">${props.request.total}</Typography>
+            </Box>
+          </Section>
+
           <Box textAlign="center" mt={4}>
             <WalletButton variant="contained" onClick={props.submit}>
               Pay with Wallet

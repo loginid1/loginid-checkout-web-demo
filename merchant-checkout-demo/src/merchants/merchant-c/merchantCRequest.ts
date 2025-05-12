@@ -5,9 +5,9 @@ const callbackUrl =
 
 export const merchantCRequest: CheckoutRequest = {
   merchant: "Plants",
-  subtotal: "157.00",
+  subtotal: "98.00",
   tax: "5.00",
-  total: "172.00",
+  total: "113.00",
   shipping: "10.00",
   desc: "item",
   callback: callbackUrl,
