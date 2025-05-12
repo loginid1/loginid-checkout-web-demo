@@ -42,6 +42,7 @@ const merchantMap: Record<
   {
     Callback: (props: any) => JSX.Element;
     Error: (props: any) => JSX.Element;
+    amount: string;
     config: {
       name: string;
       theme: Theme;
@@ -51,21 +52,24 @@ const merchantMap: Record<
   a: {
     Callback: CallbackA,
     Error: ErrorA,
+    amount: "127.57",
     config: merchantConfigA,
   },
   b: {
     Callback: CallbackB,
     Error: ErrorB,
+    amount: "127.57",
     config: merchantConfigB,
   },
   c: {
     Callback: CallbackC,
     Error: ErrorC,
+    amount: "113.00",
     config: merchantConfigB,
   },
 };
 
-const { Callback, Error, config } = merchantMap[merchantTemplate];
+const { Callback, Error, config, amount } = merchantMap[merchantTemplate];
 
 export function CallbackPage() {
   const [searchParams] = useSearchParams();
@@ -106,7 +110,7 @@ export function CallbackPage() {
       return (
         <Callback
           name={config.name}
-          amount="127.57"
+          amount={amount}
           theme={config.theme}
           back={handleBack}
         />
