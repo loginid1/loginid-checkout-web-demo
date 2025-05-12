@@ -23,6 +23,8 @@ import {
   Title,
   Image,
   Chip,
+  Card,
+  Center,
   rem,
 } from "@mantine/core";
 import { LIDService } from "@/services/loginid";
@@ -68,52 +70,69 @@ export function AddPasskey(props: AddPasskeyProps) {
   }
 
   return (
-    <form onSubmit={handlerSubmit}>
-      <Flex align="center" direction="column" m="md" mb={16}>
-        <Title order={4}>Simplify Your Sign-in With Passkey</Title>
-        <Chip
-          icon={<IconMail style={{ width: rem(16), height: rem(16) }} />}
-          color="blue.7"
-          variant="filled"
-          m="md"
-          defaultChecked
-        >
-          {props.username}
-        </Chip>
-        {error && <Text c="red.5">{error}</Text>}
+    <Center h="100vh" w="100%">
+      <Card shadow="sm" w={{ base: "100%", md: 480, lg: 550 }} mih={420} p="sm">
+        <Flex justify="center" align="center" direction="column" w="100%">
+          <Image
+            h={24}
+            w={96}
+            src="/assets/logo.svg"
+            alt="LoginID Inc."
+            mb="md"
+          />
+          <form onSubmit={handlerSubmit}>
+            <Flex align="center" direction="column" m="md" mb={16}>
+              <Title order={4}>Simplify Your Sign-in With Passkey</Title>
+              <Chip
+                icon={<IconMail style={{ width: rem(16), height: rem(16) }} />}
+                color="blue.7"
+                variant="filled"
+                m="md"
+                defaultChecked
+              >
+                {props.username}
+              </Chip>
+              {error && <Text c="red.5">{error}</Text>}
 
-        <Flex direction="row" justify="center" gap="md" p="md">
-          <Group gap="md">
-            <Image
-              h={48}
-              w={48}
-              src="/assets/touchid.svg"
-              fit="contain"
-              alt="touchid"
-            />
-            <Image
-              h={48}
-              w={48}
-              fit="contain"
-              src="/assets/faceid.svg"
-              alt="faceid"
-            />
-          </Group>
+              <Flex direction="row" justify="center" gap="md" p="md">
+                <Group gap="md">
+                  <Image
+                    h={48}
+                    w={48}
+                    src="/assets/touchid.svg"
+                    fit="contain"
+                    alt="touchid"
+                  />
+                  <Image
+                    h={48}
+                    w={48}
+                    fit="contain"
+                    src="/assets/faceid.svg"
+                    alt="faceid"
+                  />
+                </Group>
+              </Flex>
+
+              <Text pb="lg">
+                With passkeys you can now use your fingerpint, face, or screen
+                lock to verify it&apos;s really you
+              </Text>
+              <Group justify="space-between" w="100%">
+                <Button
+                  variant="light"
+                  size="md"
+                  onClick={() => handleCancel()}
+                >
+                  Skip
+                </Button>
+                <Button type="submit" size="md">
+                  Add A Passkey
+                </Button>
+              </Group>
+            </Flex>
+          </form>
         </Flex>
-
-        <Text pb="lg">
-          With passkeys you can now use your fingerpint, face, or screen lock to
-          verify it&apos;s really you
-        </Text>
-        <Group justify="space-between" w="100%">
-          <Button variant="light" size="md" onClick={() => handleCancel()}>
-            Skip
-          </Button>
-          <Button type="submit" size="md">
-            Add A Passkey
-          </Button>
-        </Group>
-      </Flex>
-    </form>
+      </Card>
+    </Center>
   );
 }

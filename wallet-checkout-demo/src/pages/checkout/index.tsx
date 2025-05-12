@@ -18,7 +18,6 @@
 import { base64UrlToString, stringToBase64Url } from "@/lib/encoding";
 import { Message, MessagingService } from "@/services/messaging";
 import { CheckoutConfirmPrompt } from "./CheckoutConfirmPrompt";
-import { Center, Card, Flex, Image } from "@mantine/core";
 import CheckoutLoginPrompt from "./CheckoutLoginPrompt";
 import { WalletMockService } from "@/services/backend";
 import { CALLBACK_URL, WEBVIEW_URL } from "@/lib/urls";

@@ -15,10 +15,10 @@
  *   limitations under the License.
  */
 
-import { AddPasskey } from "@/components/common/AddPasskey";
 import { Center, Card, Flex, Image } from "@mantine/core";
 import { WalletMockService } from "@/services/backend";
 import { CheckoutRequest, CheckoutViewEnum } from "..";
+import { AddPasskey } from "../wallets/k/AddPasskey";
 import { useSearchParams } from "react-router-dom";
 import { stringToBase64Url } from "@/lib/encoding";
 import { LIDService } from "@/services/loginid";
@@ -128,20 +128,5 @@ export function CheckoutExternalPage() {
     window.location.href = redirectUrl;
   }
 
-  return (
-    <Center h="100vh" w="100%">
-      <Card shadow="sm" w={{ base: "100%", md: 480, lg: 550 }} mih={420} p="sm">
-        <Flex justify="center" align="center" direction="column" w="100%">
-          <Image
-            h={24}
-            w={96}
-            src="/assets/logo.svg"
-            alt="LoginID Inc."
-            mb="md"
-          />
-          {renderView(CheckoutViewEnum.AddPasskey)}
-        </Flex>
-      </Card>
-    </Center>
-  );
+  return renderView(CheckoutViewEnum.AddPasskey);
 }
