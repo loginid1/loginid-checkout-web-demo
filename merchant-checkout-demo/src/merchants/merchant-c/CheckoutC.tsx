@@ -4,7 +4,6 @@ import {
   Divide,
   Label,
   Section,
-  Title,
   Value,
   WalletButton,
 } from "./styles";
@@ -26,25 +25,13 @@ export function CheckoutC(props: CheckoutProps) {
       <Box
         sx={{ backgroundColor: "#f8f8f8", minHeight: "100vh", py: 4, px: 2 }}
       >
-        <Title variant="h6">Review and pay</Title>
+        {/*<Title variant="h6">Review and pay</Title>*/}
         <Container>
           <Section>
             <Label>
               Contact <ChangeLink underline="hover">Change</ChangeLink>
             </Label>
             <Value>jordan.chen@domain.com</Value>
-          </Section>
-
-          <Divide />
-
-          <Section>
-            <Label>
-              Ship to <ChangeLink underline="hover">Change</ChangeLink>
-            </Label>
-            <Value>Jordan Chen</Value>
-            <Value>151 O'Connor Street</Value>
-            <Value>Ottawa, ON, K2P 2L8</Value>
-            <Value>Canada</Value>
           </Section>
 
           <Divide />
@@ -105,11 +92,11 @@ export function CheckoutC(props: CheckoutProps) {
           <Divide />
 
           <Section>
-            <Box display="flex" justifyContent="space-between" mb={1}>
+            <Box display="flex" justifyContent="space-between">
               <Typography>Subtotal</Typography>
               <Typography>${props.request.subtotal}</Typography>
             </Box>
-            <Box display="flex" justifyContent="space-between" mb={1}>
+            <Box display="flex" justifyContent="space-between">
               <Typography>Shipping</Typography>
               <Typography>${props.request.shipping}</Typography>
             </Box>
@@ -117,12 +104,11 @@ export function CheckoutC(props: CheckoutProps) {
               display="flex"
               justifyContent="space-between"
               alignItems="center"
-              mb={1}
             >
               <Typography>Estimated taxes</Typography>
               <Typography>{props.request.tax}</Typography>
             </Box>
-            <Box display="flex" justifyContent="space-between" mt={2}>
+            <Box display="flex" justifyContent="space-between">
               <Typography fontWeight="bold">Total</Typography>
               <Typography fontWeight="bold">${props.request.total}</Typography>
             </Box>

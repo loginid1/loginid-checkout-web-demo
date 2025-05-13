@@ -85,11 +85,7 @@ export function AddPasskey(props: AddPasskeyProps) {
                 h={80}
                 w={80}
               />
-              <Image
-                src="/assets/wallet-logo.svg"
-                alt="Wallet Logo"
-                w={120}
-              />
+              <Image src="/assets/wallet-logo.svg" alt="Wallet Logo" w={120} />
             </Group>
             <Title order={3}>Faster checkouts with passkey</Title>
             {error && <Text c="red.5">{error}</Text>}
