@@ -129,6 +129,7 @@ export function CheckoutConfirmPrompt(props: CheckoutConfirmPromptProps) {
       txRef={txRef}
       onConfirm={confirmPayTranstion}
       token={props.token}
+      redirect={props.redirect}
     />
   );
 }

@@ -41,6 +41,7 @@ export interface KCheckoutConfirmPromptProps {
   txRef: string;
   onConfirm: () => void;
   token: string;
+  redirect: boolean;
 }
 
 export function KCheckoutConfirmPrompt(props: KCheckoutConfirmPromptProps) {
@@ -62,6 +63,11 @@ export function KCheckoutConfirmPrompt(props: KCheckoutConfirmPromptProps) {
   return (
     <Center h="100vh" w="100%" bg="#f8f8f8">
       <Card w={{ base: "100%", md: 720 }} bg="#f8f8f8" mih={420} p="sm">
+        {props.redirect && (
+          <Center>
+            <Image w={120} src="/assets/wallet-logo.svg" alt="Wallet Logo" />
+          </Center>
+        )}
         <Container className="container" w="100%">
           {props.txRef && (
             <>
