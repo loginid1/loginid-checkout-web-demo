@@ -35,23 +35,27 @@ See wallet-checkout-demo/README.md for full details.
 
 1. Clone the Repository
 
-  ```bash
-  git clone https://github.com/your-org/loginid-checkout-web-demo.git
-  cd loginid-checkout-web-demo
-  ```
+        ```bash
+        git clone https://github.com/your-org/loginid-checkout-web-demo.git
+        cd loginid-checkout-web-demo
+        ```
 
 2. Configure and Run Wallet Demo
 
-  Follow instructions in [wallet-checkout-demo](./wallet-checkout-demo) to:
-   - Set up LoginID credentials
-   - Configure `.env`
-   - Start the wallet demo (e.g., on port 3001 or via ngrok)
+    Follow instructions in [wallet-checkout-demo](./wallet-checkout-demo) to:
+     - Set up LoginID credentials
+     - Configure `.env`
+     - Start the wallet demo (e.g., on port 3001 or via ngrok)
 
 3. Configure and Run Merchant Demo
 
-  Follow instructions in [merchant-checkout-demo](./merchant-checkout-demo) to:
-   - Set the `REACT_APP_CHECKOUT_BASEURL` to the wallet URL
-   - Run the merchant demo (default: port 3000)
+    Follow instructions in [merchant-checkout-demo](./merchant-checkout-demo) to:
+     - Set the `REACT_APP_CHECKOUT_BASEURL` to the wallet URL
+     - Run the merchant demo (default: port 3000)
+
+4. Start the Demo on the Merchant Site
+
+    Navigate to the merchant demo in your browser (e.g., http://localhost:3000) to initiate a checkout flow and trigger wallet interaction.
 
 ## License
 

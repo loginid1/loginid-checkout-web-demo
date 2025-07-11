@@ -56,7 +56,7 @@ ngrok http 3000
 Update the `REACT_APP_CHECKOUT_BASEURL` in your `.env` file to match the wallet URL, for example:
 
 ```
-REACT_APP_CHECKOUT_BASEURL=http://localhost:3000
+REACT_APP_CHECKOUT_BASEURL=http://localhost:3001
 # or
 REACT_APP_CHECKOUT_BASEURL=https://<your-ngrok-subdomain>.ngrok.io
 ```
