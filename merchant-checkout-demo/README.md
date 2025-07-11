@@ -47,7 +47,7 @@ Then open [http://localhost:3000](http://localhost:3000) with your browser to se
 
 ## Wallet Setup Notes
 
-This demo requires a wallet instance to be available for discovery and checkout. You can run the [wallet demo](../wallet-checkout-demo) locally on another port (e.g. `http://localhost:3000`) or expose it using a tool like [ngrok](https://ngrok.com):
+This demo requires a wallet instance to be available for discovery and checkout. You can run the [wallet demo](../wallet-checkout-demo) locally on another port (e.g. `http://localhost:3001`) or expose it using a tool like [ngrok](https://ngrok.com):
 
 ```
 ngrok http 3000
@@ -56,7 +56,7 @@ ngrok http 3000
 Update the `REACT_APP_CHECKOUT_BASEURL` in your `.env` file to match the wallet URL, for example:
 
 ```
-REACT_APP_CHECKOUT_BASEURL=http://localhost:3000
+REACT_APP_CHECKOUT_BASEURL=http://localhost:3001
 # or
 REACT_APP_CHECKOUT_BASEURL=https://<your-ngrok-subdomain>.ngrok.io
 ```
